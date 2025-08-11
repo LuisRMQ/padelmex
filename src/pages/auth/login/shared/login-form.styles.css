@@ -1,0 +1,47 @@
+.full-width {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.forgot-password a {
+  font-size: 13px;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.login-button {
+  background-color: #28A745 !important; 
+  color: white !important;
+  font-weight: semibold;
+  padding: 12px;
+  border-radius: 30px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+::ng-deep .login-button .mat-mdc-button-touch-target {
+  color: white !important;
+}
+
+::ng-deep .login-button .mdc-button__label {
+  color: white !important;
+}
+
+::ng-deep .login-button.mat-mdc-raised-button {
+  color: white !important;
+}
+
+.recover-password-text {
+  font-size: 16px;
+  color: #868585;
+  margin-bottom: 40px;
+  font-weight: 400;
+  font-family: 'Inter';
+  text-align: center;
+}
+

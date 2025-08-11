@@ -1,0 +1,26 @@
+<form [formGroup]="clubLoginForm" (ngSubmit)="onSubmit()">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-icon matPrefix>badge</mat-icon>
+    <input matInput placeholder="RFC..." type="text" formControlName="rfc" />
+    <mat-error *ngIf="clubLoginForm.get('rfc')?.hasError('required')">
+      El RFC es requerido
+    </mat-error>
+    <mat-error *ngIf="clubLoginForm.get('rfc')?.hasError('minlength') || clubLoginForm.get('rfc')?.hasError('maxlength')">
+      El RFC debe tener entre 12 y 13 caracteres
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-icon matPrefix>lock</mat-icon>
+    <input matInput placeholder="Contraseña" type="password" formControlName="password" />
+    <mat-error *ngIf="clubLoginForm.get('password')?.hasError('required')">
+      La contraseña es requerida
+    </mat-error>
+  </mat-form-field>
+
+ 
+
+  <button mat-raised-button class="login-button" type="submit" [disabled]="clubLoginForm.invalid">
+    INICIAR SESION
+  </button>
+</form>

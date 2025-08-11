@@ -1,0 +1,24 @@
+<form [formGroup]="userLoginForm" (ngSubmit)="onSubmit()">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-icon matPrefix>mail</mat-icon>
+    <input matInput placeholder="Correo..." type="email" formControlName="email" />
+    <mat-error *ngIf="userLoginForm.get('email')?.hasError('required')">
+      El correo es requerido
+    </mat-error>
+    <mat-error *ngIf="userLoginForm.get('email')?.hasError('email')">
+      Ingrese un correo válido
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-icon matPrefix>lock</mat-icon>
+    <input matInput placeholder="Contraseña" type="password" formControlName="password" />
+    <mat-error *ngIf="userLoginForm.get('password')?.hasError('required')">
+      La contraseña es requerida
+    </mat-error>
+  </mat-form-field>
+
+  <button mat-raised-button class="login-button" type="submit" [disabled]="userLoginForm.invalid">
+    INICIAR SESION
+  </button>
+</form>

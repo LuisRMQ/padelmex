@@ -1,0 +1,39 @@
+<div class="login-container">
+  <div class="login-box">
+    <div class="login-form">
+      <img src="assets/mat-img-1.png" alt="Logo" class="logo">
+      <h2 style="font-family: 'Inter'">
+        {{ isRecoverPassword ? 'Recuperar Contraseña' : (isClub ? 'Iniciar Sesión (Club)' : 'Iniciar Sesión (Usuario)') }}
+      </h2>
+
+      <!-- User Login Form Component -->
+      <app-user-login-form 
+        *ngIf="!isClub && !isRecoverPassword" 
+        (loginSubmit)="onUserLoginSubmit($event)">
+      </app-user-login-form>
+
+      <!-- Club Login Form Component -->
+      <app-club-login-form 
+        *ngIf="isClub && !isRecoverPassword" 
+        (loginSubmit)="onClubLoginSubmit($event)">
+      </app-club-login-form>
+
+      <!-- Recover Password Form Component -->
+      <app-recover-password-form 
+        *ngIf="isRecoverPassword" 
+        (recoverSubmit)="onRecoverPasswordSubmit($event)">
+      </app-recover-password-form>
+
+      <div class="register-link">
+        <a href="#" (click)="setClubMode(true); $event.preventDefault()" *ngIf="!isClub && !isRecoverPassword">¿Eres un club?</a>
+        <a href="#" (click)="setClubMode(false); $event.preventDefault()" *ngIf="isClub && !isRecoverPassword">¿Eres usuario?</a>
+        <a href="#" (click)="setRecoverPasswordMode(true); $event.preventDefault()" *ngIf="!isRecoverPassword">¿Olvidaste tu contraseña?</a>
+        <a href="#" (click)="setRecoverPasswordMode(false); $event.preventDefault()" *ngIf="isRecoverPassword">Volver al login</a>
+      </div>
+    </div>
+
+    <div class="login-image">
+      <img src="assets/mat-img.png" alt="Padel" />
+    </div>
+  </div>
+</div>
