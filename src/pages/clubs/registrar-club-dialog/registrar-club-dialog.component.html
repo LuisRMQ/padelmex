@@ -1,0 +1,76 @@
+<h2 mat-dialog-title>Registrar Club</h2>
+
+<form mat-dialog-content class="form-container">
+  <div class="row">
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>Nombre</mat-label>
+      <input matInput placeholder="Nombre...">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>Correo</mat-label>
+      <input matInput type="email" placeholder="Correo...">
+    </mat-form-field>
+  </div>
+
+  <div class="row">
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>Teléfono</mat-label>
+      <input matInput placeholder="Telefono...">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>RFC</mat-label>
+      <input matInput placeholder="RFC...">
+    </mat-form-field>
+  </div>
+
+  <div class="row">
+    <mat-form-field appearance="outline" class="flex-2">
+      <mat-label>Sitio web</mat-label>
+      <input matInput placeholder="Sitio web...">
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>Ciudad</mat-label>
+      <mat-select placeholder="Ciudad">
+        <mat-option value="ciudad1">Ciudad 1</mat-option>
+        <mat-option value="ciudad2">Ciudad 2</mat-option>
+        <mat-option value="ciudad3">Ciudad 3</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>Estado</mat-label>
+      <mat-select placeholder="Estado">
+        <mat-option value="estado1">Estado 1</mat-option>
+        <mat-option value="estado2">Estado 2</mat-option>
+        <mat-option value="estado3">Estado 3</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Dirección</mat-label>
+    <input matInput placeholder="Direccion...">
+  </mat-form-field>
+
+  <div class="row">
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>Tipo</mat-label>
+      <input matInput placeholder="Tipo...">
+    </mat-form-field>
+
+    <div class="logo-section">
+      <button mat-raised-button color="primary" class="btn-logo">AGREGAR LOGO</button>
+      <small class="info-text">
+        FORMATOS: JPG, PNG · TAMAÑO MÁXIMO: 5 MB · RESOLUCIÓN MÍNIMA: 500×500 PX
+      </small>
+    </div>
+
+    <div class="preview-image">
+      <img src="/assets/placeholder-logo.png" alt="Logo Preview" />
+    </div>
+  </div>
+</form>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancelar</button>
+  <button mat-raised-button color="primary">Guardar</button>
+</mat-dialog-actions>

@@ -1332,7 +1332,7 @@ h1, h2, h3, h4, h5, h6 {
     .menu-hover .app-menu>ul>li:hover>a {
         padding-left: 20px;
         margin-right: 40px;
-        color: #2269F5;
+        color: #0000;
     }
     
     .menu-dark.menu-hover .app-menu>ul>li:hover>a {
@@ -1422,7 +1422,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Colored Sidebar */
 
 .app.sidebar-colored .app-sidebar {
-    background: #004be0;
+    background: #0000;
 }
 
 .app.sidebar-colored .app-sidebar .logo {

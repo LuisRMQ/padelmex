@@ -1,0 +1,29 @@
+.clubs-container {
+  padding: 16px;
+  background: #f9f9f9;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.btn-registrar {
+  background-color: #28a745;
+  color: white;
+}
+
+.clubs-list {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.club-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  padding: 8px 0;
+}

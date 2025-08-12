@@ -1,15 +1,13 @@
 import { Component } from '@angular/core';
 import { HeaderComponent } from "../../../pages/layout/header/header.component";
 import { SidebarComponent } from "../../../pages/layout/sidebar/sidebar.component";
-import { DashboardComponent } from "../../../pages/dashboard/dashboard.component";
-
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [HeaderComponent, SidebarComponent,DashboardComponent],
+  standalone: true,
+  imports: [HeaderComponent, SidebarComponent, RouterOutlet],
   templateUrl: './main-layout.component.html',
-  styleUrl: './main-layout.component.css'
+  styleUrls: ['./main-layout.component.css']
 })
-export class MainLayoutComponent {
-
-}
+export class MainLayoutComponent { }
