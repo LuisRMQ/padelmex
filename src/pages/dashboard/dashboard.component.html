@@ -5,8 +5,8 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body d-flex align-items-center">
-                    <img src="../../assets/images/Group.png" alt="Rentas"
-                        style="width: 80px; height: 80px; margin-right: 15px;">
+                    <img src="../../assets/images/padel.jpg" alt="Rentas"
+                        style="width: 80px; height: 80px; margin-right: 15px; object-fit: contain;">
                     <div>
                         <h5>Rentas del día</h5>
                         <h2>14</h2>
@@ -20,8 +20,8 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body d-flex align-items-center">
-                    <img src="../../assets/images/Vector.png" alt="Ganancias"
-                        style="width: 80px; height: 80px; margin-right: 15px;">
+                    <img src="../../assets/images/dol.png" alt="Ganancias"
+                        style="width: 80px; height: 80px; margin-right: 15px; object-fit: contain;">
                     <div>
                         <h5>Ganancias del día</h5>
                         <h2>$22,500.00</h2>
@@ -32,9 +32,9 @@
         </div>
     </div>
 
-    <!-- Ocupación -->
-    <div class="card mt-3">
-        <canvas baseChart [data]="ocupacionData" [type]="'pie'">
+    <div class="card mt-3" style="width: 100%; max-width: 1200px; height: 300px; margin: auto;">
+        <canvas baseChart [data]="ocupacionData" [type]="'pie'" [options]="chartOptions"
+            style="width: 100%; height: 100%;">
         </canvas>
     </div>
 
@@ -46,13 +46,21 @@
                     <h5>Jugadores más activos</h5>
                     <table class="table">
                         <tr *ngFor="let jugador of jugadoresActivos">
-                            <td>{{ jugador.nombre }}</td>
-                            <td>{{ jugador.rentas }}</td>
+                            <td style="display: flex; align-items: center;">
+                                <img [src]="jugador.imagen" alt="{{ jugador.nombre }}"
+                                    style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                                {{ jugador.nombre }}
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ jugador.rentas }}</span>
+                            </td>
                         </tr>
                     </table>
                 </div>
             </div>
         </div>
+
+
 
         <div class="col-md-6">
             <div class="card">
@@ -69,26 +77,26 @@
         </div>
     </div>
     <div class="card mt-3">
-  <div class="card-body">
-    <h5>Torneos</h5>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Fecha</th>
-          <th>Participantes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let torneo of torneos">
-          <td>{{ torneo.nombre }}</td>
-          <td>{{ torneo.fecha }}</td>
-          <td>{{ torneo.participantes }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+        <div class="card-body">
+            <h5>Torneos</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Fecha</th>
+                        <th>Participantes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let torneo of torneos">
+                        <td>{{ torneo.nombre }}</td>
+                        <td>{{ torneo.fecha }}</td>
+                        <td>{{ torneo.participantes }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <!-- Gráfico de ganancias -->
     <div class="card mt-3">

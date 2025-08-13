@@ -24,14 +24,17 @@ import { CommonModule } from '@angular/common';
   ],
   standalone: true
 })
-export class ClubsComponent { 
+export class ClubsComponent {
 
-constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog) { }
 
   abrirModalRegistrarClub() {
     this.dialog.open(RegistrarClubDialogComponent, {
       width: '800px',
-     
+      maxWidth: '50vw',
+      height: 'auto',
+      maxHeight: '70vh',
+      panelClass: 'custom-dialog'
     });
   }
 

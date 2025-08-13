@@ -21,4 +21,25 @@ import { MatSelectModule } from '@angular/material/select';
     
   ],
 })
-export class RegistrarClubDialogComponent  { }
+export class RegistrarClubDialogComponent  { 
+
+logoPreview: string = '../../assets/images/placeholder.png';
+
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('El archivo supera los 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      this.logoPreview = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+
+}

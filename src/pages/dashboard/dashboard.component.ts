@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
-import { CommonModule } from '@angular/common';  
+import { CommonModule } from '@angular/common';
 
 import {
   Chart,
@@ -10,14 +10,15 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-  BarController,   
+  BarController,
   Title,
-  PieController
+  PieController,
+  ChartOptions
 } from 'chart.js';
 
 Chart.register(
-  ArcElement,    
-  BarController,  
+  ArcElement,
+  BarController,
   BarElement,
   PieController,
   Tooltip,
@@ -30,10 +31,22 @@ Chart.register(
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [BaseChartDirective,CommonModule],
+  imports: [BaseChartDirective, CommonModule],
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent {
+
+
+  public chartOptions: ChartOptions<'pie'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+      }
+    }
+  };
+
   ocupacionData = {
     labels: ['Ocupadas', 'Libres'],
     datasets: [
@@ -56,22 +69,22 @@ export class DashboardComponent {
     ]
   };
 
-  jugadoresActivos = [
-    { nombre: 'Luis Ramírez', rentas: 25 },
-    { nombre: 'Eric Ramírez', rentas: 20 },
-    { nombre: 'Ana Gómez', rentas: 15 }
-  ];
+ jugadoresActivos = [
+  { nombre: 'Luis Ramírez', rentas: 25, imagen: '../../assets/images/iconuser.png' },
+  { nombre: 'Eric Ramírez', rentas: 20, imagen: '../../assets/images/iconuser.png' },
+  { nombre: 'Ana Gómez', rentas: 15, imagen: '../../assets/images/iconuser.png' }
+];
 
 
   ranking = [
-    { posicion:1, nombre:  'Luis Ramírez' },
-    { posicion:2 , nombre:'Eric Ramírez' },
+    { posicion: 1, nombre: 'Luis Ramírez' },
+    { posicion: 2, nombre: 'Eric Ramírez' },
     { posicion: 3, nombre: 'Ana Gómez' }
   ];
 
   torneos = [
-  { nombre: 'Torneo Verano 2025', fecha: '2025-07-15', participantes: 20 },
-  { nombre: 'Copa Invierno 2025', fecha: '2025-12-10', participantes: 32 },
-  { nombre: 'Open Primavera 2026', fecha: '2026-04-05', participantes: 16 }
-];
+    { nombre: 'Torneo Verano 2025', fecha: '2025-07-15', participantes: 20 },
+    { nombre: 'Copa Invierno 2025', fecha: '2025-12-10', participantes: 32 },
+    { nombre: 'Open Primavera 2026', fecha: '2026-04-05', participantes: 16 }
+  ];
 }
