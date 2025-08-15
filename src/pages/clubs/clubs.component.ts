@@ -20,7 +20,8 @@ import { CommonModule } from '@angular/common';
     MatButtonModule,
     CommonModule,
     MatExpansionModule,
-    MatDialogModule
+    MatDialogModule,
+    
   ],
   standalone: true
 })

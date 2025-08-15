@@ -1,7 +1,7 @@
-.clubs-container {
+/* .clubs-container {
   padding: 16px;
   background: #f9f9f9;
-}
+} */
 
 .header {
   display: flex;
@@ -15,11 +15,11 @@
   color: white;
 }
 
-.clubs-list {
+/* .clubs-list {
   background: white;
   border: 1px solid #ddd;
   border-radius: 6px;
-}
+} */
 
 .club-details {
   display: grid;

@@ -1,34 +1,36 @@
-<h2 mat-dialog-title>Registrar Club</h2>
+<h2 mat-dialog-title>Registrar Cancha</h2>
 
 <form mat-dialog-content class="form-container">
+
+  <!-- Fila 1 -->
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
       <input matInput placeholder="Nombre...">
     </mat-form-field>
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput type="email" placeholder="Correo...">
+      <input matInput placeholder="Patrocinador...">
     </mat-form-field>
   </div>
 
+  <!-- Fila 2 -->
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Telefono...">
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="RFC...">
-    </mat-form-field>
-  </div>
-
-  <div class="row">
-    <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Sitio web...">
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="flex-1">
-      <mat-select placeholder="Ciudad">
-        <mat-option>Ciudad 1</mat-option>
-        <mat-option>Ciudad 2</mat-option>
+      <mat-select placeholder="Club">
+        <mat-option>Club 1</mat-option>
+        <mat-option>Club 2</mat-option>
       </mat-select>
     </mat-form-field>
+
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-select placeholder="Tipo...">
+        <mat-option>Privado</mat-option>
+        <mat-option>Público</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Fila 3 -->
+  <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
       <mat-select placeholder="Estado">
         <mat-option>Estado 1</mat-option>
@@ -37,11 +39,8 @@
     </mat-form-field>
   </div>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <input matInput placeholder="Direccion...">
-  </mat-form-field>
-
-  <div class="row logo-row">
+  <!-- Fila 4: Botón Agregar foto + Vista previa -->
+    <div class="row logo-row">
     <mat-form-field appearance="outline" class="flex-1">
       <input matInput placeholder="Tipo...">
     </mat-form-field>
@@ -59,8 +58,10 @@
       <img [src]="logoPreview" alt="Logo Preview">
     </div>
   </div>
+
 </form>
 
+<!-- Botones de acción -->
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>CANCELAR</button>
   <button mat-raised-button color="primary">GUARDAR</button>
