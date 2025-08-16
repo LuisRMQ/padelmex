@@ -1,0 +1,30 @@
+.canchas-container {
+  margin: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.estado-select {
+  width: 300px;
+}
+
+.calendar-card {
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+#calendar {
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+}

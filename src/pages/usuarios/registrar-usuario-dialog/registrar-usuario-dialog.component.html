@@ -1,0 +1,104 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Registrar Club</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="form-grid">
+      <!-- Primera fila -->
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput placeholder="Nombre...">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Apellidos</mat-label>
+        <input matInput placeholder="Apellidos...">
+      </mat-form-field>
+
+      <!-- Segunda fila -->
+      <mat-form-field appearance="outline">
+        <mat-label>Correo</mat-label>
+        <input matInput placeholder="Correo...">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Género</mat-label>
+        <mat-select>
+          <mat-option value="masculino">Masculino</mat-option>
+          <mat-option value="femenino">Femenino</mat-option>
+          <mat-option value="otro">Otro</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Mano preferida</mat-label>
+        <mat-select>
+          <mat-option value="derecha">Derecha</mat-option>
+          <mat-option value="izquierda">Izquierda</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Tercera fila -->
+      <mat-form-field appearance="outline">
+        <mat-label>Club</mat-label>
+        <mat-select>
+          <mat-option value="club1">Club 1</mat-option>
+          <mat-option value="club2">Club 2</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-select>
+          <mat-option value="junior">Junior</mat-option>
+          <mat-option value="senior">Senior</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Rol</mat-label>
+        <mat-select>
+          <mat-option value="jugador">Jugador</mat-option>
+          <mat-option value="entrenador">Entrenador</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Cuarta fila -->
+      <mat-form-field appearance="outline">
+        <mat-label>Victorias</mat-label>
+        <input matInput placeholder="Victorias">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Torneos</mat-label>
+        <input matInput placeholder="Torneos">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Puntos</mat-label>
+        <input matInput placeholder="Puntos">
+      </mat-form-field>
+    </div>
+
+    <!-- Sección de imágenes -->
+    <div class="imagenes-section">
+      <div class="upload-card">
+        <button mat-raised-button color="primary">AGREGAR FOTO</button>
+        <p>FORMATOS: JPG, PNG - TAMAÑO MÁXIMO: 5 MB<br>RESOLUCIÓN MÍNIMA: 500x500 PX</p>
+        <mat-card class="preview-card"></mat-card>
+      </div>
+
+      <div class="upload-card">
+        <button mat-raised-button color="primary">AGREGAR INE</button>
+        <p>FORMATOS: JPG, PNG - TAMAÑO MÁXIMO: 5 MB<br>RESOLUCIÓN MÍNIMA: 500x500 PX</p>
+        <mat-card class="preview-card"></mat-card>
+      </div>
+    </div>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button mat-raised-button color="primary">GUARDAR</button>
+    <button mat-button color="warn">CANCELAR</button>
+  </mat-card-actions>
+</mat-card>

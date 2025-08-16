@@ -1,0 +1,26 @@
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.imagenes-section {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.upload-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-card {
+  width: 200px;
+  height: 150px;
+  margin-top: 10px;
+  background: #e0e0e0;
+  border-radius: 8px;
+}
