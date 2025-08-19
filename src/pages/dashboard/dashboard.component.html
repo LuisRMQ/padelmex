@@ -1,115 +1,116 @@
 <div class="dashboard-content" style="margin-top: 100px;">
 
 
- <div class="header">
+    <div class="header">
         <h2>Inicio</h2>
-       
+
     </div>
 
-    <div class="row">
-        <!-- Rentas del día -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body d-flex align-items-center">
-                    <img src="../../assets/images/padel.jpg" alt="Rentas"
-                        style="width: 80px; height: 80px; margin-right: 15px; object-fit: contain;">
-                    <div>
-                        <h5>Rentas del día</h5>
-                        <h2>14</h2>
-                        <small>-9.52% vs ayer</small>
-                    </div>
+    <div class="dashboard-cards-row">
+        <!-- Rentas del día Card -->
+        <div class="dashboard-card">
+            <div class="card-title">Rentas del día</div>
+            <div class="card-row">
+                <div class="card-icon green">
+                    <span class="material-icons">search</span>
+                </div>
+                <div class="card-main">
+                    <div class="card-value">14</div>
+                    <div class="card-subtitle">Rentas del Mes: 46</div>
+                </div>
+                <div class="card-comparison">
+                    <span class="comparison-badge negative">▼ 2%</span>
                 </div>
             </div>
+
         </div>
 
-        <!-- Ganancias -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body d-flex align-items-center">
-                    <img src="../../assets/images/dol.png" alt="Ganancias"
-                        style="width: 80px; height: 80px; margin-right: 15px; object-fit: contain;">
-                    <div>
-                        <h5>Ganancias del día</h5>
-                        <h2>$22,500.00</h2>
-                        <small>Comparado con $24,450 ayer</small>
-                    </div>
+        <!-- Ganancias del día Card -->
+        <div class="dashboard-card">
+            <div class="card-title">Ganancias del día</div>
+            <div class="card-row">
+                <div class="card-icon blue">
+                    <span class="material-icons">attach_money</span>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card mt-3" style="width: 100%; max-width: 1200px; height: 300px; margin: auto;">
-        <canvas baseChart [data]="ocupacionData" [type]="'pie'" [options]="chartOptions"
-            style="width: 100%; height: 100%;">
-        </canvas>
-    </div>
-
-    <!-- Tablas -->
-    <div class="row mt-3">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5>Jugadores más activos</h5>
-                    <table class="table">
-                        <tr *ngFor="let jugador of jugadoresActivos">
-                            <td style="display: flex; align-items: center;">
-                                <img [src]="jugador.imagen" alt="{{ jugador.nombre }}"
-                                    style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                                {{ jugador.nombre }}
-                            </td>
-                            <td>
-                                <span class="badge bg-success">{{ jugador.rentas }}</span>
-                            </td>
-                        </tr>
-                    </table>
+                <div class="card-main">
+                    <div class="card-value">$22,500.00</div>
+                    <div class="card-subtitle">Ganancias mensuales: $54,235.00</div>
                 </div>
-            </div>
-        </div>
-
-
-
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5>Ranking Actual</h5>
-                    <table class="table">
-                        <tr *ngFor="let jugador of ranking">
-                            <td>{{ jugador.posicion }}</td>
-                            <td>{{ jugador.nombre }}</td>
-                        </tr>
-                    </table>
+                <div class="card-comparison">
+                    <span class="comparison-badge positive">▲ 10%</span>
                 </div>
             </div>
         </div>
     </div>
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5>Torneos</h5>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Fecha</th>
-                        <th>Participantes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let torneo of torneos">
-                        <td>{{ torneo.nombre }}</td>
-                        <td>{{ torneo.fecha }}</td>
-                        <td>{{ torneo.participantes }}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+    <div class="dashboard-graph-card">
+        <div class="graph-title">Ocupación de canchas actual</div>
+        <div class="graph-divider"></div>
+        <div class="graph-content">
+            <canvas baseChart [data]="ocupacionData" [type]="'pie'" [options]="chartOptions"></canvas>
         </div>
     </div>
 
-    <!-- Gráfico de ganancias -->
-    <div class="card mt-3">
-        <div class="card-body">
-            <h5>Ganancias</h5>
-            <canvas baseChart [data]="gananciasData" [type]="'bar'">
-            </canvas>
+    <div class="dashboard-row">
+        <div class="dashboard-card jugadores-card">
+            <div class="card-title">Jugadores más activos</div>
+            <div class="jugadores-list">
+                <div class="jugador-row" *ngFor="let jugador of jugadoresActivos">
+                    <span class="material-icons jugador-icon">person</span>
+                    <span class="jugador-nombre">{{ jugador.nombre }}</span>
+                    <span class="jugador-rentas">{{ jugador.rentas }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-card ranking-card">
+            <div class="card-title">Ranking Actual</div>
+            <div class="ranking-list">
+                <div class="ranking-row" *ngFor="let jugador of ranking">
+                    <span class="ranking-pos">{{ jugador.posicion }}</span>
+                    <span class="ranking-nombre">{{ jugador.nombre }}</span>
+                    <span class="ranking-movimiento {{jugador.tipo}}">
+                        {{ jugador.tipo === 'positive' ? '▲' : jugador.tipo === 'negative' ? '▼' : '■' }} {{
+                        jugador.movimiento }}
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+<div class="dashboard-card torneos-card">
+    <div class="card-title">Torneos</div>
+    <table class="torneos-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th>Participantes Registrados</th>
+                <th>Lugares Disponibles</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let torneo of torneos">
+                <td>{{ torneo.nombre }}</td>
+                <td>{{ torneo.fecha }}</td>
+                <td>{{ torneo.participantes }}</td>
+                <td>{{ torneo.lugares }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Gráfico de ganancias -->
+<div class="dashboard-graph-card">
+  <div class="graph-title">Ganancias</div>
+  <div class="graph-divider"></div>
+  <div class="graph-content">
+    <canvas baseChart
+      [datasets]="gananciasData"
+      [labels]="gananciasLabels"
+      [options]="gananciasOptions"
+      [legend]="true"
+      [type]="'line'">
+    </canvas>
+  </div>
 </div>
