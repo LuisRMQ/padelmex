@@ -1,0 +1,121 @@
+/* General */
+.usuarios-container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-field {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.tabla-container {
+  overflow-x: auto;
+}
+
+.nombre-link {
+  color: #1976d2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nombre-link:hover {
+  text-decoration: underline;
+}
+
+/* ----------- VISTA DETALLE ----------- */
+.titulo-seccion {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.perfil-card {
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.perfil-grid {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.foto-perfil {
+  text-align: center;
+  max-width: 220px;
+}
+
+.foto-perfil img {
+  width: 200px;
+  height: 200px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.btn-foto {
+  display: block;
+  margin: 10px auto;
+}
+
+.nota-foto {
+  font-size: 12px;
+  color: gray;
+  display: block;
+  margin-top: 5px;
+}
+
+.datos-perfil {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px 30px;
+  flex: 1;
+}
+
+.dato strong {
+  color: #444;
+}
+
+.movimientos-section {
+  margin-top: 30px;
+}
+
+.tabla-movimientos {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.tabla-movimientos th {
+  font-weight: 600;
+}
+
+.renta {
+  color: green;
+  font-weight: 600;
+}
+
+.compra {
+  color: blue;
+  font-weight: 600;
+}
+
+/* 📱 Responsive */
+@media (max-width: 900px) {
+  .perfil-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .datos-perfil {
+    grid-template-columns: 1fr;
+    width: 100%;
+    text-align: center;
+  }
+}

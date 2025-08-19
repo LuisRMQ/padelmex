@@ -90,23 +90,23 @@ export class UsuariosComponent implements OnInit {
   }
 
   editarUsuario(usuario: any) {
-  this.editando = true;
-  this.formUsuario = { ...usuario }; // copia de datos para edición
-}
+    this.editando = true;
+    this.formUsuario = { ...usuario }; // copia de datos para edición
+  }
 
-guardarCambios() {
-  // Aquí llamas a tu servicio para actualizar
-  this.selectedUsuario = { ...this.formUsuario };
-  this.editando = false;
-}
+  guardarCambios() {
+    // Aquí llamas a tu servicio para actualizar
+    this.selectedUsuario = { ...this.formUsuario };
+    this.editando = false;
+  }
 
-cancelarEdicion() {
-  this.editando = false;
-  this.formUsuario = { ...this.selectedUsuario }; // restaurar datos originales
-}
+  cancelarEdicion() {
+    this.editando = false;
+    this.formUsuario = { ...this.selectedUsuario }; // restaurar datos originales
+  }
 
 
-constructor(private dialog: MatDialog) { }
+  constructor(private dialog: MatDialog) { }
 
   abrirModalRegistrarUsuario() {
     this.dialog.open(RegistrarUsuarioDialogComponent, {
@@ -116,6 +116,6 @@ constructor(private dialog: MatDialog) { }
       maxHeight: '70vh',
       panelClass: 'custom-dialog'
     });
-}
+  }
 
 }
