@@ -1,1 +1,67 @@
-<H2  style="margin-top: 100px;">Reservaciones Vista</H2>
+<div class="reservaciones-container"  style="margin-top: 100px;">
+  <h2>Reservaciones</h2>
+
+  <!-- Barra de búsqueda -->
+  <mat-form-field appearance="outline" class="search-bar">
+    <mat-label>Buscar...</mat-label>
+    <input matInput (keyup)="applyFilter($event)" placeholder="Buscar..." />
+    <button mat-icon-button matSuffix>
+      <mat-icon>search</mat-icon>
+    </button>
+  </mat-form-field>
+
+  <!-- Tabla de reservaciones -->
+  <div class="table-container">
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z1">
+
+      <!-- Cancha -->
+      <ng-container matColumnDef="cancha">
+        <th mat-header-cell *matHeaderCellDef> Cancha </th>
+        <td mat-cell *matCellDef="let element"> {{element.cancha}} </td>
+      </ng-container>
+
+      <!-- Estado -->
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef> Estado </th>
+        <td mat-cell *matCellDef="let element"> {{element.estado}} </td>
+      </ng-container>
+
+      <!-- Hora Inicio -->
+      <ng-container matColumnDef="horaInicio">
+        <th mat-header-cell *matHeaderCellDef> Hora inicio </th>
+        <td mat-cell *matCellDef="let element"> {{element.horaInicio}} </td>
+      </ng-container>
+
+      <!-- Hora Final -->
+      <ng-container matColumnDef="horaFinal">
+        <th mat-header-cell *matHeaderCellDef> Hora final </th>
+        <td mat-cell *matCellDef="let element"> {{element.horaFinal}} </td>
+      </ng-container>
+
+      <!-- Costo -->
+      <ng-container matColumnDef="costo">
+        <th mat-header-cell *matHeaderCellDef> Costo </th>
+        <td mat-cell *matCellDef="let element"> {{element.costo | currency}} </td>
+      </ng-container>
+
+      <!-- Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <button mat-icon-button color="warn" (click)="eliminar(element)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <!-- Header & Rows -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+  <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]"
+                 showFirstLastButtons>
+  </mat-paginator>
+</div>

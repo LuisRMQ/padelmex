@@ -10,6 +10,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { routes } from './app.routes';
 
+import { FullCalendarModule } from '@fullcalendar/angular'; 
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
@@ -22,7 +26,8 @@ export const appConfig: ApplicationConfig = {
       MatFormFieldModule,
       MatInputModule,
       MatIconModule,
-      MatButtonModule     
+      MatButtonModule,
+      FullCalendarModule,    
     )
   ]
 };

@@ -1,29 +1,26 @@
-<div class="canchas-container" style="margin-top: 100px;">
-    <!-- Encabezado -->
-    <div class="header">
-        <h2>Calendario</h2>
+<div class="canchas-container" style="margin-top: 100px;"  >
+  <!-- Encabezado -->
+    <h2>Canchas</h2>
 
-        <!-- Filtro -->
-
-    </div>
+    <!-- Filtro de estado -->
     <mat-form-field appearance="outline" class="estado-select">
-        <mat-label>Selecciona Estado...</mat-label>
-        <mat-select>
-            <mat-option value="cdmx">Ciudad de México</mat-option>
-            <mat-option value="jal">Jalisco</mat-option>
-            <mat-option value="nl">Nuevo León</mat-option>
-        </mat-select>
+      <mat-label>Selecciona Estado...</mat-label>
+      <mat-select>
+        <mat-option value="cdmx">Ciudad de México</mat-option>
+        <mat-option value="jal">Jalisco</mat-option>
+        <mat-option value="nl">Nuevo León</mat-option>
+      </mat-select>
     </mat-form-field>
-    <!-- Calendario -->
-    <mat-card class="calendar-card">
-        <div class="calendar-header">
-            <h3>Agosto - 2025</h3>
-        </div>
 
-        <!-- Aquí va el calendario -->
-        <div class="calendar-body">
-            <!-- Placeholder para FullCalendar o librería que uses -->
-            <div id="calendar"></div>
-        </div>
-    </mat-card>
+    <!-- Título Mes/Año -->
+    <div class="mes-actual">
+      <h3>{{ mesActual }} - {{ anioActual }}</h3>
+    </div>
+
+  <!-- Calendario -->
+  <mat-card class="calendar-card">
+    <div class="calendar-body">
+      <full-calendar [options]="calendarOptions"></full-calendar>
+    </div>
+  </mat-card>
 </div>

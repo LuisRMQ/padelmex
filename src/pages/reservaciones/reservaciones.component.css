@@ -1,0 +1,16 @@
+.reservaciones-container {
+  padding: 20px;
+}
+
+.search-bar {
+  width: 300px;
+  margin-bottom: 20px;
+}
+
+.table-container {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+}
