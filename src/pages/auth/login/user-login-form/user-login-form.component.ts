@@ -29,7 +29,9 @@ export class UserLoginFormComponent {
   constructor(private fb: FormBuilder) {
     this.userLoginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
+      rfc: ['', Validators.required] 
+
     });
   }
 
@@ -48,4 +50,7 @@ export class UserLoginFormComponent {
       control?.markAsTouched();
     });
   }
+
+
+   
 }

@@ -1,55 +1,50 @@
 <h2 mat-dialog-title>Registrar Club</h2>
 
-<form mat-dialog-content class="form-container">
+<form mat-dialog-content class="form-container" [formGroup]="clubForm">
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Nombre...">
+      <input matInput placeholder="Nombre..." formControlName="name">
     </mat-form-field>
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput type="email" placeholder="Correo...">
+      <input matInput type="email" placeholder="Correo..." formControlName="email">
     </mat-form-field>
   </div>
 
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Telefono...">
+      <input matInput placeholder="Telefono..." formControlName="phone">
     </mat-form-field>
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="RFC...">
+      <input matInput placeholder="RFC..." formControlName="rfc">
     </mat-form-field>
   </div>
 
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Sitio web...">
+      <input matInput placeholder="Sitio web..." formControlName="web_site">
     </mat-form-field>
     <mat-form-field appearance="outline" class="flex-1">
-      <mat-select placeholder="Ciudad">
-        <mat-option>Ciudad 1</mat-option>
-        <mat-option>Ciudad 2</mat-option>
+      <mat-select placeholder="Ciudad" formControlName="city_id">
+        <mat-option [value]="1">Ciudad 1</mat-option>
+        <mat-option [value]="2">Ciudad 2</mat-option>
       </mat-select>
     </mat-form-field>
     <mat-form-field appearance="outline" class="flex-1">
-      <mat-select placeholder="Estado">
-        <mat-option>Estado 1</mat-option>
-        <mat-option>Estado 2</mat-option>
+      <mat-select placeholder="Tipo" formControlName="type">
+        <mat-option value="public">Público</mat-option>
+        <mat-option value="private">Privado</mat-option>
       </mat-select>
     </mat-form-field>
   </div>
 
   <mat-form-field appearance="outline" class="full-width">
-    <input matInput placeholder="Direccion...">
+    <input matInput placeholder="Dirección..." formControlName="address">
   </mat-form-field>
 
   <div class="row logo-row">
-    <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Tipo...">
-    </mat-form-field>
-
     <div class="logo-section">
       <button mat-raised-button class="btn-logo" type="button" (click)="fileInput.click()">AGREGAR LOGO</button>
       <input type="file" accept="image/png, image/jpeg" hidden #fileInput (change)="onFileSelected($event)">
-
       <small>
         FORMATOS: JPG, PNG - TAMAÑO MÁXIMO: 5 MB - RESOLUCIÓN MÍNIMA: 500×500 PX
       </small>
@@ -63,5 +58,5 @@
 
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>CANCELAR</button>
-  <button mat-raised-button color="primary">GUARDAR</button>
+  <button mat-raised-button color="primary" (click)="guardarClub()">GUARDAR</button>
 </mat-dialog-actions>

@@ -6,6 +6,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { ClubsService } from '../../../app/services/clubs.service';
+
+
 @Component({
   selector: 'app-RegistrarClub',
   templateUrl: './registrar-club-dialog.component.html',
@@ -17,13 +22,32 @@ import { MatSelectModule } from '@angular/material/select';
     MatButtonModule,
     MatExpansionModule,
     MatDialogModule,
-    MatSelectModule
+    MatSelectModule,
+    ReactiveFormsModule
     
   ],
 })
-export class RegistrarClubDialogComponent  { 
+export class RegistrarClubDialogComponent {
+  clubForm: FormGroup;
+  logoFile: File | null = null;
+  logoPreview: string = '../../assets/images/placeholder.png';
 
-logoPreview: string = '../../assets/images/placeholder.png';
+  constructor(
+    private fb: FormBuilder,
+    private clubsService: ClubsService
+  ) {
+    this.clubForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', Validators.required],
+      rfc: ['', Validators.required],
+      web_site: [''],
+      city_id: ['', Validators.required],
+      address: ['', Validators.required],
+      type: ['', Validators.required],
+      status: [true]
+    });
+  }
 
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -34,6 +58,8 @@ logoPreview: string = '../../assets/images/placeholder.png';
       return;
     }
 
+    this.logoFile = file;
+
     const reader = new FileReader();
     reader.onload = e => {
       this.logoPreview = e.target?.result as string;
@@ -41,5 +67,30 @@ logoPreview: string = '../../assets/images/placeholder.png';
     reader.readAsDataURL(file);
   }
 
+  guardarClub() {
+    if (this.clubForm.invalid) {
+      alert('Por favor completa todos los campos requeridos');
+      return;
+    }
 
+    const formData = new FormData();
+    Object.entries(this.clubForm.value).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+
+    if (this.logoFile) {
+      formData.append('logo', this.logoFile);
+    }
+
+    this.clubsService.createClub(formData).subscribe({
+      next: (res) => {
+        console.log('Club creado:', res);
+        alert('Club registrado correctamente');
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Error al registrar club');
+      }
+    });
+  }
 }

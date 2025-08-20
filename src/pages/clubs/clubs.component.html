@@ -1,63 +1,41 @@
-<div class="clubs-container " style="margin-top: 100px;">
-      
-    <div class="header">
-        <h2>Clubs</h2>
-        <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarClub()">
-            REGISTRAR CLUB
-        </button>
-    </div>
+<div class="clubs-container" style="margin-top: 100px;">
 
-    <mat-accordion class="clubs-list">
-        <mat-expansion-panel expanded>
-            <mat-expansion-panel-header>
-                <mat-panel-title>Club Pádel La Raqueta</mat-panel-title>
-            </mat-expansion-panel-header>
-            <div class="club-details">
-                <div><strong>Nombre:</strong> Club Pádel La Raqueta</div>
-                <div><strong>Correo:</strong> contacto&#64;padelitelaguna.mx</div>
-                <div><strong>Ciudad/Estado:</strong> Club Pádel La Raqueta</div>
-                <div><strong>Tipo:</strong> Privado</div>
-                <div><strong>Teléfono:</strong> 871-456-7890</div>
-                <div><strong>RFC:</strong> PEL920315KL4</div>
-                <div><strong>Sitio Web:</strong> www.padelitelaguna.mx</div>
-                <div><strong>Dirección:</strong> Av. del Deporte #245, Col. Centro</div>
-            </div>
-        </mat-expansion-panel>
+  <div class="header">
+    <h2>Clubs</h2>
+    <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarClub()">
+      REGISTRAR CLUB
+    </button>
+  </div>
 
-        <mat-expansion-panel>
-            <mat-expansion-panel-header>
-                <mat-panel-title>Smash Pádel Center</mat-panel-title>
-            </mat-expansion-panel-header>
-        </mat-expansion-panel>
+  <mat-accordion class="clubs-list">
+    <mat-expansion-panel *ngFor="let club of clubs" [expanded]="false">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ club.name }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-        <mat-expansion-panel>
-            <mat-expansion-panel-header>
-                <mat-panel-title>Pádel Elite Laguna</mat-panel-title>
-            </mat-expansion-panel-header>
-        </mat-expansion-panel>
+      <div class="club-details">
+        <div><strong>Nombre:</strong> {{ club.name }}</div>
+        <div><strong>Correo:</strong> {{ club.email }}</div>
+        <div><strong>Teléfono:</strong> {{ club.phone }}</div>
+        <div><strong>RFC:</strong> {{ club.rfc }}</div>
+        <div><strong>Tipo:</strong> {{ club.type | titlecase }}</div>
+        <div><strong>Sitio Web:</strong> <a [href]="club.web_site" target="_blank">{{ club.web_site }}</a></div>
+        <div><strong>Dirección:</strong> {{ club.address }}</div>
+        <div><strong>Ciudad ID:</strong> {{ club.city_id }}</div>
+        <div><strong>Estatus:</strong> 
+          <span [ngClass]="club.status ? 'activo' : 'inactivo'">
+            {{ club.status ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
 
-        <mat-expansion-panel>
-            <mat-expansion-panel-header>
-                <mat-panel-title>Drive & Volley Club</mat-panel-title>
-            </mat-expansion-panel-header>
-        </mat-expansion-panel>
-
-        <mat-expansion-panel>
-            <mat-expansion-panel-header>
-                <mat-panel-title>TopSpin Pádel Arena</mat-panel-title>
-            </mat-expansion-panel-header>
-        </mat-expansion-panel>
-
-        <mat-expansion-panel>
-            <mat-expansion-panel-header>
-                <mat-panel-title>Rally Pádel Club</mat-panel-title>
-            </mat-expansion-panel-header>
-        </mat-expansion-panel>
-
-        <mat-expansion-panel>
-            <mat-expansion-panel-header>
-                <mat-panel-title>Match Point Pádel</mat-panel-title>
-            </mat-expansion-panel-header>
-        </mat-expansion-panel>
-    </mat-accordion>
+        <!-- Mostrar logo si existe -->
+        <div *ngIf="club.logo">
+          <strong>Logo:</strong><br>
+          <img [src]="club.logo" alt="Logo de {{ club.name }}" width="150">
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
 </div>
