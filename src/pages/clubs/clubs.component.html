@@ -9,35 +9,95 @@
 
   <mat-accordion class="clubs-list">
     <mat-expansion-panel *ngFor="let club of clubs" [expanded]="false">
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      {{ club.name }}
-    </mat-panel-title>
-  </mat-expansion-panel-header>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ club.name }}
+          <button mat-icon-button color="primary" class="edit-btn" (click)="editarClub(club)"
+            (click)="$event.stopPropagation();">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-  <div class="club-details-row">
-    <div class="club-details-table">
-      <div class="club-details-cell"><strong>Nombre:</strong> {{ club.name }}</div>
-      <div class="club-details-cell"><strong>Correo:</strong> {{ club.email }}</div>
-      <div class="club-details-cell"><strong>Teléfono:</strong> {{ club.phone }}</div>
-      <div class="club-details-cell"><strong>RFC:</strong> {{ club.rfc }}</div>
-      <div class="club-details-cell"><strong>Tipo:</strong> {{ club.type | titlecase }}</div>
-      <div class="club-details-cell"><strong>Sitio Web:</strong> <a [href]="club.web_site" target="_blank">{{ club.web_site }}</a></div>
-      <div class="club-details-cell"><strong>Dirección:</strong> {{ club.address }}</div>
-      <div class="club-details-cell"><strong>Ciudad ID:</strong> {{ club.city_id }}</div>
-      <div class="club-details-cell"><strong>Estatus:</strong> 
-        <span [ngClass]="club.status ? 'activo' : 'inactivo'">
-          {{ club.status ? 'Activo' : 'Inactivo' }}
-        </span>
+      <div class="club-details-row">
+        <div class="club-details-table">
+          <div class="club-details-cell">
+            <strong>Nombre:</strong>
+            <span *ngIf="editandoClubId !== club.id">{{ club.name }}</span>
+            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.name" class="edit-input" />
+          </div>
+          <div class="club-details-cell">
+            <strong>Correo:</strong>
+            <span *ngIf="editandoClubId !== club.id">{{ club.email }}</span>
+            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.email" class="edit-input" />
+          </div>
+          <div class="club-details-cell">
+            <strong>Teléfono:</strong>
+            <span *ngIf="editandoClubId !== club.id">{{ club.phone }}</span>
+            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.phone" class="edit-input" />
+          </div>
+          <div class="club-details-cell">
+            <strong>RFC:</strong>
+            <span *ngIf="editandoClubId !== club.id">{{ club.rfc }}</span>
+            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.rfc" class="edit-input" />
+          </div>
+          <div class="club-details-cell">
+            <strong>Tipo:</strong>
+            <span *ngIf="editandoClubId !== club.id">{{ club.type | titlecase }}</span>
+            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.type" class="edit-input" />
+          </div>
+          <div class="club-details-cell">
+            <strong>Sitio Web:</strong>
+            <span *ngIf="editandoClubId !== club.id">
+              <a [href]="club.web_site" target="_blank">{{ club.web_site }}</a>
+            </span>
+            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.web_site" class="edit-input" />
+          </div>
+          <div class="club-details-cell">
+            <strong>Dirección:</strong>
+            <span *ngIf="editandoClubId !== club.id">{{ club.address }}</span>
+            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.address" class="edit-input" />
+          </div>
+          <div class="club-details-cell">
+            <strong>Ciudad ID:</strong>
+            <span *ngIf="editandoClubId !== club.id">{{ club.city_id }}</span>
+            <select *ngIf="editandoClubId === club.id" [(ngModel)]="club.city_id" class="edit-input">
+              <option [value]="1">Ciudad 1</option>
+              <option [value]="2">Ciudad 2</option>
+            </select>
+          </div>
+          <div class="club-details-cell">
+            <strong>Estatus:</strong>
+            <span *ngIf="editandoClubId !== club.id" [ngClass]="club.status ? 'activo' : 'inactivo'">
+              {{ club.status ? 'Activo' : 'Inactivo' }}
+            </span>
+            <select *ngIf="editandoClubId === club.id" [(ngModel)]="club.status" class="edit-input">
+              <option [value]="1">Activo</option>
+              <option [value]="0">Inactivo</option>
+            </select>
+          </div>
+          <div class="club-details-cell" *ngIf="club.logo">
+            <strong>Logo:</strong>
+            <div *ngIf="editandoClubId === club.id">
+              <input type="file" accept="image/png, image/jpeg" hidden #fileInput
+                (change)="onLogoSelected($event, club)">
+              <button mat-raised-button color="primary" class="btn-logo-edit" (click)="fileInput.click()">
+                Cambiar logo
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="club-logo" *ngIf="club.logo">
+          <img [src]="club.logo" alt="Logo de {{ club.name }}" width="120">
+        </div>
+        <button mat-icon-button color="warn" class="delete-btn" (click)="confirmarEliminarClub(club)">
+          <mat-icon>delete</mat-icon>
+        </button>
+        <div *ngIf="editandoClubId === club.id" class="edit-actions">
+          <button mat-raised-button class="btn-azul" (click)="guardarClubEditado(club)">Aceptar</button>
+          <button mat-button class="btn-cancel" (click)="cancelarEdicion(club)">Cancelar</button>
+        </div>
       </div>
-      <div class="club-details-cell" *ngIf="club.logo">
-        <strong>Logo:</strong>
-      </div>
-    </div>
-    <div class="club-logo" *ngIf="club.logo">
-      <img [src]="club.logo" alt="Logo de {{ club.name }}" width="120">
-    </div>
-  </div>
-</mat-expansion-panel>
+    </mat-expansion-panel>
   </mat-accordion>
 </div>

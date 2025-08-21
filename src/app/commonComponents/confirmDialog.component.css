@@ -1,0 +1,67 @@
+.dialog-container {
+  background: #fff;
+  border-radius: 12px;
+  min-width: 340px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  overflow: hidden;
+  padding-bottom: 18px;
+}
+
+.dialog-header {
+  background: #e0e0e0;
+  padding: 18px 24px 10px 24px;
+}
+
+.dialog-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.dialog-content {
+  padding: 18px 24px 0 24px;
+  font-size: 1rem;
+  color: #222;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 18px 24px 0 24px;
+}
+
+.btn-aceptar {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 8px 22px;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-aceptar:hover {
+  background: #115293;
+}
+
+.btn-cancelar {
+  background: #f5f5f5;
+  color: #222;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  padding: 8px 22px;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancelar:hover {
+  background: #e0e0e0;
+}

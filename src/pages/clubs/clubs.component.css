@@ -5,6 +5,15 @@
   margin-bottom: 16px;
 }
 
+.spacer {
+  flex: 1 1 auto;
+}
+
+.mat-expansion-panel-header {
+  display: flex !important;
+  align-items: center;
+}
+
 .btn-registrar {
   background-color: #28a745;
   color: white;
@@ -30,6 +39,20 @@
   justify-content: space-between;
   gap: 32px;
   padding: 16px 24px;
+  position: relative;
+  padding-bottom: 56px;
+}
+
+.delete-btn {
+  position: absolute;
+  right: 16px;
+  bottom: 8px;
+  z-index: 2;
+}
+
+.edit-btn {
+  margin-left: 12px;
+  vertical-align: middle;
 }
 
 .club-details-table {
@@ -76,4 +99,47 @@
 .btn-registrar.mat-raised-button {
   background-color: #28a745 !important;
   color: #fff !important;
+}
+
+.edit-input {
+  width: 220px;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  margin-left: 8px;
+  box-sizing: border-box;
+}
+
+.edit-actions {
+  position: absolute;
+  left: 24px;
+  bottom: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.btn-azul {
+  background-color: #1976d2 !important; /* Azul Material */
+  color: #fff !important;
+  border-radius: 4px;
+}
+
+.btn-cancel {
+  background-color: transparent !important;
+  color: #1976d2 !important;
+  border-radius: 4px;
+}
+
+.btn-logo-edit {
+  background-color: #43a047 !important; /* Verde Material */
+  color: #fff !important;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 2px 12px;
+  min-width: 0;
+  height: 32px;
+  line-height: 1.2;
 }
