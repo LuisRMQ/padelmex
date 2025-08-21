@@ -1,52 +1,69 @@
 <h2 mat-dialog-title>Registrar Cancha</h2>
 
-<form mat-dialog-content class="form-container">
+<form mat-dialog-content class="form-container" [formGroup]="courtForm" (ngSubmit)="onSubmit()">
 
   <!-- Fila 1 -->
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Nombre...">
+      <input matInput placeholder="Nombre..." formControlName="name">
+      <mat-error *ngIf="courtForm.get('name')?.hasError('required')">
+        Nombre es requerido
+      </mat-error>
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Patrocinador...">
+      <input matInput placeholder="Patrocinador..." formControlName="sponsor">
+      <mat-error *ngIf="courtForm.get('sponsor')?.hasError('required')">
+        Patrocinador es requerido
+      </mat-error>
     </mat-form-field>
   </div>
 
   <!-- Fila 2 -->
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
-      <mat-select placeholder="Club">
-        <mat-option>Club 1</mat-option>
-        <mat-option>Club 2</mat-option>
+      <mat-select placeholder="Club" formControlName="club_id">
+        <mat-option *ngFor="let club of clubs" [value]="club.id">
+          {{ club.name }}
+        </mat-option>
       </mat-select>
+      <mat-error *ngIf="courtForm.get('club_id')?.hasError('required')">
+        Club es requerido
+      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="flex-1">
-      <mat-select placeholder="Tipo...">
-        <mat-option>Privado</mat-option>
-        <mat-option>Público</mat-option>
+      <mat-select placeholder="Tipo..." formControlName="type">
+        <mat-option value="Privado">Privado</mat-option>
+        <mat-option value="Público">Público</mat-option>
+        <mat-option value="Cubierto">Cubierto</mat-option>
+        <mat-option value="Descubierto">Descubierto</mat-option>
       </mat-select>
+      <mat-error *ngIf="courtForm.get('type')?.hasError('required')">
+        Tipo es requerido
+      </mat-error>
     </mat-form-field>
   </div>
 
   <!-- Fila 3 -->
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
-      <mat-select placeholder="Estado">
-        <mat-option>Estado 1</mat-option>
-        <mat-option>Estado 2</mat-option>
+      <mat-select placeholder="Estado" formControlName="availability">
+        <mat-option value="1">Disponible</mat-option>
+        <mat-option value="0">No disponible</mat-option>
       </mat-select>
+      <mat-error *ngIf="courtForm.get('availability')?.hasError('required')">
+        Estado es requerido
+      </mat-error>
     </mat-form-field>
   </div>
 
   <!-- Fila 4: Botón Agregar foto + Vista previa -->
-    <div class="row logo-row">
-    <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Tipo...">
-    </mat-form-field>
-
-    <div class="logo-section">
-      <button mat-raised-button class="btn-logo" type="button" (click)="fileInput.click()">AGREGAR LOGO</button>
+  <div class="row logo-row">
+    <div class="logo-section flex-1">
+      <button mat-raised-button class="btn-logo" type="button" (click)="fileInput.click()">
+        AGREGAR FOTO
+      </button>
       <input type="file" accept="image/png, image/jpeg" hidden #fileInput (change)="onFileSelected($event)">
 
       <small>
@@ -55,7 +72,7 @@
     </div>
 
     <div class="preview-image">
-      <img [src]="logoPreview" alt="Logo Preview">
+      <img [src]="logoPreview" alt="Vista previa">
     </div>
   </div>
 
@@ -63,6 +80,8 @@
 
 <!-- Botones de acción -->
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCELAR</button>
-  <button mat-raised-button color="primary">GUARDAR</button>
+  <button mat-button type="button" (click)="onCancel()" [disabled]="loading">CANCELAR</button>
+  <button mat-raised-button color="primary" type="submit" (click)="onSubmit()" [disabled]="loading">
+    {{ loading ? 'GUARDANDO...' : 'GUARDAR' }}
+  </button>
 </mat-dialog-actions>

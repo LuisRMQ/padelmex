@@ -3,18 +3,41 @@
   <!-- Botón registrar cancha -->
   <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h2>Canchas</h2>
-    <button mat-raised-button color="primary"  class="btn-registrar"  (click)="abrirModalRegistrarCancha()" >
+    <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarCancha()">
       REGISTRAR CANCHA
     </button>
   </div>
 
+  <!-- Selector de Club -->
+  <div class="club-selector" style="margin-bottom: 20px;">
+    <mat-form-field appearance="outline" style="width: 300px;">
+      <mat-label>Seleccionar Club</mat-label>
+      <mat-select [(value)]="selectedClubId" (selectionChange)="onClubChange()">
+        <mat-option *ngFor="let club of clubs" [value]="club.id">
+          {{ club.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading" style="text-align: center; padding: 20px;">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Cargando canchas...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error" style="color: #f44336; text-align: center; padding: 20px;">
+    {{ error }}
+  </div>
+
   <mat-accordion multi="true" class="mt-3">
 
-    <!-- Cancha Norte -->
-    <mat-expansion-panel expanded="true">
+    <!-- Canchas dinámicas -->
+    <mat-expansion-panel *ngFor="let court of courts" [expanded]="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          Cancha Norte
+          {{ court.name }}
         </mat-panel-title>
       </mat-expansion-panel-header>
 
@@ -22,16 +45,17 @@
         <mat-card-content style="display: flex; align-items: flex-start; gap: 20px;">
 
           <!-- Imagen -->
-          <img mat-card-image src="../../assets/images/cancha.jpg" alt="Cancha Norte"
+          <img mat-card-image [src]="'../../assets/images/cancha.jpg'" 
+               [alt]="court.name"
                style="width: 200px; height: 150px; object-fit: cover; border-radius: 8px;">
 
           <!-- Información -->
           <div style="flex: 1;">
-            <p><strong>Nombre:</strong> Cancha Norte</p>
-            <p><strong>Patrocinador:</strong> Club Padel La Raqueta</p>
-            <p><strong>Tipo:</strong> Privado</p>
-            <p><strong>Club:</strong> Club Padel La Raqueta</p>
-            <p><strong>Estado:</strong> Coahuila</p>
+            <p><strong>Nombre:</strong> {{ court.name }}</p>
+            <p><strong>Patrocinador:</strong> {{ court.sponsor || 'Sin patrocinador' }}</p>
+            <p><strong>Tipo:</strong> {{ court.type }}</p>
+            <p><strong>Club ID:</strong> {{ court.club_id }}</p>
+            <p><strong>Estado:</strong> {{ court.availability ? 'Disponible' : 'No disponible' }}</p>
           </div>
 
           <!-- Acciones -->
@@ -48,62 +72,12 @@
       </mat-card>
     </mat-expansion-panel>
 
-    <!-- Cancha Sur -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Cancha Sur
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-
-    <!-- Cancha Este -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Cancha Este
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-
-    <!-- Cancha Oeste -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Cancha Oeste
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-
-    <!-- Cancha Sureste -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Cancha Sureste
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-
-    <!-- Cancha Noroeste -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Cancha Noroeste
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
-
-    <!-- Cancha Infantil -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Cancha Infantil
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-    </mat-expansion-panel>
+    <!-- Mensaje si no hay canchas -->
+    <div *ngIf="courts.length === 0 && !loading && !error" 
+         style="text-align: center; padding: 20px; color: #666;">
+      No hay canchas disponibles para este club.
+    </div>
 
   </mat-accordion>
 
-  <!-- Mensajes de error y éxito -->
-  
 </div>
