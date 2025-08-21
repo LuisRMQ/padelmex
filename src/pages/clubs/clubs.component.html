@@ -9,33 +9,35 @@
 
   <mat-accordion class="clubs-list">
     <mat-expansion-panel *ngFor="let club of clubs" [expanded]="false">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          {{ club.name }}
-        </mat-panel-title>
-      </mat-expansion-panel-header>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      {{ club.name }}
+    </mat-panel-title>
+  </mat-expansion-panel-header>
 
-      <div class="club-details">
-        <div><strong>Nombre:</strong> {{ club.name }}</div>
-        <div><strong>Correo:</strong> {{ club.email }}</div>
-        <div><strong>Teléfono:</strong> {{ club.phone }}</div>
-        <div><strong>RFC:</strong> {{ club.rfc }}</div>
-        <div><strong>Tipo:</strong> {{ club.type | titlecase }}</div>
-        <div><strong>Sitio Web:</strong> <a [href]="club.web_site" target="_blank">{{ club.web_site }}</a></div>
-        <div><strong>Dirección:</strong> {{ club.address }}</div>
-        <div><strong>Ciudad ID:</strong> {{ club.city_id }}</div>
-        <div><strong>Estatus:</strong> 
-          <span [ngClass]="club.status ? 'activo' : 'inactivo'">
-            {{ club.status ? 'Activo' : 'Inactivo' }}
-          </span>
-        </div>
-
-        <!-- Mostrar logo si existe -->
-        <div *ngIf="club.logo">
-          <strong>Logo:</strong><br>
-          <img [src]="club.logo" alt="Logo de {{ club.name }}" width="150">
-        </div>
+  <div class="club-details-row">
+    <div class="club-details-table">
+      <div class="club-details-cell"><strong>Nombre:</strong> {{ club.name }}</div>
+      <div class="club-details-cell"><strong>Correo:</strong> {{ club.email }}</div>
+      <div class="club-details-cell"><strong>Teléfono:</strong> {{ club.phone }}</div>
+      <div class="club-details-cell"><strong>RFC:</strong> {{ club.rfc }}</div>
+      <div class="club-details-cell"><strong>Tipo:</strong> {{ club.type | titlecase }}</div>
+      <div class="club-details-cell"><strong>Sitio Web:</strong> <a [href]="club.web_site" target="_blank">{{ club.web_site }}</a></div>
+      <div class="club-details-cell"><strong>Dirección:</strong> {{ club.address }}</div>
+      <div class="club-details-cell"><strong>Ciudad ID:</strong> {{ club.city_id }}</div>
+      <div class="club-details-cell"><strong>Estatus:</strong> 
+        <span [ngClass]="club.status ? 'activo' : 'inactivo'">
+          {{ club.status ? 'Activo' : 'Inactivo' }}
+        </span>
       </div>
-    </mat-expansion-panel>
+      <div class="club-details-cell" *ngIf="club.logo">
+        <strong>Logo:</strong>
+      </div>
+    </div>
+    <div class="club-logo" *ngIf="club.logo">
+      <img [src]="club.logo" alt="Logo de {{ club.name }}" width="120">
+    </div>
+  </div>
+</mat-expansion-panel>
   </mat-accordion>
 </div>

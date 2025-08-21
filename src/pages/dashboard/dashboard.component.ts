@@ -27,8 +27,8 @@ Chart.register(
   CategoryScale,
   LinearScale,
   Title,
-  LineController,    // <-- agrega esto
-  LineElement,       // <-- agrega esto
+  LineController,
+  LineElement,
   PointElement
 );
 

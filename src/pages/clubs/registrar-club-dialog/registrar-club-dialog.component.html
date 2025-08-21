@@ -41,19 +41,18 @@
     <input matInput placeholder="Dirección..." formControlName="address">
   </mat-form-field>
 
-  <div class="row logo-row">
-    <div class="logo-section">
-      <button mat-raised-button class="btn-logo" type="button" (click)="fileInput.click()">AGREGAR LOGO</button>
-      <input type="file" accept="image/png, image/jpeg" hidden #fileInput (change)="onFileSelected($event)">
-      <small>
-        FORMATOS: JPG, PNG - TAMAÑO MÁXIMO: 5 MB - RESOLUCIÓN MÍNIMA: 500×500 PX
-      </small>
-    </div>
-
-    <div class="preview-image">
-      <img [src]="logoPreview" alt="Logo Preview">
-    </div>
+<div class="logo-row">
+  <div class="logo-section">
+    <button mat-raised-button class="btn-logo" type="button" (click)="fileInput.click()">AGREGAR LOGO</button>
+    <input type="file" accept="image/png, image/jpeg" hidden #fileInput (change)="onFileSelected($event)">
+    <span class="logo-info">
+      FORMATOS: JPG, PNG – TAMAÑO MÁXIMO: 5 MB – RESOLUCIÓN MÍNIMA: 500×500 PX
+    </span>
   </div>
+  <div class="preview-image">
+    <img [src]="logoPreview" alt="Logo Preview">
+  </div>
+</div>
 </form>
 
 <mat-dialog-actions align="end">

@@ -37,7 +37,7 @@ export class ClubsComponent implements OnInit {
   ngOnInit(): void {
     this.clubsService.getClubs().subscribe({
       next: (res: any) => {
-        this.clubs = res.data;   // 👈 ahora sí solo el array de clubs
+        this.clubs = res.data;
       },
       error: (err) => {
         console.error('Error al cargar clubs', err);
@@ -49,7 +49,7 @@ export class ClubsComponent implements OnInit {
     this.dialog.open(RegistrarClubDialogComponent, {
       width: '800px',
       maxWidth: '50vw',
-      height: 'auto',
+      height: '800px',
       maxHeight: '70vh',
       panelClass: 'custom-dialog'
     });
