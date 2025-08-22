@@ -1,6 +1,7 @@
 export interface UserLoginData {
   email: string;
   password: string;
+  club_rfc: string;
 }
 
 export interface ClubLoginData {

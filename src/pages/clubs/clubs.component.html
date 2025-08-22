@@ -88,7 +88,7 @@
           </div>
         </div>
         <div class="club-logo" *ngIf="club.logo">
-          <img [src]="club.logo" alt="Logo de {{ club.name }}" width="120">
+          <img [src]="'../../assets/images/padel.jpg'" alt="Logo de {{ club.name }}" width="120">
         </div>
         <button mat-icon-button color="warn" class="delete-btn" (click)="confirmarEliminarClub(club)">
           <mat-icon>delete</mat-icon>

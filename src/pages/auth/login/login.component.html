@@ -6,6 +6,8 @@
         {{ isRecoverPassword ? 'Recuperar Contraseña' : (isClub ? 'Iniciar Sesión (Club)' : 'Iniciar Sesión (Usuario)') }}
       </h2>
 
+     
+
       <!-- User Login Form Component -->
       <app-user-login-form 
         *ngIf="!isClub && !isRecoverPassword" 

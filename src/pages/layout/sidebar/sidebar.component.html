@@ -4,11 +4,13 @@
       <span class="logo-text">MexPádel</span>
     </a>
     <div class="sidebar-user-switcher user-activity-online">
-      <a href="#">
-        <span class="user-info-text">USUARIO<br>
-          <span class="user-state-info">DESCRIPCION</span>
+        <span class="user-info-text">
+          {{ currentUser?.name }} {{ currentUser?.lastname }}<br>
+          <span class="user-state-info">
+             {{ currentUser?.club_rfc }}
+          </span>
         </span>
-      </a>
+      
     </div>
   </div>
 
@@ -47,6 +49,18 @@
       <li>
         <a routerLink="/reservaciones" routerLinkActive="active">
           <i class="material-icons-two-tone">more_time</i>Reservaciones
+        </a>
+      </li>
+
+      <li class="menu-divider"></li>
+
+     <li>
+        <a (click)="logout()" class="logout-item" [class.loading]="isLoading">
+          <i class="material-icons-two-tone">logout</i>
+          <span>
+            {{ isLoading ? 'Cerrando sesión...' : 'Cerrar Sesión' }}
+          </span>
+          <span *ngIf="isLoading" class="logout-spinner"></span>
         </a>
       </li>
     </ul>

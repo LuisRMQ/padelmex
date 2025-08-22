@@ -8,12 +8,15 @@ import { UsuariosComponent } from '../pages/usuarios/usuarios.component';
 import { CalendarioComponent } from '../pages/calendario/calendario.component';
 import { ClientesComponent } from '../pages/clientes/clientes.component';
 import { ReservacionesComponent } from '../pages/reservaciones/reservaciones.component';
+import { AuthGuard } from '../../src/app/services/auth.guard'; 
+
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'clubs', component: ClubsComponent },

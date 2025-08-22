@@ -30,7 +30,7 @@ export class UserLoginFormComponent {
     this.userLoginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
-      rfc: ['', Validators.required] 
+      club_rfc: ['', Validators.required] 
 
     });
   }

@@ -21,8 +21,8 @@
 
   <mat-form-field appearance="outline" class="full-width">
     <mat-icon matPrefix>event_note</mat-icon>
-    <input matInput placeholder="RFC" type="rfc" formControlName="rfc" />
-    <mat-error *ngIf="userLoginForm.get('rfc')?.hasError('required')">
+    <input matInput placeholder="RFC" type="club_rfc" formControlName="club_rfc" />
+    <mat-error *ngIf="userLoginForm.get('club_rfc')?.hasError('required')">
       RFC del club invalido
     </mat-error>
   </mat-form-field>
