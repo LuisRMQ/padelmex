@@ -10,14 +10,15 @@ body {
     font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-.snackbar-success {
-    background: #1976d2 !important;
-    /* Azul */
-    color: #fff !important;
+.mat-mdc-snack-bar-container.snackbar-success .mdc-snackbar__surface {
+  background: #43a047 !important;
+  color: #fff !important;
 }
-
-.snackbar-error {
-    background: #e53935 !important;
-    /* Rojo */
-    color: #fff !important;
+.mat-mdc-snack-bar-container.snackbar-error .mdc-snackbar__surface {
+  background: #e53935 !important;
+  color: #fff !important;
+}
+.mat-mdc-snack-bar-container.snackbar-info .mdc-snackbar__surface {
+  background: #1976d2 !important;
+  color: #fff !important;
 }

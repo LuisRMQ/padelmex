@@ -1,13 +1,14 @@
 <div class="clubs-container" style="margin-top: 100px;">
 
-  <div class="header">
+  <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
     <h2>Clubs</h2>
     <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarClub()">
       REGISTRAR CLUB
     </button>
   </div>
+  <mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
 
-  <mat-accordion class="clubs-list">
+  <mat-accordion class="clubs-list" multi="true">
     <mat-expansion-panel *ngFor="let club of clubs" [expanded]="false">
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -77,7 +78,6 @@
             </select>
           </div>
           <div class="club-details-cell" *ngIf="club.logo">
-            <strong>Logo:</strong>
             <div *ngIf="editandoClubId === club.id">
               <input type="file" accept="image/png, image/jpeg" hidden #fileInput
                 (change)="onLogoSelected($event, club)">

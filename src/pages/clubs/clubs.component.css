@@ -122,19 +122,21 @@
 }
 
 .btn-azul {
-  background-color: #1976d2 !important; /* Azul Material */
+  background-color: #1976d2 !important;
   color: #fff !important;
   border-radius: 4px;
+  height: 32px;
 }
 
 .btn-cancel {
   background-color: transparent !important;
   color: #1976d2 !important;
   border-radius: 4px;
+  height: 32px;
 }
 
 .btn-logo-edit {
-  background-color: #43a047 !important; /* Verde Material */
+  background-color: #43a047 !important;
   color: #fff !important;
   font-size: 13px;
   border-radius: 8px;
@@ -142,4 +144,9 @@
   min-width: 0;
   height: 32px;
   line-height: 1.2;
+  margin-top: 18px;
+}
+
+.clubs-list .mat-expansion-panel {
+  margin-bottom: 18px;
 }

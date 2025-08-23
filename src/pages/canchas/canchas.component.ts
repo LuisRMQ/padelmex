@@ -11,6 +11,10 @@ import { RegistrarCanchaDialogComponent } from './registrar-cancha-dialog/regist
 import { CourtService, Court, Club, CourtsResponse } from '../../app/services/court.service';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDivider } from "@angular/material/divider";
+import { FormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
 @Component({
   selector: 'app-canchas',
   templateUrl: './canchas.component.html',
@@ -25,21 +29,27 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     CommonModule,
     MatCardModule,
     MatSelectModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDivider,
+    FormsModule
   ],
   standalone: true
 })
-export class CanchasComponent implements OnInit { 
+export class CanchasComponent implements OnInit {
 
   clubs: Club[] = [];
   selectedClubId: number | null = null;
   courts: Court[] = [];
   loading = false;
   error = '';
+  editandoCanchaID: number | null = null;
+  backupCancha: Partial<Court> | null = null;
+  logoFile: File | null = null;
 
   constructor(
     private courtService: CourtService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit() {
@@ -97,4 +107,86 @@ export class CanchasComponent implements OnInit {
       panelClass: 'custom-dialog'
     });
   }
+
+  editarCancha(court: Court) {
+    this.editandoCanchaID = court.id;
+    this.backupCancha = { ...court };
+  }
+
+  guardarCanchaEditada(court: Court) {
+    this.courtService.updateCourt(court.id, court).subscribe({
+      next: (res) => {
+        this.editandoCanchaID = null;
+        this.snackBar.open('Cancha actualizada correctamente', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-success']
+        });
+      },
+      error: (err) => {
+        this.snackBar.open('Error al actualizar la cancha', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }
+
+  cancelarEdicion(court: Court) {
+    if (this.backupCancha) {
+      Object.assign(court, this.backupCancha);
+    }
+    this.editandoCanchaID = null;
+    this.backupCancha = null;
+    this.snackBar.open('Edición cancelada', 'Cerrar', {
+      duration: 2000,
+      panelClass: ['snackbar-info']
+    });
+  }
+
+  onLogoSelected(event: Event, court: Court) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.snackBar.open('El archivo supera los 5MB', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      court.photo = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+    this.logoFile = file;
+  }
+
+  confirmarEliminarCancha(court: Court) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '700px',
+      data: {
+        title: '¿Eliminar cancha?',
+        message: `¿Estás seguro que deseas eliminar la cancha "${court.name}"?`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.courtService.deleteCourt(court.id, court.club_id).subscribe({
+          next: () => {
+            this.snackBar.open('Cancha eliminada correctamente', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            });
+            this.courts = this.courts.filter(c => c.id !== court.id);
+          },
+          error: () => {
+            this.snackBar.open('Error al eliminar la cancha', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+      }
+    });
+  }
+
 }

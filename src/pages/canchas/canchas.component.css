@@ -2,3 +2,129 @@
   background-color: #28a745;
   color: white;
 }
+
+.cancha-panel {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: none;
+}
+
+.cancha-card {
+  background: #ffffff;
+  border-radius: 18px;
+  display: flex;
+  padding: 24px 28px;
+  gap: 32px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.cancha-img img {
+  width: 180px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.cancha-info {
+  display: flex;
+  flex: 1;
+  gap: 48px;
+  position: relative;
+}
+
+.cancha-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 220px;
+  max-width: 340px;
+  flex: 1;
+}
+
+.cancha-info-col p {
+  font-size: 1rem;
+  color: #222;
+  font-family: 'Inter', 'Roboto', 'Montserrat', Arial, sans-serif;
+}
+
+.cancha-info-col strong {
+  font-weight: 600;
+  color: #222;
+}
+
+.cancha-actions {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.delete-btn {
+  background: none !important;
+  border-radius: 8px !important;
+  size: 12px !important;
+}
+
+
+.delete-btn mat-icon {
+  color: #222;
+}
+
+.edit-btn-header {
+  margin-left: 12px;
+  vertical-align: middle;
+  background: none !important;
+  border-radius: 8px !important;
+}
+
+.edit-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  margin-left: 0;
+  box-sizing: border-box;
+  display: block;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: flex-end;
+  position: static;
+}
+
+.btn-logo-edit {
+  background-color: #43a047 !important;
+  color: #fff !important;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 2px 12px;
+  min-width: 0;
+  height: 32px;
+  line-height: 1.2;
+  margin-top: 18px;
+}
+
+.btn-azul {
+  background-color: #1976d2 !important;
+  color: #fff !important;
+  border-radius: 4px;
+  height: 32px;
+}
+
+.btn-cancel {
+  background-color: transparent !important;
+  color: #1976d2 !important;
+  border-radius: 4px;
+  height: 32px;
+}

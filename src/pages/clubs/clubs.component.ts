@@ -12,6 +12,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
 import { FormsModule } from '@angular/forms';
+import { MatDivider } from "@angular/material/divider";
 
 @Component({
   selector: 'app-clubs',
@@ -25,8 +26,9 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     MatExpansionModule,
     MatDialogModule,
-    FormsModule
-  ],
+    FormsModule,
+    MatDivider
+],
   standalone: true
 })
 export class ClubsComponent implements OnInit {
@@ -81,7 +83,6 @@ export class ClubsComponent implements OnInit {
             duration: 3000,
             panelClass: ['snackbar-success']
           });
-          // Opcional: recargar la lista
           this.clubs = this.clubs.filter(c => c.id !== club.id);
         },
         error: () => {
@@ -94,10 +95,6 @@ export class ClubsComponent implements OnInit {
     }
   });
 }
-
-  // eliminarClub(club: Club) {
-  //   alert(`Eliminar club: ${club.name}`);
-  // }
 
   editarClub(club: Club) {
     this.editandoClubId = club.id;
@@ -131,15 +128,12 @@ export class ClubsComponent implements OnInit {
       return;
     }
 
-    // Opcional: mostrar preview
     const reader = new FileReader();
     reader.onload = e => {
-      club.logo = e.target?.result as string; // Si solo guardas la ruta/base64
-      // Si necesitas enviar el archivo, guarda en una variable temporal
+      club.logo = e.target?.result as string;
     };
     reader.readAsDataURL(file);
 
-    // Guarda el archivo en una variable si lo necesitas para el backend
     this.logoFile = file;
   }
 

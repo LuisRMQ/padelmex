@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 
 export interface Court {
+  id: number;
   name: string;
   sponsor: string;
   type: string;
@@ -14,7 +15,6 @@ export interface Court {
 export interface Club {
   id: number;
   name: string;
-  // otros campos que tenga tu club
 }
 
 export interface CourtsResponse {
@@ -46,5 +46,15 @@ export class CourtService {
     params = params.append('limit', limit.toString());
 
     return this.http.get<CourtsResponse>(`${this.apiUrl}/courts`, { params });
+  }
+
+  updateCourt(id: number, data: Partial<Court>): Observable<any> {
+    return this.http.put(`${this.apiUrl}/court/update/${id}`, data);
+  }
+
+  deleteCourt(id: number, club_id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/court/delete/${id}`, {
+      body: { club_id }
+    });
   }
 }
