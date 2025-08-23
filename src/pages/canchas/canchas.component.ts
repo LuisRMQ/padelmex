@@ -98,15 +98,28 @@ export class CanchasComponent implements OnInit {
     });
   }
 
-  abrirModalRegistrarCancha() {
-    this.dialog.open(RegistrarCanchaDialogComponent, {
-      width: '800px',
-      maxWidth: '50vw',
-      height: 'auto',
-      maxHeight: '70vh',
-      panelClass: 'custom-dialog'
-    });
-  }
+ abrirModalRegistrarCancha() {
+  const dialogRef = this.dialog.open(RegistrarCanchaDialogComponent, {
+    width: '800px',
+    maxWidth: '50vw',
+    height: 'auto',
+    maxHeight: '70vh',
+    panelClass: 'custom-dialog'
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) { 
+      this.snackBar.open('✅ Cancha registrada exitosamente', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-success'],
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom'
+      });
+
+      this.loadCourts();
+    }
+  });
+}
 
   editarCancha(court: Court) {
     this.editandoCanchaID = court.id;

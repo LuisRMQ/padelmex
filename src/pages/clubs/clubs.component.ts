@@ -56,15 +56,35 @@ export class ClubsComponent implements OnInit {
     });
   }
 
-  abrirModalRegistrarClub() {
-    this.dialog.open(RegistrarClubDialogComponent, {
-      width: '800px',
-      maxWidth: '50vw',
-      height: '800px',
-      maxHeight: '70vh',
-      panelClass: 'custom-dialog'
-    });
-  }
+ abrirModalRegistrarClub() {
+  const dialogRef = this.dialog.open(RegistrarClubDialogComponent, {
+    width: '800px',
+    maxWidth: '50vw',
+    height: '800px',
+    maxHeight: '70vh',
+    panelClass: 'custom-dialog'
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) { 
+      this.snackBar.open('✅ Club registrado exitosamente', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-success'],
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom'
+      });
+
+      this.clubsService.getClubs().subscribe({
+        next: (res: any) => {
+          this.clubs = res.data;
+        },
+        error: (err) => {
+          console.error('Error al recargar clubs', err);
+        }
+      });
+    }
+  });
+}
 
   confirmarEliminarClub(club: Club) {
   const dialogRef = this.dialog.open(ConfirmDialogComponent, {

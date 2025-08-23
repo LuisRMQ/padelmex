@@ -24,8 +24,8 @@ export interface Club {
 })
 export class ClubsService {
 
-    private apiUrl = 'http://127.0.0.1:8000/api/clubs'; // 🔹 pon aquí la URL real de tu API
-    private apiUrlCrea = 'http://127.0.0.1:8000/api/create/club'; // 🔹 pon aquí la URL real de tu API
+    private apiUrl = 'http://127.0.0.1:8000/api/clubs'; 
+    private apiUrlCrea = 'http://127.0.0.1:8000/api/create/club'; 
     private apiUrlUpdate = 'http://127.0.0.1:8000/api/update/club';
     private apiUrlDelete = 'http://127.0.0.1:8000/api/delete/club';
 

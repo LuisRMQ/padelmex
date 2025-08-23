@@ -8,6 +8,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ClubsService } from '../../../app/services/clubs.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogRef } from '@angular/material/dialog';
 
 
 @Component({
@@ -22,8 +24,9 @@ import { ClubsService } from '../../../app/services/clubs.service';
     MatExpansionModule,
     MatDialogModule,
     MatSelectModule,
-    ReactiveFormsModule
-    
+    ReactiveFormsModule,
+    MatSnackBarModule,
+
   ],
 })
 export class RegistrarClubDialogComponent {
@@ -33,7 +36,9 @@ export class RegistrarClubDialogComponent {
 
   constructor(
     private fb: FormBuilder,
-    private clubsService: ClubsService
+    private clubsService: ClubsService,
+    private snackBar: MatSnackBar,
+     private dialogRef: MatDialogRef<RegistrarClubDialogComponent>
   ) {
     this.clubForm = this.fb.group({
       name: ['', Validators.required],
@@ -68,7 +73,11 @@ export class RegistrarClubDialogComponent {
 
   guardarClub() {
     if (this.clubForm.invalid) {
-      alert('Por favor completa todos los campos requeridos');
+      this.snackBar.open('⚠️ Por favor completa todos los campos requeridos', 'Cerrar', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+      });
       return;
     }
 
@@ -83,12 +92,17 @@ export class RegistrarClubDialogComponent {
 
     this.clubsService.createClub(formData).subscribe({
       next: (res) => {
+        this.dialogRef.close(true);
         console.log('Club creado:', res);
-        alert('Club registrado correctamente');
+        
       },
       error: (err) => {
         console.error(err);
-        alert('Error al registrar club');
+        this.snackBar.open('❌ Error al registrar club', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
       }
     });
   }

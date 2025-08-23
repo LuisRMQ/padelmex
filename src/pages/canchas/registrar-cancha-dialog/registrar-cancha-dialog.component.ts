@@ -9,6 +9,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { CourtService, Court, Club } from '../../../app/services/court.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-RegistrarCancha',
@@ -22,7 +23,7 @@ import { CourtService, Court, Club } from '../../../app/services/court.service';
     MatExpansionModule,
     MatDialogModule,
     MatSelectModule,
-    ReactiveFormsModule, // ← Importa ReactiveFormsModule
+    ReactiveFormsModule, 
     CommonModule
   ],
   standalone: true
@@ -38,6 +39,8 @@ export class RegistrarCanchaDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private courtService: CourtService,
+    private snackBar: MatSnackBar,
+
     private dialogRef: MatDialogRef<RegistrarCanchaDialogComponent>
   ) {
     this.courtForm = this.fb.group({
@@ -86,17 +89,15 @@ export class RegistrarCanchaDialogComponent implements OnInit {
   onSubmit() {
     if (this.courtForm.valid) {
       this.loading = true;
-      
+
       const formData = new FormData();
-      
-      // Agregar todos los campos del formulario
+
       Object.keys(this.courtForm.value).forEach(key => {
         if (key !== 'photo') {
           formData.append(key, this.courtForm.value[key]);
         }
       });
 
-      // Agregar la foto si existe
       if (this.selectedFile) {
         formData.append('photo', this.selectedFile);
       }
@@ -104,7 +105,8 @@ export class RegistrarCanchaDialogComponent implements OnInit {
       this.courtService.createCourt(formData).subscribe({
         next: (response) => {
           this.loading = false;
-          this.dialogRef.close(true); // Cerrar modal y indicar éxito
+          this.dialogRef.close(true);
+          
           console.log('Cancha creada:', response);
         },
         error: (error) => {
@@ -114,7 +116,6 @@ export class RegistrarCanchaDialogComponent implements OnInit {
         }
       });
     } else {
-      // Marcar todos los campos como touched para mostrar errores
       Object.keys(this.courtForm.controls).forEach(key => {
         this.courtForm.get(key)?.markAsTouched();
       });

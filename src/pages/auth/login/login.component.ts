@@ -4,10 +4,11 @@ import { UserLoginFormComponent } from './user-login-form/user-login-form.compon
 import { ClubLoginFormComponent } from './club-login-form/club-login-form.component';
 import { RecoverPasswordFormComponent } from './recover-password-form/recover-password-form.component';
 import { UserLoginData, ClubLoginData, RecoverPasswordData } from './login.model';
-import { AuthService } from '../../../app/services/auth.service'; // Ajusta la ruta según tu estructura
+import { AuthService } from '../../../app/services/auth.service';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +20,8 @@ import { Router } from '@angular/router';
     ClubLoginFormComponent,
     RecoverPasswordFormComponent,
     MatSelectModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   standalone: true
 })
@@ -29,7 +31,7 @@ export class LoginComponent {
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authService: AuthService, private router: Router, private snackBar: MatSnackBar) { }
 
   onUserLoginSubmit(loginData: UserLoginData): void {
     this.isLoading = true;
@@ -38,10 +40,19 @@ export class LoginComponent {
     this.authService.login(loginData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this.router.navigate(['/dashboard']);
+        this.snackBar.open(
+          `✅ Bienvenido ${response.user.name}`,
+          '', 
+          {
+            duration: 2000, 
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+          }
+        );
 
-        console.log('Login exitoso:', response);
-    
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 2000);
       },
       error: (error) => {
         this.isLoading = false;
@@ -62,23 +73,21 @@ export class LoginComponent {
 
   onClubLoginSubmit(loginData: ClubLoginData): void {
     console.log('Club login:', loginData);
-    // Implementar lógica similar para el login de club si es necesario
   }
 
   onRecoverPasswordSubmit(recoverData: RecoverPasswordData): void {
     console.log('Recover password:', recoverData);
-    // Implementar lógica de recuperación de contraseña
   }
 
   setClubMode(isClub: boolean): void {
     this.isClub = isClub;
     this.isRecoverPassword = false;
-    this.errorMessage = ''; // Limpiar mensajes de error al cambiar de modo
+    this.errorMessage = '';
   }
 
   setRecoverPasswordMode(isRecoverPassword: boolean): void {
     this.isRecoverPassword = isRecoverPassword;
     this.isClub = false;
-    this.errorMessage = ''; // Limpiar mensajes de error al cambiar de modo
+    this.errorMessage = '';
   }
 }
