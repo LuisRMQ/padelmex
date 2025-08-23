@@ -1,17 +1,30 @@
 import { Component, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
 import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction'; // <-- importante
 
 @Component({
   selector: 'app-calendario',
   template: `
-    <div #calendarContainer class="calendar-container"></div>
+    <div class="calendar-wrapper">
+      <div #calendarContainer class="calendar-container"></div>
+    </div>
   `,
   styles: [`
+    .calendar-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 100px 20px 40px 20px; 
+      width: 100%;
+      min-height: calc(100vh - 100px);
+      box-sizing: border-box;
+      overflow-x: auto; 
+    }
+
     .calendar-container {
-      margin-top: 20px;
-      height: 600px; /* ajusta esto */
-      width: 90%;
+      width: 100%;
+      max-width: 1200px;
     }
   `]
 })
@@ -20,15 +33,25 @@ export class CalendarioComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     const calendar = new Calendar(this.calendarContainer.nativeElement, {
-      plugins: [dayGridPlugin],
+      plugins: [dayGridPlugin, interactionPlugin], 
       initialView: 'dayGridMonth',
       events: [
         { title: 'Evento 1', date: '2025-08-16' },
         { title: 'Evento 2', date: '2025-08-20' }
       ],
-      height: '100%' // Importante
+      height: 'auto',
+      dateClick: (info) => {  
+        const title = prompt('Ingrese el nombre del evento para ' + info.dateStr);
+        if (title) {
+          calendar.addEvent({
+            title: title,
+            start: info.dateStr,
+            allDay: true
+          });
+        }
+      }
     });
-    
+
     calendar.render();
   }
 }
