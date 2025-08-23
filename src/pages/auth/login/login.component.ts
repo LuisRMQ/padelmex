@@ -47,7 +47,6 @@ export class LoginComponent {
         this.isLoading = false;
         console.error('Error en login:', error);
 
-        // Manejar diferentes tipos de errores
         if (error.message === 'Credenciales incorrectas') {
           this.errorMessage = 'Credenciales incorrectas. Por favor, verifica tus datos.';
         } else if (error.message.includes('Attempt to read property')) {
