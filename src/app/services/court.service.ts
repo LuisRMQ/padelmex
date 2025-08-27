@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
+import { ApiBaseService } from './api.service';
 
 export interface Court {
   id: number;
@@ -27,34 +28,27 @@ export interface CourtsResponse {
 @Injectable({
   providedIn: 'root'
 })
-export class CourtService {
-  private apiUrl = 'http://127.0.0.1:8000/api';
-
-  constructor(private http: HttpClient) { }
-
+export class CourtService extends ApiBaseService {
   getClubs(): Observable<Club[]> {
-    return this.http.get<any>(`${this.apiUrl}/clubs`).pipe(
-      map(response => response.data)
-    );
+    return this.get<any>('/clubs').pipe(map(response => response.data));
   }
-  createCourt(formData: FormData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/court/create`, formData);
-  }
-  getCourtsByClub(clubId: number, limit: number = 5): Observable<CourtsResponse> {
-    let params = new HttpParams();
-    params = params.append('club_id', clubId.toString());
-    params = params.append('limit', limit.toString());
 
-    return this.http.get<CourtsResponse>(`${this.apiUrl}/courts`, { params });
+  createCourt(formData: FormData): Observable<any> {
+    return this.post('/court/create', formData);
+  }
+
+  getCourtsByClub(clubId: number, limit: number = 5): Observable<CourtsResponse> {
+    let params = new HttpParams()
+      .append('club_id', clubId.toString())
+      .append('limit', limit.toString());
+    return this.get<CourtsResponse>('/courts', params);
   }
 
   updateCourt(id: number, data: Partial<Court>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/court/update/${id}`, data);
+    return this.put(`/court/update/${id}`, data);
   }
 
   deleteCourt(id: number, club_id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/court/delete/${id}`, {
-      body: { club_id }
-    });
+    return this.delete(`/court/delete/${id}`, { body: { club_id } });
   }
 }
