@@ -24,10 +24,11 @@ export interface Club {
 })
 export class ClubsService {
 
-    private apiUrl = 'http://127.0.0.1:8000/api/clubs'; 
-    private apiUrlCrea = 'http://127.0.0.1:8000/api/create/club'; 
-    private apiUrlUpdate = 'http://127.0.0.1:8000/api/update/club';
-    private apiUrlDelete = 'http://127.0.0.1:8000/api/delete/club';
+    private apiUrl = 'http://137.184.178.6/api/clubs'; 
+    private apiUrlCrea = 'http://137.184.178.6/api/create/club'; 
+    private apiUrlUpdate = 'http://137.184.178.6/api/update/club';
+    private apiUrlDelete = 'http://137.184.178.6/api/delete/club';
+
 
     constructor(private http: HttpClient) { }
 

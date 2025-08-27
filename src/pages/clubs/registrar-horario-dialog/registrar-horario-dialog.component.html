@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>Registrar Horario</h2>
+
+<form mat-dialog-content class="form-container" [formGroup]="scheduleForm">
+  <!-- Día -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-select placeholder="Día" formControlName="day">
+      <mat-option value="monday">Lunes</mat-option>
+      <mat-option value="tuesday">Martes</mat-option>
+      <mat-option value="wednesday">Miércoles</mat-option>
+      <mat-option value="thursday">Jueves</mat-option>
+      <mat-option value="friday">Viernes</mat-option>
+      <mat-option value="saturday">Sábado</mat-option>
+      <mat-option value="sunday">Domingo</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="row">
+    <!-- Hora inicio -->
+    <mat-form-field appearance="outline" class="flex-1">
+      <input matInput type="time" placeholder="Hora inicio" formControlName="start_time">
+    </mat-form-field>
+
+    <!-- Hora fin -->
+    <mat-form-field appearance="outline" class="flex-1">
+      <input matInput type="time" placeholder="Hora fin" formControlName="end_time">
+    </mat-form-field>
+  </div>
+
+  <!-- Estado -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-select placeholder="Estado" formControlName="status">
+      <mat-option [value]="true">Activo</mat-option>
+      <mat-option [value]="false">Inactivo</mat-option>
+    </mat-select>
+  </mat-form-field>
+</form>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>CANCELAR</button>
+  <button mat-raised-button color="primary" (click)="guardarHorario()">GUARDAR</button>
+</mat-dialog-actions>

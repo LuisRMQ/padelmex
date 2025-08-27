@@ -19,8 +19,8 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://127.0.0.1:8000/api/web';
-  private apilogoutUrl = 'http://127.0.0.1:8000/api';
+  private apiUrl = 'http://137.184.178.6/api/web';
+  private apilogoutUrl = 'http://137.184.178.6/api';
 
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
   private currentUserSubject = new BehaviorSubject<User | null>(this.getUserData());

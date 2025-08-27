@@ -13,6 +13,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
 import { FormsModule } from '@angular/forms';
 import { MatDivider } from "@angular/material/divider";
+import { RegistrarHorarioDialogComponent } from './registrar-horario-dialog/registrar-horario-dialog.component';
+
+
+
 
 @Component({
   selector: 'app-clubs',
@@ -164,4 +168,29 @@ export class ClubsComponent implements OnInit {
     this.editandoClubId = null;
     this.backupClub = null;
   }
+
+
+  abrirModalRegistrarHorario(club: Club) {
+  const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
+    width: '600px',
+    maxWidth: '50vw',
+    height: '400px',
+    maxHeight: '70vh',
+    data: { clubId: club.id } 
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.snackBar.open('✅ Horario registrado exitosamente', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-success'],
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom'
+      });
+
+    }
+  });
+}
+
+
 }

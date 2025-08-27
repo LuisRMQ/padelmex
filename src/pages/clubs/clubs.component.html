@@ -13,12 +13,19 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           {{ club.name }}
-          <button mat-icon-button color="primary" class="edit-btn" (click)="editarClub(club)"
-            (click)="$event.stopPropagation();">
+
+          <button mat-icon-button color="primary" class="edit-btn"
+            (click)="editarClub(club); $event.stopPropagation();">
             <mat-icon>edit</mat-icon>
+          </button>
+
+          <button mat-icon-button color="accent" class="add-horario-btn"
+            (click)="abrirModalRegistrarHorario(club); $event.stopPropagation();">
+            <mat-icon>schedule</mat-icon>
           </button>
         </mat-panel-title>
       </mat-expansion-panel-header>
+
 
       <div class="club-details-row">
         <div class="club-details-table">

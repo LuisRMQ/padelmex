@@ -28,7 +28,8 @@ export interface CourtsResponse {
   providedIn: 'root'
 })
 export class CourtService {
-  private apiUrl = 'http://127.0.0.1:8000/api';
+  private apiUrl = 'http://137.184.178.6/api';
+
 
   constructor(private http: HttpClient) { }
 
