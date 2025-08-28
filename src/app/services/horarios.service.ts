@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiBaseService } from './api.service';
 
 export interface Horario {
   id?: number;
@@ -21,7 +21,7 @@ export class HorariosService {
   constructor(private http: HttpClient) { }
 
   getHorarios(): Observable<Horario[]> {
-    return this.http.get<Horario[]>(`${this.apiUrl}`);
+    return this.get<Horario[]>('/horarios');
   }
 
   getHorario(id: number): Observable<Horario> {
@@ -37,11 +37,11 @@ export class HorariosService {
     return this.http.post<Horario>(`${this.apiUrl}/create`, horario);
   }
 
-  updateHorario(id: number, horario: Horario): Observable<Horario> {
-    return this.http.put<Horario>(`${this.apiUrl}/update/${id}`, horario);
+  updateHorario(id: number, data: Partial<Horario>): Observable<any> {
+    return this.put(`/horarios/update/${id}`, data);
   }
 
-  deleteHorario(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/delete/${id}`);
+  deleteHorario(id: number): Observable<any> {
+    return this.delete(`/horarios/delete/${id}`);
   }
 }

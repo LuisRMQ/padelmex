@@ -15,6 +15,7 @@ import { MatDivider } from "@angular/material/divider";
 import { FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
+import { RegistrarHorarioDialogComponent } from './registrar-horario-dialog/registrar-horario-dialog.component';
 @Component({
   selector: 'app-canchas',
   templateUrl: './canchas.component.html',
@@ -98,28 +99,28 @@ export class CanchasComponent implements OnInit {
     });
   }
 
- abrirModalRegistrarCancha() {
-  const dialogRef = this.dialog.open(RegistrarCanchaDialogComponent, {
-    width: '800px',
-    maxWidth: '50vw',
-    height: 'auto',
-    maxHeight: '70vh',
-    panelClass: 'custom-dialog'
-  });
+  abrirModalRegistrarCancha() {
+    const dialogRef = this.dialog.open(RegistrarCanchaDialogComponent, {
+      width: '800px',
+      maxWidth: '50vw',
+      height: 'auto',
+      maxHeight: '70vh',
+      panelClass: 'custom-dialog'
+    });
 
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) { 
-      this.snackBar.open('✅ Cancha registrada exitosamente', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['snackbar-success'],
-        horizontalPosition: 'center',
-        verticalPosition: 'bottom'
-      });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('✅ Cancha registrada exitosamente', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom'
+        });
 
-      this.loadCourts();
-    }
-  });
-}
+        this.loadCourts();
+      }
+    });
+  }
 
   editarCancha(court: Court) {
     this.editandoCanchaID = court.id;
@@ -202,4 +203,24 @@ export class CanchasComponent implements OnInit {
     });
   }
 
+  abrirModalRegistrarHorario(court: Court) {
+    const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
+      width: '600px',
+      maxWidth: '50vw',
+      height: '500px',
+      maxHeight: '80vh',
+      data: { courtId: 1 },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('Horario registrado exitosamente', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom'
+        });
+      }
+    });
+  }
 }
