@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
+import { ApiBaseService } from './api.service';
 import { UserLoginData } from '../../pages/auth/login/login.model';
-
 
 export interface User {
   id: number;
@@ -14,18 +14,17 @@ export interface User {
   club_rfc: string;
 }
 
-
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://137.184.178.6/api/web';
-  private apilogoutUrl = 'http://137.184.178.6/api';
+  private apiUrl = '/web';
+  private logoutUrl = ''; 
 
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
   private currentUserSubject = new BehaviorSubject<User | null>(this.getUserData());
 
-  constructor(private http: HttpClient) { }
+  constructor(private api: ApiBaseService) {}
 
   login(loginData: UserLoginData): Observable<any> {
     const apiData = {
@@ -34,11 +33,9 @@ export class AuthService {
       club_rfc: loginData.club_rfc.trim()
     };
 
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
-    return this.http.post(`${this.apiUrl}/login`, apiData, { headers }).pipe(
+    return this.api.post<any>(`${this.apiUrl}/login`, apiData, headers).pipe(
       tap((response: any) => {
         if (response.token && response.user) {
           localStorage.setItem('authToken', response.token);
@@ -51,24 +48,19 @@ export class AuthService {
           throw new Error(response.msg || 'Error desconocido en el login');
         }
       }),
-      catchError((error) => {
-        return throwError(() => error);
-      })
+      catchError((error) => throwError(() => error))
     );
   }
 
   logout(): Observable<any> {
     const token = this.getToken();
-
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json'
     });
 
-    return this.http.get(`${this.apilogoutUrl}/logout`, { headers }).pipe(
-      tap(() => {
-        this.clearLocalStorage();
-      }),
+    return this.api.get<any>(`${this.logoutUrl}/logout`, undefined).pipe(
+      tap(() => this.clearLocalStorage()),
       catchError((error) => {
         this.clearLocalStorage();
         return throwError(() => error);
@@ -99,7 +91,6 @@ export class AuthService {
     const userData = localStorage.getItem('userData');
     return userData ? JSON.parse(userData) : null;
   }
-  
 
   getUserName(): string {
     const user = this.getUserData();

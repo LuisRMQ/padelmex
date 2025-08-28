@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiBaseService } from './api.service';
 
 export interface Club {
     id: number;
@@ -22,30 +23,21 @@ export interface Club {
 @Injectable({
     providedIn: 'root'
 })
-export class ClubsService {
-
-    private apiUrl = 'http://137.184.178.6/api/clubs'; 
-    private apiUrlCrea = 'http://137.184.178.6/api/create/club'; 
-    private apiUrlUpdate = 'http://137.184.178.6/api/update/club';
-    private apiUrlDelete = 'http://137.184.178.6/api/delete/club';
-
-
-    constructor(private http: HttpClient) { }
-
+export class ClubsService extends ApiBaseService {
     getClubs(): Observable<Club[]> {
-        return this.http.get<Club[]>(this.apiUrl);
+        return this.get<Club[]>('/clubs');
     }
 
     createClub(data: FormData): Observable<any> {
-        return this.http.post(this.apiUrlCrea, data);
+        return this.post('/create/club', data);
     }
 
     updateClub(id: number, data: Partial<Club>): Observable<any> {
-        return this.http.put(`${this.apiUrlUpdate}/${id}`, data);
+        return this.put(`/update/club/${id}`, data);
     }
 
     deleteClub(id: number): Observable<any> {
-        return this.http.delete(`${this.apiUrlDelete}/${id}`);
+        return this.delete(`/delete/club/${id}`);
     }
 }
 
