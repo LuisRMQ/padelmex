@@ -16,7 +16,7 @@ export interface Horario {
 })
 export class HorariosService {
 
-  private apiUrl = 'http://127.0.0.1:8000/api/clubShedule';
+  private apiUrl = 'http://137.184.178.6/api/clubShedule';
 
   constructor(private http: HttpClient) { }
 
@@ -26,6 +26,11 @@ export class HorariosService {
 
   getHorario(id: number): Observable<Horario> {
     return this.http.get<Horario>(`${this.apiUrl}/${id}`);
+  }
+  getHorariosByClub(clubId: number): Observable<Horario[]> {
+    return this.http.get<Horario[]>(this.apiUrl, {
+      params: { club_id: clubId.toString() } 
+    });
   }
 
   createHorario(horario: Horario): Observable<Horario> {
