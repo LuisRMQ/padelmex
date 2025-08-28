@@ -43,6 +43,10 @@
           <button mat-icon-button class="edit-btn-header" (click)="editarCancha(court); $event.stopPropagation();">
             <mat-icon>edit</mat-icon>
           </button>
+           <button mat-icon-button color="accent" class="add-horario-btn"
+            (click)="abrirModalRegistrarHorario(court); $event.stopPropagation();">
+            <mat-icon>schedule</mat-icon>
+          </button>
         </mat-panel-title>
       </mat-expansion-panel-header>
 
