@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiBaseService } from './api.service';
-import { HttpParams } from '@angular/common/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 
 export interface HorarioClub {
   id?: number;
@@ -38,7 +38,14 @@ export class HorariosService extends ApiBaseService {
     return this.put(`/clubShedule/update/${id}`, data);
   }
 
-  deleteHorario(id: number): Observable<any> {
-    return this.delete(`/clubShedule/delete/${id}`);
-  }
+deleteHorario(id: number, clubId: number): Observable<any> {
+  return this.delete(`/clubShedule/delete/${id}`, {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+    body: { club_id: clubId }
+  });
+}
+
+
+
+
 }
