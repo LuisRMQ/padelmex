@@ -54,16 +54,16 @@
             <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.rfc" class="edit-input" />
           </div>
           <div class="club-details-cell">
-            <strong>Tipo:</strong>
-            <span *ngIf="editandoClubId !== club.id">{{ club.type | titlecase }}</span>
-            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.type" class="edit-input" />
-          </div>
-          <div class="club-details-cell">
             <strong>Sitio Web:</strong>
             <span *ngIf="editandoClubId !== club.id">
               <a [href]="club.web_site" target="_blank">{{ club.web_site }}</a>
             </span>
             <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.web_site" class="edit-input" />
+          </div>
+          <div class="club-details-cell">
+            <strong>Tipo:</strong>
+            <span *ngIf="editandoClubId !== club.id">{{ club.type | titlecase }}</span>
+            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.type" class="edit-input" />
           </div>
           <div class="club-details-cell">
             <strong>Dirección:</strong>

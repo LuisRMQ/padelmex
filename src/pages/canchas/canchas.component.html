@@ -38,16 +38,22 @@
     <!-- Canchas dinámicas -->
     <mat-expansion-panel *ngFor="let court of courts" [expanded]="false" class="cancha-panel">
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          {{ court.name }}
-          <button mat-icon-button class="edit-btn-header" (click)="editarCancha(court); $event.stopPropagation();">
-            <mat-icon>edit</mat-icon>
+        <div style="display: flex; align-items: center; width: 100%;">
+          <mat-panel-title style="flex: 1;">
+            {{ court.name }}
+            <button mat-icon-button class="edit-btn-header" (click)="editarCancha(court); $event.stopPropagation();">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" class="add-horario-btn"
+              (click)="abrirModalRegistrarHorario(court); $event.stopPropagation();">
+              <mat-icon>schedule</mat-icon>
+            </button>
+          </mat-panel-title>
+          <button mat-icon-button color="accent" class="info-horario-btn"
+            (click)="abrirModalHorarios(court); $event.stopPropagation();" style="margin-left: auto;">
+            <mat-icon>info</mat-icon>
           </button>
-           <button mat-icon-button color="accent" class="add-horario-btn"
-            (click)="abrirModalRegistrarHorario(court); $event.stopPropagation();">
-            <mat-icon>schedule</mat-icon>
-          </button>
-        </mat-panel-title>
+        </div>
       </mat-expansion-panel-header>
 
       <div class="cancha-card">

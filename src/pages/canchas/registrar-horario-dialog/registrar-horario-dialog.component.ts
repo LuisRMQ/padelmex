@@ -1,13 +1,13 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { HorariosService } from '../../../app/services/horarios-clubes.service';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
+import { HorariosServiceCancha } from '../../../app/services/horarios-canchas.service';
 
 @Component({
   selector: 'app-registrar-horario-dialog',
@@ -30,7 +30,7 @@ export class RegistrarHorarioDialogComponent {
         private fb: FormBuilder,
         private dialogRef: MatDialogRef<RegistrarHorarioDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { courtId: number },
-        private horariosService: HorariosService
+        private horarioCancha: HorariosServiceCancha
 
     ) {
         this.scheduleForm = this.fb.group({
@@ -46,7 +46,7 @@ export class RegistrarHorarioDialogComponent {
         if (this.scheduleForm.valid) {
             const horario = this.scheduleForm.value;
 
-            this.horariosService.createHorario(horario).subscribe({
+            this.horarioCancha.createHorario(horario).subscribe({
                 next: (res) => {
                     console.log('Horario creado:', res);
                     this.dialogRef.close(res); 

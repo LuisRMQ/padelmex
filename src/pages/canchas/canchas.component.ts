@@ -16,6 +16,8 @@ import { FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
 import { RegistrarHorarioDialogComponent } from './registrar-horario-dialog/registrar-horario-dialog.component';
+import { HorariosServiceCancha } from '../../app/services/horarios-canchas.service';
+import { InfoCanchaDialogComponent } from './info-cancha-dialog/info-cancha-dialog.component';
 
 @Component({
   selector: 'app-canchas',
@@ -51,7 +53,8 @@ export class CanchasComponent implements OnInit {
   constructor(
     private courtService: CourtService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private horariosCanchasService: HorariosServiceCancha,
   ) { }
 
   ngOnInit() {
@@ -224,4 +227,24 @@ export class CanchasComponent implements OnInit {
       }
     });
   }
+
+abrirModalHorarios(court: Court) {
+  this.horariosCanchasService.getHorariosByCourt(court.club_id, court.id).subscribe({
+    next: (horarios) => {
+      console.log('Horarios recibidos:', horarios);
+      this.dialog.open(InfoCanchaDialogComponent, {
+        width: '600px',
+        maxWidth: '60vw',
+        data: { court, horarios }
+      });
+    },
+    error: (err) => {
+      console.error('Error al obtener horarios', err);
+      this.snackBar.open('❌ Error al cargar los horarios', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+    }
+  });
+}
 }

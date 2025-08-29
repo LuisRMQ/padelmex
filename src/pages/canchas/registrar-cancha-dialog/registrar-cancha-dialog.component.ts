@@ -8,8 +8,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
-import { CourtService, Court, Club } from '../../../app/services/court.service';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { CourtService, Club } from '../../../app/services/court.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-RegistrarCancha',
