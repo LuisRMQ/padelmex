@@ -11,24 +11,23 @@
   <mat-accordion class="clubs-list" multi="true">
     <mat-expansion-panel *ngFor="let club of clubs" [expanded]="false">
       <mat-expansion-panel-header>
-        <mat-panel-title>
-          {{ club.name }}
-
-          <button mat-icon-button color="primary" class="edit-btn"
-            (click)="editarClub(club); $event.stopPropagation();">
-            <mat-icon>edit</mat-icon>
-          </button>
-
-          <button mat-icon-button color="accent" class="add-horario-btn"
-            (click)="abrirModalRegistrarHorario(club); $event.stopPropagation();">
-            <mat-icon>schedule</mat-icon>
-          </button>
-
+        <div style="display: flex; align-items: center; width: 100%;">
+          <mat-panel-title style="flex: 1;">
+            {{ club.name }}
+            <button mat-icon-button color="primary" class="edit-btn"
+              (click)="editarClub(club); $event.stopPropagation();">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" class="add-horario-btn"
+              (click)="abrirModalRegistrarHorario(club); $event.stopPropagation();">
+              <mat-icon>schedule</mat-icon>
+            </button>
+          </mat-panel-title>
           <button mat-icon-button color="accent" class="info-horario-btn"
-            (click)="abrirModalHorarios(club); $event.stopPropagation();">
+            (click)="abrirModalHorarios(club); $event.stopPropagation();" style="margin-left: auto;">
             <mat-icon>info</mat-icon>
           </button>
-        </mat-panel-title>
+        </div>
       </mat-expansion-panel-header>
 
 

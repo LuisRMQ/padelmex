@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
 import { RegistrarHorarioDialogComponent } from './registrar-horario-dialog/registrar-horario-dialog.component';
+
 @Component({
   selector: 'app-canchas',
   templateUrl: './canchas.component.html',
@@ -209,7 +210,7 @@ export class CanchasComponent implements OnInit {
       maxWidth: '50vw',
       height: '500px',
       maxHeight: '80vh',
-      data: { courtId: 1 },
+      data: { courtId: court.id },
     });
 
     dialogRef.afterClosed().subscribe(result => {

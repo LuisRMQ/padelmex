@@ -8,11 +8,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ReactiveFormsModule} from '@angular/forms';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
-import { Horario } from '../../../app/services/horarios.service';
+import { HorarioClub } from '../../../app/services/horarios-clubes.service';
 
 @Component({
   selector: 'app-info-dialog',
@@ -44,12 +44,12 @@ export class HorariosDialogComponent {
   }
 
   
-  editarHorario(horario: Horario) {
+  editarHorario(horario: HorarioClub) {
     console.log('Editar horario', horario);
    
   }
 
-  eliminarHorario(horario: Horario) {
+  eliminarHorario(horario: HorarioClub) {
     console.log('Eliminar horario', horario);
  
   }

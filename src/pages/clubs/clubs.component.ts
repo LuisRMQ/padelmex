@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RegistrarClubDialogComponent } from './registrar-club-dialog/registrar-club-dialog.component';
 import { ClubsService, Club } from '../../app/services/clubs.service';
-import { HorariosService } from '../../app/services/horarios.service'; 
+import { HorariosService } from '../../app/services/horarios-clubes.service'; 
 
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
