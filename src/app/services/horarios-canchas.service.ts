@@ -1,15 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiBaseService } from './api.service';
-import { HttpParams } from '@angular/common/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 
 export interface HorarioCancha {
+    courts_schedules_id: number; 
     id?: number;
     court_id: number;
     day: string;
     start_time: string;
     end_time: string;
     status: boolean;
+    clubId: number;
 }
 
 @Injectable({
@@ -40,7 +42,14 @@ export class HorariosServiceCancha extends ApiBaseService {
         return this.put(`/courtSchedules/update/${id}`, data);
     }
 
-    deleteHorario(id: number): Observable<any> {
-        return this.delete(`/courtSchedules/delete/${id}`);
+    deleteHorario(id: number, courtId: number, clubId: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/courtSchedules/delete/${id}`, {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: { court_id: courtId, club_id: clubId }
+        });
     }
+
+
+
+
 }

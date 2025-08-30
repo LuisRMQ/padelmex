@@ -1,5 +1,5 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import {  Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -29,8 +29,8 @@ import { HorarioCancha, HorariosServiceCancha } from '../../../app/services/hora
     ReactiveFormsModule,
     MatSnackBarModule,
     MatTableModule,
-  CommonModule,
-  FormsModule
+    CommonModule,
+    FormsModule
   ],
 })
 export class InfoCanchaDialogComponent {
@@ -49,15 +49,21 @@ export class InfoCanchaDialogComponent {
     public dialogRef: MatDialogRef<InfoCanchaDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private horariosService: HorariosServiceCancha
-  ) {}
+  ) { }
 
   cerrar() {
     this.dialogRef.close();
   }
 
-  editarHorario(horario: HorarioCancha, index: number) {
+  editarHorario(horario: any, index: number) {
+    console.log('Horario recibido al editar:', horario);
+
     this.editIndex = index;
-    this.editHorario = { ...horario };
+
+    this.editHorario = {
+      ...horario,
+      id: horario.courts_schedules_id
+    };
   }
 
   cancelarEdicion() {
@@ -66,8 +72,14 @@ export class InfoCanchaDialogComponent {
   }
 
   guardarEdicion() {
+    console.log("estoy presionando");
+    console.log("editIndex:", this.editIndex);
+    console.log("editHorario:", this.editHorario);
+
     if (this.editIndex !== null && this.editHorario.id) {
-      this.horariosService.updateHorario(this.editHorario.id, this.editHorario).subscribe({
+      const { id, ...body } = this.editHorario;
+
+      this.horariosService.updateHorario(id, body).subscribe({
         next: () => {
           this.data.horarios[this.editIndex as number] = { ...this.editHorario };
           this.editIndex = null;
@@ -77,11 +89,34 @@ export class InfoCanchaDialogComponent {
           console.error('Error al actualizar horario', err);
         }
       });
+    } else {
+      console.warn("⚠️ No se encontró ID en editHorario");
     }
   }
 
-  eliminarHorario(horario: HorarioCancha) {
-    console.log('Eliminar horario', horario);
-    // Implementar lógica de eliminación si es necesario
+
+
+
+ eliminarHorario(horario: HorarioCancha) {
+  if (confirm('¿Seguro que quieres eliminar este horario?')) {
+    console.log(horario.courts_schedules_id)
+    console.log(horario.clubId)
+
+    this.horariosService.deleteHorario(
+      horario.courts_schedules_id,
+      horario.court_id,
+      horario.clubId
+    ).subscribe({
+      next: () => {
+        this.data.horarios = this.data.horarios.filter(
+          (h: any) => h.courts_schedules_id !== horario.courts_schedules_id
+        );
+      },
+      error: (err) => {
+        console.error('❌ Error al eliminar horario', err);
+      }
+    });
   }
+}
+
 }
