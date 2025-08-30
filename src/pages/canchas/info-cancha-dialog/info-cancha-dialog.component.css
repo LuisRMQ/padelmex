@@ -1,0 +1,104 @@
+.mat-dialog-content table {
+    margin-top: 20px;
+}
+td mat-form-field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    height: 12px;
+}
+
+input[type="time"],
+.mat-select-trigger {
+    min-height: 24px;
+    height: 24px;
+    font-size: 0.95em;
+    padding: 2px 8px;
+}
+
+.edit-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.responsive-horarios-dialog .mat-dialog-container {
+    z-index: 2000 !important;
+}
+
+.responsive-horarios-dialog .mat-dialog-container {
+    padding: 16px 8px;
+    width: 100%;
+    max-width: 1200px;
+    min-width: 350px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+    .responsive-horarios-dialog .mat-dialog-container {
+        max-width: 98vw;
+        min-width: 0;
+        padding: 8px 2px;
+    }
+
+    td mat-form-field {
+        min-width: 50px;
+        max-width: 80px;
+    }
+}
+
+/* Estilos para los iconos de acción en la tabla */
+.mat-icon-button {
+    margin: 0 2px;
+}
+
+/* Resaltar el row en edición */
+tr[ng-reflect-ng-if="true"] {
+    background-color: #f5f5f5;
+}
+
+td mat-form-field .mat-form-field-wrapper {
+    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    margin: 0 !important;
+}
+
+td mat-form-field .mat-form-field-flex {
+    align-items: center;
+    min-height: 20px;
+    height: 20px;
+}
+
+td input[type="time"] {
+    height: 24px !important;
+    font-size: 0.95em;
+    padding: 0 4px;
+    box-sizing: border-box;
+}
+
+td .mat-select-trigger {
+    height: 24px !important;
+    font-size: 0.95em;
+    padding: 2px 2px;
+    display: flex;
+    align-items: center;
+}
+
+.activo {
+    color: #388e3c;
+    font-weight: bold;
+}
+
+.inactivo {
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+tr.mat-row,
+tr.mat-header-row {
+    height: 24;
+    /* o el valor que prefieras */
+}

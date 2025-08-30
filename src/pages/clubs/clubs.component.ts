@@ -201,7 +201,6 @@ export class ClubsComponent implements OnInit {
 abrirModalHorarios(club: Club) {
   this.horariosService.getHorariosByClub(club.id).subscribe({
     next: (horarios) => {
-      console.log('Horarios recibidos:', horarios); 
       this.dialog.open(HorariosDialogComponent, {
         width: '600px',
         maxWidth: '60vw',

@@ -22,7 +22,10 @@
 }
 
 .cancha-img img {
-  width: 180px;
+  z-index: 20 !important;
+  position: absolute !important;
+  left: 0;
+  top: 0;
   height: 130px;
   object-fit: cover;
   border-radius: 12px;

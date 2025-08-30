@@ -233,7 +233,7 @@ abrirModalHorarios(court: Court) {
     next: (horarios) => {
       console.log('Horarios recibidos:', horarios);
       this.dialog.open(InfoCanchaDialogComponent, {
-        width: '600px',
+        width: '750px',
         maxWidth: '60vw',
         data: { court, horarios }
       });
