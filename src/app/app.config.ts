@@ -2,9 +2,11 @@ import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } fr
 import { provideRouter } from '@angular/router';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,13 +24,16 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHttpClient(),
 
+  provideNativeDateAdapter(),
+
     importProvidersFrom(
       ReactiveFormsModule,
-      MatFormFieldModule,
-      MatInputModule,
-      MatIconModule,
-      MatButtonModule,
-      FullCalendarModule,    
+  MatFormFieldModule,
+  MatInputModule,
+  MatIconModule,
+  MatButtonModule,
+  MatTableModule,
+  FullCalendarModule,    
     )
   ]
 };

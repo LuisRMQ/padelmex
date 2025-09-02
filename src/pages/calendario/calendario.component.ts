@@ -1,5 +1,8 @@
 import { Component, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { ScheduleDateDialogComponent } from './schedule-date-dialog/schedule-date-dialog.component';
 import { Calendar } from '@fullcalendar/core';
+import { MatTableDataSource } from '@angular/material/table';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction'; // <-- importante
 
@@ -29,7 +32,16 @@ import interactionPlugin from '@fullcalendar/interaction'; // <-- importante
   `]
 })
 export class CalendarioComponent implements AfterViewInit {
+  // Datos de ejemplo para la tabla
+  displayedColumns: string[] = ['fecha', 'hora', 'cancha', 'club', 'acciones'];
+  dataSource = new MatTableDataSource([
+    { fecha: '2025-09-01', hora: '10:00', cancha: 'Cancha 1', club: 'Club A' },
+    { fecha: '2025-09-02', hora: '12:00', cancha: 'Cancha 2', club: 'Club B' },
+    { fecha: '2025-09-03', hora: '14:00', cancha: 'Cancha 3', club: 'Club C' }
+  ]);
   @ViewChild('calendarContainer') calendarContainer!: ElementRef;
+
+  constructor(private dialog: MatDialog) {}
 
   ngAfterViewInit() {
     const calendar = new Calendar(this.calendarContainer.nativeElement, {
@@ -39,19 +51,14 @@ export class CalendarioComponent implements AfterViewInit {
         { title: 'Evento 1', date: '2025-08-16' },
         { title: 'Evento 2', date: '2025-08-20' }
       ],
-      height: 'auto',
-      dateClick: (info) => {  
-        const title = prompt('Ingrese el nombre del evento para ' + info.dateStr);
-        if (title) {
-          calendar.addEvent({
-            title: title,
-            start: info.dateStr,
-            allDay: true
-          });
-        }
+  height: 400,
+  contentHeight: 350,
+      dateClick: (info) => {
+        this.dialog.open(ScheduleDateDialogComponent, {
+          data: { date: info.dateStr }
+        });
       }
     });
-
     calendar.render();
   }
 }
