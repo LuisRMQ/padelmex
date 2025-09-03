@@ -49,26 +49,6 @@
             </td>
         </ng-container>
 
-        <!-- Estatus -->
-        <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Estatus</th>
-            <td mat-cell *matCellDef="let horario; let i = index">
-                <ng-container *ngIf="editIndex === i; else viewStatus">
-                    <mat-form-field appearance="outline" style="width: 100px;">
-                        <mat-select [(ngModel)]="editHorario.status">
-                            <mat-option [value]="true">Activo</mat-option>
-                            <mat-option [value]="false">Inactivo</mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                </ng-container>
-                <ng-template #viewStatus>
-                    <span [ngClass]="horario.status ? 'activo' : 'inactivo'">
-                        {{ horario.status ? 'Activo' : 'Inactivo' }}
-                    </span>
-                </ng-template>
-            </td>
-        </ng-container>
-
         <!-- Acciones -->
         <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef>Acciones</th>
@@ -92,8 +72,8 @@
             </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="['day', 'start_time', 'end_time', 'status', 'acciones']"></tr>
-        <tr mat-row *matRowDef="let row; columns: ['day', 'start_time', 'end_time', 'status', 'acciones']"></tr>
+    <tr mat-header-row *matHeaderRowDef="['day', 'start_time', 'end_time', 'acciones']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['day', 'start_time', 'end_time', 'acciones']"></tr>
     </table>
 </mat-dialog-content>
 

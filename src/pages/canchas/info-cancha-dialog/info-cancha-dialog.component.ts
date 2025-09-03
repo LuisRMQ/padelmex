@@ -49,21 +49,23 @@ export class InfoCanchaDialogComponent {
     public dialogRef: MatDialogRef<InfoCanchaDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private horariosService: HorariosServiceCancha
-  ) { }
+  ) {
+  }
 
   cerrar() {
     this.dialogRef.close();
   }
 
   editarHorario(horario: any, index: number) {
-    console.log('Horario recibido al editar:', horario);
-
     this.editIndex = index;
 
     this.editHorario = {
       ...horario,
-      id: horario.courts_schedules_id
+      id: horario.courts_schedules_id,
+      club_id: horario.club_id ?? horario.clubId,
+      availability: typeof horario.availability === 'string' ? horario.availability === 'true' : !!horario.availability
     };
+    delete this.editHorario.clubId;
   }
 
   cancelarEdicion() {
@@ -72,10 +74,6 @@ export class InfoCanchaDialogComponent {
   }
 
   guardarEdicion() {
-    console.log("estoy presionando");
-    console.log("editIndex:", this.editIndex);
-    console.log("editHorario:", this.editHorario);
-
     if (this.editIndex !== null && this.editHorario.id) {
       const { id, ...body } = this.editHorario;
 
@@ -97,26 +95,24 @@ export class InfoCanchaDialogComponent {
 
 
 
- eliminarHorario(horario: HorarioCancha) {
-  if (confirm('¿Seguro que quieres eliminar este horario?')) {
-    console.log(horario.courts_schedules_id)
-    console.log(horario.clubId)
+  eliminarHorario(horario: HorarioCancha) {
+    if (confirm('¿Seguro que quieres eliminar este horario?')) {
 
-    this.horariosService.deleteHorario(
-      horario.courts_schedules_id,
-      horario.court_id,
-      horario.clubId
-    ).subscribe({
-      next: () => {
-        this.data.horarios = this.data.horarios.filter(
-          (h: any) => h.courts_schedules_id !== horario.courts_schedules_id
-        );
-      },
-      error: (err) => {
-        console.error('❌ Error al eliminar horario', err);
-      }
-    });
+      this.horariosService.deleteHorario(
+        horario.courts_schedules_id,
+        horario.court_id,
+        horario.clubId
+      ).subscribe({
+        next: () => {
+          this.data.horarios = this.data.horarios.filter(
+            (h: any) => h.courts_schedules_id !== horario.courts_schedules_id
+          );
+        },
+        error: (err) => {
+          console.error('❌ Error al eliminar horario', err);
+        }
+      });
+    }
   }
-}
 
 }

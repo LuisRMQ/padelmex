@@ -56,66 +56,64 @@
         </div>
       </mat-expansion-panel-header>
 
-      <div class="cancha-card">
-        <div class="cancha-img">
-          <img [src]="'../../assets/images/cancha.jpg'" [alt]="court.name">
+      <div class="cancha-card" style="display: flex; gap: 32px; align-items: flex-start;">
+        <div class="cancha-img" style="flex: 0 0 180px;">
+          <img [src]="'../../assets/images/cancha.jpg'" [alt]="court.name" style="width: 180px; height: 120px; object-fit: cover; border-radius: 8px;">
         </div>
-        <div class="cancha-info">
-          <div class="cancha-info-col">
-            <p>
-              <strong>Nombre:</strong>
-              <span *ngIf="editandoCanchaID !== court.id">{{ court.name }}</span>
-              <input *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.name" class="edit-input" />
-            </p>
-            <p>
-              <strong>Patrocinador:</strong>
-              <span *ngIf="editandoCanchaID !== court.id">{{ court.sponsor || 'Sin patrocinador' }}</span>
-              <input *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.sponsor" class="edit-input" />
-            </p>
-            <p>
-              <strong>Tipo:</strong>
-              <span *ngIf="editandoCanchaID !== court.id">{{ court.type }}</span>
-              <select *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.type" class="edit-input">
-                <option [value]="'Privado'">Privado</option>
-                <option [value]="'Público'">Público</option>
-                <option [value]="'Cubierto'">Cubierto</option>
-                <option [value]="'Descubierto'">Descubierto</option>
-              </select>
-            </p>
-          </div>
-          <div class="cancha-info-col">
-            <p *ngIf="editandoCanchaID !== court.id">
-              <strong>Club ID:</strong>
-              <span>{{ court.club_id }}</span>
-            </p>
-            <p>
-              <strong>Estado:</strong>
-              <span *ngIf="editandoCanchaID !== court.id">{{ court.availability ? 'Disponible' : 'No disponible'
-                }}</span>
-              <select *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.availability" class="edit-input">
-                <option [ngValue]="1">Disponible</option>
-                <option [ngValue]="0">No disponible</option>
-              </select>
-            </p>
-            <div *ngIf="editandoCanchaID === court.id">
-              <input type="file" accept="image/png, image/jpeg" hidden #fileInput
-                (change)="onLogoSelected($event, court)">
-              <button mat-raised-button color="primary" class="btn-logo-edit" (click)="fileInput.click()">
-                Cambiar logo
-              </button>
+        <div class="cancha-info" style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; gap: 32px;">
+            <div class="cancha-info-col" style="flex: 1;">
+              <p>
+                <strong>Nombre:</strong>
+                <span *ngIf="editandoCanchaID !== court.id">{{ court.name }}</span>
+                <input *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.name" class="edit-input" />
+              </p>
+              <p>
+                <strong>Patrocinador:</strong>
+                <span *ngIf="editandoCanchaID !== court.id">{{ court.sponsor || 'Sin patrocinador' }}</span>
+                <input *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.sponsor" class="edit-input" />
+              </p>
+              <p>
+                <strong>Tipo:</strong>
+                <span *ngIf="editandoCanchaID !== court.id">{{ court.type }}</span>
+                <select *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.type" class="edit-input">
+                  <option [value]="'Privado'">Privado</option>
+                  <option [value]="'Público'">Público</option>
+                  <option [value]="'Cubierto'">Cubierto</option>
+                  <option [value]="'Descubierto'">Descubierto</option>
+                </select>
+              </p>
+            </div>
+            <div class="cancha-info-col" style="flex: 1;">
+              <p *ngIf="editandoCanchaID !== court.id">
+                <strong>Club ID:</strong>
+                <span>{{ court.club_id }}</span>
+              </p>
+              <p>
+                <strong>Estado:</strong>
+                <span *ngIf="editandoCanchaID !== court.id">{{ court.availability ? 'Disponible' : 'No disponible' }}</span>
+                <select *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.availability" class="edit-input">
+                  <option [ngValue]="1">Disponible</option>
+                  <option [ngValue]="0">No disponible</option>
+                </select>
+              </p>
+              <div *ngIf="editandoCanchaID === court.id">
+                <input type="file" accept="image/png, image/jpeg" hidden #fileInput (change)="onLogoSelected($event, court)">
+                <button mat-raised-button color="primary" class="btn-logo-edit" (click)="fileInput.click()">
+                  Cambiar logo
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="cancha-actions">
-          <div *ngIf="editandoCanchaID === court.id" class="edit-actions">
-            <button mat-raised-button class="btn-azul" (click)="guardarCanchaEditada(court)">Aceptar</button>
-            <button mat-button class="btn-cancel" (click)="cancelarEdicion(court)">Cancelar</button>
+          <div class="cancha-actions" style="margin-top: 16px;">
+            <div *ngIf="editandoCanchaID === court.id" class="edit-actions">
+              <button mat-raised-button class="btn-azul" (click)="guardarCanchaEditada(court)">Aceptar</button>
+              <button mat-button class="btn-cancel" (click)="cancelarEdicion(court)">Cancelar</button>
+            </div>
+            <button *ngIf="editandoCanchaID !== court.id" mat-icon-button class="delete-btn" (click)="confirmarEliminarCancha(court)">
+              <mat-icon>delete</mat-icon>
+            </button>
           </div>
-          <button *ngIf="editandoCanchaID !== court.id" mat-icon-button class="delete-btn"
-            (click)="confirmarEliminarCancha(court)">
-            <mat-icon>delete</mat-icon>
-          </button>
-
         </div>
       </div>
     </mat-expansion-panel>
