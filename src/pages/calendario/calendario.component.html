@@ -1,57 +1,52 @@
-<div class="canchas-container" style="margin-top: 100px;"  >
-  <!-- Encabezado -->
-    <h2>Canchas</h2>
+<div class="canchas-container" style="margin-top: 100px;">
 
-    <!-- Filtro de estado -->
-    <mat-form-field appearance="outline" class="estado-select">
-      <mat-label>Selecciona Estado...</mat-label>
-      <mat-select>
-        <mat-option value="cdmx">Ciudad de México</mat-option>
-        <mat-option value="jal">Jalisco</mat-option>
-        <mat-option value="nl">Nuevo León</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <!-- Filtro de estado -->
+  <mat-form-field appearance="outline" class="estado-select">
+    <mat-label>Selecciona Estado...</mat-label>
+    <mat-select>
+      <mat-option value="cdmx">Ciudad de México</mat-option>
+      <mat-option value="jal">Jalisco</mat-option>
+      <mat-option value="nl">Nuevo León</mat-option>
+    </mat-select>
+  </mat-form-field>
 
-    <!-- Título Mes/Año -->
-    <div class="mes-actual">
-      <h3>{{ mesActual }} - {{ anioActual }}</h3>
-    </div>
-
+  <!-- Layout horizontal: calendario y tabla -->
   <!-- Calendario -->
-  <mat-card class="calendar-card" style="max-width: 600px; margin: 0 auto;">
-    <div class="calendar-body" style="padding: 16px;">
-      <full-calendar [options]="calendarOptions"></full-calendar>
+  <mat-card class="calendar-card" style="width: 100%; max-width: 1200px; margin: 0 auto;">
+    <div class="calendar-body" style="padding: 16px; width: 100%;">
+      <div #calendarContainer class="calendar-container"></div>
     </div>
   </mat-card>
-  <!-- Tabla de reservas/eventos -->
-  <mat-card style="max-width: 900px; margin: 32px auto 0 auto;">
+
+  <!-- Tabla -->
+  <mat-card style="width: 100%; max-width: 1200px; margin: 32px auto 0 auto;">
     <div style="overflow-x:auto;">
       <table mat-table [dataSource]="dataSource" class="mat-elevation-z1" style="width:100%; min-width:600px;">
-        <!-- Fecha Column -->
+        <!-- Fecha -->
         <ng-container matColumnDef="fecha">
           <th mat-header-cell *matHeaderCellDef> Fecha </th>
-          <td mat-cell *matCellDef="let element"> {{element.fecha}} </td>
+          <td mat-cell *matCellDef="let element"> {{ element.fecha }} </td>
         </ng-container>
 
-        <!-- Hora Column -->
+        <!-- Hora -->
         <ng-container matColumnDef="hora">
           <th mat-header-cell *matHeaderCellDef> Hora </th>
-          <td mat-cell *matCellDef="let element"> {{element.hora}} </td>
+          <td mat-cell *matCellDef="let element"> {{ element.hora }} </td>
         </ng-container>
 
-        <!-- Cancha Column -->
+        <!-- Cancha -->
         <ng-container matColumnDef="cancha">
           <th mat-header-cell *matHeaderCellDef> Cancha </th>
-          <td mat-cell *matCellDef="let element"> {{element.cancha}} </td>
+          <td mat-cell *matCellDef="let element"> {{ element.cancha }} </td>
         </ng-container>
 
-        <!-- Club Column -->
+        <!-- Club -->
         <ng-container matColumnDef="club">
           <th mat-header-cell *matHeaderCellDef> Club </th>
-          <td mat-cell *matCellDef="let element"> {{element.club}} </td>
+          <td mat-cell *matCellDef="let element"> {{ element.club }} </td>
         </ng-container>
 
-        <!-- Acciones Column -->
+        <!-- Acciones -->
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef> Acciones </th>
           <td mat-cell *matCellDef="let element">
@@ -60,9 +55,9 @@
           </td>
         </ng-container>
 
+        <!-- Filas -->
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
     </div>
   </mat-card>
-</div>
