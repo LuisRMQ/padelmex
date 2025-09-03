@@ -63,7 +63,6 @@ export class InfoCanchaDialogComponent {
       ...horario,
       id: horario.courts_schedules_id,
       club_id: horario.club_id ?? horario.clubId,
-      availability: typeof horario.availability === 'string' ? horario.availability === 'true' : !!horario.availability
     };
     delete this.editHorario.clubId;
   }
