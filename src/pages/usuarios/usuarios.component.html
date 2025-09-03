@@ -200,8 +200,13 @@
             <strong>Club</strong><br>
             <span *ngIf="!editando">{{ selectedUsuario.club }}</span>
             <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <input matInput [(ngModel)]="formUsuario.club">
+              <mat-select [(ngModel)]="formUsuario.club_id">
+                <mat-option *ngFor="let club of clubs" [value]="club.id">
+                  {{ club.name }}
+                </mat-option>
+              </mat-select>
             </mat-form-field>
+
           </div>
 
           <!-- Mano Preferida -->
@@ -210,8 +215,8 @@
             <span *ngIf="!editando">{{ selectedUsuario.manoPreferida }}</span>
             <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
               <mat-select [(ngModel)]="formUsuario.manoPreferida">
-                <mat-option value="Zurdo">Zurdo</mat-option>
-                <mat-option value="Diestro">Diestro</mat-option>
+                <mat-option value="left-handed">Zurdo</mat-option>
+                <mat-option value="'right-handed">Diestro</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -221,36 +226,27 @@
             <strong>Categoría</strong><br>
             <span *ngIf="!editando">{{ selectedUsuario.categoria }}</span>
             <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <input matInput [(ngModel)]="formUsuario.categoria">
+              <mat-select [(ngModel)]="formUsuario.category_id">
+                <mat-option *ngFor="let cat of categories" [value]="cat.id">
+                  {{ cat.name }}
+                </mat-option>
+              </mat-select>
             </mat-form-field>
           </div>
 
           <!-- Victorias/Torneos -->
-          <div>
-            <strong>Victorias/Torneos</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.victorias }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <input matInput type="text" [(ngModel)]="formUsuario.victorias">
-            </mat-form-field>
-          </div>
+         
 
-          <!-- Puntos -->
-          <div>
-            <strong>Puntos</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.puntos }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <input matInput type="number" [(ngModel)]="formUsuario.puntos">
-            </mat-form-field>
-          </div>
-
+          
           <!-- Rol -->
           <div>
             <strong>Rol</strong><br>
             <span *ngIf="!editando">{{ selectedUsuario.rol }}</span>
             <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <mat-select [(ngModel)]="formUsuario.rol">
-                <mat-option value="Jugador">Jugador</mat-option>
-                <mat-option value="Administrador">Administrador</mat-option>
+              <mat-select [(ngModel)]="formUsuario.rol_id">
+                <mat-option *ngFor="let rol of roles" [value]="rol.id">
+                  {{ rol.name }}
+                </mat-option>
               </mat-select>
             </mat-form-field>
           </div>

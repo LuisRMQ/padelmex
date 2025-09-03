@@ -27,7 +27,7 @@ import interactionPlugin from '@fullcalendar/interaction';
     MatCardModule,
     MatIconModule,
     MatButtonModule, 
-    ScheduleDateDialogComponent
+    
   ]
 })
 export class CalendarioComponent implements AfterViewInit {
