@@ -32,7 +32,7 @@ export class ClubsService extends ApiBaseService {
         return this.post('/create/club', data);
     }
 
-    updateClub(id: number, data: Partial<Club>): Observable<any> {
+    updateClub(id: number, data: Partial<Club> | FormData): Observable<any> {
         return this.put(`/update/club/${id}`, data);
     }
 

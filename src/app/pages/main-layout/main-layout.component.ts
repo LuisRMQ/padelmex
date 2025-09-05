@@ -1,13 +1,19 @@
-import { Component } from '@angular/core';
-import { HeaderComponent } from "../../../pages/layout/header/header.component";
-import { SidebarComponent } from "../../../pages/layout/sidebar/sidebar.component";
+import { Component, computed, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
+import { CustomSidenavComponent } from "../../sidenav/custom-sidenav/custom-sidenav.component";
 
 @Component({
-  selector: 'app-main-layout',
-  standalone: true,
-  imports: [HeaderComponent, SidebarComponent, RouterOutlet],
-  templateUrl: './main-layout.component.html',
-  styleUrls: ['./main-layout.component.css']
+    selector: 'app-main-layout',
+    standalone: true,
+    imports: [RouterOutlet, MatToolbarModule, MatIconModule, MatSidenavModule, MatListModule, CustomSidenavComponent],
+    templateUrl: './main-layout.component.html',
+    styleUrls: ['./main-layout.component.css']
 })
-export class MainLayoutComponent { }
+export class MainLayoutComponent {
+    collapsed = signal(false);
+    sideNavWidth = computed(() => this.collapsed() ? '65px' : '250px');
+}

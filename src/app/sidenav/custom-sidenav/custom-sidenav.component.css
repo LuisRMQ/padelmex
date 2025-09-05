@@ -1,0 +1,86 @@
+:host * {
+  transition: all 0.3s ease-in-out !important;
+}
+
+.sidenav-header {
+  padding-top: 24px;
+  text-align: center;
+}
+
+.sidenav-logo {
+  border-radius: 100%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.header-text {
+  text-align: center;
+}
+
+.header-text h2 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.header-text p {
+  margin: 0;
+  font-size: 0.8em;
+}
+
+.hide-header-text {
+  opacity: 0;
+  height: 0px;
+}
+
+/* Cambiar el color del icono y texto al estar activo */
+.mat-mdc-list-item.active-link mat-icon,
+.mat-mdc-list-item.active-link span {
+  color: #28a745 !important;
+  font-weight: 500;
+}
+
+/* Hover normal */
+.mat-mdc-list-item:hover {
+  border-radius: 0 !important;
+  /* 🔹 elimina el efecto circular */
+  background-color: #f3f4f6 !important;
+  /* 🔹 gris claro */
+}
+
+/* Hover sobre el item activo */
+.mat-mdc-list-item.active-link:hover {
+  background-color: #d3e8d8 !important;
+  /* 🔹 azul más fuerte */
+}
+
+/* Item activo */
+.mat-mdc-list-item.active-link {
+  border-radius: 0 !important;
+  background-color: #e4f0e7 !important;
+  /* 🔹 azul claro */
+  color: #1e293b !important;
+  font-weight: 500;
+  border-left: 5px solid;
+  border-left-color: #28a745;
+}
+
+.menu-item {
+  border-radius: 0 !important;
+  border-left: 5px solid;
+  border-left-color: rgba(0, 0, 0, 0);
+}
+
+.menu-icon {
+  font-family: 'Material Icons Outlined' !important;
+}
+
+.active-link .menu-icon {
+  font-family: 'Material Icons' !important;
+}
+
+.sidenav-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}

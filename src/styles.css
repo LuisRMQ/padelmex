@@ -8,6 +8,7 @@ body {
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    --primary-color: #1f4c7c;
 }
 
 .mat-mdc-snack-bar-container.snackbar-success .mdc-snackbar__surface {

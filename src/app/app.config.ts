@@ -12,9 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
-import { FullCalendarModule } from '@fullcalendar/angular'; 
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import { FullCalendarModule } from '@fullcalendar/angular';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -24,16 +22,16 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHttpClient(),
 
-  provideNativeDateAdapter(),
+    provideNativeDateAdapter(),
 
     importProvidersFrom(
       ReactiveFormsModule,
-  MatFormFieldModule,
-  MatInputModule,
-  MatIconModule,
-  MatButtonModule,
-  MatTableModule,
-  FullCalendarModule,    
+      MatFormFieldModule,
+      MatInputModule,
+      MatIconModule,
+      MatButtonModule,
+      MatTableModule,
+      FullCalendarModule,
     )
   ]
 };

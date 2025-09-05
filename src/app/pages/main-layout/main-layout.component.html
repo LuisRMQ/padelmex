@@ -1,11 +1,16 @@
-<div class="app align-content-stretch d-flex flex-wrap">
-  <app-sidebar></app-sidebar>
-  <div class="app-container">
-    <app-header></app-header>
-     <!-- <app-dashboard class="mt-4"></app-dashboard > -->
-
-
- <router-outlet></router-outlet>
-
-  </div>
-</div>
+<mat-toolbar color="primary" class="mat-elevation-z3">
+    <button mat-icon-button aria-label="Menú" (click)="collapsed.set(!collapsed())">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <span style="margin-left: 8px; color: #fff;">PadelMex</span>
+</mat-toolbar>
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav mode="side" opened class="sidenav" [style.width]="sideNavWidth()">
+        <app-custom-sidenav [collapsed]="collapsed()"></app-custom-sidenav>
+    </mat-sidenav>
+    <mat-sidenav-content class="sidenav-content" [style.marginLeft]="sideNavWidth()">
+        <div class="content">
+            <router-outlet></router-outlet>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

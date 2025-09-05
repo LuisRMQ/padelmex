@@ -18,9 +18,6 @@ import { MatDivider } from "@angular/material/divider";
 import { RegistrarHorarioDialogComponent } from './registrar-horario-dialog/registrar-horario-dialog.component';
 import { HorariosDialogComponent } from './info-club-dialog/info-club-dialog.component';
 
-
-
-
 @Component({
   selector: 'app-clubs',
   templateUrl: './clubs.component.html',
@@ -131,21 +128,53 @@ export class ClubsComponent implements OnInit {
   }
 
   guardarClubEditado(club: Club) {
-    this.clubsService.updateClub(club.id, club).subscribe({
-      next: (res) => {
-        this.editandoClubId = null;
-        this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success']
-        });
-      },
-      error: (err) => {
-        this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-error']
-        });
-      }
-    });
+    // Validación de campos obligatorios
+    if (!club.name || !club.email || !club.phone || !club.rfc || !club.address || !club.type || !club.city_id) {
+      this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
+      return;
+    }
+    if (this.logoFile) {
+      const formData = new FormData();
+      Object.keys(club).forEach(key => {
+        const value = (club as any)[key];
+        if (value !== null && value !== undefined) {
+          formData.append(key, value);
+        }
+      });
+      formData.set('photo', this.logoFile);
+      this.clubsService.updateClub(club.id, formData).subscribe({
+        next: (res) => {
+          this.editandoClubId = null;
+          this.logoFile = null;
+          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-success']
+          });
+        },
+        error: (err) => {
+          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    } else {
+      this.clubsService.updateClub(club.id, club).subscribe({
+        next: (res) => {
+          this.editandoClubId = null;
+          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-success']
+          });
+        },
+        error: (err) => {
+          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    }
   }
 
   onLogoSelected(event: Event, club: Club) {

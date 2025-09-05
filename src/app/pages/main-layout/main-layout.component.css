@@ -1,0 +1,40 @@
+mat-toolbar {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    position: relative;
+    z-index: 2;
+    background: var(--primary-color);
+}
+
+mat-sidenav-container {
+    height: calc(100vh - 64px);
+}
+
+button[mat-icon-button] {
+    background: none;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    margin-top: 4px;
+    transition: transform 0.1s;
+    color: white;
+}
+
+button[mat-icon-button]:active {
+    transform: scale(0.92);
+}
+
+.content {
+    padding: 16px;
+}
+
+mat-sidenav {
+  transition: width 0.3s ease-in-out !important;
+}
+
+mat-sidenav-content {
+  transition: margin-left 0.3s ease-in-out !important;
+}
+
+.sidenav-container{
+    background: #dfe3e8;
+}
