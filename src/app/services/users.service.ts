@@ -40,7 +40,12 @@ export class UsersService extends ApiBaseService {
 
 
     updateUserById(id: number, data: any) {
-        return this.put(`/user/update/${id}`, data);
+        const isFormData = data instanceof FormData;
+        if (isFormData) {
+            return this.post(`/user/update/${id}`, data);
+        } else {
+            return this.put(`/user/update/${id}`, data);
+        }
     }
 
 

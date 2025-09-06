@@ -36,22 +36,29 @@ export class CustomSidenavComponent implements OnInit {
 
   // Signals para usuario
   currentUser = signal<User | null>(null);
-  userName = computed(() => this.currentUser()?.email ? `${this.currentUser()?.email}` : 'Usuario');
-  userPhoto = 'assets/default-user.png'; // usa tu path por defecto
-  userRole = computed(() => this.currentUser()?.rol ? this.currentUser()?.rol : 'Invitado');
+
+  userName = computed(() =>
+    this.currentUser() ? `${this.currentUser()?.name} ${this.currentUser()?.lastname}` : 'Usuario'
+  );
+
+  userRole = computed(() =>
+    this.currentUser()?.rol ? this.currentUser()?.rol : 'Invitado'
+  );
+
+  userPhoto = computed(() =>
+    this.currentUser()?.profile_photo
+      ? this.currentUser()!.profile_photo
+      : '../../../assets/images/iconuser.png'
+  );
 
   profilePicSize = computed(() => this.sideNavCollapsed() ? '32' : '100');
 
-  constructor(private authService: AuthService,
-    private router: Router
-  ) { }
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // Cargar info inicial del usuario
     const userData = this.authService.getUserData();
     if (userData) this.currentUser.set(userData);
 
-    // Escuchar cambios futuros (BehaviorSubject)
     this.authService.getCurrentUser().subscribe(user => {
       this.currentUser.set(user);
     });
@@ -68,5 +75,4 @@ export class CustomSidenavComponent implements OnInit {
       }
     });
   }
-
 }

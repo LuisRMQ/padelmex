@@ -12,6 +12,7 @@ export interface User {
   rol_id: number;
   rol: string;
   club_rfc: string;
+  profile_photo?: string;
 }
 
 @Injectable({
@@ -19,12 +20,31 @@ export interface User {
 })
 export class AuthService {
   private apiUrl = '/web';
-  private logoutUrl = ''; 
+  private logoutUrl = '';
 
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
   private currentUserSubject = new BehaviorSubject<User | null>(this.getUserData());
 
-  constructor(private api: ApiBaseService) {}
+  constructor(private api: ApiBaseService) { }
+
+
+  getUserById(userId: number): Observable<User> {
+    const token = this.getToken();
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json'
+    });
+
+    return this.api.get<User>(`/user/${userId}`, { headers }).pipe(
+      tap((user: User) => {
+        localStorage.setItem('userData', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }),
+      catchError((error) => throwError(() => error))
+    );
+  }
+
 
   login(loginData: UserLoginData): Observable<any> {
     const apiData = {
@@ -42,6 +62,8 @@ export class AuthService {
           localStorage.setItem('userData', JSON.stringify(response.user));
           this.currentUserSubject.next(response.user);
           this.isAuthenticatedSubject.next(true);
+          this.getUserById(response.user.id).subscribe();
+
         } else if (response.msg === 'incorrect credentials') {
           throw new Error('Credenciales incorrectas');
         } else {
@@ -110,4 +132,9 @@ export class AuthService {
   private hasToken(): boolean {
     return !!localStorage.getItem('authToken');
   }
+
+
+
+
 }
+

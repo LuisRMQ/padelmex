@@ -99,9 +99,9 @@ export class UsuariosComponent implements OnInit {
           correo: u.email,
           genero: u.gender,
           rol: u.rol || '-',
-          rol_id: u.rol_id,       // <- traer id real
+          rol_id: u.rol_id,
           club: `Club ${u.club_id}` || '-',
-          club_id: u.club_id,     // <- traer id real
+          club_id: u.club_id,
           categoria: u.category || '-',
           victorias: '-',
           puntos: 0,
@@ -146,9 +146,9 @@ export class UsuariosComponent implements OnInit {
       correo: usuario.correo,
       genero: usuario.genero,
       rol: usuario.rol,
-      rol_id: usuario.rol_id,    // <- ID correcto
+      rol_id: usuario.rol_id,    
       club: usuario.club,
-      club_id: usuario.club_id,  // <- ID correcto
+      club_id: usuario.club_id,  
       categoria: usuario.categoria,
       puntos: usuario.puntos,
       manoPreferida: usuario.manoPreferida,
@@ -202,14 +202,68 @@ export class UsuariosComponent implements OnInit {
         this.cargarUsuarios();
       },
       error: (err) => {
-        console.error('Error al actualizar usuario:', err); // Aquí se ve todo
+        console.error('Error al actualizar usuario:', err);
         if (err.error) {
-          console.error('Detalle del error:', err.error); // Esto muestra el mensaje de la API
+          console.error('Detalle del error:', err.error);
         }
         alert('❌ No se pudo actualizar el usuario. Revisa la consola para más detalles.');
       }
     });
   }
+
+
+
+  onProfilePhotoSelected(event: any) {
+  const file: File = event.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('profile_photo', file);
+  formData.append('name', this.formUsuario.nombre);
+  formData.append('lastname', this.formUsuario.apellidos);
+  formData.append('email', this.formUsuario.correo);
+  formData.append('gender', this.formUsuario.genero);
+  formData.append('club_id', String(this.formUsuario.club_id));
+
+  if (this.formUsuario.rol_id) formData.append('rol_id', String(this.formUsuario.rol_id));
+  if (this.formUsuario.category_id) formData.append('category_id', String(this.formUsuario.category_id));
+  if (this.formUsuario.manoPreferida) formData.append('hand', this.formUsuario.manoPreferida);
+
+  console.log('Contenido real de FormData:');
+  formData.forEach((value, key) => console.log(key, value));
+
+  formData.append('_method', 'PUT');
+
+  this.usersService.updateUserById(this.formUsuario.id, formData).subscribe({
+    next: (res) => {
+      alert('✅ Foto actualizada correctamente');
+      this.selectedUsuario.fotoPerfil = URL.createObjectURL(file);
+      this.cargarUsuarios();
+    },
+    error: (err) => {
+      console.error('Error completo:', err);
+
+      console.log('Mensaje:', err.message);
+
+      console.log('Status:', err.status);
+
+      console.log('Body de la respuesta:', err.error);
+
+      if (err.error?.errors) {
+        console.log('Errores de validación detallados:', err.error.errors);
+      }
+    }
+  });
+}
+
+
+
+
+
+
+
+
+
 
 
 

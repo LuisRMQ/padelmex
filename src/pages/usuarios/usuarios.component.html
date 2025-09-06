@@ -100,12 +100,17 @@
         <mat-card-header>
           <mat-card-title>Foto de Perfil</mat-card-title>
         </mat-card-header>
+
+        <!-- Imagen de perfil -->
         <img mat-card-image [src]="selectedUsuario.fotoPerfil" alt="Foto de perfil">
+
         <div class="card-actions">
-          <button mat-raised-button color="accent">CAMBIAR FOTO</button>
+          <button mat-raised-button color="accent" (click)="fileInput.click()">CAMBIAR FOTO</button>
+          <input #fileInput type="file" accept="image/*" style="display:none" (change)="onProfilePhotoSelected($event)">
           <small>FORMATOS: JPG, PNG - TAMAÑO MÁXIMO: 5 MB - RESOLUCIÓN MÍNIMA: 500x500 PX</small>
         </div>
       </mat-card>
+
 
       <!-- Identificación -->
       <mat-card class="foto-card">
@@ -235,9 +240,9 @@
           </div>
 
           <!-- Victorias/Torneos -->
-         
 
-          
+
+
           <!-- Rol -->
           <div>
             <strong>Rol</strong><br>

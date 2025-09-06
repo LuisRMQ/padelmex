@@ -8,10 +8,15 @@ import { Observable } from 'rxjs';
 export class ApiBaseService {
   protected apiUrl = 'http://137.184.178.6/api';
 
-  constructor(protected http: HttpClient) {}
+  constructor(protected http: HttpClient) { }
 
-  get<T>(endpoint: string, params?: HttpParams): Observable<T> {
-    return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params, observe: 'body' });
+  get<T>(endpoint: string, params?: HttpParams): Observable<T>;
+  get<T>(endpoint: string, options?: { headers?: HttpHeaders }): Observable<T>;
+  get<T>(endpoint: string, second?: HttpParams | { headers?: HttpHeaders }): Observable<T> {
+    if (second instanceof HttpParams) {
+      return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params: second, observe: 'body' });
+    }
+    return this.http.get<T>(`${this.apiUrl}${endpoint}`, { ...second, observe: 'body' });
   }
 
   post<T>(endpoint: string, data: any, headers?: HttpHeaders): Observable<T> {
