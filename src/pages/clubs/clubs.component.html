@@ -1,114 +1,52 @@
-<div class="clubs-container">
+<div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+  <h2>Clubes</h2>
+  <button mat-raised-button class="btn-registrar" (click)="abrirModalRegistrarClub()">
+    REGISTRAR CLUB
+  </button>
+</div>
 
-  <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-    <h2>Clubs</h2>
-    <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarClub()">
-      REGISTRAR CLUB
+<mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
+
+<div class="busqueda-container">
+  <mat-form-field appearance="outline" class="busqueda-field">
+    <mat-label>Buscar club</mat-label>
+    <input matInput placeholder="Nombre, correo o dirección" [(ngModel)]="busquedaClub" (ngModelChange)="filtrarClubes()">
+    <button *ngIf="busquedaClub" matSuffix mat-icon-button aria-label="Limpiar" (click)="limpiarBusqueda()">
+      <mat-icon>close</mat-icon>
     </button>
-  </div>
-  <mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
+  </mat-form-field>
+</div>
 
-  <mat-accordion class="clubs-list" multi="true">
-    <mat-expansion-panel *ngFor="let club of clubs" [expanded]="false">
-      <mat-expansion-panel-header>
-        <div style="display: flex; align-items: center; width: 100%;">
-          <mat-panel-title style="flex: 1;">
-            {{ club.name }}
-            <button mat-icon-button color="primary" class="edit-btn"
-              (click)="editarClub(club); $event.stopPropagation();">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="accent" class="add-horario-btn"
-              (click)="abrirModalRegistrarHorario(club); $event.stopPropagation();">
-              <mat-icon>schedule</mat-icon>
-            </button>
-          </mat-panel-title>
-          <button mat-icon-button color="accent" class="info-horario-btn"
-            (click)="abrirModalHorarios(club); $event.stopPropagation();" style="margin-left: auto;">
-            <mat-icon>info</mat-icon>
-          </button>
+<div class="clubs-cards-container">
+  <mat-card *ngFor="let club of clubesFiltrados" class="club-card" appearance="outlined">
+    <mat-card-header>
+      <div class="card-header-row">
+        <div>
+          <mat-card-title class="club-name">{{ club.name }}</mat-card-title>
+          <mat-card-subtitle class="club-email">{{ club.email }}</mat-card-subtitle>
         </div>
-      </mat-expansion-panel-header>
-
-
-      <div class="club-details-row">
-        <div class="club-details-table">
-          <div class="club-details-cell">
-            <strong>Nombre:</strong>
-            <span *ngIf="editandoClubId !== club.id">{{ club.name }}</span>
-            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.name" class="edit-input" />
-          </div>
-          <div class="club-details-cell">
-            <strong>Correo:</strong>
-            <span *ngIf="editandoClubId !== club.id">{{ club.email }}</span>
-            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.email" class="edit-input" />
-          </div>
-          <div class="club-details-cell">
-            <strong>Teléfono:</strong>
-            <span *ngIf="editandoClubId !== club.id">{{ club.phone }}</span>
-            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.phone" class="edit-input" />
-          </div>
-          <div class="club-details-cell">
-            <strong>RFC:</strong>
-            <span *ngIf="editandoClubId !== club.id">{{ club.rfc }}</span>
-            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.rfc" class="edit-input" />
-          </div>
-          <div class="club-details-cell">
-            <strong>Sitio Web:</strong>
-            <span *ngIf="editandoClubId !== club.id">
-              <a [href]="club.web_site" target="_blank">{{ club.web_site }}</a>
-            </span>
-            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.web_site" class="edit-input" />
-          </div>
-          <div class="club-details-cell">
-            <strong>Tipo:</strong>
-            <span *ngIf="editandoClubId !== club.id">{{ club.type | titlecase }}</span>
-            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.type" class="edit-input" />
-          </div>
-          <div class="club-details-cell">
-            <strong>Dirección:</strong>
-            <span *ngIf="editandoClubId !== club.id">{{ club.address }}</span>
-            <input *ngIf="editandoClubId === club.id" [(ngModel)]="club.address" class="edit-input" />
-          </div>
-          <div class="club-details-cell">
-            <strong>Ciudad ID:</strong>
-            <span *ngIf="editandoClubId !== club.id">{{ club.city_id }}</span>
-            <select *ngIf="editandoClubId === club.id" [(ngModel)]="club.city_id" class="edit-input">
-              <option [value]="1">Ciudad 1</option>
-              <option [value]="2">Ciudad 2</option>
-            </select>
-          </div>
-          <div class="club-details-cell">
-            <strong>Estatus:</strong>
-            <span *ngIf="editandoClubId !== club.id" [ngClass]="club.status ? 'activo' : 'inactivo'">
-              {{ club.status ? 'Activo' : 'Inactivo' }}
-            </span>
-            <select *ngIf="editandoClubId === club.id" [(ngModel)]="club.status" class="edit-input">
-              <option [value]="1">Activo</option>
-              <option [value]="0">Inactivo</option>
-            </select>
-          </div>
-          <div class="club-details-cell" *ngIf="club.logo">
-            <div *ngIf="editandoClubId === club.id">
-              <input type="file" accept="image/png, image/jpeg" hidden #fileInput
-                (change)="onLogoSelected($event, club)">
-              <button mat-raised-button color="primary" class="btn-logo-edit" (click)="fileInput.click()">
-                Cambiar logo
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="club-logo" *ngIf="club.logo">
-          <img [src]="'../../assets/images/padel.jpg'" alt="Logo de {{ club.name }}" width="120">
-        </div>
-        <button mat-icon-button color="warn" class="delete-btn" (click)="confirmarEliminarClub(club)">
-          <mat-icon>delete</mat-icon>
+        <button mat-icon-button class="edit-btn" aria-label="Editar club" (click)="abrirEditarClubDialog(club)">
+          <mat-icon>edit</mat-icon>
         </button>
-        <div *ngIf="editandoClubId === club.id" class="edit-actions">
-          <button mat-raised-button class="btn-azul" (click)="guardarClubEditado(club)">Aceptar</button>
-          <button mat-button class="btn-cancel" (click)="cancelarEdicion(club)">Cancelar</button>
-        </div>
       </div>
-    </mat-expansion-panel>
-  </mat-accordion>
+    </mat-card-header>
+    <img mat-card-image [src]="'assets/logos/azteca.png'" alt="Logo de {{ club.name }}">
+    <mat-card-content>
+      <p class="direccion-truncada"><strong>Dirección:</strong> <span class="direccion-text">{{ club.address }}</span>
+      </p>
+      <p><strong>Teléfono:</strong> {{ club.phone }}</p>
+      <p><strong>Estatus:</strong> {{ club.status ? 'Activo' : 'Inactivo' }}</p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-icon-button color="primary" (click)="abrirModalInfoClub(club)">
+        <mat-icon>visibility</mat-icon>
+      </button>
+      <button mat-icon-button color="accent" (click)="abrirModalRegistrarHorario(club)">
+        <mat-icon>schedule</mat-icon>
+      </button>
+      <button mat-icon-button color="warn" (click)="confirmarEliminarClub(club)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-card-actions>
+  </mat-card>
 </div>

@@ -1,43 +1,49 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RegistrarClubDialogComponent } from './registrar-club-dialog/registrar-club-dialog.component';
 import { ClubsService, Club } from '../../app/services/clubs.service';
-import { HorariosService } from '../../app/services/horarios-clubes.service'; 
+import { HorariosService } from '../../app/services/horarios-clubes.service';
 
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
 import { FormsModule } from '@angular/forms';
 import { MatDivider } from "@angular/material/divider";
 import { RegistrarHorarioDialogComponent } from './registrar-horario-dialog/registrar-horario-dialog.component';
-import { HorariosDialogComponent } from './info-club-dialog/info-club-dialog.component';
+import { HorariosDialogComponent } from './info-horarios-club-dialog/info-horarios-club-dialog.component';
+import { MatCardModule } from '@angular/material/card';
+import { InformacionClubDialogComponent } from './informacion-club-dialog/informacion-club-dialog.component';
+import { EditarClubDialogComponent } from './editar-club-dialog/editar-club-dialog.component';
+
+/**
+ * @title Card overview
+ */
 
 @Component({
   selector: 'app-clubs',
   templateUrl: './clubs.component.html',
   styleUrls: ['./clubs.component.css'],
+  standalone: true,
   imports: [
+    MatCardModule,
+    MatButtonModule,
     MatIconModule,
+    CommonModule,
+    MatDivider,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
-    CommonModule,
-    MatExpansionModule,
-    MatDialogModule,
-    FormsModule,
-    MatDivider
+    FormsModule
   ],
-  standalone: true
 })
 export class ClubsComponent implements OnInit {
 
   clubs: Club[] = [];
+  clubesFiltrados: Club[] = [];
+  busquedaClub = '';
   editandoClubId: number | null = null;
   logoFile: File | null = null;
   logoPreview: string = '../../assets/images/placeholder.png';
@@ -55,6 +61,7 @@ export class ClubsComponent implements OnInit {
     this.clubsService.getClubs().subscribe({
       next: (res: any) => {
         this.clubs = res.data;
+        this.clubesFiltrados = this.clubs;
       },
       error: (err) => {
         console.error('Error al cargar clubs', err);
@@ -62,17 +69,32 @@ export class ClubsComponent implements OnInit {
     });
   }
 
+  filtrarClubes() {
+    const filtro = this.busquedaClub?.toLowerCase() || '';
+    this.clubesFiltrados = this.clubs.filter(club =>
+      club.name?.toLowerCase().includes(filtro) ||
+      club.email?.toLowerCase().includes(filtro) ||
+      club.address?.toLowerCase().includes(filtro)
+    );
+  }
+
+  limpiarBusqueda() {
+    this.busquedaClub = '';
+    this.clubesFiltrados = this.clubs;
+  }
+
   abrirModalRegistrarClub() {
     const dialogRef = this.dialog.open(RegistrarClubDialogComponent, {
       width: '800px',
       maxWidth: '50vw',
-      height: '800px',
-      maxHeight: '70vh',
+      height: '80vh',
+      maxHeight: '95vh',
       panelClass: 'custom-dialog'
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.clubesFiltrados = this.clubs;
         this.snackBar.open('✅ Club registrado exitosamente', 'Cerrar', {
           duration: 3000,
           panelClass: ['snackbar-success'],
@@ -122,27 +144,58 @@ export class ClubsComponent implements OnInit {
     });
   }
 
-  editarClub(club: Club) {
-    this.editandoClubId = club.id;
-    this.backupClub = { ...club };
+  abrirModalInfoClub(club: Club) {
+    const dialogRef = this.dialog.open(InformacionClubDialogComponent, {
+      width: '600px',
+      maxWidth: '80vw',
+      data: { club }
+    });
+
+    // dialogRef.afterClosed().subscribe(result => {
+    //   if (result) {
+    //     this.snackBar.open('✅ Información del club actualizada', 'Cerrar', {
+    //       duration: 3000,
+    //       panelClass: ['snackbar-success'],
+    //       horizontalPosition: 'center',
+    //       verticalPosition: 'bottom'
+    //     });
+    //   }
+    // });
   }
 
-  guardarClubEditado(club: Club) {
+  abrirEditarClubDialog(club: Club) {
+    const dialogRef = this.dialog.open(EditarClubDialogComponent, {
+      //width: '800px',
+      //maxWidth: '50vw',
+      //height: '80vh',
+      //maxHeight: '95vh',
+      data: { club }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.guardarClubEditado(result);
+      }
+    });
+  }
+
+  guardarClubEditado(clubOrForm: Club | FormData) {
+    // Permitir validación tanto para objeto Club como para FormData
+    let values: any = {};
+    if (clubOrForm instanceof FormData) {
+      clubOrForm.forEach((value, key) => {
+        values[key] = value;
+      });
+    } else {
+      values = clubOrForm;
+    }
     // Validación de campos obligatorios
-    if (!club.name || !club.email || !club.phone || !club.rfc || !club.address || !club.type || !club.city_id) {
+    if (!values.name || !values.email || !values.phone || !values.rfc || !values.address || !values.type || !values.city_id) {
       this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
       return;
     }
-    if (this.logoFile) {
-      const formData = new FormData();
-      Object.keys(club).forEach(key => {
-        const value = (club as any)[key];
-        if (value !== null && value !== undefined) {
-          formData.append(key, value);
-        }
-      });
-      formData.set('photo', this.logoFile);
-      this.clubsService.updateClub(club.id, formData).subscribe({
+    // Si es FormData, enviar como tal
+    if (clubOrForm instanceof FormData) {
+      this.clubsService.updateClub(values.id, clubOrForm).subscribe({
         next: (res) => {
           this.editandoClubId = null;
           this.logoFile = null;
@@ -159,7 +212,7 @@ export class ClubsComponent implements OnInit {
         }
       });
     } else {
-      this.clubsService.updateClub(club.id, club).subscribe({
+      this.clubsService.updateClub(values.id, values).subscribe({
         next: (res) => {
           this.editandoClubId = null;
           this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
@@ -227,24 +280,23 @@ export class ClubsComponent implements OnInit {
   }
 
 
-abrirModalHorarios(club: Club) {
-  this.horariosService.getHorariosByClub(club.id).subscribe({
-    next: (horarios) => {
-      this.dialog.open(HorariosDialogComponent, {
-        width: '600px',
-        maxWidth: '60vw',
-        data: { club, horarios }
-      });
-    },
-    error: (err) => {
-      console.error('Error al obtener horarios', err);
-      this.snackBar.open('❌ Error al cargar los horarios', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['snackbar-error']
-      });
-    }
-  });
-}
-
+  abrirModalHorarios(club: Club) {
+    this.horariosService.getHorariosByClub(club.id).subscribe({
+      next: (horarios) => {
+        this.dialog.open(HorariosDialogComponent, {
+          width: '600px',
+          maxWidth: '60vw',
+          data: { club, horarios }
+        });
+      },
+      error: (err) => {
+        console.error('Error al obtener horarios', err);
+        this.snackBar.open('❌ Error al cargar los horarios', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }
 
 }

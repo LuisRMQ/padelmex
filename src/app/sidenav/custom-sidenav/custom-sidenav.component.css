@@ -33,32 +33,24 @@
   height: 0px;
 }
 
-/* Cambiar el color del icono y texto al estar activo */
 .mat-mdc-list-item.active-link mat-icon,
 .mat-mdc-list-item.active-link span {
   color: #28a745 !important;
   font-weight: 500;
 }
 
-/* Hover normal */
 .mat-mdc-list-item:hover {
   border-radius: 0 !important;
-  /* 🔹 elimina el efecto circular */
   background-color: #f3f4f6 !important;
-  /* 🔹 gris claro */
 }
 
-/* Hover sobre el item activo */
 .mat-mdc-list-item.active-link:hover {
   background-color: #d3e8d8 !important;
-  /* 🔹 azul más fuerte */
 }
 
-/* Item activo */
 .mat-mdc-list-item.active-link {
   border-radius: 0 !important;
   background-color: #e4f0e7 !important;
-  /* 🔹 azul claro */
   color: #1e293b !important;
   font-weight: 500;
   border-left: 5px solid;

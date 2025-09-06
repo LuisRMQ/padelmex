@@ -1,152 +1,59 @@
-.header {
+/* Header de la card con botón de editar */
+.card-header-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+  width: 100%;
+}
+.edit-btn {
+  margin-left: 12px;
+  color: #336699;
 }
 
-.spacer {
-  flex: 1 1 auto;
+.direccion-truncada {
+  display: flex;
+  align-items: center;
+}
+.direccion-text {
+  display: inline-block;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  margin-left: 4px;
 }
 
-.mat-expansion-panel-header {
-  display: flex !important;
-  align-items: center;
+.clubs-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.club-card {
+  max-width: 300px;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.club-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.busqueda-container {
+  display: flex;
+}
+.busqueda-field {
+  width: 100%;
+  max-width: 400px;
+}
+::ng-deep .mat-mdc-card .mat-mdc-card-image {
+  border-radius: 0 !important;
 }
 
 .btn-registrar {
   background-color: #28a745;
   color: white;
-}
-
-.club-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 8px;
-  padding: 8px 0;
-}
-
-.clubs-list {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(44,62,80,0.10);
-  padding: 0 0 16px 0;
-}
-
-.club-details-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 32px;
-  padding: 16px 24px;
-  position: relative;
-  padding-bottom: 56px;
-}
-
-.delete-btn {
-  position: absolute;
-  right: 16px;
-  bottom: 8px;
-  z-index: 2;
-}
-
-.edit-btn {
-  margin-left: 12px;
-  vertical-align: middle;
-}
-
-.club-details-table {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px 24px;
-  flex: 1;
-}
-
-.club-details-cell {
-  font-size: 16px;
-  color: #222;
-  margin-bottom: 8px;
-}
-
-.club-details-cell strong {
-  font-weight: 600;
-  color: #222;
-}
-
-.club-logo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-  min-width: 120px;
-}
-
-@media (max-width: 900px) {
-  .club-details-row {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  .club-details-table {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 12px;
-  }
-  .club-logo {
-    justify-content: flex-start;
-    margin-top: 12px;
-  }
-}
-
-.btn-registrar.mat-raised-button {
-  background-color: #28a745 !important;
-  color: #fff !important;
-}
-
-.edit-input {
-  width: 220px;
-  max-width: 100%;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-  margin-left: 8px;
-  box-sizing: border-box;
-}
-
-.edit-actions {
-  position: absolute;
-  left: 24px;
-  bottom: 12px;
-  display: flex;
-  gap: 8px;
-  z-index: 2;
-}
-
-.btn-azul {
-  background-color: #1976d2 !important;
-  color: #fff !important;
-  border-radius: 4px;
-  height: 32px;
-}
-
-.btn-cancel {
-  background-color: transparent !important;
-  color: #1976d2 !important;
-  border-radius: 4px;
-  height: 32px;
-}
-
-.btn-logo-edit {
-  background-color: #43a047 !important;
-  color: #fff !important;
-  font-size: 13px;
-  border-radius: 8px;
-  padding: 2px 12px;
-  min-width: 0;
-  height: 32px;
-  line-height: 1.2;
-  margin-top: 18px;
-}
-
-.clubs-list .mat-expansion-panel {
-  margin-bottom: 18px;
+  font-weight: 400;
 }

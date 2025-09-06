@@ -1,6 +1,5 @@
-<div class="canchas-container">
+<!-- <div class="canchas-container">
 
-  <!-- Filtro de estado -->
   <mat-form-field appearance="outline" class="estado-select">
     <mat-label>Selecciona Estado...</mat-label>
     <mat-select>
@@ -10,43 +9,35 @@
     </mat-select>
   </mat-form-field>
 
-  <!-- Layout horizontal: calendario y tabla -->
-  <!-- Calendario -->
   <mat-card class="calendar-card" style="width: 100%; max-width: 1200px; margin: 0 auto;">
     <div class="calendar-body" style="padding: 16px; width: 100%;">
       <div #calendarContainer class="calendar-container"></div>
     </div>
   </mat-card>
 
-  <!-- Tabla -->
   <mat-card style="width: 100%; max-width: 1200px; margin: 32px auto 0 auto;">
     <div style="overflow-x:auto;">
       <table mat-table [dataSource]="dataSource" class="mat-elevation-z1" style="width:100%; min-width:600px;">
-        <!-- Fecha -->
         <ng-container matColumnDef="fecha">
           <th mat-header-cell *matHeaderCellDef> Fecha </th>
           <td mat-cell *matCellDef="let element"> {{ element.fecha }} </td>
         </ng-container>
 
-        <!-- Hora -->
         <ng-container matColumnDef="hora">
           <th mat-header-cell *matHeaderCellDef> Hora </th>
           <td mat-cell *matCellDef="let element"> {{ element.hora }} </td>
         </ng-container>
 
-        <!-- Cancha -->
         <ng-container matColumnDef="cancha">
           <th mat-header-cell *matHeaderCellDef> Cancha </th>
           <td mat-cell *matCellDef="let element"> {{ element.cancha }} </td>
         </ng-container>
 
-        <!-- Club -->
         <ng-container matColumnDef="club">
           <th mat-header-cell *matHeaderCellDef> Club </th>
           <td mat-cell *matCellDef="let element"> {{ element.club }} </td>
         </ng-container>
 
-        <!-- Acciones -->
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef> Acciones </th>
           <td mat-cell *matCellDef="let element">
@@ -55,9 +46,52 @@
           </td>
         </ng-container>
 
-        <!-- Filas -->
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
     </div>
-  </mat-card>
+  </mat-card> -->
+<div class="board">
+
+  <!-- Columna de horas -->
+  <div class="time-gutter">
+    <div class="gutter-header" style="height: var(--header-height);"></div>
+    <div class="time-label" *ngFor="let t of times" [style.top.px]="minutesToPx(t.min - dayStartMin)">
+      {{ t.label }}
+    </div>
+  </div>
+
+  <div class="board-scroll" #boardScrollRef>
+    <div class="columns">
+
+      <div class="court-col" *ngFor="let court of courts; let i = index" #courtColRef
+        (click)="onCourtClick($event, court, courtColRef)">
+
+        <div class="court-header">
+          {{ court.name }}
+        </div>
+
+        <div class="time-grid">
+          <div class="time-slot" *ngFor="let t of times; let ti = index"
+            [style.top.px]="minutesToPx(t.min - dayStartMin)"></div>
+        </div>
+
+        <div class="reservations-layer">
+          <div class="reservation" *ngFor="let res of reservations | slice:0" [class.hidden]="res.courtId !== court.id"
+            [ngStyle]="getReservationStyle(res)" cdkDrag
+            (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
+            (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)">
+            <div class="res-title">
+              {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
+            </div>
+            <div class="res-actions">
+              <button type="button" (click)="$event.stopPropagation(); subtractMinutes(res, 15)">–15m</button>
+              <button type="button" (click)="$event.stopPropagation(); addMinutes(res, 15)">+15m</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

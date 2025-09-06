@@ -1,18 +1,143 @@
-.canchas-container {
-  padding: 16px;
+:host {
+  display: block;
+  --gutter-width: 88px;
+  --header-height: 40px;
+  --col-min-width: 220px;
+  --line-color: #e9e9ef;
+  --reservation-bg: #e3f2fd;
+  --reservation-border: #90caf9;
+  --reservation-text: #0d47a1;
+  --time-text: #616161;
 }
 
-.estado-select {
-  margin-bottom: 16px;
-  width: 250px;
+.board {
+  display: grid;
+  grid-template-columns: var(--gutter-width) 1fr;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.mes-actual {
-  margin: 16px 0;
-  text-align: center;
+.time-gutter {
+  background: #fafafa;
+  border-right: 1px solid #ddd;
+  position: relative;
 }
 
-.calendar-container {
-  width: 100%;
-  max-width: 1200px;
+.gutter-header {
+  height: var(--header-height);
+  background: #fafafa;
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
 }
+
+.time-label {
+  position: absolute;
+  left: 8px;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--time-text);
+}
+
+.columns {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--col-min-width), 1fr));
+  gap: 0;
+}
+
+.court-col {
+  position: relative;
+  min-width: var(--col-min-width);
+  border-right: 1px solid #ddd;
+  background: #fff;
+  cursor: crosshair;
+}
+
+.court-header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 3;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+}
+
+.time-grid {
+  position: relative;
+  height: calc( (22 - 8) * 60 * 2px );
+}
+
+.time-slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--line-color);
+  opacity: 0.8;
+}
+
+.reservations-layer {
+  position: absolute;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.reservation {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  border: 1px solid var(--reservation-border);
+  background: var(--reservation-bg);
+  color: var(--reservation-text);
+  border-radius: 10px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  z-index: 5;
+  cursor: grab;
+  user-select: none;
+}
+
+.reservation.cdk-drag-preview {
+  opacity: 0.9;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.reservation.cdk-drag-dragging {
+  cursor: grabbing;
+}
+
+.reservation .res-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reservation .res-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.reservation .res-actions button {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid #bcd8f7;
+  background: #fff;
+  color: #0d47a1;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none;
+}
+
