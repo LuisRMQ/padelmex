@@ -1,0 +1,42 @@
+<div class="club-info-dialog">
+	<div class="header">
+		<div class="logo-title">
+			<img class="club-logo" [src]="'assets/logos/azteca.png'" alt="Logo Club">
+			<div>
+				<h2 class="club-name">{{ data.club.name }}</h2>
+				<div class="club-subtitle">{{ data.club.type == 'private' ? 'Privado' : 'Público' }}</div>
+			</div>
+		</div>
+	</div>
+	<div class="status-row">
+		<span class="status-badge" [ngClass]="{'active': data.club.status, 'inactive': !data.club.status}">
+			<mat-icon>check_circle</mat-icon>
+			{{ data.club.status ? 'Active Club' : 'Inactive Club' }}
+		</span>
+	</div>
+	<div class="info-section">
+		<div class="info-col">
+			<div class="info-title"><mat-icon>info</mat-icon> Informacion de Contacto</div>
+			<div class="info-box">
+				<div class="info-item"><mat-icon>location_on</mat-icon> <span>{{ data.club.address }}</span></div>
+				<div class="info-item"><mat-icon>phone</mat-icon> <span>{{ data.club.phone }}</span></div>
+				<div class="info-item"><mat-icon>email</mat-icon> <span>{{ data.club.email }}</span></div>
+			</div>
+		</div>
+		<div class="info-col">
+			<div class="info-title"><mat-icon>apartment</mat-icon> Detalles del Club</div>
+			<div class="info-box">
+				<div class="info-item"><mat-icon>badge</mat-icon> <span>RFC: {{ data.club.rfc }}</span></div>
+				<div class="info-item"><mat-icon>category</mat-icon> <span>Tipo: {{ data.club.type == 'private' ? 'Privado' : 'Público' }}</span></div>
+				<div class="info-item"><mat-icon>location_city</mat-icon> <span>ID de Ciudad: {{ data.club.city_id }}</span></div>
+				<div class="info-item"><mat-icon>public</mat-icon> <span>Sitio Web: <a [href]="data.club.web_site" target="_blank">{{ data.club.web_site }}</a></span></div>
+			</div>
+		</div>
+	</div>
+	<div class="highlights-section">
+		<div class="highlights-title"><mat-icon>star</mat-icon> Club Highlights</div>
+		<div class="highlights-content">
+			{{ data.club.description || 'No description available.' }}
+		</div>
+	</div>
+</div>

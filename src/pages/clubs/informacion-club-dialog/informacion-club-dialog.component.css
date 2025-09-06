@@ -1,0 +1,128 @@
+/* Estilos para el modal de información de club */
+/* Modal container */
+.club-info-dialog {
+	background: #fff;
+	border-radius: 20px;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+	padding: 0;
+	min-width: 340px;
+	max-width: 600px;
+	overflow: hidden;
+	font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Header azul que cubre todo el ancho */
+.header {
+	background: #336699;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 24px 32px 16px 32px;
+	border-top-left-radius: 20px;
+	border-top-right-radius: 20px;
+	width: 100%;
+	box-sizing: border-box;
+}
+.logo-title {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+.club-logo {
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 3px solid #fff;
+	background: #f3f3f3;
+}
+.club-name {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 700;
+}
+.club-subtitle {
+	font-size: 1rem;
+	color: #c7d6f7;
+}
+.close-btn {
+	color: #fff;
+	margin-left: 12px;
+}
+.status-row {
+	display: flex;
+	align-items: center;
+	padding: 12px 32px 0 32px;
+}
+.status-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.95rem;
+	font-weight: 600;
+	padding: 4px 14px;
+	border-radius: 16px;
+	background: #e5f9ed;
+	color: #22c55e;
+}
+.status-badge.inactive {
+	background: #fbeaea;
+	color: #e11d48;
+}
+.info-section {
+	display: flex;
+	gap: 24px;
+	padding: 24px 32px 0 32px;
+	flex-wrap: wrap;
+}
+.info-col {
+	flex: 1 1 180px;
+	min-width: 180px;
+}
+.info-title {
+	font-size: 1.05rem;
+	font-weight: 600;
+	margin-bottom: 10px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: #336699;
+}
+.info-box {
+	background: #f6f8fa;
+	border-radius: 8px;
+	padding: 12px 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.info-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.98rem;
+	color: #222;
+}
+.info-item a {
+	color: #336699;
+	text-decoration: underline;
+}
+.highlights-section {
+	background: #e8f7ef;
+	border-radius: 8px;
+	margin: 24px 32px 32px 32px;
+	padding: 16px 18px;
+	color: #25603b;
+}
+.highlights-title {
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 6px;
+	color: #22c55e;
+}
+.highlights-content {
+	font-size: 0.98rem;
+}

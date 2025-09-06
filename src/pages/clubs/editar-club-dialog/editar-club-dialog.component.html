@@ -1,0 +1,84 @@
+<div class="edit-club-dialog">
+	<div class="edit-header">
+		<div class="edit-header-title">
+			<mat-icon class="edit-header-icon">edit</mat-icon>
+			<div>
+				<h2>Editar Club</h2>
+				<div class="edit-header-desc">Actualiza la información y configuración de tu club</div>
+			</div>
+		</div>
+	</div>
+
+	<form class="edit-form" autocomplete="off">
+		<div class="logo-section">
+			<div class="logo-box">
+				<img class="club-logo" [src]="club.logo || 'assets/logos/azteca.png'" alt="Club Logo">
+				<div class="logo-actions">
+					<label class="change-logo-label">
+						<input type="file" accept="image/*" (change)="onLogoSelected($event)">
+						<mat-icon>photo_camera</mat-icon> Cambiar Logo
+					</label>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>Nombre del Club *</mat-label>
+				<input matInput [(ngModel)]="club.name" name="name" required>
+			</mat-form-field>
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>Tipo de Club</mat-label>
+				<mat-select [(ngModel)]="club.type" name="type">
+					<mat-option value="private">Privado</mat-option>
+					<mat-option value="public">Público</mat-option>
+				</mat-select>
+			</mat-form-field>
+		</div>
+
+		<div class="section-title"><mat-icon>contact_mail</mat-icon> Información de Contacto</div>
+		<div class="form-row">
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>Email</mat-label>
+				<input matInput [(ngModel)]="club.email" name="email" type="email">
+			</mat-form-field>
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>Teléfono</mat-label>
+				<input matInput [(ngModel)]="club.phone" name="phone">
+			</mat-form-field>
+		</div>
+
+		<div class="section-title"><mat-icon>location_on</mat-icon> Ubicación y Dirección</div>
+		<div class="form-row">
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>Calle</mat-label>
+				<input matInput [(ngModel)]="club.address" name="address">
+			</mat-form-field>
+		</div>
+		<div class="form-row">
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>City ID</mat-label>
+				<input matInput [(ngModel)]="club.city_id" name="city_id" type="number">
+			</mat-form-field>
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>RFC</mat-label>
+				<input matInput [(ngModel)]="club.rfc" name="rfc">
+			</mat-form-field>
+		</div>
+		<div class="form-row">
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>Sitio Web</mat-label>
+				<input matInput [(ngModel)]="club.web_site" name="web_site">
+			</mat-form-field>
+		</div>
+
+		<div class="form-row">
+			<mat-slide-toggle [(ngModel)]="club.status" name="status">Activo</mat-slide-toggle>
+		</div>
+
+		<div class="form-actions">
+			<button mat-raised-button type="submit" class="guardar-cambios" (click)="guardar()">Guardar Cambios</button>
+			<button mat-button mat-dialog-close type="button" (click)="dialogRef.close()">Cancelar</button>
+		</div>
+	</form>
+</div>
