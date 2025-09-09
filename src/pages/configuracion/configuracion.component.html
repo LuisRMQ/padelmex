@@ -1,0 +1,58 @@
+<div class="configuracion-container">
+
+  <h2 class="titulo-configuracion">CONFIGURACIÓN DEL CLUB</h2>
+
+  <!-- Datos del Club -->
+  <mat-card class="card-club">
+    <mat-card-header>
+      <mat-icon>domain</mat-icon>
+      <mat-card-title>Datos del Club</mat-card-title>
+      <button mat-icon-button color="primary" (click)="editarClub()">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <p><strong>Nombre:</strong> {{ club.nombre }}</p>
+      <p><strong>Dirección:</strong> {{ club.direccion }}</p>
+      <p><strong>Teléfono:</strong> {{ club.telefono }}</p>
+      <p><strong>Email:</strong> {{ club.email }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Horarios -->
+  <h3 class="subtitulo">Horarios</h3>
+  <div class="cards-grid">
+    <mat-card *ngFor="let horario of horarios" class="card-horario">
+      <mat-card-header>
+        <mat-icon>schedule</mat-icon>
+        <mat-card-title>{{ horario.dia }}</mat-card-title>
+        <button mat-icon-button color="primary" (click)="editarHorario(horario)">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <p><strong>Inicio:</strong> {{ horario.start_time }}</p>
+        <p><strong>Fin:</strong> {{ horario.end_time }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Canchas -->
+  <h3 class="subtitulo">Canchas</h3>
+  <div class="cards-grid">
+    <mat-card *ngFor="let cancha of canchas" class="card-cancha">
+      <mat-card-header>
+        <mat-icon>sports_tennis</mat-icon>
+        <mat-card-title>{{ cancha.nombre }}</mat-card-title>
+        <button mat-icon-button color="primary" (click)="editarCancha(cancha)">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <p><strong>Tipo:</strong> {{ cancha.tipo }}</p>
+        <p><strong>Capacidad:</strong> {{ cancha.capacidad }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+</div>

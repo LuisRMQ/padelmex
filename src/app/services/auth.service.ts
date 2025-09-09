@@ -12,6 +12,7 @@ export interface User {
   rol_id: number;
   rol: string;
   club_rfc: string;
+  club_id:number;
   profile_photo?: string;
 }
 
@@ -39,6 +40,7 @@ export class AuthService {
     return this.api.get<User>(`/user/${userId}`, { headers }).pipe(
       tap((user: User) => {
         localStorage.setItem('userData', JSON.stringify(user));
+        console.log(user)
         this.currentUserSubject.next(user);
       }),
       catchError((error) => throwError(() => error))

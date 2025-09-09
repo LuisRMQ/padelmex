@@ -1,23 +1,26 @@
-<div class="sidenav-header">
-  <img [src]="userPhoto()" alt="Logo" class="sidenav-logo"
-       [width]="profilePicSize()" [height]="profilePicSize()">
+<div class="sidenav-container">
+  <div class="sidenav-header">
+    <img [src]="userPhoto()" alt="Logo" class="sidenav-logo" [width]="profilePicSize()" [height]="profilePicSize()"
+      (error)="onImageError($event)">
 
-  <div class="header-text" [class.hide-header-text]="sideNavCollapsed()">
-    <h2>{{ userName() }}</h2>
-    <p>{{ userRole() }}</p>
+    <div class="header-text" [class.hide-header-text]="sideNavCollapsed()">
+      <h2>{{ userName() }}</h2>
+      <p>{{ userRole() }}</p>
+    </div>
+  </div>
+
+  <mat-nav-list class="sidenav-menu">
+    <a mat-list-item class="menu-item" *ngFor="let item of menuItems()" [routerLink]="item.route"
+      routerLinkActive="active-link">
+      <mat-icon matListItemIcon class="menu-icon">{{ item.icon }}</mat-icon>
+      <span matListItemTitle *ngIf="!sideNavCollapsed()">{{ item.label }}</span>
+    </a>
+  </mat-nav-list>
+
+  <div class="sidenav-footer">
+    <a mat-list-item class="menu-item" (click)="onLogout()">
+      <mat-icon matListItemIcon class="menu-icon">logout</mat-icon>
+      <span matListItemTitle *ngIf="!sideNavCollapsed()">Cerrar sesión</span>
+    </a>
   </div>
 </div>
-
-<mat-nav-list>
-        <a mat-list-item class="menu-item" *ngFor="let item of menuItems()" [routerLink]="item.route" routerLinkActive="active-link">
-                <mat-icon matListItemIcon class="menu-icon">{{ item.icon }}</mat-icon>
-                <span matListItemTitle *ngIf="!sideNavCollapsed()">{{ item.label }}</span>
-        </a>
-
-        <div class="sidenav-footer">
-            <a mat-list-item class="menu-item" (click)="onLogout()">
-                <mat-icon matListItemIcon class="menu-icon">logout</mat-icon>
-                <span matListItemTitle *ngIf="!sideNavCollapsed()">Cerrar sesión</span>
-            </a>
-        </div>
-</mat-nav-list>

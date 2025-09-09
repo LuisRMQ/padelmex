@@ -25,14 +25,24 @@ export class CustomSidenavComponent implements OnInit {
     this.sideNavCollapsed.set(value);
   }
 
-  menuItems = signal<MenuItem[]>([
+  private ADMIN_MENU: MenuItem[] = [
     { label: 'Inicio', icon: 'dashboard', route: '/dashboard' },
     { label: 'Clubs', icon: 'sports_tennis', route: '/clubs' },
     { label: 'Canchas', icon: 'view_column', route: '/canchas' },
     { label: 'Calendario', icon: 'calendar_today', route: '/calendario' },
-    { label: 'Clientes', icon: 'sports_handball', route: '/clientes' },
     { label: 'Usuarios', icon: 'people', route: '/usuarios' },
-  ]);
+  ];
+
+  private USER_MENU: MenuItem[] = [
+    { label: 'Mi Club', icon: 'analytics', route: '/estadisticas' },
+    { label: 'Integrantes', icon: 'sports_handball', route: '/integrantes' },
+    { label: 'Configuracion', icon: 'settings', route: '/configuracion' },
+
+    
+
+  ];
+
+    menuItems = signal<MenuItem[]>([]);
 
   // Signals para usuario
   currentUser = signal<User | null>(null);
@@ -55,14 +65,35 @@ export class CustomSidenavComponent implements OnInit {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  ngOnInit(): void {
+ ngOnInit(): void {
     const userData = this.authService.getUserData();
-    if (userData) this.currentUser.set(userData);
+    if (userData) {
+      this.currentUser.set(userData);
+      this.updateMenuItems(userData.rol_id);
+    }
 
     this.authService.getCurrentUser().subscribe(user => {
       this.currentUser.set(user);
+      if (user) this.updateMenuItems(user.rol_id);
     });
   }
+
+
+private updateMenuItems(rolId: number) {
+    if (rolId === 1) {
+      this.menuItems.set(this.ADMIN_MENU);
+    } else if ([3, 4, 5, 6, 7].includes(rolId)) {
+      this.menuItems.set(this.USER_MENU);
+    } else {
+      this.menuItems.set([]);
+    }
+  }
+
+
+onImageError(event: Event) {
+  const target = event.target as HTMLImageElement;
+  target.src = '../../../assets/images/iconuser.png';
+}
 
   onLogout(): void {
     this.authService.logout().subscribe({

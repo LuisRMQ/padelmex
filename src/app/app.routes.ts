@@ -7,6 +7,11 @@ import { UsuariosComponent } from '../pages/usuarios/usuarios.component';
 import { CalendarioComponent } from '../pages/calendario/calendario.component';
 import { ClientesComponent } from '../pages/clientes/clientes.component';
 import { ReservacionesComponent } from '../pages/reservaciones/reservaciones.component';
+import { IntegrantesComponent } from '../pages/integrantes/integrantes.component';
+import { EstadisticasComponent } from '../pages/estadisticas/estadisticas.component';
+import { ConfiguracionComponent } from '../pages/configuracion/configuracion.component';
+
+
 import { AuthGuard } from '../../src/app/services/auth.guard';
 import { NoAuthGuard } from '../../src/app/services/unauth.guard';
 import { AppComponent } from './app.component';
@@ -27,6 +32,9 @@ export const routes: Routes = [
       { path: 'calendario', component: CalendarioComponent },
       { path: 'clientes', component: ClientesComponent },
       { path: 'reservaciones', component: ReservacionesComponent },
+      { path: 'integrantes', component: IntegrantesComponent },
+      { path: 'estadisticas', component: EstadisticasComponent },
+      { path: 'configuracion', component: ConfiguracionComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }

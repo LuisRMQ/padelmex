@@ -27,7 +27,9 @@ export class ClubsService extends ApiBaseService {
     getClubs(): Observable<Club[]> {
         return this.get<Club[]>('/clubs');
     }
-
+    getClubById(id: number): Observable<Club> {
+        return this.get<Club>(`/club/${id}`);
+    }
     createClub(data: FormData): Observable<any> {
         return this.post('/create/club', data);
     }
