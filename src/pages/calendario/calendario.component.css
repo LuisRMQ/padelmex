@@ -33,10 +33,12 @@
 
 .time-label {
   position: absolute;
-  left: 8px;
-  transform: translateY(-50%);
+  transform: translateY(0%);
   font-size: 12px;
-  color: var(--time-text);
+  margin-top: var(--header-height);
+  font-weight: 500;
+  color: #757575;
+  left: 12px;
 }
 
 .columns {
@@ -64,7 +66,11 @@
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 2px solid #e0e0e0;
+  text-align: center;
+  font-size: 14px;
+  padding: 10px;
+  color: #37474f;
 }
 
 .time-grid {
@@ -94,14 +100,22 @@
   left: 8px;
   right: 8px;
   border: 1px solid var(--reservation-border);
-  background: var(--reservation-bg);
-  color: var(--reservation-text);
-  border-radius: 10px;
   padding: 6px 8px;
   box-sizing: border-box;
   z-index: 5;
-  cursor: grab;
   user-select: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #336699, #1f4c7c);
+  color: white;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.15s ease;
+  cursor: grab;
+}
+
+.reservation:active {
+  transform: scale(1.02);
+  cursor: grabbing;
 }
 
 .reservation.cdk-drag-preview {

@@ -1,79 +1,8 @@
-// import { Component, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
-// import { MatDialog } from '@angular/material/dialog';
-// import { ScheduleDateDialogComponent } from './schedule-date-dialog/schedule-date-dialog.component';
-// import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-// import { MatFormFieldModule } from '@angular/material/form-field';
-// import { MatSelectModule } from '@angular/material/select';
-// import { MatCardModule } from '@angular/material/card';
-// import { MatIconModule } from '@angular/material/icon';
-// import { MatButtonModule } from '@angular/material/button';
-// import { CommonModule } from '@angular/common';
-
-// import { Calendar } from '@fullcalendar/core';
-// import dayGridPlugin from '@fullcalendar/daygrid';
-// import interactionPlugin from '@fullcalendar/interaction';
-
-
-// @Component({
-//   selector: 'app-calendario',
-//   standalone: true,
-//   templateUrl: './calendario.component.html',
-//   styleUrls: ['./calendario.component.css'],
-//   imports: [
-//     CommonModule,
-//     MatTableModule,
-//     MatFormFieldModule,
-//     MatSelectModule,
-//     MatCardModule,
-//     MatIconModule,
-//     MatButtonModule, 
-
-//   ]
-// })
-// export class CalendarioComponent implements AfterViewInit {
-//   // Columnas de la tabla
-//   displayedColumns: string[] = ['fecha', 'hora', 'cancha', 'club', 'acciones'];
-//   dataSource = new MatTableDataSource([
-//     { fecha: '2025-09-01', hora: '10:00', cancha: 'Cancha 1', club: 'Club A' },
-//     { fecha: '2025-09-02', hora: '12:00', cancha: 'Cancha 2', club: 'Club B' },
-//     { fecha: '2025-09-03', hora: '14:00', cancha: 'Cancha 3', club: 'Club C' }
-//   ]);
-
-//   // Variables para mostrar mes/año
-//   mesActual: string;
-//   anioActual: number;
-
-//   @ViewChild('calendarContainer') calendarContainer!: ElementRef;
-
-//   constructor(private dialog: MatDialog) {
-//     const hoy = new Date();
-//     this.mesActual = hoy.toLocaleString('es-ES', { month: 'long' });
-//     this.anioActual = hoy.getFullYear();
-//   }
-
-//   ngAfterViewInit() {
-//     const calendar = new Calendar(this.calendarContainer.nativeElement, {
-//       plugins: [dayGridPlugin, interactionPlugin],
-//       initialView: 'dayGridMonth',
-//       events: [
-//         { title: 'Evento 1', date: '2025-08-16' },
-//         { title: 'Evento 2', date: '2025-08-20' }
-//       ],
-//       height: 400,
-//       contentHeight: 350,
-//       dateClick: (info) => {
-//         this.dialog.open(ScheduleDateDialogComponent, {
-//           data: { date: info.dateStr }
-//         });
-//       }
-//     });
-//     calendar.render();
-//   }
-// }
-
-import { Component, Input, OnInit, ViewChildren, QueryList, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ScheduleDateDialogComponent } from './schedule-date-dialog/schedule-date-dialog.component';
 
 type Court = { id: number; name: string };
 type Reservation = {
@@ -81,7 +10,7 @@ type Reservation = {
   courtId: number;
   user: string;
   startMin: number;
-  endMin: number; 
+  endMin: number;
 };
 
 @Component({
@@ -91,10 +20,13 @@ type Reservation = {
   styleUrls: ['./calendario.component.css'],
   imports: [
     CommonModule,
-    DragDropModule
+    DragDropModule,
+    MatDialogModule
   ]
 })
 export class CalendarioComponent implements OnInit {
+
+  constructor(private dialog: MatDialog) { }
 
   @Input() courts: Court[] = [
     { id: 1, name: 'Cancha 1' },
@@ -104,16 +36,16 @@ export class CalendarioComponent implements OnInit {
   ];
 
   @Input() initialReservations: Reservation[] = [
-    { id: 1, courtId: 1, user: 'Usuario 1', startMin: 8 * 60, endMin: 9 * 60 + 30 }, 
-    { id: 2, courtId: 2, user: 'Usuario 2', startMin: 10 * 60, endMin: 11 * 60 }, 
+    { id: 1, courtId: 1, user: 'Usuario 1', startMin: 8 * 60, endMin: 9 * 60 + 30 },
+    { id: 2, courtId: 2, user: 'Usuario 2', startMin: 10 * 60, endMin: 11 * 60 },
     { id: 3, courtId: 1, user: 'Usuario 3', startMin: 13 * 60 + 30, endMin: 15 * 60 },
   ];
 
   // Config
-  readonly dayStartMin = 8 * 60; 
+  readonly dayStartMin = 8 * 60;
   readonly dayEndMin = 22 * 60;
-  readonly snapMinutes = 30; 
-  readonly pxPerMin = 2; 
+  readonly snapMinutes = 30;
+  readonly pxPerMin = 2;
 
   // Derivados
   times: { label: string; min: number }[] = [];
@@ -168,23 +100,37 @@ export class CalendarioComponent implements OnInit {
 
   // ---- crear reserva clickeando en la columna ----
   onCourtClick(ev: MouseEvent, court: Court, colEl: HTMLElement) {
-    const rect = colEl.getBoundingClientRect();
-    const y = ev.clientY - rect.top + colEl.scrollTop;
-    const clickedMin = this.dayStartMin + Math.round((y / this.pxPerMin) / this.snapMinutes) * this.snapMinutes;
+    ev.stopPropagation();
 
-    const defaultDuration = 60; // 1h
-    const startMin = Math.max(this.dayStartMin, Math.min(clickedMin, this.dayEndMin - defaultDuration));
-    const endMin = Math.min(this.dayEndMin, startMin + defaultDuration);
+    const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
+      data: {
+        user: '',
+        startTime: '08:00',
+        endTime: '09:00',
+        courtId: court.id
+      }
+    });
 
-    const newId = (this.reservations.at(-1)?.id ?? 0) + 1;
-    const newRes: Reservation = {
-      id: newId,
-      courtId: court.id,
-      user: `Nuevo`,
-      startMin,
-      endMin,
-    };
-    this.reservations = [...this.reservations, newRes];
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const newId = (this.reservations.at(-1)?.id ?? 0) + 1;
+        const startParts = result.startTime.split(':').map((x: string) => parseInt(x, 10));
+        const endParts = result.endTime.split(':').map((x: string) => parseInt(x, 10));
+
+        const startMin = startParts[0] * 60 + startParts[1];
+        const endMin = endParts[0] * 60 + endParts[1];
+
+        const newRes: Reservation = {
+          id: newId,
+          courtId: court.id,
+          user: result.user || 'Nuevo',
+          startMin,
+          endMin
+        };
+
+        this.reservations = [...this.reservations, newRes];
+      }
+    });
   }
 
   // ---- drag & drop ----
@@ -212,7 +158,7 @@ export class CalendarioComponent implements OnInit {
 
     // Calcular nueva cancha por desplazamiento horizontal
     const currentIndex = this.courtIndexById(res.courtId);
-    const movedCols = Math.round(newLeftPx / Math.max(1, colWidth));
+    const movedCols = Math.round(delta.x / Math.max(1, colWidth));
     let newIndex = currentIndex + movedCols;
 
     newIndex = Math.max(0, Math.min(this.courts.length - 1, newIndex));
@@ -228,13 +174,10 @@ export class CalendarioComponent implements OnInit {
     const updated = this.reservations.map(r => r.id === res.id ? { ...r, courtId: newCourtId, startMin: newStartMin, endMin: newEndMin } : r);
     this.reservations = updated;
 
-    // limpiar
     this.dragCache.delete(res.id);
-    // reset visual del drag
     e.source.reset();
   }
 
-  // (Opcional) cambiar duración con botones
   addMinutes(res: Reservation, minutes: number) {
     const newEnd = Math.min(this.dayEndMin, res.endMin + minutes);
     if (newEnd > res.startMin) {

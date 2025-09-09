@@ -1,50 +1,21 @@
-<div class="modal-container">
-    <h2>Agendar horario para {{ formatFecha(data?.date) }}</h2>
-    <form>
-        <div class="modal-grid">
-            <div>
-                <mat-form-field appearance="outline" class="modal-field">
-                    <mat-label>Fecha</mat-label>
-                    <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" name="fecha">
-                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                    <mat-datepicker #picker></mat-datepicker>
-                </mat-form-field>
+<h2 mat-dialog-title>Nueva Reserva</h2>
+<mat-dialog-content>
+    <mat-form-field appearance="fill">
+        <mat-label>Usuario</mat-label>
+        <input matInput [(ngModel)]="data.user">
+    </mat-form-field>
 
-                <mat-form-field appearance="outline" class="modal-field">
-                    <mat-label>Hora de inicio</mat-label>
-                    <mat-select [(ngModel)]="horaInicio" name="horaInicio">
-                        <mat-option *ngFor="let h of horas" [value]="h">{{ h }}</mat-option>
-                    </mat-select>
-                </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Hora inicio</mat-label>
+        <input matInput type="time" [(ngModel)]="data.startTime">
+    </mat-form-field>
 
-            </div>
-            <div>
-
-                <mat-form-field appearance="outline" class="modal-field">
-                    <mat-label>Cancha</mat-label>
-                    <mat-select [(ngModel)]="cancha" name="cancha">
-                        <mat-option *ngFor="let c of canchas" [value]="c">{{ c }}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="modal-field">
-                    <mat-label>Hora de final</mat-label>
-                    <mat-select [(ngModel)]="horaFin" name="horaFin">
-                        <mat-option *ngFor="let h of horas" [value]="h">{{ h }}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="modal-field">
-                    <mat-label>Club</mat-label>
-                    <mat-select [(ngModel)]="club" name="club">
-                        <mat-option *ngFor="let cl of clubes" [value]="cl">{{ cl }}</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-        </div>
-        <div class="modal-actions">
-            <button mat-raised-button color="primary" type="button">Guardar</button>
-            <button mat-button type="button" mat-dialog-close>Cancelar</button>
-        </div>
-    </form>
-</div>
+    <mat-form-field appearance="fill">
+        <mat-label>Hora fin</mat-label>
+        <input matInput type="time" [(ngModel)]="data.endTime">
+    </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Aceptar</button>
+</mat-dialog-actions>

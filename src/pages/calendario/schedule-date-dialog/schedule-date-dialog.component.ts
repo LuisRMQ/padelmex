@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Inject } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -18,8 +18,9 @@ import { MatButtonModule } from '@angular/material/button';
     MatSelectModule,
     MatInputModule,
     MatDatepickerModule,
-    MatButtonModule
-  ],
+    MatButtonModule,
+    MatDialogModule
+],
   templateUrl: './schedule-date-dialog.component.html',
   styleUrl: './schedule-date-dialog.component.css'
 })
