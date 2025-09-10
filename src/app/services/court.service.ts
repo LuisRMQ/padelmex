@@ -11,6 +11,7 @@ export interface Court {
   club_id: number;
   availability: number;
   photo: string;
+  price_hour?: number;
 }
 
 export interface Club {

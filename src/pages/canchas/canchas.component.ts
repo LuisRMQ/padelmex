@@ -131,6 +131,11 @@ export class CanchasComponent implements OnInit {
     this.backupCancha = { ...court };
   }
 
+onImageError(event: Event) {
+        const target = event.target as HTMLImageElement;
+        target.src = '../../../assets/images/logoclub.jpg';
+    }
+
   guardarCanchaEditada(court: Court) {
     this.courtService.updateCourt(court.id, court).subscribe({
       next: (res) => {
