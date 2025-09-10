@@ -11,13 +11,24 @@
         <mat-icon>edit</mat-icon>
       </button>
     </mat-card-header>
-    <mat-card-content>
-      <p><strong>Nombre:</strong> {{ club.nombre }}</p>
-      <p><strong>Dirección:</strong> {{ club.direccion }}</p>
-      <p><strong>Teléfono:</strong> {{ club.telefono }}</p>
-      <p><strong>Email:</strong> {{ club.email }}</p>
+
+    <mat-card-content class="card-club-content">
+      <!-- Logo primero -->
+      <div class="club-logo">
+        <img [src]="club.logo" alt="Logo del club" (error)="onImageError($event)">
+      </div>
+
+      <!-- Datos después -->
+      <div class="club-info">
+        <p><strong>Nombre:</strong> {{ club.name }}</p>
+        <p><strong>Dirección:</strong> {{ club.address }}</p>
+        <p><strong>Teléfono:</strong> {{ club.phone }}</p>
+        <p><strong>Email:</strong> {{ club.email }}</p>
+      </div>
     </mat-card-content>
   </mat-card>
+
+
 
   <!-- Horarios -->
   <h3 class="subtitulo">Horarios</h3>
@@ -25,7 +36,7 @@
     <mat-card *ngFor="let horario of horarios" class="card-horario">
       <mat-card-header>
         <mat-icon>schedule</mat-icon>
-        <mat-card-title>{{ horario.dia }}</mat-card-title>
+        <mat-card-title>{{ horario.day }}</mat-card-title>
         <button mat-icon-button color="primary" (click)="editarHorario(horario)">
           <mat-icon>edit</mat-icon>
         </button>
@@ -33,26 +44,41 @@
       <mat-card-content>
         <p><strong>Inicio:</strong> {{ horario.start_time }}</p>
         <p><strong>Fin:</strong> {{ horario.end_time }}</p>
+        <p><strong>Estado:</strong>
+          <span [ngClass]="{'activo': horario.status, 'inactivo': !horario.status}">
+            {{ horario.status ? 'Activo' : 'Inactivo' }}
+          </span>
+        </p>
       </mat-card-content>
     </mat-card>
   </div>
 
+
   <!-- Canchas -->
   <h3 class="subtitulo">Canchas</h3>
-  <div class="cards-grid">
+  <div class="cards-grid-cancha">
     <mat-card *ngFor="let cancha of canchas" class="card-cancha">
-      <mat-card-header>
-        <mat-icon>sports_tennis</mat-icon>
-        <mat-card-title>{{ cancha.nombre }}</mat-card-title>
-        <button mat-icon-button color="primary" (click)="editarCancha(cancha)">
-          <mat-icon>edit</mat-icon>
-        </button>
-      </mat-card-header>
+      <!-- Foto grande arriba -->
+      <div class="cancha-photo">
+        <img [src]="cancha.photo" alt="Foto de la cancha" (error)="onImageError($event)">
+      </div>
+
+      <!-- Info debajo -->
       <mat-card-content>
-        <p><strong>Tipo:</strong> {{ cancha.tipo }}</p>
-        <p><strong>Capacidad:</strong> {{ cancha.capacidad }}</p>
+        <h4 class="cancha-name">{{ cancha.name }}</h4>
+        <p><strong>Tipo:</strong> {{ cancha.type }}</p>
+        <p><strong>Habilitada:</strong> {{ cancha.availability }}</p>
+        <p *ngIf="cancha.sponsor"><strong>Patrocinador:</strong> {{ cancha.sponsor }}</p>
       </mat-card-content>
+
+      <!-- Botón editar -->
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="editarCancha(cancha)">
+          Editar
+        </button>
+      </mat-card-actions>
     </mat-card>
   </div>
+
 
 </div>

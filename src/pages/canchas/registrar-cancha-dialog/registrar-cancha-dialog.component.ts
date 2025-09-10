@@ -49,6 +49,8 @@ export class RegistrarCanchaDialogComponent implements OnInit {
       club_id: ['', Validators.required],
       type: ['', Validators.required],
       availability: ['1', Validators.required],
+      price_hour: [0, [Validators.required, Validators.min(0)]], 
+
       photo: ['']
     });
   }

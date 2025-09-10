@@ -46,6 +46,7 @@
   </div>
 
   <!-- Fila 3 -->
+
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
       <mat-select placeholder="Estado" formControlName="availability">
@@ -56,7 +57,21 @@
         Estado es requerido
       </mat-error>
     </mat-form-field>
+
+    <mat-form-field appearance="outline" class="flex-1">
+      <input matInput type="number" placeholder="Precio por hora..." formControlName="price_hour" min="0" step="0.01">
+      <mat-error *ngIf="courtForm.get('price_hour')?.hasError('required')">
+        Precio por hora es requerido
+      </mat-error>
+      <mat-error *ngIf="courtForm.get('price_hour')?.hasError('min')">
+        El precio debe ser mayor o igual a 0
+      </mat-error>
+    </mat-form-field>
   </div>
+
+
+
+  
 
   <!-- Fila 4: Botón Agregar foto + Vista previa -->
   <div class="row logo-row">
