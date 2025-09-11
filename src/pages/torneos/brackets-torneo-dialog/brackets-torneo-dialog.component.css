@@ -1,0 +1,28 @@
+.bracket-container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #28a745;
+  background: #f9f9f9;
+}
+
+.match rect {
+  stroke-width: 2px;
+  stroke: #1e7e34;
+}
+
+.match text {
+  font-weight: bold;
+  font-size: 14px;
+  fill: white;
+}
+
+.match:hover rect {
+  cursor: pointer;
+  fill-opacity: 0.85;
+}

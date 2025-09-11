@@ -1,28 +1,278 @@
+:root {
+  --primary-color: #2c3e50;
+  --accent-color: #e74c3c;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --info-color: #3498db;
+  --background-light: #ecf0f1;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Header */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 30px;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: var(--shadow);
 }
 
-button[mat-raised-button] {
-  background-color: #28a745 !important;
+.header h1 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-registrar {
+  background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
   color: white !important;
-  font-weight: bold;
-  border-radius: 8px;
+  font-weight: 600 !important;
+  border-radius: 25px !important;
+  padding: 12px 24px !important;
+  box-shadow: var(--shadow) !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
 }
 
+.btn-registrar:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover) !important;
+}
+
+.btn-registrar mat-icon {
+  margin-right: 8px;
+}
+
+/* Contenedor Grid */
 .torneos-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
   padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: calc(100vh - 150px);
 }
 
+/* Card */
 .torneo-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 20px !important;
+  overflow: hidden;
+  background: white;
+  position: relative;
+  box-shadow: var(--shadow);
+  border: none;
 }
 
 .torneo-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Badge */
+.card-badge {
+  flex-shrink: 0;
+  padding: 0.2em 0.6em;
+  border-radius: 15px;
+  font-size: clamp(0.5rem, 2vw, 0.7rem);
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  white-space: nowrap;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* Badge colores */
+.card-badge.activo {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+.card-badge.finalizado {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+/* Avatar */
+.torneo-avatar {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.torneo-avatar mat-icon {
+  font-size: 24px;
+}
+
+/* Header del card */
+.torneo-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+  padding: 15px 20px;
+}
+
+.title-container {
+  flex: 1;
+  margin-right: 10px; /* espacio mínimo para la badge */
+  overflow: hidden;
+}
+
+mat-card-title {
+  color: var(--primary-color);
+  font-weight: 700 !important;
+  font-size: clamp(1rem, 2.5vw, 1.3rem) !important;
+  margin: 0;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+mat-card-subtitle {
+  color: var(--text-light) !important;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+  margin-top: 4px;
+}
+
+mat-card-subtitle mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Imagen */
+img[mat-card-image] {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.torneo-card:hover img[mat-card-image] {
+  transform: scale(1.05);
+}
+
+/* Contenido */
+mat-card-content {
+  flex-grow: 1;
+  padding: 15px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.torneo-descripcion {
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.torneo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+.info-item mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #3498db;
+  flex-shrink: 0;
+}
+
+.info-item span {
+  font-weight: 500;
+}
+
+/* Botones */
+mat-card-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 20px 20px 20px;
+}
+
+mat-card-actions button {
+  border-radius: 20px !important;
+  font-weight: 600;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+
+mat-card-actions button:first-child {
+  background: linear-gradient(135deg, #3498db, #2980b9) !important;
+  color: white !important;
+}
+
+mat-card-actions button:last-child {
+  background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+  color: white !important;
+}
+
+/* Hover de tarjeta */
+.torneo-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .header h1 { font-size: 2rem; }
+  .header { flex-direction: column; gap: 20px; text-align: center; }
+}
+
+@media (max-width: 768px) {
+  .header { margin: 20px 15px; padding: 15px; }
+  .header h1 { font-size: 1.8rem; }
+  mat-card-actions { flex-direction: column; }
+  .card-badge { font-size: 0.6rem; padding: 3px 8px; top: 8px; right: 8px; max-width: 50%; }
 }
