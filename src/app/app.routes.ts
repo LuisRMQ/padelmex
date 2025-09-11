@@ -10,7 +10,7 @@ import { ReservacionesComponent } from '../pages/reservaciones/reservaciones.com
 import { IntegrantesComponent } from '../pages/integrantes/integrantes.component';
 import { EstadisticasComponent } from '../pages/estadisticas/estadisticas.component';
 import { ConfiguracionComponent } from '../pages/configuracion/configuracion.component';
-
+import { TorneosComponent } from '../pages/torneos/torneos.component';
 
 import { AuthGuard } from '../../src/app/services/auth.guard';
 import { NoAuthGuard } from '../../src/app/services/unauth.guard';
@@ -35,6 +35,10 @@ export const routes: Routes = [
       { path: 'integrantes', component: IntegrantesComponent },
       { path: 'estadisticas', component: EstadisticasComponent },
       { path: 'configuracion', component: ConfiguracionComponent },
+      { path: 'torneos', component: TorneosComponent },
+
+      
+
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }

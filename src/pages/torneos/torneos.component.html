@@ -1,0 +1,25 @@
+
+
+
+<div class="header">
+  <h1>Torneos</h1>
+  <button mat-raised-button color="primary" (click)="abrirModalRegistrarTorneo()">
+    <mat-icon>add</mat-icon> Registrar Torneo
+  </button>
+</div>
+
+<div class="torneos-container">
+  <mat-grid-list cols="3" rowHeight="1:1" gutterSize="15px">
+    <mat-grid-tile *ngFor="let torneo of torneos">
+      <mat-card class="torneo-card">
+        <mat-card-header>
+          <mat-card-title>{{ torneo.nombre }}</mat-card-title>
+          <mat-card-subtitle>{{ torneo.fecha }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ torneo.descripcion }}</p>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
+</div>
