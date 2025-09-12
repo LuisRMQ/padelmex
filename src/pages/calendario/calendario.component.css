@@ -27,32 +27,36 @@
 .gutter-header {
   height: var(--header-height);
   background: #fafafa;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 0px solid #ddd;
   box-sizing: border-box;
 }
 
 .time-label {
   position: absolute;
-  transform: translateY(0%);
-  font-size: 12px;
-  margin-top: var(--header-height);
+  font-size: 14px;
+  margin-top: 28px;
   font-weight: 500;
   color: #757575;
-  left: 12px;
+  left: 20px;
 }
 
 .columns {
-  position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--col-min-width), 1fr));
-  gap: 0;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  overflow-x: auto;
 }
 
 .court-col {
   position: relative;
-  min-width: var(--col-min-width);
   border-right: 1px solid #ddd;
   background: #fff;
+  transition: background 0.2s;
+}
+
+.past-court-col {
+  background: #f0f0f0 !important;
+  opacity: 1 !important;
 }
 
 .court-header {
@@ -130,7 +134,7 @@
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 4px;
-  white-space: nowrap;
+  white-space: wrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }

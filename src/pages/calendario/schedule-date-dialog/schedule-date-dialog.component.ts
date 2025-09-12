@@ -8,6 +8,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatButtonModule } from '@angular/material/button';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-schedule-date-dialog',
@@ -19,8 +21,10 @@ import { MatButtonModule } from '@angular/material/button';
     MatInputModule,
     MatDatepickerModule,
     MatButtonModule,
-    MatDialogModule
-],
+    MatDialogModule,
+    MatStepperModule,
+    MatCheckboxModule
+  ],
   templateUrl: './schedule-date-dialog.component.html',
   styleUrl: './schedule-date-dialog.component.css'
 })
@@ -59,5 +63,5 @@ export class ScheduleDateDialogComponent {
   canchas = ['Cancha 1', 'Cancha 2', 'Cancha 3'];
   clubes = ['Club A', 'Club B', 'Club C'];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
 }

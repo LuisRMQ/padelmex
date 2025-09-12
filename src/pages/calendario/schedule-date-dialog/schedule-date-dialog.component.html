@@ -1,21 +1,98 @@
-<h2 mat-dialog-title>Nueva Reserva</h2>
-<mat-dialog-content>
-    <mat-form-field appearance="fill">
-        <mat-label>Usuario</mat-label>
-        <input matInput [(ngModel)]="data.user">
-    </mat-form-field>
-
-    <mat-form-field appearance="fill">
-        <mat-label>Hora inicio</mat-label>
-        <input matInput type="time" [(ngModel)]="data.startTime">
-    </mat-form-field>
-
-    <mat-form-field appearance="fill">
-        <mat-label>Hora fin</mat-label>
-        <input matInput type="time" [(ngModel)]="data.endTime">
-    </mat-form-field>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancelar</button>
-    <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Aceptar</button>
-</mat-dialog-actions>
+<div class="modal-container">
+    <mat-horizontal-stepper #stepper>
+        <mat-step label="Datos de reserva">
+            <div class="modal-grid">
+                <mat-form-field class="modal-field" appearance="outline">
+                    <mat-label>Fecha</mat-label>
+                    <input matInput [value]="data.fecha | date:'fullDate'" disabled>
+                </mat-form-field>
+                <mat-form-field class="modal-field" appearance="outline">
+                    <mat-label>Instalación</mat-label>
+                    <input matInput [value]="data.courtName || 'Cancha Padel 1'" disabled>
+                </mat-form-field>
+                <mat-form-field class="modal-field" appearance="outline">
+                    <mat-label>Inicio</mat-label>
+                    <mat-select [(ngModel)]="data.startTime">
+                        <mat-option *ngFor="let h of horas" [value]="h">{{h}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field class="modal-field" appearance="outline">
+                    <mat-label>Duración</mat-label>
+                    <mat-select [(ngModel)]="data.duration">
+                        <mat-option value="00:30">30 min</mat-option>
+                        <mat-option value="01:00">1 hora</mat-option>
+                        <mat-option value="01:30">1.5 horas</mat-option>
+                        <mat-option value="02:00">2 horas</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field class="modal-field" appearance="outline">
+                    <mat-label>Nº de reservas</mat-label>
+                    <input matInput type="number" [(ngModel)]="data.numReservas" min="1" max="10">
+                </mat-form-field>
+                <mat-form-field class="modal-field" appearance="outline">
+                    <mat-label>Tipo de reserva</mat-label>
+                    <input matInput [(ngModel)]="data.tipoReserva">
+                </mat-form-field>
+                <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
+                    <mat-label>Cliente</mat-label>
+                    <input matInput [(ngModel)]="data.cliente">
+                </mat-form-field>
+                <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
+                    <mat-label>Observaciones</mat-label>
+                    <textarea matInput rows="2" [(ngModel)]="data.observaciones"></textarea>
+                </mat-form-field>
+                <mat-checkbox [(ngModel)]="data.confirmarCorreo" style="grid-column: 1 / span 2;">Enviar correo electrónico con confirmación</mat-checkbox>
+            </div>
+            <div class="modal-actions">
+                <button mat-button matStepperNext>Siguiente</button>
+            </div>
+        </mat-step>
+        <mat-step label="Jugadores">
+            <div style="margin-bottom: 16px; font-weight: 500;">Resto de jugadores</div>
+            <mat-form-field class="modal-field" appearance="outline">
+                <mat-label>Jugador 2</mat-label>
+                <input matInput [(ngModel)]="data.jugador2">
+            </mat-form-field>
+            <mat-form-field class="modal-field" appearance="outline">
+                <mat-label>Jugador 3</mat-label>
+                <input matInput [(ngModel)]="data.jugador3">
+            </mat-form-field>
+            <mat-form-field class="modal-field" appearance="outline">
+                <mat-label>Jugador 4</mat-label>
+                <input matInput [(ngModel)]="data.jugador4">
+            </mat-form-field>
+            <div class="modal-actions">
+                <button mat-button matStepperPrevious>Anterior</button>
+                <button mat-button matStepperNext>Siguiente</button>
+            </div>
+        </mat-step>
+        <mat-step label="Pagar">
+            <div style="margin-bottom: 16px; font-weight: 500;">Resumen de reservación</div>
+            <div class="modal-grid" style="margin-bottom: 0;">
+                <div style="grid-column: 1 / span 2; margin-bottom: 12px;">
+                    <strong>Reserva:</strong> Viernes, 5 de septiembre de 2025, 16:30 - 18:30, Cancha Padel 1<br>
+                    <strong>Cliente:</strong> Alejandro Blasco Flores<br>
+                    <strong>Tipo de reserva:</strong> Regular<br>
+                </div>
+                <div style="grid-column: 1 / span 2; margin-bottom: 12px;">
+                    <strong>Total:</strong> $600.00<br>
+                    <strong>Anticipo:</strong> $200.00<br>
+                    <strong>Pendiente:</strong> $400.00
+                </div>
+                <mat-form-field class="modal-field" appearance="outline">
+                    <mat-label>Efectivo</mat-label>
+                    <input matInput type="number" min="0" placeholder="$0.00">
+                </mat-form-field>
+                <mat-form-field class="modal-field" appearance="outline">
+                    <mat-label>Tarjeta</mat-label>
+                    <input matInput type="number" min="0" placeholder="$0.00">
+                </mat-form-field>
+            </div>
+            <div class="modal-actions">
+                <button mat-button matStepperPrevious>Anterior</button>
+                <button mat-raised-button color="primary" [mat-dialog-close]="data">Pagar y Reservar</button>
+                <button mat-button mat-dialog-close>Cancelar</button>
+            </div>
+        </mat-step>
+    </mat-horizontal-stepper>
+</div>

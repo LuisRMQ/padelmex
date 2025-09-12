@@ -1,8 +1,18 @@
 import { Component, Input, OnInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ScheduleDateDialogComponent } from './schedule-date-dialog/schedule-date-dialog.component';
+import { MatDividerModule } from "@angular/material/divider";
+import { MatDatepickerModule } from "@angular/material/datepicker";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { FormsModule } from "@angular/forms";
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+
 
 type Court = { id: number; name: string };
 type Reservation = {
@@ -18,21 +28,74 @@ type Reservation = {
   standalone: true,
   templateUrl: './calendario.component.html',
   styleUrls: ['./calendario.component.css'],
-  imports: [
-    CommonModule,
-    DragDropModule,
-    MatDialogModule
+imports: [
+  CommonModule,
+  DragDropModule,
+  MatDialogModule,
+  MatDividerModule,
+  MatDatepickerModule,
+  MatFormFieldModule,
+  MatInputModule,
+  FormsModule,
+  MatButtonModule
+],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'es' }
   ]
 })
-export class CalendarioComponent implements OnInit {
 
-  constructor(private dialog: MatDialog) { }
+export class CalendarioComponent implements OnInit {
+  isCourtColPast(): boolean {
+    // Si la fecha seleccionada es pasada, toda la columna es pasada
+    const now = new Date();
+    const selected = new Date(this.selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    if (selected < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
+      return true;
+    }
+    // Si es hoy y la hora actual es mayor o igual al último slot
+    const isToday = now.toDateString() === selected.toDateString();
+    if (isToday && (now.getHours() * 60 + now.getMinutes()) >= this.dayEndMin) {
+      return true;
+    }
+    return false;
+  }
+  warningMsg: string | null = null;
+
+  setToYesterday() {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    this.onDateChange(d);
+  }
+
+  setToToday() {
+    const d = new Date();
+    this.onDateChange(d);
+  }
+
+  setToTomorrow() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    this.onDateChange(d);
+  }
+
+  selectedDate: Date = new Date();
+
+  constructor(private dialog: MatDialog) {
+    registerLocaleData(localeEs);
+  }
 
   @Input() courts: Court[] = [
     { id: 1, name: 'Cancha 1' },
     { id: 2, name: 'Cancha 2' },
     { id: 3, name: 'Cancha 3' },
     { id: 4, name: 'Cancha 4' },
+    { id: 5, name: 'Cancha 5' },
+    { id: 6, name: 'Cancha 6' },
+    { id: 7, name: 'Cancha 7' },
+    { id: 8, name: 'Cancha 8' },
+    { id: 9, name: 'Cancha 9' },
+    { id: 10, name: 'Cancha 10' },
   ];
 
   @Input() initialReservations: Reservation[] = [
@@ -42,7 +105,7 @@ export class CalendarioComponent implements OnInit {
   ];
 
   // Config
-  readonly dayStartMin = 8 * 60;
+  readonly dayStartMin = 6 * 60;
   readonly dayEndMin = 22 * 60;
   readonly snapMinutes = 30;
   readonly pxPerMin = 2;
@@ -60,6 +123,10 @@ export class CalendarioComponent implements OnInit {
   ngOnInit(): void {
     this.reservations = [...this.initialReservations];
     this.times = this.buildTimeScale(this.dayStartMin, this.dayEndMin, this.snapMinutes);
+  }
+
+  onDateChange(date: Date) {
+    this.selectedDate = date;
   }
 
   // ---- helpers de tiempo / formato ----
@@ -102,13 +169,51 @@ export class CalendarioComponent implements OnInit {
   onCourtClick(ev: MouseEvent, court: Court, colEl: HTMLElement) {
     ev.stopPropagation();
 
+    // Obtener la hora actual y la fecha seleccionada
+    const now = new Date();
+    const selected = new Date(this.selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    const isToday = now.toDateString() === selected.toDateString();
+
+  // Calcular el slot clickeado (sin desfase)
+  const rect = colEl.getBoundingClientRect();
+  const y = ev.clientY - rect.top;
+  // El slot debe ser el más cercano hacia abajo (floor), pero si el click cae justo en el borde superior, debe ser ese slot
+  const clickedMin = this.dayStartMin + Math.floor(y / (this.pxPerMin * this.snapMinutes)) * this.snapMinutes;
+  const safeClickedMin = Math.max(this.dayStartMin, Math.min(clickedMin, this.dayEndMin - this.snapMinutes)) - 30;
+  console.log('Clicked min:', safeClickedMin);
+
+    // Si es hoy y el slot es anterior a la hora actual, mostrar warning
+    if (
+      (isToday && safeClickedMin < (now.getHours() * 60 + now.getMinutes())) ||
+      (selected < new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+    ) {
+      this.warningMsg = 'No puedes seleccionar un horario pasado.';
+      setTimeout(() => { this.warningMsg = null; }, 3000);
+      return;
+    }
+
+    this.warningMsg = null;
+    // Formato HH:mm para dropdown, usando safeClickedMin
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const startHour = Math.floor(safeClickedMin / 60);
+    const startMin = safeClickedMin % 60;
+    const endHour = Math.floor((safeClickedMin + this.snapMinutes) / 60);
+    const endMin = (safeClickedMin + this.snapMinutes) % 60;
+    const startTime24 = `${pad(startHour)}:${pad(startMin)}`;
+    const endTime24 = `${pad(endHour)}:${pad(endMin)}`;
     const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
       data: {
         user: '',
-        startTime: '08:00',
-        endTime: '09:00',
+        startTime: startTime24,
+        endTime: endTime24,
         courtId: court.id
-      }
+      },
+      width: '600px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      panelClass: 'custom-modal-panel',
+      height: '85vh'
     });
 
     dialogRef.afterClosed().subscribe(result => {

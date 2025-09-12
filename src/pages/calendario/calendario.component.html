@@ -1,5 +1,32 @@
-<div class="board">
+<div *ngIf="warningMsg" style="color: #b71c1c; background: #ffeaea; padding: 8px 16px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-weight: 600;">
+  {{ warningMsg }}
+</div>
+<div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+  <h3>Reservaciones del {{ selectedDate | date: 'longDate' }}</h3>
+</div>
 
+<mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
+
+<div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+  <div class="date-selector" style="display: flex; align-items: center; gap: 8px;">
+  <p style="margin: 0;">Selecciona una fecha:</p>
+  <mat-form-field appearance="outline" style="width: 200px;">
+    <mat-label>Fecha</mat-label>
+  <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="onDateChange($event.value)">
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+  </div>
+  <div class ="quick-buttons" style="display: flex; align-items: center; gap: 8px;">
+  <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToYesterday()">Ayer</button>
+  <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToToday()">Hoy</button>
+  <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToTomorrow()">Mañana</button>
+  </div>
+  <h6>Ocupacion: 0 horas (0%, 0 Clientes) | Media: 0</h6>
+</div>
+
+
+<div class="board">
   <!-- Columna de horas -->
   <div class="time-gutter">
     <div class="gutter-header" style="height: var(--header-height);"></div>
@@ -8,17 +35,18 @@
     </div>
   </div>
 
-  <div class="board-scroll" #boardScrollRef>
+  <div class="board-scroll" #boardScrollRef [style.height.px]="(dayEndMin - dayStartMin) * pxPerMin + 50">
     <div class="columns">
 
       <div class="court-col" *ngFor="let court of courts; let i = index" #courtColRef
-        (click)="onCourtClick($event, court, courtColRef)">
+        (click)="onCourtClick($event, court, courtColRef)"
+        [class.past-court-col]="isCourtColPast()">
 
         <div class="court-header">
           {{ court.name }}
         </div>
 
-        <div class="time-grid">
+        <div class="time-grid" [style.height.px]="(dayEndMin - dayStartMin) * pxPerMin + 50">
           <div class="time-slot" *ngFor="let t of times; let ti = index"
             [style.top.px]="minutesToPx(t.min - dayStartMin)"></div>
         </div>
@@ -30,10 +58,6 @@
             (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)">
             <div class="res-title">
               {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
-            </div>
-            <div class="res-actions">
-              <button type="button" (click)="$event.stopPropagation(); subtractMinutes(res, 15)">–15m</button>
-              <button type="button" (click)="$event.stopPropagation(); addMinutes(res, 15)">+15m</button>
             </div>
           </div>
         </div>

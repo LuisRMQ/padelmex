@@ -1,35 +1,51 @@
+/* Panel personalizado para el modal */
+.custom-modal-panel .mat-dialog-container {
+	padding: 0 !important;
+	border-radius: 24px !important;
+	max-height: 90vh !important;
+	overflow-y: auto !important;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
 /* Estilo moderno para el modal */
 
 .modal-container {
+	background: transparent;
+	border-radius: 0;
+	box-shadow: none;
+	padding: 0;
+	max-width: 100%;
+	width: 100%;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	height: 100%;
+}
+
+mat-horizontal-stepper {
 	background: #fff;
-	border-radius: 16px;
+	border-radius: 24px;
 	box-shadow: 0 4px 24px rgba(0,0,0,0.12);
-	padding: 32px 24px;
-	max-width: 650px;
-	margin: 0 auto;
+	width: 100%;
+	max-width: 900px;
+	min-height: 0;
+	height: 100%;
 }
 
 .modal-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 24px;
+	gap: 5px;
+	margin-top: 25px;
 }
 
 .modal-field {
 	width: 100%;
-	margin-bottom: 18px;
 }
 
 .modal-actions {
 	display: flex;
 	justify-content: flex-end;
 	gap: 12px;
-	margin-top: 24px;
 }
 
-h2 {
-	text-align: center;
-	margin-bottom: 24px;
-	font-size: 1.1rem;
-	font-weight: 500;
-}
