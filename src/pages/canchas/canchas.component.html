@@ -1,8 +1,8 @@
 <div class="container">
 
   <!-- Botón registrar cancha -->
-  <div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-    <h2>Canchas</h2>
+  <div class="header">
+    <h1>Canchas</h1>
     <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarCancha()">
       REGISTRAR CANCHA
     </button>
@@ -118,10 +118,9 @@
       </div>
     </mat-expansion-panel>
 
-    <!-- Mensaje si no hay canchas -->
-    <div *ngIf="courts.length === 0 && !loading && !error" style="text-align: center; padding: 20px; color: #666;">
-      No hay canchas disponibles para este club.
-    </div>
+   <div *ngIf="courts.length === 0 && !loading && !error" class="no-canchas">
+  No hay canchas registradas para este club.
+</div>
 
   </mat-accordion>
 

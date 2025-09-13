@@ -52,8 +52,35 @@
   border-radius: 0 !important;
 }
 
+
+
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 30px;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+}
+
+.header h1 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
 .btn-registrar {
-  background-color: #28a745;
-  color: white;
-  font-weight: 400;
+  background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border-radius: 25px !important;
+  padding: 12px 24px !important;
+  box-shadow: var(--shadow) !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
 }

@@ -37,7 +37,12 @@ export class UsersService extends ApiBaseService {
     }
 
 
-
+    getUsersByRol(rol_id: number): Observable<User[]> {
+        return this.get<{ success: boolean, data: User[] }>(`/users?rol_id=${rol_id}`)
+            .pipe(
+                map(res => res.data)
+            );
+    }
 
     updateUserById(id: number, data: any) {
         const isFormData = data instanceof FormData;

@@ -1,38 +1,100 @@
-.container {
-  padding: 20px;
-  max-width: 500px;
-  margin: auto;
+.modal-container {
+  padding: 24px;
+  max-width: 800px;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #28a745;
+.torneo-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .full-width {
-  width: 100%;
-  margin-bottom: 15px;
+  flex: 1 1 100%;
+}
+
+.half-width {
+  flex: 1 1 calc(50% - 16px);
 }
 
 .logo-upload {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 12px;
+  flex: 1 1 100%;
 }
 
 .logo-upload img {
-  width: 120px;
-  height: 120px;
-  border-radius: 10px;
-  border: 2px solid #28a745;
-  margin-bottom: 10px;
+  width: 80px;
+  height: 80px;
   object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #ddd;
 }
 
-button[color=primary] {
-  background-color: #28a745 !important;
-  color: white !important;
-  width: 100%;
+.participantes-section {
+  flex: 1 1 100%;
+  margin-top: 20px;
+}
+
+.drag-drop-container {
+  display: flex;
+  gap: 24px;
+}
+
+.list-box {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 12px;
+  min-height: 200px;
+  background: #fafafa;
+}
+
+.list {
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid #ccc;
+  cursor: grab;
+  transition: background 0.2s;
+}
+
+.list-item:hover {
+  background: #f5f5f5;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex: 1 1 100%;
+  margin-top: 16px;
+}
+
+.user-photo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  margin-bottom: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f8f9fa;
+  cursor: grab;
 }

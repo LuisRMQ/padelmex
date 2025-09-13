@@ -11,7 +11,7 @@ import { IntegrantesService, Integrante } from '../../app/services/integrantes.s
 import { MatGridListModule } from '@angular/material/grid-list';
 import { RegistrarTorneoDialogComponent } from '../torneos/registrar-torneo-dialog/registrar-torneo-dialog.component';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { BracketComponent } from '../torneos/brackets-torneo-dialog/brackets-torneo-dialog.component';
+import { BracketModalComponent } from '../torneos/brackets-torneo-dialog/brackets-torneo-dialog.component';
 import { MatChipsModule } from '@angular/material/chips';
 import { DatePipe } from '@angular/common';
 
@@ -150,7 +150,7 @@ export class TorneosComponent implements OnInit {
   }
 
   abrirBracket(torneo: any) {
-    this.dialog.open(BracketComponent, {
+    this.dialog.open(BracketModalComponent, {
       width: '90vw',
       height: '80vh',
       maxWidth: '1200px',

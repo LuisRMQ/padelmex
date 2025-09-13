@@ -1,217 +1,180 @@
-import { Component, Input, OnInit, ElementRef, AfterViewInit, HostListener } from '@angular/core';
+import { Component, Inject, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-
-interface Participante {
-  id: number;
-  nombre: string;
-  logo?: string;
-}
-
-interface Partido {
-  id: number;
-  jugador1?: Participante;
-  jugador2?: Participante;
-  ganador?: Participante;
-  x?: number;
-  y?: number;
-  height?: number; // Nueva propiedad para la altura del partido
-}
+import { Participante, Partido } from '../registrar-torneo-dialog/registrar-torneo-dialog.component';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-bracket',
+  selector: 'app-bracket-modal',
+  template: `
+    <h2>Bracket del Torneo</h2>
+    <div #bracketContainer class="bracket-container" style="width: 100%; height: 600px;"></div>
+    <button mat-raised-button color="primary" (click)="cerrar()">Cerrar</button>
+  `,
+  styles: [`
+    .bracket-container {
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      overflow: auto;
+    }
+  `],
   standalone: true,
-  templateUrl: './brackets-torneo-dialog.component.html',
-  styleUrls: ['./brackets-torneo-dialog.component.css']
+  imports: []
 })
-export class BracketComponent implements OnInit, AfterViewInit {
-
-  @Input() participantes: Participante[] = [];
-
-  private svg!: any;
-  private containerWidth!: number;
-  private containerHeight!: number;
-
+export class BracketModalComponent implements AfterViewInit {
+  @ViewChild('bracketContainer', { static: false }) bracketContainer!: ElementRef;
+  private svg: any;
   private matchWidth = 200;
-  private matchHeight = 80; // Aumenté la altura para mejor visualización
-  private verticalSpacing = 40; // Espacio vertical entre partidos
-  private logoSize = 30;
+  private matchHeight = 80;
   private spacingX = 150;
-  private startX = 50;
-  private startY = 50;
+  private verticalSpacing = 40;
+  private logoSize = 30;
 
-  partidos: Partido[][] = [];
+  bracket: Partido[][] = [];
 
-  constructor(private el: ElementRef) {}
-
-  ngOnInit() {
-    const equipos: Participante[] = [
-      {id:1,nombre:'Equipo A', logo:'../../assets/images/placeholder.png'},
-      {id:2,nombre:'Equipo B', logo:'../../assets/images/placeholder.png'},
-      {id:3,nombre:'Equipo C', logo:'../../assets/images/placeholder.png'},
-      {id:4,nombre:'Equipo D', logo:'../../assets/images/placeholder.png'},
-      {id:5,nombre:'Equipo E', logo:'../../assets/images/placeholder.png'},
-      {id:6,nombre:'Equipo F', logo:'../../assets/images/placeholder.png'},
-      {id:7,nombre:'Equipo G', logo:'../../assets/images/placeholder.png'},
-      {id:8,nombre:'Equipo H', logo:'../../assets/images/placeholder.png'},
-    ];
-
-    // Ronda 1: Octavos
-    const r1: Partido[] = [
-      {id:1, jugador1:equipos[0], jugador2:equipos[1], ganador:equipos[0]},
-      {id:2, jugador1:equipos[2], jugador2:equipos[3], ganador:equipos[3]},
-      {id:3, jugador1:equipos[4], jugador2:equipos[5], ganador:equipos[4]},
-      {id:4, jugador1:equipos[6], jugador2:equipos[7], ganador:equipos[7]},
-    ];
-
-    // Ronda 2: Semifinales
-    const r2: Partido[] = [
-      {id:5, jugador1:r1[0].ganador, jugador2:r1[1].ganador, ganador:r1[0].ganador},
-      {id:6, jugador1:r1[2].ganador, jugador2:r1[3].ganador, ganador:r1[3].ganador},
-    ];
-
-    // Ronda 3: Final
-    const r3: Partido[] = [
-      {id:7, jugador1:r2[0].ganador, jugador2:r2[1].ganador, ganador:r2[0].ganador}
-    ];
-
-    this.partidos = [r1, r2, r3];
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: { bracket: Partido[][] },
+    private dialogRef: MatDialogRef<BracketModalComponent>,
+    private el: ElementRef
+  ) {
+    if (data?.bracket) {
+      this.bracket = data.bracket;
+    }
   }
 
   ngAfterViewInit() {
-    this.svg = d3.select(this.el.nativeElement).select('svg');
-    this.updateDimensions();
-    this.drawBracket();
-  }
-
-  @HostListener('window:resize')
-  onResize() {
-    this.updateDimensions();
-    this.drawBracket();
-  }
-
-  private updateDimensions() {
-    const container = this.el.nativeElement.querySelector('.bracket-container');
-    this.containerWidth = container.clientWidth;
-    this.containerHeight = container.clientHeight;
-
-    this.svg
-      .attr('width', this.containerWidth)
-      .attr('height', this.containerHeight);
+    if (!this.bracket || !this.bracket.length) return;
+    setTimeout(() => this.drawBracket(), 0);
   }
 
   private drawBracket() {
-    this.svg.selectAll('*').remove();
+  if (!this.bracketContainer?.nativeElement) return;
 
-    const rounds = this.partidos.length;
+  const container = this.bracketContainer.nativeElement as HTMLElement;
+  
+  // Calcular el tamaño necesario del SVG
+  const width = this.bracket.length * (this.matchWidth + this.spacingX) + 100;
+  const maxMatches = Math.max(...this.bracket.map(r => r.length));
+  const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
 
-    // Primera pasada: calcular posiciones Y de todos los partidos
-    this.calculatePositions();
-
-    // Segunda pasada: dibujar partidos y conexiones
-    this.partidos.forEach((ronda, roundIndex) => {
-      ronda.forEach((partido, i) => {
-        this.drawMatch(partido);
-
-        // Dibujar líneas de conexión
-        if (roundIndex < rounds - 1) {
-          this.drawConnections(partido, roundIndex, i);
-        }
-      });
-    });
+  // Seleccionar o crear SVG
+  this.svg = d3.select(container).select('svg');
+  if (this.svg.empty()) {
+    this.svg = d3.select(container).append('svg');
   }
 
-  private calculatePositions() {
-    this.partidos.forEach((ronda, roundIndex) => {
-      const x = this.startX + roundIndex * (this.matchWidth + this.spacingX);
-      const matchesInRound = ronda.length;
-      
-      // Calcular la altura total necesaria para esta ronda
-      const totalHeight = matchesInRound * (this.matchHeight + this.verticalSpacing) - this.verticalSpacing;
-      
-      // Calcular el punto de inicio Y para centrar verticalmente
-      const startY = (this.containerHeight - totalHeight) / 2;
+  this.svg.attr('width', width)
+          .attr('height', height);
 
-      ronda.forEach((partido, i) => {
-        partido.x = x;
-        partido.y = startY + i * (this.matchHeight + this.verticalSpacing);
-        partido.height = this.matchHeight;
-      });
+  this.svg.selectAll('*').remove();
+
+  this.calculatePositions(height);
+
+  this.bracket.forEach((ronda, roundIndex) => {
+    ronda.forEach((partido, matchIndex) => {
+      this.drawMatch(partido, roundIndex, matchIndex);
+      if (roundIndex < this.bracket.length - 1) {
+        this.drawConnections(partido, roundIndex, matchIndex);
+      }
     });
-  }
+  });
+}
 
-  private drawMatch(partido: Partido) {
+
+  private calculatePositions(containerHeight: number) {
+  this.bracket.forEach((ronda, roundIndex) => {
+    const x = roundIndex * (this.matchWidth + this.spacingX) + 50;
+    const matchesInRound = ronda.length;
+    const totalHeight = matchesInRound * (this.matchHeight + this.verticalSpacing) - this.verticalSpacing;
+    const startY = (containerHeight - totalHeight) / 2; // centra verticalmente
+
+    ronda.forEach((partido, i) => {
+      partido.x = x;
+      partido.y = startY + i * (this.matchHeight + this.verticalSpacing);
+      partido.height = this.matchHeight;
+    });
+  });
+}
+
+  private drawMatch(partido: Partido, roundIndex: number, matchIndex: number) {
     const x = partido.x!;
     const y = partido.y!;
 
-    // Dibujar jugador 1
-    if (partido.jugador1) {
-      this.drawPlayer(partido.jugador1, x, y, partido.ganador === partido.jugador1);
-    }
+    const g = this.svg.append('g').attr('transform', `translate(${x}, ${y})`);
 
-    // Dibujar jugador 2
-    if (partido.jugador2) {
-      this.drawPlayer(partido.jugador2, x, y + this.matchHeight / 2, partido.ganador === partido.jugador2);
-    }
-
-    // Dibujar caja del partido
-    this.svg.append('rect')
-      .attr('x', x)
-      .attr('y', y)
+    g.append('rect')
       .attr('width', this.matchWidth)
       .attr('height', this.matchHeight)
-      .attr('rx', 5)
-      .attr('ry', 5)
       .attr('fill', 'transparent')
       .attr('stroke', '#1e7e34')
-      .attr('stroke-width', 2);
+      .attr('stroke-width', 2)
+      .attr('rx', 5)
+      .attr('ry', 5);
+
+    if (partido.jugador1) {
+      this.drawPlayer(g, partido.jugador1, 0, partido.ganador === partido.jugador1, partido, roundIndex, matchIndex);
+    }
+    if (partido.jugador2) {
+      this.drawPlayer(g, partido.jugador2, this.matchHeight / 2, partido.ganador === partido.jugador2, partido, roundIndex, matchIndex);
+    }
   }
 
-  private drawPlayer(jugador: Participante, x: number, y: number, esGanador: boolean) {
-    const group = this.svg.append('g')
-      .attr('class', 'player')
-      .attr('transform', `translate(${x}, ${y})`);
-
-    // Fondo del jugador
+  private drawPlayer(group: any, jugador: Participante, yOffset: number, esGanador: boolean, partido: Partido, roundIndex: number, matchIndex: number) {
     group.append('rect')
+      .attr('x', 0)
+      .attr('y', yOffset)
       .attr('width', this.matchWidth)
       .attr('height', this.matchHeight / 2)
       .attr('fill', esGanador ? '#28a745' : '#6c757d')
       .attr('stroke', '#1e7e34')
-      .attr('stroke-width', 1);
+      .attr('stroke-width', 1)
+      .style('cursor', 'pointer')
+      .on('click', () => this.marcarGanador(jugador, roundIndex, matchIndex));
 
-    // Logo
     if (jugador.logo) {
       group.append('image')
         .attr('xlink:href', jugador.logo)
         .attr('x', 5)
-        .attr('y', 5)
+        .attr('y', yOffset + 5)
         .attr('width', this.logoSize)
         .attr('height', this.logoSize);
     }
 
-    // Nombre
     group.append('text')
       .text(jugador.nombre)
       .attr('x', this.logoSize + 15)
-      .attr('y', (this.matchHeight / 2) / 2)
+      .attr('y', yOffset + (this.matchHeight / 4))
       .attr('dy', '0.35em')
       .attr('fill', 'white')
       .attr('font-weight', 'bold')
       .attr('font-size', '12px');
   }
 
+  private marcarGanador(jugador: Participante, roundIndex: number, matchIndex: number) {
+    const partido = this.bracket[roundIndex][matchIndex];
+    partido.ganador = jugador;
+
+    const nextRound = this.bracket[roundIndex + 1];
+    if (nextRound) {
+      const nextMatchIndex = Math.floor(matchIndex / 2);
+      const nextMatch = nextRound[nextMatchIndex];
+      if (!nextMatch.jugador1) nextMatch.jugador1 = jugador;
+      else nextMatch.jugador2 = jugador;
+    }
+
+    this.drawBracket();
+  }
+
   private drawConnections(partido: Partido, roundIndex: number, matchIndex: number) {
     const currentX = partido.x! + this.matchWidth;
     const currentY = partido.y! + (partido.height! / 2);
-    
-    const nextRound = this.partidos[roundIndex + 1];
+
+    const nextRound = this.bracket[roundIndex + 1];
     const nextMatchIndex = Math.floor(matchIndex / 2);
     const nextPartido = nextRound[nextMatchIndex];
-    
+
     const nextX = nextPartido.x!;
     const nextY = nextPartido.y! + (nextPartido.height! / 2);
 
-    // Línea horizontal desde el partido actual
     this.svg.append('line')
       .attr('x1', currentX)
       .attr('y1', currentY)
@@ -220,7 +183,6 @@ export class BracketComponent implements OnInit, AfterViewInit {
       .attr('stroke', '#1e7e34')
       .attr('stroke-width', 2);
 
-    // Línea vertical para conectar
     this.svg.append('line')
       .attr('x1', currentX + (this.spacingX / 2))
       .attr('y1', currentY)
@@ -229,7 +191,6 @@ export class BracketComponent implements OnInit, AfterViewInit {
       .attr('stroke', '#1e7e34')
       .attr('stroke-width', 2);
 
-    // Línea horizontal hacia el próximo partido
     this.svg.append('line')
       .attr('x1', currentX + (this.spacingX / 2))
       .attr('y1', nextY)
@@ -237,5 +198,9 @@ export class BracketComponent implements OnInit, AfterViewInit {
       .attr('y2', nextY)
       .attr('stroke', '#1e7e34')
       .attr('stroke-width', 2);
+  }
+
+  cerrar() {
+    this.dialogRef.close();
   }
 }
