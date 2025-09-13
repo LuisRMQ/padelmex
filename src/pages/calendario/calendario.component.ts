@@ -12,55 +12,94 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormsModule } from "@angular/forms";
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from "@angular/material/select";
+import { Club, CourtService, CourtsResponse } from '../../app/services/court.service';
+import { ReservationService, Reservation as ApiReservation, ReservationFilters } from '../../app/services/reservation.service';
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatIconModule } from "@angular/material/icon";
 
-
-type Court = { id: number; name: string };
-type Reservation = {
+interface Court { id: number; name: string; }
+interface CalendarReservation {
   id: number;
   courtId: number;
   user: string;
   startMin: number;
   endMin: number;
-};
+  originalData?: ApiReservation;
+}
 
 @Component({
   selector: 'app-calendario',
   standalone: true,
   templateUrl: './calendario.component.html',
   styleUrls: ['./calendario.component.css'],
-imports: [
-  CommonModule,
-  DragDropModule,
-  MatDialogModule,
-  MatDividerModule,
-  MatDatepickerModule,
-  MatFormFieldModule,
-  MatInputModule,
-  FormsModule,
-  MatButtonModule
-],
+  imports: [
+    CommonModule,
+    DragDropModule,
+    MatDialogModule,
+    MatDividerModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    MatSelectModule,
+    MatProgressSpinnerModule,
+    MatIconModule
+  ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es' }
   ]
 })
-
 export class CalendarioComponent implements OnInit {
-  isCourtColPast(): boolean {
-    // Si la fecha seleccionada es pasada, toda la columna es pasada
-    const now = new Date();
-    const selected = new Date(this.selectedDate);
-    selected.setHours(0, 0, 0, 0);
-    if (selected < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
-      return true;
-    }
-    // Si es hoy y la hora actual es mayor o igual al último slot
-    const isToday = now.toDateString() === selected.toDateString();
-    if (isToday && (now.getHours() * 60 + now.getMinutes()) >= this.dayEndMin) {
-      return true;
-    }
-    return false;
-  }
   warningMsg: string | null = null;
+  selectedDate: Date = new Date();
+  selectedClubId: number | null = null;
+  selectedCourtId: number | null = null;
+  loading = false;
+  loadingReservations = false;
+  error: string | null = null;
+  clubs: Club[] = [];
+  courtNameToIdMap: Map<string, number> = new Map();
+  allReservations: ApiReservation[] = []; // Todas las reservaciones sin filtrar
+
+  constructor(
+    private dialog: MatDialog,
+    private courtService: CourtService,
+    private reservationService: ReservationService
+  ) {
+    registerLocaleData(localeEs);
+  }
+
+  @Input() courts: Court[] = [];
+  @Input() initialReservations: CalendarReservation[] = [];
+
+  // Config
+  readonly dayStartMin = 6 * 60;
+  readonly dayEndMin = 22 * 60;
+  readonly snapMinutes = 30;
+  readonly pxPerMin = 2;
+
+  // Derivados
+  times: { label: string; min: number }[] = [];
+  reservations: CalendarReservation[] = [];
+
+  @ViewChildren('courtColRef') courtCols!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('boardScrollRef') boardScroll!: QueryList<ElementRef<HTMLElement>>;
+
+  // cache para drag
+  private dragCache = new Map<number, { startTopPx: number; startLeftPx: number }>();
+
+  ngOnInit(): void {
+    this.times = this.buildTimeScale(this.dayStartMin, this.dayEndMin, this.snapMinutes);
+    this.loadClubs();
+    this.loadAllReservations(); // Cargar todas las reservaciones al iniciar
+  }
+
+  onDateChange(date: Date) {
+    this.selectedDate = date;
+    this.applyFilters(); // Aplicar filtros cuando cambia la fecha
+  }
 
   setToYesterday() {
     const d = new Date();
@@ -79,62 +118,43 @@ export class CalendarioComponent implements OnInit {
     this.onDateChange(d);
   }
 
-  selectedDate: Date = new Date();
-
-  constructor(private dialog: MatDialog) {
-    registerLocaleData(localeEs);
+  onClubChange() {
+    if (this.selectedClubId) {
+      this.loadCourts();
+    } else {
+      this.courts = [];
+      this.selectedCourtId = null;
+      this.applyFilters();
+    }
   }
 
-  @Input() courts: Court[] = [
-    { id: 1, name: 'Cancha 1' },
-    { id: 2, name: 'Cancha 2' },
-    { id: 3, name: 'Cancha 3' },
-    { id: 4, name: 'Cancha 4' },
-    { id: 5, name: 'Cancha 5' },
-    { id: 6, name: 'Cancha 6' },
-    { id: 7, name: 'Cancha 7' },
-    { id: 8, name: 'Cancha 8' },
-    { id: 9, name: 'Cancha 9' },
-    { id: 10, name: 'Cancha 10' },
-  ];
-
-  @Input() initialReservations: Reservation[] = [
-    { id: 1, courtId: 1, user: 'Usuario 1', startMin: 8 * 60, endMin: 9 * 60 + 30 },
-    { id: 2, courtId: 2, user: 'Usuario 2', startMin: 10 * 60, endMin: 11 * 60 },
-    { id: 3, courtId: 1, user: 'Usuario 3', startMin: 13 * 60 + 30, endMin: 15 * 60 },
-  ];
-
-  // Config
-  readonly dayStartMin = 6 * 60;
-  readonly dayEndMin = 22 * 60;
-  readonly snapMinutes = 30;
-  readonly pxPerMin = 2;
-
-  // Derivados
-  times: { label: string; min: number }[] = [];
-  reservations: Reservation[] = [];
-
-  @ViewChildren('courtColRef') courtCols!: QueryList<ElementRef<HTMLElement>>;
-  @ViewChildren('boardScrollRef') boardScroll!: QueryList<ElementRef<HTMLElement>>;
-
-  // cache para drag
-  private dragCache = new Map<number, { startTopPx: number; startLeftPx: number }>();
-
-  ngOnInit(): void {
-    this.reservations = [...this.initialReservations];
-    this.times = this.buildTimeScale(this.dayStartMin, this.dayEndMin, this.snapMinutes);
+  onCourtChange() {
+    this.applyFilters();
   }
 
-  onDateChange(date: Date) {
-    this.selectedDate = date;
+  isCourtColPast(): boolean {
+    const now = new Date();
+    const selected = new Date(this.selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    if (selected < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
+      return true;
+    }
+    const isToday = now.toDateString() === selected.toDateString();
+    if (isToday && (now.getHours() * 60 + now.getMinutes()) >= this.dayEndMin) {
+      return true;
+    }
+    return false;
   }
 
   // ---- helpers de tiempo / formato ----
   private buildTimeScale(startMin: number, endMin: number, step: number) {
     const arr: { label: string; min: number }[] = [];
+
+    // Generar slots hasta el final INCLUSIVE
     for (let m = startMin; m <= endMin; m += step) {
       arr.push({ label: this.formatTime(m), min: m });
     }
+
     return arr;
   }
 
@@ -152,12 +172,12 @@ export class CalendarioComponent implements OnInit {
   }
 
   // ---- posicionamiento de reservas ----
-  getReservationStyle(r: Reservation) {
+  getReservationStyle(r: CalendarReservation) {
     const topPx = this.minutesToPx(r.startMin - this.dayStartMin);
     const heightPx = this.minutesToPx(r.endMin - r.startMin);
     return {
       top: `${topPx}px`,
-      height: `${Math.max(24, heightPx)}px`, // mínimo alto visible
+      height: `${Math.max(24, heightPx)}px`,
     };
   }
 
@@ -169,19 +189,30 @@ export class CalendarioComponent implements OnInit {
   onCourtClick(ev: MouseEvent, court: Court, colEl: HTMLElement) {
     ev.stopPropagation();
 
-    // Obtener la hora actual y la fecha seleccionada
     const now = new Date();
     const selected = new Date(this.selectedDate);
     selected.setHours(0, 0, 0, 0);
     const isToday = now.toDateString() === selected.toDateString();
 
-  // Calcular el slot clickeado (sin desfase)
-  const rect = colEl.getBoundingClientRect();
-  const y = ev.clientY - rect.top;
-  // El slot debe ser el más cercano hacia abajo (floor), pero si el click cae justo en el borde superior, debe ser ese slot
-  const clickedMin = this.dayStartMin + Math.floor(y / (this.pxPerMin * this.snapMinutes)) * this.snapMinutes;
-  const safeClickedMin = Math.max(this.dayStartMin, Math.min(clickedMin, this.dayEndMin - this.snapMinutes)) - 30;
-  console.log('Clicked min:', safeClickedMin);
+    const rect = colEl.getBoundingClientRect();
+    const y = ev.clientY - rect.top;
+
+    // Cálculo CORRECTO del minuto clickeado
+    const minutesFromTop = y / this.pxPerMin;
+    const slotIndex = Math.floor(minutesFromTop / this.snapMinutes);
+    const clickedMin = this.dayStartMin + (slotIndex * this.snapMinutes);
+
+    // Asegurarse de que esté dentro de los límites (CORRECCIÓN)
+    const safeClickedMin = Math.max(this.dayStartMin, Math.min(clickedMin, this.dayEndMin - this.snapMinutes));
+
+    // DEBUG: Verificar cálculos
+    console.log('Click Y:', y, 'px');
+    console.log('Minutes from top:', minutesFromTop);
+    console.log('Slot index:', slotIndex);
+    console.log('Clicked min:', clickedMin);
+    console.log('Safe clicked min:', safeClickedMin);
+
+    // ... resto del código sin cambios
 
     // Si es hoy y el slot es anterior a la hora actual, mostrar warning
     if (
@@ -194,14 +225,17 @@ export class CalendarioComponent implements OnInit {
     }
 
     this.warningMsg = null;
-    // Formato HH:mm para dropdown, usando safeClickedMin
+
+    // CORRECCIÓN: Usar safeClickedMin directamente para el diálogo
     const pad = (n: number) => n.toString().padStart(2, '0');
     const startHour = Math.floor(safeClickedMin / 60);
     const startMin = safeClickedMin % 60;
     const endHour = Math.floor((safeClickedMin + this.snapMinutes) / 60);
     const endMin = (safeClickedMin + this.snapMinutes) % 60;
+
     const startTime24 = `${pad(startHour)}:${pad(startMin)}`;
     const endTime24 = `${pad(endHour)}:${pad(endMin)}`;
+
     const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
       data: {
         user: '',
@@ -218,31 +252,39 @@ export class CalendarioComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        const newId = (this.reservations.at(-1)?.id ?? 0) + 1;
-        const startParts = result.startTime.split(':').map((x: string) => parseInt(x, 10));
-        const endParts = result.endTime.split(':').map((x: string) => parseInt(x, 10));
+        // Enviar la reservación al backend
+        this.reservationService.createReservation(result).subscribe({
+          next: (response) => {
+            console.log('Reservación creada:', response);
 
-        const startMin = startParts[0] * 60 + startParts[1];
-        const endMin = endParts[0] * 60 + endParts[1];
+            // Agregar la nueva reservación al calendario
+            const newRes: CalendarReservation = {
+              id: response.reservation.id,
+              courtId: result.court_id,
+              user: `Usuario ${result.user_id}`, // Puedes mejorar esto luego
+              startMin: this.timeStringToMinutes(result.start_time),
+              endMin: this.timeStringToMinutes(result.end_time),
+              originalData: response.reservation
+            };
 
-        const newRes: Reservation = {
-          id: newId,
-          courtId: court.id,
-          user: result.user || 'Nuevo',
-          startMin,
-          endMin
-        };
+            this.reservations = [...this.reservations, newRes];
 
-        this.reservations = [...this.reservations, newRes];
+            // Recargar todas las reservaciones para estar seguros
+            this.loadAllReservations();
+          },
+          error: (error) => {
+            console.error('Error creando reservación:', error);
+            this.error = 'Error al crear la reservación';
+          }
+        });
       }
     });
   }
 
   // ---- drag & drop ----
-  onDragStarted(e: CdkDragStart, res: Reservation, resEl: HTMLElement) {
+  onDragStarted(e: CdkDragStart, res: CalendarReservation, resEl: HTMLElement) {
     const rect = resEl.getBoundingClientRect();
     const colRect = (resEl.parentElement as HTMLElement).getBoundingClientRect();
-    // top relativo a la columna, left relativo al contenedor de columnas
     const startTopPx = rect.top - colRect.top + (resEl.parentElement as HTMLElement).scrollTop;
     const allColsContainer = (resEl.closest('.columns') as HTMLElement);
     const allRect = allColsContainer.getBoundingClientRect();
@@ -250,18 +292,17 @@ export class CalendarioComponent implements OnInit {
     this.dragCache.set(res.id, { startTopPx, startLeftPx: leftPx });
   }
 
-  onDragEnded(e: CdkDragEnd, res: Reservation, resEl: HTMLElement) {
+  onDragEnded(e: CdkDragEnd, res: CalendarReservation, resEl: HTMLElement) {
     const cached = this.dragCache.get(res.id);
     if (!cached) return;
 
     const allColsContainer = (resEl.closest('.columns') as HTMLElement);
     const colWidth = this.courtCols.first?.nativeElement.clientWidth ?? 0;
 
-    const delta = e.distance; // {x,y} respecto al inicio del drag
+    const delta = e.distance;
     const newTopPx = cached.startTopPx + delta.y;
     const newLeftPx = cached.startLeftPx + delta.x;
 
-    // Calcular nueva cancha por desplazamiento horizontal
     const currentIndex = this.courtIndexById(res.courtId);
     const movedCols = Math.round(delta.x / Math.max(1, colWidth));
     let newIndex = currentIndex + movedCols;
@@ -269,13 +310,11 @@ export class CalendarioComponent implements OnInit {
     newIndex = Math.max(0, Math.min(this.courts.length - 1, newIndex));
     const newCourtId = this.courts[newIndex].id;
 
-    // Calcular nueva hora por desplazamiento vertical (snap)
     const newStartMinRaw = this.dayStartMin + Math.round((newTopPx / this.pxPerMin) / this.snapMinutes) * this.snapMinutes;
     const duration = res.endMin - res.startMin;
     let newStartMin = Math.max(this.dayStartMin, Math.min(newStartMinRaw, this.dayEndMin - duration));
     let newEndMin = newStartMin + duration;
 
-    // Actualizar el objeto (inmutable para disparar change detection)
     const updated = this.reservations.map(r => r.id === res.id ? { ...r, courtId: newCourtId, startMin: newStartMin, endMin: newEndMin } : r);
     this.reservations = updated;
 
@@ -283,15 +322,299 @@ export class CalendarioComponent implements OnInit {
     e.source.reset();
   }
 
-  addMinutes(res: Reservation, minutes: number) {
+  addMinutes(res: CalendarReservation, minutes: number) {
     const newEnd = Math.min(this.dayEndMin, res.endMin + minutes);
     if (newEnd > res.startMin) {
       this.reservations = this.reservations.map(r => r.id === res.id ? { ...r, endMin: newEnd } : r);
     }
   }
 
-  subtractMinutes(res: Reservation, minutes: number) {
+  subtractMinutes(res: CalendarReservation, minutes: number) {
     const newEnd = Math.max(res.startMin + this.snapMinutes, res.endMin - minutes);
     this.reservations = this.reservations.map(r => r.id === res.id ? { ...r, endMin: newEnd } : r);
+  }
+
+  // Determina si un slot específico es pasado
+  isPastSlot(slotMin: number): boolean {
+    const now = new Date();
+    const selected = new Date(this.selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    if (selected < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
+      return true;
+    }
+    const isToday = now.toDateString() === selected.toDateString();
+    if (isToday && slotMin < (now.getHours() * 60 + now.getMinutes())) {
+      return true;
+    }
+    return false;
+  }
+
+  // Verifica si un slot está reservado para una cancha y minuto dados
+  isSlotReserved(courtId: number, slotMin: number): boolean {
+    return this.reservations.some(res =>
+      res.courtId === courtId &&
+      res.startMin <= slotMin &&
+      res.endMin > slotMin
+    );
+  }
+
+  handleSlotClick(ev: MouseEvent, court: Court, slotMin: number) {
+    if (this.isPastSlot(slotMin) || this.isSlotReserved(court.id, slotMin)) {
+      return;
+    }
+
+    const targetElement = ev.currentTarget as HTMLElement;
+    const courtColElement = targetElement.closest('.court-col') as HTMLElement;
+
+    if (courtColElement) {
+      this.onCourtClick(ev, court, courtColElement);
+    }
+  }
+
+  // ---- Carga de datos ----
+  loadClubs() {
+    this.loading = true;
+    this.courtService.getClubs().subscribe({
+      next: (clubs) => {
+        this.clubs = clubs;
+        this.loading = false;
+        if (clubs.length > 0 && !this.selectedClubId) {
+          this.selectedClubId = clubs[0].id;
+          this.loadCourts();
+        }
+      },
+      error: (error) => {
+        this.error = 'Error al cargar los clubs';
+        this.loading = false;
+        console.error(error);
+      }
+    });
+  }
+
+  loadCourts() {
+    if (!this.selectedClubId) return;
+
+    this.loading = true;
+    this.courts = [];
+    this.error = '';
+
+    this.courtService.getCourtsByClub(this.selectedClubId).subscribe({
+      next: (response: CourtsResponse) => {
+        if (response && Array.isArray(response.data)) {
+          this.courts = response.data;
+
+          this.courtNameToIdMap.clear();
+          this.courts.forEach(court => {
+            this.courtNameToIdMap.set(court.name, court.id);
+          });
+        } else {
+          this.courts = [];
+        }
+
+        this.loading = false;
+        this.applyFilters();
+      },
+      error: (error) => {
+        this.error = 'Error al cargar las canchas';
+        this.loading = false;
+        console.error(error);
+      }
+    });
+  }
+
+  loadAllReservations() {
+    this.loadingReservations = true;
+
+    this.reservationService.getReservations({}).subscribe({
+      next: (response) => {
+        if (response && Array.isArray(response.data)) {
+          this.allReservations = response.data;
+          console.log('Total reservaciones cargadas:', this.allReservations.length);
+          this.applyFilters();
+        } else {
+          this.allReservations = [];
+          console.warn('La respuesta no contiene data válida:', response);
+        }
+        this.loadingReservations = false;
+      },
+      error: (error) => {
+        this.error = 'Error al cargar las reservaciones';
+        this.allReservations = [];
+        this.loadingReservations = false;
+        console.error(error);
+      }
+    });
+  }
+
+  // ---- Filtrado en frontend ----
+  applyFilters() {
+    if (this.allReservations.length === 0) {
+      this.reservations = [];
+      return;
+    }
+
+    let filteredReservations = this.allReservations;
+
+    // Filtrar por club
+    if (this.selectedClubId) {
+      const clubName = this.clubs.find(c => c.id === this.selectedClubId)?.name;
+      if (clubName) {
+        filteredReservations = filteredReservations.filter(res =>
+          res.club === clubName
+        );
+      }
+    }
+
+    // Filtrar por cancha
+    if (this.selectedCourtId) {
+      const courtName = this.courts.find(c => c.id === this.selectedCourtId)?.name;
+      if (courtName) {
+        filteredReservations = filteredReservations.filter(res =>
+          res.court === courtName
+        );
+      }
+    }
+
+    // Filtrar por fecha
+    const selectedDateStr = this.formatDateForApi(this.selectedDate);
+    filteredReservations = filteredReservations.filter(res =>
+      res.date === selectedDateStr
+    );
+
+    console.log('Reservaciones filtradas:', filteredReservations.length);
+    this.reservations = this.mapApiReservationsToCalendar(filteredReservations);
+  }
+
+  private mapApiReservationsToCalendar(apiReservations: ApiReservation[]): CalendarReservation[] {
+    if (!apiReservations || !Array.isArray(apiReservations)) {
+      return [];
+    }
+
+    const result: CalendarReservation[] = [];
+
+    for (const apiRes of apiReservations) {
+      try {
+        const courtId = this.courtNameToIdMap.get(apiRes.court) || 0;
+        const startMin = this.timeStringToMinutes(apiRes.start_time);
+        const endMin = this.timeStringToMinutes(apiRes.end_time);
+
+        if (courtId > 0 && !isNaN(startMin) && !isNaN(endMin)) {
+          result.push({
+            id: apiRes.reservationId,
+            courtId: courtId,
+            user: `${apiRes.user} ${apiRes.lastname}`.trim(),
+            startMin: startMin,
+            endMin: endMin,
+            originalData: apiRes
+          });
+        }
+      } catch (error) {
+        console.error('Error procesando reservación:', apiRes, error);
+      }
+    }
+
+    return result;
+  }
+
+  private timeStringToMinutes(timeString: string): number {
+    try {
+      const [hours, minutes] = timeString.split(':').map(Number);
+      return hours * 60 + (minutes || 0);
+    } catch (error) {
+      console.error('Error convirtiendo tiempo:', timeString, error);
+      return 0;
+    }
+  }
+
+  private formatDateForApi(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getCourtReservationCount(courtId: number): number {
+    return this.reservations.filter(res => res.courtId === courtId).length;
+  }
+
+  getStatusClass(reservation: any): string {
+    const status = reservation.originalData?.status;
+    if (!status) return 'status-default';
+
+    switch (status.toLowerCase()) {
+      case 'confirmed': return 'status-confirmed';
+      case 'pending': return 'status-pending';
+      case 'cancelled': return 'status-cancelled';
+      default: return 'status-default';
+    }
+  }
+
+  getStatusText(reservation: any): string {
+    return reservation.originalData?.status || '';
+  }
+
+  getTotalOccupationHours(): number {
+    if (this.reservations.length === 0) return 0;
+
+    const totalMinutes = this.reservations.reduce((total, res) => {
+      return total + (res.endMin - res.startMin);
+    }, 0);
+
+    return Math.round(totalMinutes / 60 * 10) / 10; // Redondear a 1 decimal
+  }
+
+  getOccupationPercentage(): number {
+    if (this.reservations.length === 0) return 0;
+
+    const totalAvailableHours = (this.dayEndMin - this.dayStartMin) / 60 * this.courts.length;
+    const occupiedHours = this.getTotalOccupationHours();
+
+    return Math.round((occupiedHours / totalAvailableHours) * 100);
+  }
+
+  getTotalClients(): number {
+    // Contar usuarios únicos
+    const uniqueUsers = new Set(this.reservations.map(res => res.user));
+    return uniqueUsers.size;
+  }
+
+  getAverageOccupation(): number {
+    if (this.courts.length === 0) return 0;
+
+    const totalHours = this.getTotalOccupationHours();
+    return Math.round((totalHours / this.courts.length) * 10) / 10;
+  }
+
+  // Métodos para canchas específicas
+  getCourtOccupationHours(courtId: number): number {
+    const courtReservations = this.reservations.filter(res => res.courtId === courtId);
+    if (courtReservations.length === 0) return 0;
+
+    const totalMinutes = courtReservations.reduce((total, res) => {
+      return total + (res.endMin - res.startMin);
+    }, 0);
+
+    return Math.round(totalMinutes / 60 * 10) / 10;
+  }
+
+  getCourtOccupationPercentage(courtId: number): number {
+    const courtReservations = this.reservations.filter(res => res.courtId === courtId);
+    if (courtReservations.length === 0) return 0;
+
+    const totalAvailableHours = (this.dayEndMin - this.dayStartMin) / 60;
+    const occupiedHours = this.getCourtOccupationHours(courtId);
+
+    return Math.round((occupiedHours / totalAvailableHours) * 100);
+  }
+
+  getCourtClients(courtId: number): number {
+    const courtReservations = this.reservations.filter(res => res.courtId === courtId);
+    const uniqueUsers = new Set(courtReservations.map(res => res.user));
+    return uniqueUsers.size;
+  }
+
+  getCourtName(courtId: number): string {
+    const court = this.courts.find(c => c.id === courtId);
+    return court ? court.name : '';
   }
 }

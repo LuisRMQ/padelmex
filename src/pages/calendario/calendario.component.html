@@ -1,67 +1,127 @@
-<div *ngIf="warningMsg" style="color: #b71c1c; background: #ffeaea; padding: 8px 16px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-weight: 600;">
+<div *ngIf="warningMsg" class="warning">
   {{ warningMsg }}
 </div>
-<div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+
+<div *ngIf="error" class="error">
+  {{ error }}
+</div>
+
+<div class="header">
   <h3>Reservaciones del {{ selectedDate | date: 'longDate' }}</h3>
+  <div class="quick-buttons">
+    <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToYesterday()">Ayer</button>
+    <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToToday()">Hoy</button>
+    <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToTomorrow()">Mañana</button>
+  </div>
 </div>
 
-<mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
+<mat-divider class="divider"></mat-divider>
 
-<div class="header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-  <div class="date-selector" style="display: flex; align-items: center; gap: 8px;">
-  <p style="margin: 0;">Selecciona una fecha:</p>
-  <mat-form-field appearance="outline" style="width: 200px;">
-    <mat-label>Fecha</mat-label>
-  <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="onDateChange($event.value)">
-    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-    <mat-datepicker #picker></mat-datepicker>
-  </mat-form-field>
+<div class="header">
+  <div class="date-selector">
+    <p style="margin: 0;">Selecciona una fecha:</p>
+    <mat-form-field appearance="outline" style="width: 200px;">
+      <mat-label>Fecha</mat-label>
+      <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="onDateChange($event.value)">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
   </div>
-  <div class ="quick-buttons" style="display: flex; align-items: center; gap: 8px;">
-  <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToYesterday()">Ayer</button>
-  <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToToday()">Hoy</button>
-  <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToTomorrow()">Mañana</button>
+
+  <div class="club-selector">
+    <mat-form-field appearance="outline" style="width: 300px;">
+      <mat-label>Seleccionar Club</mat-label>
+      <mat-select [(value)]="selectedClubId" (selectionChange)="onClubChange()">
+        <mat-option *ngFor="let club of clubs" [value]="club.id">
+          {{ club.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
-  <h6>Ocupacion: 0 horas (0%, 0 Clientes) | Media: 0</h6>
+
+  <h6>
+    <span *ngIf="selectedCourtId === null || selectedCourtId === undefined">
+      Ocupación: {{ getTotalOccupationHours() }} horas
+      ({{ getOccupationPercentage() }}%, {{ getTotalClients() }} Clientes) |
+      Media: {{ getAverageOccupation() }}
+    </span>
+    <span *ngIf="selectedCourtId !== null && selectedCourtId !== undefined">
+      Cancha {{ getCourtName(selectedCourtId) }}:
+      {{ getCourtOccupationHours(selectedCourtId) }} horas
+      ({{ getCourtOccupationPercentage(selectedCourtId) }}%,
+      {{ getCourtClients(selectedCourtId) }} Clientes)
+    </span>
+  </h6>
 </div>
 
+<!-- Estados de carga -->
+<div *ngIf="loading" class="loading-state">
+  <mat-spinner diameter="40"></mat-spinner>
+  <span>Cargando clubs...</span>
+</div>
 
-<div class="board">
+<div *ngIf="loadingReservations" class="loading-state">
+  <mat-spinner diameter="40"></mat-spinner>
+  <span>Cargando reservaciones...</span>
+</div>
+
+<div *ngIf="!loading && clubs.length === 0" class="empty-state">
+  <mat-icon>sports_tennis</mat-icon>
+  <p>No hay clubs disponibles</p>
+</div>
+
+<div *ngIf="!loading && clubs.length > 0 && courts.length === 0 && !loadingReservations" class="empty-state">
+  <mat-icon>court_sports</mat-icon>
+  <p>No hay canchas disponibles para este club</p>
+</div>
+
+<!-- Calendario principal -->
+<div class="board" *ngIf="!loading && !loadingReservations && courts.length > 0">
   <!-- Columna de horas -->
   <div class="time-gutter">
-    <div class="gutter-header" style="height: var(--header-height);"></div>
+    <div class="gutter-header"></div>
     <div class="time-label" *ngFor="let t of times" [style.top.px]="minutesToPx(t.min - dayStartMin)">
       {{ t.label }}
     </div>
   </div>
 
-  <div class="board-scroll" #boardScrollRef [style.height.px]="(dayEndMin - dayStartMin) * pxPerMin + 50">
+  <div class="board-scroll" #boardScrollRef [style.height.px]="(dayEndMin - dayStartMin) * pxPerMin + 60">
     <div class="columns">
-
       <div class="court-col" *ngFor="let court of courts; let i = index" #courtColRef
-        (click)="onCourtClick($event, court, courtColRef)"
         [class.past-court-col]="isCourtColPast()">
 
         <div class="court-header">
           {{ court.name }}
+          <span *ngIf="getCourtReservationCount(court.id) > 0" class="reservation-count">
+            ({{ getCourtReservationCount(court.id) }})
+          </span>
         </div>
 
-        <div class="time-grid" [style.height.px]="(dayEndMin - dayStartMin) * pxPerMin + 50">
+        <div class="time-grid" [style.height.px]="(dayEndMin - dayStartMin) * pxPerMin">
           <div class="time-slot" *ngFor="let t of times; let ti = index"
-            [style.top.px]="minutesToPx(t.min - dayStartMin)"></div>
-        </div>
-
-        <div class="reservations-layer">
-          <div class="reservation" *ngFor="let res of reservations | slice:0" [class.hidden]="res.courtId !== court.id"
-            [ngStyle]="getReservationStyle(res)" cdkDrag
-            (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
-            (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)">
-            <div class="res-title">
-              {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
-            </div>
+            [style.top.px]="minutesToPx(t.min - dayStartMin)" [class.past-slot]="isPastSlot(t.min)"
+            [class.slot-selectable]="!isPastSlot(t.min) && !isSlotReserved(court.id, t.min)"
+            (click)="handleSlotClick($event, court, t.min)">
           </div>
         </div>
 
+        <div class="reservations-layer">
+          <div class="reservation" *ngFor="let res of reservations" [class.hidden]="res.courtId !== court.id"
+            [ngStyle]="getReservationStyle(res)" cdkDrag
+            (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
+            (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)">
+
+            <div class="res-title">
+              {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
+            </div>
+
+            <!-- Usando métodos del componente -->
+            <div *ngIf="res.originalData?.status" class="res-status" [ngClass]="getStatusClass(res)">
+              {{ getStatusText(res) }}
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
   </div>

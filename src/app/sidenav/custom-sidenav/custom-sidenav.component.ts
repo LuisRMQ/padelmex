@@ -40,8 +40,6 @@ export class CustomSidenavComponent implements OnInit {
     { label: 'Integrantes', icon: 'sports_handball', route: '/integrantes' },
     { label: 'Configuracion', icon: 'settings', route: '/configuracion' },
 
-    
-
   ];
 
     menuItems = signal<MenuItem[]>([]);
