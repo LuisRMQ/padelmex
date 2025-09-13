@@ -258,6 +258,10 @@ mat-card-actions button:last-child {
   color: white !important;
 }
 
+.page-content {
+  padding: 0 30px; /* mismo padding horizontal que tu header */
+}
+
 /* Hover de tarjeta */
 .torneo-card:hover {
   transform: translateY(-4px) scale(1.02);

@@ -56,7 +56,6 @@ export class BracketModalComponent implements AfterViewInit {
   const maxMatches = Math.max(...this.bracket.map(r => r.length));
   const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
 
-  // Seleccionar o crear SVG
   this.svg = d3.select(container).select('svg');
   if (this.svg.empty()) {
     this.svg = d3.select(container).append('svg');

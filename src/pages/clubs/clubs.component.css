@@ -53,14 +53,16 @@
 }
 
 
-
+.page-content {
+  padding: 0 30px; /* mismo padding horizontal que tu header */
+}
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 30px;
-  padding: 20px 30px;
+  margin: 0; /* quitar margen */
+  padding: 20px 30px; /* mantener solo padding */
   background: white;
   border-radius: 15px;
   box-shadow: var(--shadow);
