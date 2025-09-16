@@ -252,33 +252,56 @@ export class CalendarioComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // Enviar la reservación al backend
+        // 🔍 Log para ver qué datos se mandan al backend
+        console.log("Payload que se enviará al backend:", result);
+
         this.reservationService.createReservation(result).subscribe({
           next: (response) => {
-            console.log('Reservación creada:', response);
+            console.log('✅ Reservación creada:', response);
+            this.error = null;
 
-            // Agregar la nueva reservación al calendario
-            const newRes: CalendarReservation = {
-              id: response.reservation.id,
-              courtId: result.court_id,
-              user: `Usuario ${result.user_id}`, // Puedes mejorar esto luego
-              startMin: this.timeStringToMinutes(result.start_time),
-              endMin: this.timeStringToMinutes(result.end_time),
-              originalData: response.reservation
-            };
+            // Mostrar estado de WhatsApp
+            if (response.whatsapp_status) {
+              if (response.whatsapp_status === 'sent') {
+                this.warningMsg = 'Mensaje de WhatsApp enviado correctamente.';
+              } else if (response.whatsapp_status.startsWith('error')) {
+                this.warningMsg = 'No se pudo enviar WhatsApp: ' + response.whatsapp_status.replace('error: ', '');
+              }
 
-            this.reservations = [...this.reservations, newRes];
+              // Limpiar el mensaje después de 5 segundos
+              setTimeout(() => { this.warningMsg = null; }, 5000);
+            }
 
-            // Recargar todas las reservaciones para estar seguros
+            // Opcional: refrescar la lista de reservaciones
             this.loadAllReservations();
           },
           error: (error) => {
-            console.error('Error creando reservación:', error);
-            this.error = 'Error al crear la reservación';
+            console.error('❌ Error creando reservación:', error);
+
+            if (error.status === 422 && error.error?.errors) {
+              const backendErrors = error.error.errors;
+              let messages: string[] = [];
+              for (const field in backendErrors) {
+                if (backendErrors.hasOwnProperty(field)) {
+                  messages.push(...backendErrors[field]);
+                }
+              }
+              this.error = messages.join(', ');
+              console.warn('Errores de validación:', this.error);
+            } else if (error.error?.msg) {
+              this.error = error.error.msg;
+            } else {
+              this.error = 'Error desconocido al crear la reservación';
+            }
+
+            // Mostrar detalles completos en consola para debug
+            console.log('Detalles completos del error del backend:', error.error);
           }
         });
+
       }
     });
+
   }
 
   // ---- drag & drop ----
