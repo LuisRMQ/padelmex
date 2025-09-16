@@ -162,9 +162,12 @@ export class CalendarioComponent implements OnInit {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
     const ampm = h >= 12 ? 'pm' : 'am';
-    const hh = ((h + 11) % 12) + 1;
+
+    // CORRECCIÓN: Mostrar hora en formato 12h pero correctamente
+    const displayHour = h % 12 || 12; // Convertir 0 → 12, 13 → 1, etc.
     const mm = m.toString().padStart(2, '0');
-    return `${hh}:${mm} ${ampm}`;
+
+    return `${displayHour}:${mm} ${ampm}`;
   }
 
   minutesToPx(mins: number): number {
@@ -185,10 +188,16 @@ export class CalendarioComponent implements OnInit {
     return this.courts.findIndex(c => c.id === courtId);
   }
 
-  // ---- crear reserva clickeando en la columna ----
-  onCourtClick(ev: MouseEvent, court: Court, colEl: HTMLElement) {
+  onCourtClick(ev: MouseEvent, court: Court, colEl: HTMLElement, slotMin?: number) {
     ev.stopPropagation();
 
+    // Si ya tenemos el minuto del slot, usarlo directamente
+    if (slotMin !== undefined) {
+      this.handleSlotSelection(court, slotMin);
+      return;
+    }
+
+    // Cálculo de respaldo por si acaso (cuando se hace click directamente en la columna)
     const now = new Date();
     const selected = new Date(this.selectedDate);
     selected.setHours(0, 0, 0, 0);
@@ -197,26 +206,30 @@ export class CalendarioComponent implements OnInit {
     const rect = colEl.getBoundingClientRect();
     const y = ev.clientY - rect.top;
 
-    // Cálculo CORRECTO del minuto clickeado
+    // Cálculo simplificado y preciso
     const minutesFromTop = y / this.pxPerMin;
-    const slotIndex = Math.floor(minutesFromTop / this.snapMinutes);
-    const clickedMin = this.dayStartMin + (slotIndex * this.snapMinutes);
+    const clickedMin = this.dayStartMin + minutesFromTop;
 
-    // Asegurarse de que esté dentro de los límites (CORRECCIÓN)
-    const safeClickedMin = Math.max(this.dayStartMin, Math.min(clickedMin, this.dayEndMin - this.snapMinutes));
+    // Redondear al slot de 30 minutos más cercano
+    const roundedMin = Math.round(clickedMin / this.snapMinutes) * this.snapMinutes;
+    const safeClickedMin = Math.max(
+      this.dayStartMin,
+      Math.min(roundedMin, this.dayEndMin - this.snapMinutes)
+    );
 
-    // DEBUG: Verificar cálculos
-    console.log('Click Y:', y, 'px');
-    console.log('Minutes from top:', minutesFromTop);
-    console.log('Slot index:', slotIndex);
-    console.log('Clicked min:', clickedMin);
-    console.log('Safe clicked min:', safeClickedMin);
+    this.handleSlotSelection(court, safeClickedMin);
+  }
 
-    // ... resto del código sin cambios
+  // Nuevo método para manejar la selección del slot
+  private handleSlotSelection(court: Court, slotMin: number) {
+    const now = new Date();
+    const selected = new Date(this.selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    const isToday = now.toDateString() === selected.toDateString();
 
-    // Si es hoy y el slot es anterior a la hora actual, mostrar warning
+    // Verificar si el slot es pasado
     if (
-      (isToday && safeClickedMin < (now.getHours() * 60 + now.getMinutes())) ||
+      (isToday && slotMin < (now.getHours() * 60 + now.getMinutes())) ||
       (selected < new Date(now.getFullYear(), now.getMonth(), now.getDate()))
     ) {
       this.warningMsg = 'No puedes seleccionar un horario pasado.';
@@ -226,22 +239,28 @@ export class CalendarioComponent implements OnInit {
 
     this.warningMsg = null;
 
-    // CORRECCIÓN: Usar safeClickedMin directamente para el diálogo
+    // Preparar datos para el modal
     const pad = (n: number) => n.toString().padStart(2, '0');
-    const startHour = Math.floor(safeClickedMin / 60);
-    const startMin = safeClickedMin % 60;
-    const endHour = Math.floor((safeClickedMin + this.snapMinutes) / 60);
-    const endMin = (safeClickedMin + this.snapMinutes) % 60;
+    const startHour = Math.floor(slotMin / 60);
+    const startMin = slotMin % 60;
+    const endHour = Math.floor((slotMin + this.snapMinutes) / 60);
+    const endMin = (slotMin + this.snapMinutes) % 60;
 
     const startTime24 = `${pad(startHour)}:${pad(startMin)}`;
     const endTime24 = `${pad(endHour)}:${pad(endMin)}`;
 
+    console.log('Slot seleccionado:', this.formatTime(slotMin));
+    console.log('Tiempo inicio:', startTime24);
+    console.log('Tiempo fin:', endTime24);
+
+    // Abrir modal de reservación
     const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
       data: {
         user: '',
         startTime: startTime24,
         endTime: endTime24,
-        courtId: court.id
+        courtId: court.id,
+        date: this.selectedDate
       },
       width: '600px',
       maxWidth: '95vw',
@@ -257,6 +276,16 @@ export class CalendarioComponent implements OnInit {
 
         this.reservationService.createReservation(result).subscribe({
           next: (response) => {
+            const newRes: CalendarReservation = {
+              id: response.reservation.id,
+              courtId: result.court_id,
+              user: `Usuario ${result.user_id}`,
+              startMin: this.timeStringToMinutes(result.start_time),
+              endMin: this.timeStringToMinutes(result.end_time),
+              originalData: response.reservation
+            };
+
+            this.reservations = [...this.reservations, newRes];
             console.log('✅ Reservación creada:', response);
             this.error = null;
 
@@ -291,7 +320,11 @@ export class CalendarioComponent implements OnInit {
             } else if (error.error?.msg) {
               this.error = error.error.msg;
             } else {
-              this.error = 'Error desconocido al crear la reservación';
+              this.error = 'Error desconocido al crear la reservación: ' +
+                (error.error?.message || error.message || 'Error desconocido');
+
+              // Ocultar error después de 5 segundos
+              setTimeout(() => { this.error = null; }, 5000);
             }
 
             // Mostrar detalles completos en consola para debug
@@ -386,11 +419,13 @@ export class CalendarioComponent implements OnInit {
       return;
     }
 
+    // Encontrar el elemento court-col
     const targetElement = ev.currentTarget as HTMLElement;
     const courtColElement = targetElement.closest('.court-col') as HTMLElement;
 
     if (courtColElement) {
-      this.onCourtClick(ev, court, courtColElement);
+      // Llamar al método principal con el slotMin
+      this.handleSlotSelection(court, slotMin);
     }
   }
 

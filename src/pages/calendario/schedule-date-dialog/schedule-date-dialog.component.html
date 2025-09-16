@@ -1,122 +1,148 @@
 <div class="modal-container">
-  <h2 mat-dialog-title>Crear Nueva Reservación</h2>
-  
   <form [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
-    <mat-dialog-content>
-      <mat-horizontal-stepper linear>
-        <!-- Paso 1: Datos de reserva -->
-        <mat-step [stepControl]="reservationForm">
-          <ng-template matStepLabel>Datos de reserva</ng-template>
-          
-          <div class="modal-grid">
-            <mat-form-field class="modal-field" appearance="outline">
-              <mat-label>Fecha</mat-label>
-              <input matInput [matDatepicker]="picker" [value]="selectedDate" (dateChange)="onDateChange($event)">
-              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
-            </mat-form-field>
+    <mat-horizontal-stepper linear class="stepper">
+      <!-- Paso 1: Datos de reserva -->
+      <mat-step [stepControl]="reservationForm">
+        <ng-template matStepLabel>Datos de reserva</ng-template>
 
-            <mat-form-field class="modal-field" appearance="outline">
-              <mat-label>Hora de inicio</mat-label>
-              <mat-select formControlName="start_time" required>
-                <mat-option *ngFor="let h of horas" [value]="h">
-                  {{h}}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="reservationForm.get('start_time')?.hasError('required')">
-                Hora de inicio es requerida
-              </mat-error>
-            </mat-form-field>
+        <div class="modal-grid">
+          <mat-form-field class="modal-field" appearance="outline">
+            <mat-label>Fecha</mat-label>
+            <input matInput [matDatepicker]="picker" [value]="selectedDate" (dateChange)="onDateChange($event)">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
 
-            <mat-form-field class="modal-field" appearance="outline">
-              <mat-label>Hora de fin</mat-label>
-              <mat-select formControlName="end_time" required>
-                <mat-option *ngFor="let h of horas" [value]="h">
-                  {{h}}
-                </mat-option>
-              </mat-select>
-              <mat-error *ngIf="reservationForm.get('end_time')?.hasError('required')">
-                Hora de fin es requerida
-              </mat-error>
-            </mat-form-field>
+          <mat-form-field class="modal-field" appearance="outline">
+            <mat-label>Hora de inicio</mat-label>
+            <mat-select formControlName="start_time" required>
+              <mat-option *ngFor="let h of horas" [value]="h">
+                {{h}}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="reservationForm.get('start_time')?.hasError('required')">
+              Hora de inicio es requerida
+            </mat-error>
+          </mat-form-field>
 
-            <mat-form-field class="modal-field" appearance="outline">
-              <mat-label>ID de Usuario *</mat-label>
-              <input matInput formControlName="user_id" type="number" placeholder="Ingresa el ID del usuario" required>
-              <mat-error *ngIf="reservationForm.get('user_id')?.hasError('required')">
-                El ID de usuario es requerido
-              </mat-error>
-            </mat-form-field>
+          <mat-form-field class="modal-field" appearance="outline">
+            <mat-label>Hora de fin</mat-label>
+            <mat-select formControlName="end_time" required>
+              <mat-option *ngFor="let h of horas" [value]="h">
+                {{h}}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="reservationForm.get('end_time')?.hasError('required')">
+              Hora de fin es requerida
+            </mat-error>
+          </mat-form-field>
 
-            <mat-form-field class="modal-field" appearance="outline">
-              <mat-label>ID de Tipo de Reserva</mat-label>
-              <input matInput formControlName="reservation_type_id" type="number" value="2" required>
-            </mat-form-field>
+          <!-- Autocomplete para usuarios -->
+          <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
+            <mat-label>Buscar Usuario</mat-label>
+            <input type="text" matInput [formControl]="userControl" [matAutocomplete]="auto"
+                   placeholder="Escribe al menos 2 caracteres para buscar...">
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
+                             (optionSelected)="onUserSelected($event.option.value)">
+              <mat-option *ngFor="let user of filteredUsers | async" [value]="user">
+                {{ user.name }} {{ user.lastname }} 
+                <span *ngIf="user.email">- {{ user.email }}</span>
+              </mat-option>
+              
+              <!-- Indicador de carga -->
+              <mat-option *ngIf="isLoadingUsers" disabled>
+                <div style="display: flex; align-items: center;">
+                  <mat-spinner diameter="20"></mat-spinner>
+                  <span style="margin-left: 10px;">Buscando usuarios...</span>
+                </div>
+              </mat-option>
+              
+              <!-- Mensaje si no hay resultados -->
+              <!-- <mat-option *ngIf="(filteredUsers | async)?.length === 0 && !isLoadingUsers && userControl.value && typeof userControl.value === 'string' && userControl.value.length >= 2" disabled>
+                No se encontraron usuarios
+              </mat-option> -->
+            </mat-autocomplete>
+            <mat-hint>Escribe al menos 2 caracteres para buscar usuarios</mat-hint>
+            <mat-error *ngIf="reservationForm.get('user_id')?.hasError('required')">
+              Debes seleccionar un usuario
+            </mat-error>
+          </mat-form-field>
 
-            <mat-form-field class="modal-field" appearance="outline">
-              <mat-label>Método de Pago</mat-label>
-              <mat-select formControlName="pay_method" required>
-                <mat-option *ngFor="let metodo of metodosPago" [value]="metodo.value">
-                  {{metodo.label}}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+          <!-- Campo oculto para user_id -->
+          <input type="hidden" formControlName="user_id">
 
-            <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
-              <mat-label>Observaciones</mat-label>
-              <textarea matInput formControlName="observations" rows="3" placeholder="Observaciones adicionales..."></textarea>
-            </mat-form-field>
+          <mat-form-field class="modal-field" appearance="outline">
+            <mat-label>ID de Tipo de Reserva</mat-label>
+            <input matInput formControlName="reservation_type_id" type="number" value="2" required>
+          </mat-form-field>
 
-            <!-- Campos ocultos para la API -->
-            <input type="hidden" formControlName="court_id">
-            <input type="hidden" formControlName="date">
+          <mat-form-field class="modal-field" appearance="outline">
+            <mat-label>Método de Pago</mat-label>
+            <mat-select formControlName="pay_method" required>
+              <mat-option *ngFor="let metodo of metodosPago" [value]="metodo.value">
+                {{metodo.label}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput formControlName="observations" rows="3"
+              placeholder="Observaciones adicionales..."></textarea>
+          </mat-form-field>
+
+          <!-- Campos ocultos para la API -->
+          <input type="hidden" formControlName="court_id">
+          <input type="hidden" formControlName="date">
+        </div>
+
+        <div class="modal-actions">
+          <button mat-button type="button" (click)="onCancel()">Cancelar</button>
+          <button mat-button type="button" matStepperNext [disabled]="!reservationForm.valid">Siguiente</button>
+        </div>
+      </mat-step>
+
+      <!-- Paso 2: Confirmación -->
+      <mat-step>
+        <ng-template matStepLabel>Confirmar</ng-template>
+
+        <div class="confirmation-details">
+          <h3>Resumen de la reservación</h3>
+
+          <div class="detail-row">
+            <strong>Fecha:</strong> {{ selectedDate | date:'fullDate' }}
           </div>
-
-          <div class="modal-actions">
-            <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-            <button mat-button matStepperNext [disabled]="!reservationForm.valid">Siguiente</button>
+          <div class="detail-row">
+            <strong>Hora:</strong> {{ reservationForm.value.start_time }} - {{ reservationForm.value.end_time }}
           </div>
-        </mat-step>
-
-        <!-- Paso 2: Confirmación -->
-        <mat-step>
-          <ng-template matStepLabel>Confirmar</ng-template>
-          
-          <div class="confirmation-details">
-            <h3>Resumen de la reservación</h3>
-            
-            <div class="detail-row">
-              <strong>Fecha:</strong> {{ selectedDate | date:'fullDate' }}
-            </div>
-            <div class="detail-row">
-              <strong>Hora:</strong> {{ reservationForm.value.start_time }} - {{ reservationForm.value.end_time }}
-            </div>
-            <div class="detail-row">
-              <strong>ID Cancha:</strong> {{ reservationForm.value.court_id }}
-            </div>
-            <div class="detail-row">
-              <strong>ID Usuario:</strong> {{ reservationForm.value.user_id }}
-            </div>
-            <div class="detail-row">
-              <strong>Tipo de Reserva:</strong> {{ reservationForm.value.reservation_type_id }}
-            </div>
-            <div class="detail-row">
-              <strong>Método de Pago:</strong> {{ getMetodoPagoLabel(reservationForm.value.pay_method) }}
-            </div>
-            <div class="detail-row" *ngIf="reservationForm.value.observations">
-              <strong>Observaciones:</strong> {{ reservationForm.value.observations }}
-            </div>
+          <div class="detail-row">
+            <strong>ID Cancha:</strong> {{ reservationForm.value.court_id }}
           </div>
-
-          <div class="modal-actions">
-            <button mat-button matStepperPrevious>Anterior</button>
-            <button mat-raised-button color="primary" type="submit" 
-                    [disabled]="!reservationForm.valid">
-              Confirmar y Reservar
-            </button>
+          <div class="detail-row" *ngIf="selectedUser">
+            <strong>Usuario:</strong> {{ selectedUser.name }} {{ selectedUser.lastname }}
+            <span *ngIf="selectedUser.email">({{ selectedUser.email }})</span>
           </div>
-        </mat-step>
-      </mat-horizontal-stepper>
-    </mat-dialog-content>
+          <div class="detail-row">
+            <strong>ID Usuario:</strong> {{ reservationForm.value.user_id }}
+          </div>
+          <div class="detail-row">
+            <strong>Tipo de Reserva:</strong> {{ reservationForm.value.reservation_type_id }}
+          </div>
+          <div class="detail-row">
+            <strong>Método de Pago:</strong> {{ getMetodoPagoLabel(reservationForm.value.pay_method) }}
+          </div>
+          <div class="detail-row" *ngIf="reservationForm.value.observations">
+            <strong>Observaciones:</strong> {{ reservationForm.value.observations }}
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button mat-button matStepperPrevious>Anterior</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="!reservationForm.valid">
+            Confirmar y Reservar
+          </button>
+        </div>
+      </mat-step>
+    </mat-horizontal-stepper>
   </form>
 </div>

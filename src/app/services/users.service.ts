@@ -32,6 +32,12 @@ export class UsersService extends ApiBaseService {
             );
     }
 
+    searchUsers(searchTerm: string): Observable<User[]> {
+        return this.http.get<User[]>(`${this.apiUrl}/search`, {
+            params: { q: searchTerm }
+        });
+    }
+
     createUser(data: FormData): Observable<any> {
         return this.post('/user/create', data);
     }
