@@ -1,11 +1,27 @@
-/* ---------- CONTENEDOR GENERAL ---------- */
-.container {
-  padding: 20px;
-  font-family: 'Inter', 'Roboto', 'Montserrat', Arial, sans-serif;
-  color: #2c3e50;
+.canchas-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
 }
 
-/* ---------- HEADER ---------- */
+.cancha-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+mat-card img {
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+}
 
 
 
@@ -14,8 +30,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0px;
-  padding: 20px 30px;
+  margin: 0; /* quitar margen */
+  padding: 20px 30px; /* mantener solo padding */
   background: white;
   border-radius: 15px;
   box-shadow: var(--shadow);
@@ -40,175 +56,21 @@
   border: none !important;
 }
 
-.btn-registrar:hover {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-}
 
-/* ---------- SELECTOR CLUB ---------- */
-.club-selector {
-  margin-bottom: 20px;
-}
-
-mat-form-field {
-  font-size: 0.95rem;
-}
-
-/* ---------- PANEL CANCHA ---------- */
-.cancha-panel {
-  background: #fff !important;
-  border-radius: 16px !important;
-  margin-bottom: 18px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  border: 1px solid #f0f0f0;
-  overflow: hidden;
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
-}
-
-.cancha-panel:hover {
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-  transform: translateY(-2px);
-}
-
-mat-expansion-panel-header {
-  padding: 12px 18px !important;
-  font-weight: 500;
-  font-size: 1rem;
-}
-
-/* ---------- CARD CANCHA ---------- */
-.cancha-card {
-  display: flex;
-  gap: 28px;
-  padding: 24px;
-  border-top: 1px solid #f2f2f2;
-  background: #fafafa;
-  border-radius: 0 0 16px 16px;
-}
-
-.cancha-img img {
-  width: 180px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-  transition: transform 0.3s ease;
-}
-
-.cancha-img img:hover {
-  transform: scale(1.05);
-}
-
-/* ---------- INFO CANCHA ---------- */
-.cancha-info {
-  display: flex;
-  flex: 1;
-  gap: 40px;
-}
-
-.cancha-info-col {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
-}
-
-.cancha-info-col p {
-  font-size: 0.95rem;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.cancha-info-col strong {
-  font-weight: 600;
+.cancha-title {
+  font-weight: bold;
+  font-size: 1.2rem;
   color: #2c3e50;
-  margin-right: 5px;
 }
 
-/* ---------- INPUTS EDITABLES ---------- */
-.edit-input {
+/* Imagen con padding */
+.cancha-img-container {
+  padding: 12px;
+}
+
+.cancha-img-container img {
   width: 100%;
-  padding: 6px 10px;
+  height: 160px;
+  object-fit: cover;
   border-radius: 8px;
-  border: 1px solid #dcdcdc;
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease;
-}
-
-.edit-input:focus {
-  border-color: var(--primary-color, #1976d2);
-  outline: none;
-}
-
-/* ---------- ACCIONES ---------- */
-.cancha-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.delete-btn mat-icon {
-  color: #e74c3c;
-  transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.delete-btn:hover mat-icon {
-  transform: scale(1.2);
-  color: #c0392b;
-}
-
-.edit-btn-header,
-.add-horario-btn,
-.info-horario-btn {
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.edit-btn-header:hover,
-.add-horario-btn:hover,
-.info-horario-btn:hover {
-  background: rgba(0,0,0,0.05) !important;
-  transform: scale(1.1);
-}
-
-/* ---------- BOTONES EDICIÓN ---------- */
-.btn-logo-edit {
-  background-color: #43a047 !important;
-  color: #fff !important;
-  font-size: 0.85rem;
-  border-radius: 8px;
-  padding: 4px 12px;
-  margin-top: 12px;
-  transition: filter 0.2s ease;
-}
-
-.btn-logo-edit:hover {
-  filter: brightness(1.1);
-}
-
-.btn-azul {
-  background-color: #1976d2 !important;
-  color: #fff !important;
-  border-radius: 8px;
-  padding: 4px 14px;
-  font-size: 0.85rem;
-  transition: all 0.2s ease;
-}
-
-.btn-azul:hover {
-  filter: brightness(1.1);
-}
-
-.btn-cancel {
-  color: #1976d2 !important;
-  border-radius: 8px;
-  padding: 4px 14px;
-  font-size: 0.85rem;
-}
-
-/* ---------- MENSAJE VACÍO ---------- */
-.no-canchas {
-  text-align: center;
-  padding: 20px;
-  color: #888;
-  font-style: italic;
 }

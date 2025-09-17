@@ -1,8 +1,6 @@
-
 <div class="container">
 
-
-  <!-- Botón registrar cancha -->
+  <!-- Header -->
   <div class="header">
     <h1>Canchas</h1>
     <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarCancha()">
@@ -35,95 +33,46 @@
     {{ error }}
   </div>
 
-  <mat-accordion multi="true" class="mt-3">
-
-    <!-- Canchas dinámicas -->
-    <mat-expansion-panel *ngFor="let court of courts" [expanded]="false" class="cancha-panel">
-      <mat-expansion-panel-header>
-        <div style="display: flex; align-items: center; width: 100%;">
-          <mat-panel-title style="flex: 1;">
-            {{ court.name }}
-            <button mat-icon-button class="edit-btn-header" (click)="editarCancha(court); $event.stopPropagation();">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="accent" class="add-horario-btn"
-              (click)="abrirModalRegistrarHorario(court); $event.stopPropagation();">
-              <mat-icon>schedule</mat-icon>
-            </button>
-          </mat-panel-title>
-          <button mat-icon-button color="accent" class="info-horario-btn"
-            (click)="abrirModalHorarios(court); $event.stopPropagation();" style="margin-left: auto;">
-            <mat-icon>info</mat-icon>
+  <!-- Canchas tipo cards -->
+  <div class="canchas-cards-container">
+    <mat-card *ngFor="let court of courts" class="cancha-card" appearance="outlined">
+      <mat-card-header>
+        <div class="card-header-row">
+          <mat-card-title class="cancha-title">{{ court.name }}</mat-card-title> <button mat-icon-button
+            (click)="editarCancha(court)">
+            <mat-icon>edit</mat-icon>
           </button>
         </div>
-      </mat-expansion-panel-header>
+      </mat-card-header>
 
-      <div class="cancha-card" style="display: flex; gap: 32px; align-items: flex-start;">
-        <div class="cancha-img" style="flex: 0 0 180px;">
-          <img [src]="court.photo" [alt]="court.name" style="width: 180px; height: 120px; object-fit: cover; border-radius: 8px;">
-        </div>
-        <div class="cancha-info" style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-          <div style="display: flex; gap: 32px;">
-            <div class="cancha-info-col" style="flex: 1;">
-              <p>
-                <strong>Nombre:</strong>
-                <span *ngIf="editandoCanchaID !== court.id">{{ court.name }}</span>
-                <input *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.name" class="edit-input" />
-              </p>
-              <p>
-                <strong>Patrocinador:</strong>
-                <span *ngIf="editandoCanchaID !== court.id">{{ court.sponsor || 'Sin patrocinador' }}</span>
-                <input *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.sponsor" class="edit-input" />
-              </p>
-              <p>
-                <strong>Tipo:</strong>
-                <span *ngIf="editandoCanchaID !== court.id">{{ court.type }}</span>
-                <select *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.type" class="edit-input">
-                  <option [value]="'Privado'">Privado</option>
-                  <option [value]="'Público'">Público</option>
-                  <option [value]="'Cubierto'">Cubierto</option>
-                  <option [value]="'Descubierto'">Descubierto</option>
-                </select>
-              </p>
-            </div>
-            <div class="cancha-info-col" style="flex: 1;">
-              <p *ngIf="editandoCanchaID !== court.id">
-                <strong>Club ID:</strong>
-                <span>{{ court.club_id }}</span>
-              </p>
-              <p>
-                <strong>Estado:</strong>
-                <span *ngIf="editandoCanchaID !== court.id">{{ court.availability ? 'Disponible' : 'No disponible' }}</span>
-                <select *ngIf="editandoCanchaID === court.id" [(ngModel)]="court.availability" class="edit-input">
-                  <option [ngValue]="1">Disponible</option>
-                  <option [ngValue]="0">No disponible</option>
-                </select>
-              </p>
-              <div *ngIf="editandoCanchaID === court.id">
-                <input type="file" accept="image/png, image/jpeg" hidden #fileInput (change)="onLogoSelected($event, court)">
-                <button mat-raised-button color="primary" class="btn-logo-edit" (click)="fileInput.click()">
-                  Cambiar logo
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="cancha-actions" style="margin-top: 16px;">
-            <div *ngIf="editandoCanchaID === court.id" class="edit-actions">
-              <button mat-raised-button class="btn-azul" (click)="guardarCanchaEditada(court)">Aceptar</button>
-              <button mat-button class="btn-cancel" (click)="cancelarEdicion(court)">Cancelar</button>
-            </div>
-            <button *ngIf="editandoCanchaID !== court.id" mat-icon-button class="delete-btn" (click)="confirmarEliminarCancha(court)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-        </div>
+      <div class="cancha-img-container">
+        <img mat-card-image [src]="court.photo || 'assets/img/no-image.png'" alt="{{ court.name }}">
       </div>
-    </mat-expansion-panel>
+      <mat-card-content>
+        <p><strong>Patrocinador:</strong> {{ court.sponsor || 'Sin patrocinador' }}</p>
+        <p><strong>Tipo:</strong> {{ court.type }}</p>
+        <p><strong>Estado:</strong> {{ court.availability ? 'Disponible' : 'No disponible' }}</p>
+        <p><strong>Club ID:</strong> {{ court.club_id }}</p>
+        <p><strong>Costo Renta:</strong> {{ court.price_hour }}</p>
 
-   <div *ngIf="courts.length === 0 && !loading && !error" class="no-canchas">
-  No hay canchas registradas para este club.
-</div>
+      </mat-card-content>
 
-  </mat-accordion>
+      <mat-card-actions>
+        <button mat-icon-button color="accent" (click)="abrirModalRegistrarHorario(court)">
+          <mat-icon>schedule</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" (click)="abrirModalHorarios(court)">
+          <mat-icon>info</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="confirmarEliminarCancha(court)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <div *ngIf="courts.length === 0 && !loading && !error" class="no-canchas">
+    No hay canchas registradas para este club.
+  </div>
 
 </div>

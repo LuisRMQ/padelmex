@@ -271,7 +271,6 @@ export class CalendarioComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // 🔍 Log para ver qué datos se mandan al backend
         console.log("Payload que se enviará al backend:", result);
 
         this.reservationService.createReservation(result).subscribe({
@@ -289,7 +288,6 @@ export class CalendarioComponent implements OnInit {
             console.log('✅ Reservación creada:', response);
             this.error = null;
 
-            // Mostrar estado de WhatsApp
             if (response.whatsapp_status) {
               if (response.whatsapp_status === 'sent') {
                 this.warningMsg = 'Mensaje de WhatsApp enviado correctamente.';
@@ -297,11 +295,9 @@ export class CalendarioComponent implements OnInit {
                 this.warningMsg = 'No se pudo enviar WhatsApp: ' + response.whatsapp_status.replace('error: ', '');
               }
 
-              // Limpiar el mensaje después de 5 segundos
               setTimeout(() => { this.warningMsg = null; }, 5000);
             }
 
-            // Opcional: refrescar la lista de reservaciones
             this.loadAllReservations();
           },
           error: (error) => {
@@ -323,11 +319,9 @@ export class CalendarioComponent implements OnInit {
               this.error = 'Error desconocido al crear la reservación: ' +
                 (error.error?.message || error.message || 'Error desconocido');
 
-              // Ocultar error después de 5 segundos
               setTimeout(() => { this.error = null; }, 5000);
             }
 
-            // Mostrar detalles completos en consola para debug
             console.log('Detalles completos del error del backend:', error.error);
           }
         });
