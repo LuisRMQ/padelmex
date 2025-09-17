@@ -52,7 +52,7 @@
         <p><strong>Patrocinador:</strong> {{ court.sponsor || 'Sin patrocinador' }}</p>
         <p><strong>Tipo:</strong> {{ court.type }}</p>
         <p><strong>Estado:</strong> {{ court.availability ? 'Disponible' : 'No disponible' }}</p>
-        <p><strong>Club ID:</strong> {{ court.club_id }}</p>
+        <p><strong>Club:</strong> {{ getClubName(court.club_id) }}</p>
         <p><strong>Costo Renta:</strong> {{ court.price_hour }}</p>
 
       </mat-card-content>

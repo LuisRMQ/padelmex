@@ -38,6 +38,7 @@ export class CustomSidenavComponent implements OnInit {
   private USER_MENU: MenuItem[] = [
     { label: 'Mi Club', icon: 'analytics', route: '/estadisticas' },
     { label: 'Integrantes', icon: 'sports_handball', route: '/integrantes' },
+    { label: 'Reservaciones Club', icon: 'event', route: '/reservaciones' },
     { label: 'Configuracion', icon: 'settings', route: '/configuracion' },
 
   ];

@@ -61,6 +61,16 @@ export class CanchasComponent implements OnInit {
     this.loadClubs();
   }
 
+
+  getClub(clubId: number): Club | undefined {
+    return this.clubs.find(c => c.id === clubId);
+  }
+
+  getClubName(clubId: number): string {
+    const club = this.getClub(clubId);
+    return club ? club.name : 'Club no encontrado';
+  }
+
   loadClubs() {
     this.courtService.getClubs().subscribe({
       next: (clubs) => {
@@ -131,10 +141,10 @@ export class CanchasComponent implements OnInit {
     this.backupCancha = { ...court };
   }
 
-onImageError(event: Event) {
-        const target = event.target as HTMLImageElement;
-        target.src = '../../../assets/images/logoclub.jpg';
-    }
+  onImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    target.src = '../../../assets/images/logoclub.jpg';
+  }
 
   guardarCanchaEditada(court: Court) {
     this.courtService.updateCourt(court.id, court).subscribe({
@@ -233,23 +243,23 @@ onImageError(event: Event) {
     });
   }
 
-abrirModalHorarios(court: Court) {
-  this.horariosCanchasService.getHorariosByCourt(court.club_id, court.id).subscribe({
-    next: (horarios) => {
-      console.log('Horarios recibidos:', horarios);
-      this.dialog.open(InfoCanchaDialogComponent, {
-        width: '750px',
-        maxWidth: '60vw',
-        data: { court, horarios }
-      });
-    },
-    error: (err) => {
-      console.error('Error al obtener horarios', err);
-      this.snackBar.open('❌ Error al cargar los horarios', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['snackbar-error']
-      });
-    }
-  });
-}
+  abrirModalHorarios(court: Court) {
+    this.horariosCanchasService.getHorariosByCourt(court.club_id, court.id).subscribe({
+      next: (horarios) => {
+        console.log('Horarios recibidos:', horarios);
+        this.dialog.open(InfoCanchaDialogComponent, {
+          width: '750px',
+          maxWidth: '60vw',
+          data: { court, horarios }
+        });
+      },
+      error: (err) => {
+        console.error('Error al obtener horarios', err);
+        this.snackBar.open('❌ Error al cargar los horarios', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }
 }
