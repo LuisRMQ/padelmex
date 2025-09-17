@@ -11,9 +11,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { Observable, map, debounceTime, distinctUntilChanged, switchMap, of, from } from 'rxjs';
+import { Observable, map, debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
 
-// Importar el servicio de usuarios
 import { UsersService, User } from '../../../app/services/users.service';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
@@ -23,6 +22,8 @@ export interface DialogData {
   endTime: string;
   courtId: number;
   date: string | Date;
+  clubId?: number;
+  courtName?: string;
 }
 
 @Component({
@@ -41,7 +42,7 @@ export interface DialogData {
     MatDialogModule,
     MatAutocompleteModule,
     MatProgressSpinnerModule
-],
+  ],
   templateUrl: './schedule-date-dialog.component.html',
   styleUrls: ['./schedule-date-dialog.component.css']
 })
@@ -58,6 +59,7 @@ export class ScheduleDateDialogComponent implements OnInit {
   filteredUsers: Observable<User[]>;
   selectedUser: User | null = null;
   isLoadingUsers = false;
+  searchError: string | null = null;
 
   // Propiedad para almacenar la fecha en formato Date para el datepicker
   selectedDate: Date;
@@ -66,9 +68,8 @@ export class ScheduleDateDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<ScheduleDateDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private fb: FormBuilder,
-    private usersService: UsersService // Inyectar el servicio de usuarios
+    private usersService: UsersService
   ) {
-    // Convertir la fecha recibida a objeto Date para el datepicker
     this.selectedDate = this.convertToDate(data.date);
 
     this.reservationForm = this.fb.group({
@@ -82,13 +83,19 @@ export class ScheduleDateDialogComponent implements OnInit {
       observations: ['']
     });
 
-    // Configurar autocomplete
+    // Configurar autocomplete con búsqueda en tiempo real
     this.filteredUsers = this.userControl.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(value => {
         const searchTerm = typeof value === 'string' ? value : '';
         return this.searchUsers(searchTerm);
+      }),
+      catchError(error => {
+        this.searchError = 'Error al buscar usuarios';
+        this.isLoadingUsers = false;
+        console.error('Error searching users:', error);
+        return of([]);
       })
     );
   }
@@ -97,18 +104,31 @@ export class ScheduleDateDialogComponent implements OnInit {
     this.generarHoras();
   }
 
-  // Buscar usuarios en la API
+  // Buscar usuarios en la API con filtros
   private searchUsers(searchTerm: string): Observable<User[]> {
+    console.log('Searching users with term:', searchTerm);
     if (searchTerm.length < 2) {
-      return of([]); // No buscar si el término es muy corto
+      this.searchError = null;
+      return of([]);
     }
 
     this.isLoadingUsers = true;
-    
-    return this.usersService.searchUsers(searchTerm).pipe(
+    this.searchError = null;
+
+    // Usar el club_id si está disponible en los datos
+    const clubId = this.data.clubId;
+
+    return this.usersService.searchUsers(searchTerm, clubId).pipe(
       map(users => {
         this.isLoadingUsers = false;
+        console.log('Usuarios encontrados:', users);
         return users;
+      }),
+      catchError(error => {
+        this.isLoadingUsers = false;
+        this.searchError = 'Error al cargar usuarios';
+        console.error('Search error:', error);
+        return of([]);
       })
     );
   }
@@ -126,28 +146,20 @@ export class ScheduleDateDialogComponent implements OnInit {
     });
   }
 
-  // Convertir cualquier formato de fecha a Date object
+  // Resto de los métodos se mantienen igual...
   private convertToDate(dateValue: string | Date): Date {
-    if (dateValue instanceof Date) {
-      return dateValue;
-    }
-
+    if (dateValue instanceof Date) return dateValue;
     if (typeof dateValue === 'string') {
       if (dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
         const [year, month, day] = dateValue.split('-').map(Number);
         return new Date(year, month - 1, day);
       }
-
       const parsed = Date.parse(dateValue);
-      if (!isNaN(parsed)) {
-        return new Date(parsed);
-      }
+      if (!isNaN(parsed)) return new Date(parsed);
     }
-
     return new Date();
   }
 
-  // Formatear fecha para API (YYYY-MM-DD)
   private formatDateForApi(date: Date): string {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -165,7 +177,6 @@ export class ScheduleDateDialogComponent implements OnInit {
     }
   }
 
-  // Cuando cambia la fecha en el datepicker
   onDateChange(event: any): void {
     const selectedDate = event.value;
     if (selectedDate) {
@@ -198,5 +209,10 @@ export class ScheduleDateDialogComponent implements OnInit {
     if (time.match(/^\d{2}:\d{2}:\d{2}$/)) return time;
     if (time.match(/^\d{2}:\d{2}$/)) return `${time}:00`;
     return time;
+  }
+
+  hasValidSearchTerm(): boolean {
+    const value = this.userControl.value;
+    return typeof value === 'string' && value.length >= 2;
   }
 }

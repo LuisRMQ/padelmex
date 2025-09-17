@@ -260,7 +260,8 @@ export class CalendarioComponent implements OnInit {
         startTime: startTime24,
         endTime: endTime24,
         courtId: court.id,
-        date: this.selectedDate
+        date: this.selectedDate,
+        courtName: court.name
       },
       width: '600px',
       maxWidth: '95vw',

@@ -38,17 +38,17 @@
           </mat-form-field>
 
           <!-- Autocomplete para usuarios -->
-          <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
+          <mat-form-field class="modal-field" appearance="outline">
             <mat-label>Buscar Usuario</mat-label>
             <input type="text" matInput [formControl]="userControl" [matAutocomplete]="auto"
-                   placeholder="Escribe al menos 2 caracteres para buscar...">
+              placeholder="Escribe al menos 2 caracteres para buscar...">
             <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
-                             (optionSelected)="onUserSelected($event.option.value)">
+              (optionSelected)="onUserSelected($event.option.value)">
               <mat-option *ngFor="let user of filteredUsers | async" [value]="user">
-                {{ user.name }} {{ user.lastname }} 
+                {{ user.name }} {{ user.lastname }}
                 <span *ngIf="user.email">- {{ user.email }}</span>
               </mat-option>
-              
+
               <!-- Indicador de carga -->
               <mat-option *ngIf="isLoadingUsers" disabled>
                 <div style="display: flex; align-items: center;">
@@ -56,11 +56,15 @@
                   <span style="margin-left: 10px;">Buscando usuarios...</span>
                 </div>
               </mat-option>
-              
+
               <!-- Mensaje si no hay resultados -->
-              <!-- <mat-option *ngIf="(filteredUsers | async)?.length === 0 && !isLoadingUsers && userControl.value && typeof userControl.value === 'string' && userControl.value.length >= 2" disabled>
+              <mat-option *ngIf="
+                (filteredUsers | async)?.length === 0 &&
+                !isLoadingUsers &&
+                hasValidSearchTerm()
+              " disabled>
                 No se encontraron usuarios
-              </mat-option> -->
+              </mat-option>
             </mat-autocomplete>
             <mat-hint>Escribe al menos 2 caracteres para buscar usuarios</mat-hint>
             <mat-error *ngIf="reservationForm.get('user_id')?.hasError('required')">
@@ -72,8 +76,12 @@
           <input type="hidden" formControlName="user_id">
 
           <mat-form-field class="modal-field" appearance="outline">
-            <mat-label>ID de Tipo de Reserva</mat-label>
-            <input matInput formControlName="reservation_type_id" type="number" value="2" required>
+            <mat-label>Tipo de Reserva</mat-label>
+            <mat-select formControlName="reservation_type_id" required>
+              <mat-option [value]="1">Torneo</mat-option>
+              <mat-option [value]="2">Juego</mat-option>
+              <mat-option [value]="3">Clase</mat-option>
+            </mat-select>
           </mat-form-field>
 
           <mat-form-field class="modal-field" appearance="outline">
@@ -110,23 +118,20 @@
           <h3>Resumen de la reservación</h3>
 
           <div class="detail-row">
-            <strong>Fecha:</strong> {{ selectedDate | date:'fullDate' }}
+            <strong>Fecha:</strong> {{ selectedDate | date:'fullDate':'':'es-MX' }}
           </div>
           <div class="detail-row">
             <strong>Hora:</strong> {{ reservationForm.value.start_time }} - {{ reservationForm.value.end_time }}
           </div>
           <div class="detail-row">
-            <strong>ID Cancha:</strong> {{ reservationForm.value.court_id }}
+            <strong>Cancha:</strong> {{ data.courtName || reservationForm.value.court_id }}
           </div>
           <div class="detail-row" *ngIf="selectedUser">
             <strong>Usuario:</strong> {{ selectedUser.name }} {{ selectedUser.lastname }}
             <span *ngIf="selectedUser.email">({{ selectedUser.email }})</span>
           </div>
           <div class="detail-row">
-            <strong>ID Usuario:</strong> {{ reservationForm.value.user_id }}
-          </div>
-          <div class="detail-row">
-            <strong>Tipo de Reserva:</strong> {{ reservationForm.value.reservation_type_id }}
+            <strong>Tipo de Reserva:</strong> {{ reservationForm.value.reservation_type_id == 1 ? 'Torneo' : (reservationForm.value.reservation_type_id == 2 ? 'Juego' : 'Clase') }}
           </div>
           <div class="detail-row">
             <strong>Método de Pago:</strong> {{ getMetodoPagoLabel(reservationForm.value.pay_method) }}

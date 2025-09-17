@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiBaseService } from './api.service';
 import { map } from 'rxjs/operators';
+import { HttpParams } from '@angular/common/http';
 
 export interface User {
     id?: number;
@@ -20,6 +21,22 @@ export interface User {
     updated_at?: string;
 }
 
+export interface UsersResponse {
+    current_page: number;
+    data: User[];
+    first_page_url: string;
+    from: number;
+    last_page: number;
+    last_page_url: string;
+    links: any[];
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number;
+    total: number;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -31,17 +48,25 @@ export class UsersService extends ApiBaseService {
                 map(res => res.data)
             );
     }
+    
+    searchUsers(searchTerm: string, club_id?: number): Observable<User[]> {
+        let params = new HttpParams()
+            .set('rol_id', '')
+            .set('category_id', '')
+            .set('name', searchTerm || '')
+            .set('lastname', '')
+            .set('club_id', club_id ? club_id.toString() : '');
 
-    searchUsers(searchTerm: string): Observable<User[]> {
-        return this.http.get<User[]>(`${this.apiUrl}/search`, {
-            params: { q: searchTerm }
-        });
+        console.log('Search params:', params.toString());
+
+        return this.get<UsersResponse>('/users', params).pipe(
+            map(response => response.data)
+        );
     }
 
     createUser(data: FormData): Observable<any> {
         return this.post('/user/create', data);
     }
-
 
     getUsersByRol(rol_id: number): Observable<User[]> {
         return this.get<{ success: boolean, data: User[] }>(`/users?rol_id=${rol_id}`)
@@ -59,7 +84,6 @@ export class UsersService extends ApiBaseService {
         }
     }
 
-
     deleteUser(id: number): Observable<any> {
         return this.delete(`/user/delete/${id}`);
     }
@@ -73,5 +97,4 @@ export class UsersService extends ApiBaseService {
     desactivarUser(id: number): Observable<any> {
         return this.delete(`/user/disabled/${id}`);
     }
-
 }
