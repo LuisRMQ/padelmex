@@ -28,8 +28,40 @@
 }
 
 .header {
+  display: flex;
   justify-content: space-between;
-  margin-bottom: 5px;
+  align-items: center;
+  margin: 0;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+}
+
+.selectors {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+}
+
+.header h2 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-header {
+  background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border-radius: 25px !important;
+  padding: 12px 24px !important;
+  box-shadow: var(--shadow) !important;
+  transition: all 0.3s ease !important;
+  border: none !important;
 }
 
 .date-selector,
@@ -39,7 +71,7 @@
 
 .divider {
   margin-bottom: 24px;
-  opacity: 0.12;
+  opacity: 0.0;
 }
 
 .board {
@@ -238,7 +270,7 @@
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 100px 20px;
   color: #666;
 }
 
@@ -246,13 +278,13 @@
   font-size: 48px;
   width: 48px;
   height: 48px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   color: #ccc;
 }
 
 .empty-state p {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   color: #666;
 }
 
@@ -375,4 +407,117 @@ mat-spinner {
   margin-left: 8px;
   font-weight: 500;
 }
+}
+
+/* Tooltip styles */
+.tooltip-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.reservation-details-tooltip {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 16px;
+  min-width: 300px;
+  max-width: 400px;
+  z-index: 1001;
+  pointer-events: auto;
+  border: 1px solid #e0e0e0;
+}
+
+.loading-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.detail-section {
+  margin-bottom: 12px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.detail-row mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #666;
+}
+
+.total-row {
+  font-weight: bold;
+  color: #1976d2;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.dates-section {
+  font-size: 12px;
+  color: #666;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.action-buttons button {
+  flex: 1;
+}
+
+.error-message {
+  color: #f44336;
+  padding: 16px;
+  text-align: center;
+}
+
+/* Asegurar que las reservaciones sean clickeables */
+.reservation {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.reservation:hover {
+  z-index: 1002;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }

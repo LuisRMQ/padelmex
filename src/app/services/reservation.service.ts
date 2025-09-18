@@ -25,6 +25,26 @@ export interface Reservation {
     court_id?: number; // Agregado para mapeo
 }
 
+export interface ReservationDetails {
+    id: number;
+    user_id: number;
+    court_id: number;
+    reservation_type_id: number;
+    date: string;
+    start_time: string;
+    end_time: string;
+    duration: string;
+    pay_method: string;
+    observations: string | null;
+    total_court: string;
+    commission: string;
+    total: string;
+    status: string;
+    deleted_at: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface ReservationsResponse {
     current_page: number;
     data: Reservation[];
@@ -58,6 +78,10 @@ export class ReservationService extends ApiBaseService {
         });
 
         return this.get<ReservationsResponse>('/reservations', params);
+    }
+
+    getReservationDetails(id: number): Observable<ReservationDetails> {
+        return this.get<ReservationDetails>(`/reservation/${id}`);
     }
 
     createReservation(reservationData: any): Observable<any> {

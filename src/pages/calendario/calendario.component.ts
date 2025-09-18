@@ -1,6 +1,6 @@
-import { Component, Input, OnInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, ViewChildren, QueryList, ElementRef, TemplateRef } from '@angular/core';
 import { LOCALE_ID } from '@angular/core';
-import { registerLocaleData } from '@angular/common';
+import { formatDate, registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
@@ -14,9 +14,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from "@angular/material/select";
 import { Club, CourtService, CourtsResponse } from '../../app/services/court.service';
-import { ReservationService, Reservation as ApiReservation, ReservationFilters } from '../../app/services/reservation.service';
+import { ReservationService, Reservation as ApiReservation, ReservationDetails } from '../../app/services/reservation.service';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
+import { MatTooltipModule, MatTooltip } from '@angular/material/tooltip';
 
 interface Court { id: number; name: string; }
 interface CalendarReservation {
@@ -26,6 +27,7 @@ interface CalendarReservation {
   startMin: number;
   endMin: number;
   originalData?: ApiReservation;
+  details?: ReservationDetails;
 }
 
 @Component({
@@ -45,7 +47,8 @@ interface CalendarReservation {
     MatButtonModule,
     MatSelectModule,
     MatProgressSpinnerModule,
-    MatIconModule
+    MatIconModule,
+    MatTooltipModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es' }
@@ -61,7 +64,7 @@ export class CalendarioComponent implements OnInit {
   error: string | null = null;
   clubs: Club[] = [];
   courtNameToIdMap: Map<string, number> = new Map();
-  allReservations: ApiReservation[] = []; // Todas las reservaciones sin filtrar
+  allReservations: ApiReservation[] = [];
 
   constructor(
     private dialog: MatDialog,
@@ -76,7 +79,7 @@ export class CalendarioComponent implements OnInit {
 
   // Config
   readonly dayStartMin = 6 * 60;
-  readonly dayEndMin = 22 * 60;
+  readonly dayEndMin = 23 * 60;
   readonly snapMinutes = 30;
   readonly pxPerMin = 2;
 
@@ -86,6 +89,10 @@ export class CalendarioComponent implements OnInit {
 
   @ViewChildren('courtColRef') courtCols!: QueryList<ElementRef<HTMLElement>>;
   @ViewChildren('boardScrollRef') boardScroll!: QueryList<ElementRef<HTMLElement>>;
+  //@ViewChildren('reservationTooltip') reservationTooltip!: TemplateRef<any>;
+  currentReservation: CalendarReservation | null = null;
+  tooltipPosition = { x: 0, y: 0 };
+  isLoadingDetails = false;
 
   // cache para drag
   private dragCache = new Map<number, { startTopPx: number; startLeftPx: number }>();
@@ -151,7 +158,7 @@ export class CalendarioComponent implements OnInit {
     const arr: { label: string; min: number }[] = [];
 
     // Generar slots hasta el final INCLUSIVE
-    for (let m = startMin; m <= endMin; m += step) {
+    for (let m = startMin; m < endMin; m += step) {
       arr.push({ label: this.formatTime(m), min: m });
     }
 
@@ -347,18 +354,14 @@ export class CalendarioComponent implements OnInit {
     const cached = this.dragCache.get(res.id);
     if (!cached) return;
 
-    const allColsContainer = (resEl.closest('.columns') as HTMLElement);
     const colWidth = this.courtCols.first?.nativeElement.clientWidth ?? 0;
 
     const delta = e.distance;
     const newTopPx = cached.startTopPx + delta.y;
-    const newLeftPx = cached.startLeftPx + delta.x;
 
     const currentIndex = this.courtIndexById(res.courtId);
     const movedCols = Math.round(delta.x / Math.max(1, colWidth));
-    let newIndex = currentIndex + movedCols;
-
-    newIndex = Math.max(0, Math.min(this.courts.length - 1, newIndex));
+    let newIndex = Math.max(0, Math.min(this.courts.length - 1, currentIndex + movedCols));
     const newCourtId = this.courts[newIndex].id;
 
     const newStartMinRaw = this.dayStartMin + Math.round((newTopPx / this.pxPerMin) / this.snapMinutes) * this.snapMinutes;
@@ -366,11 +369,35 @@ export class CalendarioComponent implements OnInit {
     let newStartMin = Math.max(this.dayStartMin, Math.min(newStartMinRaw, this.dayEndMin - duration));
     let newEndMin = newStartMin + duration;
 
-    const updated = this.reservations.map(r => r.id === res.id ? { ...r, courtId: newCourtId, startMin: newStartMin, endMin: newEndMin } : r);
-    this.reservations = updated;
+    // Actualizar en memoria
+    this.reservations = this.reservations.map(r =>
+      r.id === res.id
+        ? { ...r, courtId: newCourtId, startMin: newStartMin, endMin: newEndMin }
+        : r
+    );
 
     this.dragCache.delete(res.id);
     e.source.reset();
+
+    const toHHMMSS = (mins: number): string => {
+      const h = Math.floor(mins / 60).toString().padStart(2, '0');
+      const m = (mins % 60).toString().padStart(2, '0');
+      return `${h}:${m}:00`;
+    };
+
+    const payload = {
+      user_id: res.originalData?.userId,
+      court_id: newCourtId,
+      date: res.originalData?.date,
+      start_time: toHHMMSS(newStartMin),
+      end_time: toHHMMSS(newEndMin),
+      observations: res.originalData?.observations ?? ''
+    };
+
+    this.reservationService.updateReservation(res.id, payload).subscribe({
+      next: (resp) => console.log('Reserva actualizada:', resp),
+      error: (err) => console.error('Error al actualizar reserva:', err)
+    });
   }
 
   addMinutes(res: CalendarReservation, minutes: number) {
@@ -669,5 +696,51 @@ export class CalendarioComponent implements OnInit {
   getCourtName(courtId: number): string {
     const court = this.courts.find(c => c.id === courtId);
     return court ? court.name : '';
+  }
+
+  async showReservationDetails(event: MouseEvent, reservation: CalendarReservation) {
+    console.log('Mouse enter en reservación:', reservation.id);
+    this.currentReservation = reservation;
+    this.tooltipPosition = { x: event.clientX, y: event.clientY };
+
+    // Si no tenemos los detalles completos, cargarlos
+    if (!reservation.details) {
+      this.isLoadingDetails = true;
+      try {
+        const details = await this.reservationService.getReservationDetails(reservation.id).toPromise();
+        reservation.details = details;
+      } catch (error) {
+        console.error('Error loading reservation details:', error);
+      } finally {
+        this.isLoadingDetails = false;
+      }
+    }
+  }
+
+  hideReservationDetails() {
+    this.currentReservation = null;
+  }
+
+  getStatusColor(status: string | undefined): string {
+    switch (status?.toLowerCase()) {
+      case 'confirmed': return '#4caf50';
+      case 'pending': return '#ff9800';
+      case 'cancelled': return '#f44336';
+      default: return '#9e9e9e';
+    }
+  }
+
+  formatDateString(dateString: string | undefined | null): string {
+    if (!dateString) {
+      return 'Fecha no disponible';
+    }
+    return formatDate(dateString, 'mediumDate', 'es');
+  }
+
+  formatCurrency(amount: string | undefined | null): string {
+    if (!amount) {
+      return '$0.00';
+    }
+    return `$${parseFloat(amount).toFixed(2)}`;
   }
 }

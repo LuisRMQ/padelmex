@@ -7,28 +7,28 @@
 </div>
 
 <div class="header">
-  <h3>Reservaciones del {{ selectedDate | date: 'longDate' }}</h3>
+  <h2>Reservaciones del {{ selectedDate | date: 'longDate' }}</h2>
   <div class="quick-buttons">
-    <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToYesterday()">Ayer</button>
-    <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToToday()">Hoy</button>
-    <button mat-raised-button style="border-radius: 15px;" color="primary" (click)="setToTomorrow()">Mañana</button>
+    <button mat-raised-button style="border-radius: 15px;" color="primary" class="btn-header"
+      (click)="setToYesterday()">Ayer</button>
+    <button mat-raised-button style="border-radius: 15px;" color="primary" class="btn-header"
+      (click)="setToToday()">Hoy</button>
+    <button mat-raised-button style="border-radius: 15px;" color="primary" class="btn-header"
+      (click)="setToTomorrow()">Mañana</button>
   </div>
 </div>
 
 <mat-divider class="divider"></mat-divider>
 
-<div class="header">
+<div class="selectors">
   <div class="date-selector">
-    <p style="margin: 0;">Selecciona una fecha:</p>
     <mat-form-field appearance="outline" style="width: 200px;">
-      <mat-label>Fecha</mat-label>
+      <mat-label>Selecciona una Fecha</mat-label>
       <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="onDateChange($event.value)">
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
-  </div>
 
-  <div class="club-selector">
     <mat-form-field appearance="outline" style="width: 300px;">
       <mat-label>Seleccionar Club</mat-label>
       <mat-select [(value)]="selectedClubId" (selectionChange)="onClubChange()">
@@ -71,7 +71,7 @@
 </div>
 
 <div *ngIf="!loading && clubs.length > 0 && courts.length === 0 && !loadingReservations" class="empty-state">
-  <mat-icon>court_sports</mat-icon>
+  <mat-icon>question_mark</mat-icon>
   <p>No hay canchas disponibles para este club</p>
 </div>
 
@@ -109,7 +109,8 @@
           <div class="reservation" *ngFor="let res of reservations" [class.hidden]="res.courtId !== court.id"
             [ngStyle]="getReservationStyle(res)" cdkDrag
             (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
-            (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)">
+            (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)"
+            (mouseenter)="showReservationDetails($event, res)" (mouseleave)="hideReservationDetails()">
 
             <div class="res-title">
               {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
@@ -125,4 +126,111 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- TEMPLATE DEL TOOLTIP (FUERA de cualquier otro div) -->
+<ng-template #reservationTooltip>
+  <div class="reservation-details-tooltip" [style.left.px]="tooltipPosition.x" [style.top.px]="tooltipPosition.y">
+    <div *ngIf="isLoadingDetails" class="loading-details">
+      <mat-spinner diameter="20"></mat-spinner>
+      <span>Cargando detalles...</span>
+    </div>
+
+    <div *ngIf="!isLoadingDetails && currentReservation?.details" class="details-content">
+      <!-- Header -->
+      <div class="tooltip-header">
+        <h4>Detalles de la Reservación #{{ currentReservation?.details?.id }}</h4>
+        <span class="status-badge" [style.background-color]="getStatusColor(currentReservation?.details?.status)">
+          {{ currentReservation?.details?.status | titlecase }}
+        </span>
+      </div>
+
+      <!-- Información principal -->
+      <div class="detail-section">
+        <div class="detail-row">
+          <mat-icon>person</mat-icon>
+          <span><strong>Usuario ID:</strong> {{ currentReservation?.details?.user_id }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>sports_tennis</mat-icon>
+          <span><strong>Cancha ID:</strong> {{ currentReservation?.details?.court_id }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>calendar_today</mat-icon>
+          <span><strong>Fecha:</strong> {{ formatDateString(currentReservation?.details?.date) }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>schedule</mat-icon>
+          <span><strong>Horario:</strong> {{ currentReservation?.details?.start_time | slice:0:5 }} - {{
+            currentReservation?.details?.end_time | slice:0:5 }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>timer</mat-icon>
+          <span><strong>Duración:</strong> {{ currentReservation?.details?.duration }} minutos</span>
+        </div>
+      </div>
+
+      <!-- Información de pago -->
+      <div class="detail-section">
+        <div class="detail-row">
+          <mat-icon>payment</mat-icon>
+          <span><strong>Método pago:</strong> {{ currentReservation?.details?.pay_method | titlecase }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>attach_money</mat-icon>
+          <span><strong>Total Cancha:</strong> {{ formatCurrency(currentReservation?.details?.total_court) }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>percent</mat-icon>
+          <span><strong>Comisión:</strong> {{ formatCurrency(currentReservation?.details?.commission) }}</span>
+        </div>
+        <div class="detail-row total-row">
+          <mat-icon>point_of_sale</mat-icon>
+          <span><strong>Total:</strong> {{ formatCurrency(currentReservation?.details?.total) }}</span>
+        </div>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="detail-section" *ngIf="currentReservation?.details?.observations">
+        <div class="detail-row">
+          <mat-icon>notes</mat-icon>
+          <span><strong>Observaciones:</strong> {{ currentReservation?.details?.observations }}</span>
+        </div>
+      </div>
+
+      <!-- Fechas del sistema -->
+      <div class="detail-section dates-section">
+        <div class="detail-row">
+          <mat-icon>event</mat-icon>
+          <span><strong>Creado:</strong> {{ formatDateString(currentReservation?.details?.created_at) }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>update</mat-icon>
+          <span><strong>Actualizado:</strong> {{ formatDateString(currentReservation?.details?.updated_at) }}</span>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <!-- <div class="action-buttons">
+        <button mat-button color="primary" (click)="editReservation(currentReservation!)">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </button>
+        <button mat-button color="warn" (click)="cancelReservation(currentReservation!)" 
+                *ngIf="currentReservation?.details?.status !== 'cancelled' && currentReservation?.details?.status !== 'deleted'">
+          <mat-icon>cancel</mat-icon>
+          Cancelar
+        </button>
+      </div> -->
+    </div>
+
+    <div *ngIf="!isLoadingDetails && !currentReservation?.details" class="error-message">
+      No se pudieron cargar los detalles de la reservación.
+    </div>
+  </div>
+</ng-template>
+
+<!-- OVERLAY DEL TOOLTIP (FUERA del template, al final del archivo) -->
+<div *ngIf="currentReservation" class="tooltip-overlay" (mouseleave)="hideReservationDetails()">
+  <ng-container *ngTemplateOutlet="reservationTooltip"></ng-container>
 </div>

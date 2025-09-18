@@ -168,8 +168,15 @@ export class ScheduleDateDialogComponent implements OnInit {
   }
 
   generarHoras(): void {
-    for (let h = 6; h < 22; h++) {
+    this.horas = []; // limpiar por si ya tenía valores
+
+    for (let h = 6; h <= 23; h++) { // <= para incluir la hora 23
       for (let m = 0; m < 60; m += 30) {
+        // si es 23:30 lo permitimos, pero no más allá
+        if (h === 23 && m > 30) {
+          break;
+        }
+
         const hora = h.toString().padStart(2, '0');
         const minuto = m.toString().padStart(2, '0');
         this.horas.push(`${hora}:${minuto}`);
