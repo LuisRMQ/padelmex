@@ -43,21 +43,38 @@
       </mat-form-field>
 
       <!-- Club -->
-      <mat-form-field appearance="outline">
-        <mat-label>Club</mat-label>
-        <mat-select formControlName="club_id">
-          <mat-option value="1">Club 1</mat-option>
-          <mat-option value="2">Club 2</mat-option>
+
+
+
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-select placeholder="Club" formControlName="club_id">
+          <mat-option *ngFor="let club of clubs" [value]="club.id">
+            {{ club.name }}
+          </mat-option>
         </mat-select>
+        <mat-error *ngIf="userForm.get('club_id')?.hasError('required')">
+          Club es requerido
+        </mat-error>
       </mat-form-field>
 
       <!-- Categoría -->
       <mat-form-field appearance="outline">
         <mat-label>Categoría</mat-label>
         <mat-select formControlName="category_id">
-          <mat-option value="1">Junior</mat-option>
-          <mat-option value="2">Senior</mat-option>
-          <mat-option value="3">Avanzado</mat-option>
+          <mat-option value="1">Primera Varonil</mat-option>
+          <mat-option value="2">Segunda Varonil</mat-option>
+          <mat-option value="3">Tercera Varonil</mat-option>
+          <mat-option value="4">Cuarta Varonil</mat-option>
+          <mat-option value="5">Quinta Varonil</mat-option>
+          <mat-option value="6">Sexta Varonil</mat-option>
+          <mat-option value="7">Septima Varonil</mat-option>
+          <mat-option value="8">Primera Femenil</mat-option>
+          <mat-option value="9">Segunda Femenil</mat-option>
+          <mat-option value="10">Tercera Femenil</mat-option>
+          <mat-option value="11">Cuarta Femenil</mat-option>
+          <mat-option value="12">Quinta Femenil</mat-option>
+          <mat-option value="13">Sexta Femenil</mat-option>
+          <mat-option value="14">Septima Femenil</mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -66,8 +83,15 @@
         <mat-label>Rol</mat-label>
         <mat-select formControlName="rol_id">
           <mat-option value="1">Administrador</mat-option>
-          <mat-option value="2">Jugador</mat-option>
-          <mat-option value="3">Entrenador</mat-option>
+          <mat-option value="2">Socio</mat-option>
+          <mat-option value="3">Finanzas</mat-option>
+          <mat-option value="4">Gerente</mat-option>
+          <mat-option value="5">Coach</mat-option>
+          <mat-option value="6">Contador</mat-option>
+          <mat-option value="7">Caja</mat-option>
+          <mat-option value="8">Jugador</mat-option>
+
+
         </mat-select>
       </mat-form-field>
     </div>
@@ -81,9 +105,9 @@
         <input type="file" hidden (change)="onFileSelected($event)" #fileInput>
       </div>
       <mat-card class="preview-card">
-@if (logoPreview) {
-  <img [src]="logoPreview" alt="Vista previa" class="logo-preview">
-}        <ng-template #noFoto>
+        @if (logoPreview) {
+        <img [src]="logoPreview" alt="Vista previa" class="logo-preview">
+        } <ng-template #noFoto>
           <div class="no-image">Sin foto</div>
         </ng-template>
       </mat-card>

@@ -42,31 +42,41 @@ export class LoginComponent {
         this.isLoading = false;
         this.snackBar.open(
           `✅ Bienvenido ${response.user.name}`,
-          '', 
+          'Cerrar', 
           {
-            duration: 2000, 
+            duration: 3000, 
             horizontalPosition: 'center',
             verticalPosition: 'top',
+            panelClass: ['snackbar-success']
           }
         );
 
         setTimeout(() => {
           this.router.navigate(['/dashboard']);
-        }, 2000);
+        }, 3000);
       },
       error: (error) => {
         this.isLoading = false;
         console.error('Error en login:', error);
 
+        let mensaje = '';
+
         if (error.message === 'Credenciales incorrectas') {
-          this.errorMessage = 'Credenciales incorrectas. Por favor, verifica tus datos.';
+          mensaje = '❌ Credenciales incorrectas. Por favor, verifica tus datos.';
         } else if (error.message.includes('Attempt to read property')) {
-          this.errorMessage = 'Error interno del servidor. Por favor, contacte al administrador.';
+          mensaje = '❌ Credenciales incorrectas. Por favor, verifica tus datos.';
         } else if (error.status === 0) {
-          this.errorMessage = 'Error de conexión. Verifica tu conexión a internet.';
+          mensaje = '⚠️ Error de conexión. Verifica tu conexión a internet.';
         } else {
-          this.errorMessage = error.message || 'Error desconocido. Por favor, intenta más tarde.';
+          mensaje = error.message || '⚠️ Error desconocido. Por favor, intenta más tarde.';
         }
+
+        this.snackBar.open(mensaje, 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: mensaje.startsWith('❌') ? ['snackbar-error'] : ['snackbar-warning']
+        });
       }
     });
   }

@@ -37,6 +37,11 @@ export interface UsersResponse {
     total: number;
 }
 
+export interface Club {
+    id: number;
+    name: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -48,7 +53,11 @@ export class UsersService extends ApiBaseService {
                 map(res => res.data)
             );
     }
-    
+
+    getClubs(): Observable<Club[]> {
+        return this.get<any>('/clubs').pipe(map(response => response.data));
+    }
+
     searchUsers(searchTerm: string, club_id?: number): Observable<User[]> {
         let params = new HttpParams()
             .set('rol_id', '')
