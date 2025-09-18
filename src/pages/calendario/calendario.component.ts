@@ -65,6 +65,8 @@ export class CalendarioComponent implements OnInit {
   clubs: Club[] = [];
   courtNameToIdMap: Map<string, number> = new Map();
   allReservations: ApiReservation[] = [];
+  private hideTooltipTimeout: any = null;
+  isTooltipHovered = false;
 
   constructor(
     private dialog: MatDialog,
@@ -742,5 +744,27 @@ export class CalendarioComponent implements OnInit {
       return '$0.00';
     }
     return `$${parseFloat(amount).toFixed(2)}`;
+  }
+
+  // Métodos para manejar el hover del tooltip
+  onTooltipEnter() {
+    console.log('🟢 Tooltip hover ENTER');
+    this.isTooltipHovered = true;
+    // Cancelar cualquier timeout de ocultamiento
+    if (this.hideTooltipTimeout) {
+      clearTimeout(this.hideTooltipTimeout);
+      this.hideTooltipTimeout = null;
+    }
+  }
+
+  onTooltipLeave() {
+    console.log('🔴 Tooltip hover LEAVE');
+    this.isTooltipHovered = false;
+    // Esperar un poco antes de ocultar para dar tiempo a volver
+    this.hideTooltipTimeout = setTimeout(() => {
+      if (!this.isTooltipHovered) {
+        this.hideReservationDetails();
+      }
+    }, 300);
   }
 }

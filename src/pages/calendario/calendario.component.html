@@ -231,6 +231,8 @@
 </ng-template>
 
 <!-- OVERLAY DEL TOOLTIP (FUERA del template, al final del archivo) -->
-<div *ngIf="currentReservation" class="tooltip-overlay" (mouseleave)="hideReservationDetails()">
+<div *ngIf="currentReservation" class="tooltip-overlay" 
+     (mouseenter)="onTooltipEnter()" 
+     (mouseleave)="onTooltipLeave()">
   <ng-container *ngTemplateOutlet="reservationTooltip"></ng-container>
 </div>
