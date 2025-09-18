@@ -16,7 +16,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 30px;
+  margin: 0px;
   padding: 20px 30px;
   background: white;
   border-radius: 15px;
@@ -258,9 +258,6 @@ mat-card-actions button:last-child {
   color: white !important;
 }
 
-.page-content {
-  padding: 0 30px; /* mismo padding horizontal que tu header */
-}
 
 /* Hover de tarjeta */
 .torneo-card:hover {

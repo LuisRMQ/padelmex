@@ -2,9 +2,10 @@
 
 
     <div class="header">
-        <h2>Inicio</h2>
+        <h1>Inicio</h1>
 
     </div>
+    <mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
 
     <div class="dashboard-cards-row">
         <!-- Rentas del día Card -->
@@ -102,15 +103,11 @@
 
 <!-- Gráfico de ganancias -->
 <div class="dashboard-graph-card">
-  <div class="graph-title">Ganancias</div>
-  <div class="graph-divider"></div>
-  <div class="graph-content">
-    <canvas baseChart
-      [datasets]="gananciasData"
-      [labels]="gananciasLabels"
-      [options]="gananciasOptions"
-      [legend]="true"
-      [type]="'line'">
-    </canvas>
-  </div>
+    <div class="graph-title">Ganancias</div>
+    <div class="graph-divider"></div>
+    <div class="graph-content">
+        <canvas baseChart [datasets]="gananciasData" [labels]="gananciasLabels" [options]="gananciasOptions"
+            [legend]="true" [type]="'line'">
+        </canvas>
+    </div>
 </div>

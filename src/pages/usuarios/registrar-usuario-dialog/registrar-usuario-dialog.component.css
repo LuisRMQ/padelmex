@@ -1,14 +1,32 @@
+.modal-card {
+  max-width: 900px;
+  margin: auto;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.titulo-modal {
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  font-weight: bold;
+  gap: 8px;
+  color: #2c3e50;
+}
+
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+  margin-top: 20px;
 }
 
 .imagenes-section {
   display: flex;
-  justify-content: space-around;
-  margin-top: 20px;
-  text-align: center;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+  gap: 20px;
 }
 
 .upload-card {
@@ -19,8 +37,27 @@
 
 .preview-card {
   width: 200px;
-  height: 150px;
-  margin-top: 10px;
-  background: #e0e0e0;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 10px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-card img {
+  max-width: 100%;
+  max-height: 100%;
   border-radius: 8px;
+}
+
+.no-image {
+  color: #888;
+  font-size: 14px;
+  font-style: italic;
+}
+
+mat-card-actions {
+  margin-top: 20px;
 }

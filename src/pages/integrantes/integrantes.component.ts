@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { IntegrantesService, Integrante } from '../../app/services/integrantes.service';
+import { RegistrarIntegranteDialogComponent } from './registrar-integrantes-dialog/registrar-integrante-dialog.component';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-integrantes',
@@ -22,17 +24,18 @@ import { IntegrantesService, Integrante } from '../../app/services/integrantes.s
     MatInputModule,
     MatIconModule,
     MatButtonModule,
-    MatCardModule
+    MatCardModule,
+    MatDialogModule
   ]
 })
 export class IntegrantesComponent implements OnInit {
-displayedColumns: string[] = ['foto','nombre', 'email', 'rol', 'club', 'categoria', 'acciones'];
+  displayedColumns: string[] = ['foto', 'nombre', 'email', 'rol', 'club', 'categoria', 'acciones'];
   dataSource!: MatTableDataSource<Integrante>;
   selectedUsuario: Integrante | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor(private integrantesService: IntegrantesService) {}
+  constructor(private integrantesService: IntegrantesService,private dialog: MatDialog,) { }
 
   ngOnInit() {
     this.integrantesService.getIntegrantes().subscribe({
@@ -60,8 +63,25 @@ displayedColumns: string[] = ['foto','nombre', 'email', 'rol', 'club', 'categori
     this.selectedUsuario = null;
   }
 
-  abrirModalRegistrarUsuario() {
-    console.log('Abrir modal de registro');
+  abrirModalRegistrarIntegrante() {
+    const dialogRef = this.dialog.open(RegistrarIntegranteDialogComponent, {
+      width: '800px',
+      maxWidth: '50vw',
+      height: 'auto',
+      maxHeight: '70vh',
+      panelClass: 'custom-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.integrantesService.getIntegrantes().subscribe({
+      next: (res: any) => {
+        const integrantesArray: Integrante[] = res.data ?? [];
+        this.dataSource = new MatTableDataSource(integrantesArray);
+        this.dataSource.paginator = this.paginator;
+      },
+      error: (err) => console.error('Error al obtener integrantes:', err)
+    });
+    });
   }
 
   eliminarUsuario(usuario: Integrante) {
@@ -69,7 +89,7 @@ displayedColumns: string[] = ['foto','nombre', 'email', 'rol', 'club', 'categori
   }
 
   onImageError(event: Event) {
-  const target = event.target as HTMLImageElement;
-  target.src = '../../../assets/images/iconuser.png';
-}
+    const target = event.target as HTMLImageElement;
+    target.src = '../../../assets/images/iconuser.png';
+  }
 }

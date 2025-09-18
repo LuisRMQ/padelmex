@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
 import { CommonModule } from '@angular/common';
+import { MatDivider } from "@angular/material/divider";
 
 import {
   Chart,
@@ -35,7 +36,7 @@ Chart.register(
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [BaseChartDirective, CommonModule],
+  imports: [BaseChartDirective, CommonModule, MatDivider],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

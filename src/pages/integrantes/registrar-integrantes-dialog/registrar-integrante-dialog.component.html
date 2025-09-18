@@ -1,9 +1,6 @@
-<mat-card [formGroup]="userForm" class="modal-card">
+<mat-card [formGroup]="userForm">
   <mat-card-header>
-    <mat-card-title class="titulo-modal">
-      <mat-icon>person_add</mat-icon>
-      Registrar Usuario
-    </mat-card-title>
+    <mat-card-title>Registrar Integrante Club</mat-card-title>
   </mat-card-header>
 
   <mat-card-content>
@@ -11,25 +8,25 @@
       <!-- Nombre -->
       <mat-form-field appearance="outline">
         <mat-label>Nombre</mat-label>
-        <input matInput formControlName="name" placeholder="Ej: Juan">
+        <input matInput formControlName="name" placeholder="Nombre...">
       </mat-form-field>
 
       <!-- Apellidos -->
       <mat-form-field appearance="outline">
         <mat-label>Apellidos</mat-label>
-        <input matInput formControlName="lastname" placeholder="Ej: Pérez López">
+        <input matInput formControlName="lastname" placeholder="Apellidos...">
       </mat-form-field>
 
       <!-- Email -->
       <mat-form-field appearance="outline">
         <mat-label>Correo</mat-label>
-        <input matInput type="email" formControlName="email" placeholder="correo@ejemplo.com">
+        <input matInput type="email" formControlName="email" placeholder="Correo...">
       </mat-form-field>
 
       <!-- Password -->
       <mat-form-field appearance="outline">
         <mat-label>Contraseña</mat-label>
-        <input matInput type="password" formControlName="password" placeholder="********">
+        <input matInput type="password" formControlName="password" placeholder="Contraseña...">
       </mat-form-field>
 
       <!-- Género -->
@@ -42,14 +39,8 @@
         </mat-select>
       </mat-form-field>
 
-      <!-- Club -->
-      <mat-form-field appearance="outline">
-        <mat-label>Club</mat-label>
-        <mat-select formControlName="club_id">
-          <mat-option value="1">Club 1</mat-option>
-          <mat-option value="2">Club 2</mat-option>
-        </mat-select>
-      </mat-form-field>
+
+   
 
       <!-- Categoría -->
       <mat-form-field appearance="outline">
@@ -74,28 +65,16 @@
 
     <!-- Imagen de perfil -->
     <div class="imagenes-section">
-      <div class="upload-card">
-        <button mat-raised-button color="primary" (click)="fileInput.click()">
-          <mat-icon>cloud_upload</mat-icon> Agregar Foto
-        </button>
-        <input type="file" hidden (change)="onFileSelected($event)" #fileInput>
-      </div>
+      <button mat-raised-button color="primary" (click)="fileInput.click()">AGREGAR FOTO</button>
+      <input type="file" hidden (change)="onFileSelected($event)" #fileInput>
       <mat-card class="preview-card">
-@if (logoPreview) {
-  <img [src]="logoPreview" alt="Vista previa" class="logo-preview">
-}        <ng-template #noFoto>
-          <div class="no-image">Sin foto</div>
-        </ng-template>
+        <img [src]="logoPreview" width="150" alt="Preview">
       </mat-card>
     </div>
   </mat-card-content>
 
   <mat-card-actions align="end">
-    <button mat-raised-button color="primary" (click)="guardarUsuario()">
-      <mat-icon>save</mat-icon> Guardar
-    </button>
-    <button mat-button color="warn" type="reset" (click)="onCancel()">
-      <mat-icon>close</mat-icon> Cancelar
-    </button>
+    <button mat-raised-button color="primary" (click)="guardarUsuario()">GUARDAR</button>
+    <button mat-button color="warn" type="reset">CANCELAR</button>
   </mat-card-actions>
 </mat-card>

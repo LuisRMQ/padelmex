@@ -1,11 +1,12 @@
 
-<div class="page-content">
+<!-- <div class="page-content"> -->
 <div class="header">
   <h1>Torneos</h1>
   <button mat-raised-button color="primary" (click)="abrirModalRegistrarTorneo()" class="btn-registrar">
     <mat-icon>add</mat-icon> Registrar Torneo
   </button>
 </div>
+<mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
 
 <div class="torneos-container">
   <div class="torneo-item" *ngFor="let torneo of torneos">
@@ -55,4 +56,4 @@
     </mat-card>
   </div>
 </div>
-</div>
+<!-- </div> -->

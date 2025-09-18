@@ -184,7 +184,6 @@ export class UsuariosComponent implements OnInit {
       rol_id: Number(this.formUsuario.rol_id)
     };
 
-    // solo si cambió
     if (this.formUsuario.profile_photoFile) {
       payload.profile_photo = this.formUsuario.profile_photoFile;
     }

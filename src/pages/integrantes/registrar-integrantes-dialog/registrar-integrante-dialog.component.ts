@@ -6,14 +6,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialogModule } from '@angular/material/dialog';
+import { AuthService } from '../../../app/services/auth.service';
 import { UsersService } from '../../../app/services/users.service';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-RegistrarUsuario',
-  templateUrl: './registrar-usuario-dialog.component.html',
-  styleUrls: ['./registrar-usuario-dialog.component.css'],
+  templateUrl: './registrar-integrante-dialog.component.html',
+  styleUrls: ['./registrar-integrante-dialog.component.css'],
   standalone: true,
   imports: [
     MatIconModule,
@@ -22,16 +21,15 @@ import { CommonModule } from '@angular/common';
     MatButtonModule,
     MatSelectModule,
     MatCardModule,
-    ReactiveFormsModule,
-    MatDialogModule
+    ReactiveFormsModule
   ],
 })
-export class RegistrarUsuarioDialogComponent {
+export class RegistrarIntegranteDialogComponent {
   userForm!: FormGroup;
   logoPreview: string = '../../assets/images/placeholder.png';
 
-  constructor(private fb: FormBuilder, private usersService: UsersService,private dialogRef: MatDialogRef<RegistrarUsuarioDialogComponent>
-) {
+  constructor(private fb: FormBuilder, private usersService: UsersService,private authService: AuthService) {
+    const currentUser = this.authService.getUserData(); 
 
     this.userForm = this.fb.group({
       name: ['', Validators.required],
@@ -39,16 +37,11 @@ export class RegistrarUsuarioDialogComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
       gender: ['', Validators.required],
-      club_id: ['', Validators.required],
+      club_id: [currentUser?.club_id || null, Validators.required],
       profile_photo: [null, Validators.required],
       rol_id: ['', Validators.required],
       category_id: ['', Validators.required]
     });
-  }
-
-  
-   onCancel(): void {
-    this.dialogRef.close();
   }
 
   onFileSelected(event: Event) {
@@ -78,7 +71,7 @@ export class RegistrarUsuarioDialogComponent {
 
     this.usersService.createUser(formData).subscribe({
       next: (res) => {
-        alert('✅ Usuario registrado correctamente');
+        alert('✅ Integrante registrado correctamente');
         this.userForm.reset();
         this.logoPreview = '../../assets/images/placeholder.png';
       },

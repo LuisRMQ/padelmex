@@ -14,6 +14,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { BracketModalComponent } from '../torneos/brackets-torneo-dialog/brackets-torneo-dialog.component';
 import { MatChipsModule } from '@angular/material/chips';
 import { DatePipe } from '@angular/common';
+import { MatDivider } from "@angular/material/divider";
 
 interface Torneo {
   id: number;
@@ -42,7 +43,8 @@ interface Torneo {
     MatCardModule,
     MatGridListModule,
     MatDialogModule,
-    MatChipsModule
+    MatChipsModule,
+    MatDivider
   ],
   providers: [DatePipe]
 })

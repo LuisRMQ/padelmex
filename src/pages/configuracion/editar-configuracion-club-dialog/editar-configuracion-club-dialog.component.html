@@ -1,0 +1,37 @@
+<h2 mat-dialog-title>Editar Club</h2>
+<mat-dialog-content>
+  <form [formGroup]="clubForm" class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="name">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Dirección</mat-label>
+      <input matInput formControlName="address">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Teléfono</mat-label>
+      <input matInput formControlName="phone">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email">
+    </mat-form-field>
+
+    <div class="imagenes-section">
+      <button mat-raised-button color="primary" (click)="fileInput.click()">Cambiar Logo</button>
+      <input type="file" hidden (change)="onFileSelected($event)" #fileInput>
+      <mat-card class="preview-card">
+        <img [src]="logoPreview" width="150" alt="Preview">
+      </mat-card>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="guardar()">Guardar</button>
+</mat-dialog-actions>
