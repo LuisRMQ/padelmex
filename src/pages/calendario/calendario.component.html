@@ -148,21 +148,13 @@
       <!-- Información principal -->
       <div class="detail-section">
         <div class="detail-row">
-          <mat-icon>person</mat-icon>
-          <span><strong>Usuario ID:</strong> {{ currentReservation?.details?.user_id }}</span>
-        </div>
-        <div class="detail-row">
-          <mat-icon>sports_tennis</mat-icon>
-          <span><strong>Cancha ID:</strong> {{ currentReservation?.details?.court_id }}</span>
-        </div>
-        <div class="detail-row">
           <mat-icon>calendar_today</mat-icon>
           <span><strong>Fecha:</strong> {{ formatDateString(currentReservation?.details?.date) }}</span>
-        </div>
-        <div class="detail-row">
-          <mat-icon>schedule</mat-icon>
-          <span><strong>Horario:</strong> {{ currentReservation?.details?.start_time | slice:0:5 }} - {{
+          <div class="detail-row">
+          <mat-icon style="margin-top: 6px;">schedule</mat-icon>
+          <span style="margin-top: 6px;"><strong>Horario:</strong> {{ currentReservation?.details?.start_time | slice:0:5 }} - {{
             currentReservation?.details?.end_time | slice:0:5 }}</span>
+        </div>
         </div>
         <div class="detail-row">
           <mat-icon>timer</mat-icon>
@@ -174,15 +166,11 @@
       <div class="detail-section">
         <div class="detail-row">
           <mat-icon>payment</mat-icon>
-          <span><strong>Método pago:</strong> {{ currentReservation?.details?.pay_method | titlecase }}</span>
+          <span><strong>Método pago:</strong> {{ currentReservation?.details?.pay_method == "single_payment" ? "Pago único" : "Pago dividido" }}</span>
         </div>
         <div class="detail-row">
           <mat-icon>attach_money</mat-icon>
           <span><strong>Total Cancha:</strong> {{ formatCurrency(currentReservation?.details?.total_court) }}</span>
-        </div>
-        <div class="detail-row">
-          <mat-icon>percent</mat-icon>
-          <span><strong>Comisión:</strong> {{ formatCurrency(currentReservation?.details?.commission) }}</span>
         </div>
         <div class="detail-row total-row">
           <mat-icon>point_of_sale</mat-icon>

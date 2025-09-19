@@ -78,3 +78,13 @@
   margin-top: 20px;
   gap: 12px;
 }
+
+.badge {
+  background-color: #1976d2;
+  color: white;
+  font-size: 13px;
+  border-radius: 4px;
+  margin-left: 32px;
+  height: 25px;
+  font-weight: 300;
+}

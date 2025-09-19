@@ -223,23 +223,32 @@ export class CanchasComponent implements OnInit {
   }
 
   abrirModalRegistrarHorario(court: Court) {
-    const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
-      maxWidth: '80vw',
-      maxHeight: '80vh',
-      data: { courtId: court.id },
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open('Horario registrado exitosamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success'],
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom'
+    this.horariosCanchasService.getHorariosByCourt(court.club_id, court.id).subscribe({
+      next: (horarios) => {
+        const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
+          maxWidth: '80vw',
+          maxHeight: '80vh',
+          data: { courtId: court.id, horarios, clubId: court.club_id }, // 👉 ahora ya es array, no observable
         });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.snackBar.open('Horario registrado exitosamente', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-success'],
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom'
+            });
+          }
+        });
+      },
+      error: (err) => {
+        console.error('❌ Error al obtener horarios', err);
+        this.snackBar.open('Error al cargar los horarios', 'Cerrar', { duration: 3000 });
       }
     });
   }
+
 
   abrirModalHorarios(court: Court) {
     this.horariosCanchasService.getHorariosByCourt(court.club_id, court.id).subscribe({
