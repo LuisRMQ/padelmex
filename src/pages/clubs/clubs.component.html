@@ -40,11 +40,14 @@
       <p><strong>Estatus:</strong> {{ club.status ? 'Activo' : 'Inactivo' }}</p>
     </mat-card-content>
     <mat-card-actions>
+      <button mat-icon-button color="accent" (click)="abrirModalRegistrarHorario(club)">
+        <mat-icon>more_time</mat-icon>
+      </button>
+        <button mat-icon-button (click)="abrirModalHorarios(club)">
+        <mat-icon>info</mat-icon>
+      </button>
       <button mat-icon-button color="primary" (click)="abrirModalInfoClub(club)">
         <mat-icon>visibility</mat-icon>
-      </button>
-      <button mat-icon-button color="accent" (click)="abrirModalRegistrarHorario(club)">
-        <mat-icon>schedule</mat-icon>
       </button>
       <button mat-icon-button color="warn" (click)="confirmarEliminarClub(club)">
         <mat-icon>delete</mat-icon>

@@ -285,6 +285,7 @@ export class CalendarioComponent implements OnInit {
 
         this.reservationService.createReservation(result).subscribe({
           next: (response) => {
+            console.log(response)
             const newRes: CalendarReservation = {
               id: response.reservation.id,
               courtId: result.court_id,

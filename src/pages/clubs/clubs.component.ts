@@ -265,10 +265,8 @@ export class ClubsComponent implements OnInit {
 
   abrirModalRegistrarHorario(club: Club) {
     const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
-      width: '600px',
-      maxWidth: '50vw',
-      height: '400px',
-      maxHeight: '70vh',
+       maxWidth: '80vw',
+      maxHeight: '80vh',
       data: { clubId: club.id }
     });
 
