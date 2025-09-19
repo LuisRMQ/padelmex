@@ -144,6 +144,12 @@ export class ClubsComponent implements OnInit {
     });
   }
 
+
+  onImageError(event: Event) {
+  const element = event.target as HTMLImageElement;
+  element.src = 'assets/logos/azteca.png'; 
+}
+
   abrirModalInfoClub(club: Club) {
     const dialogRef = this.dialog.open(InformacionClubDialogComponent, {
       width: '600px',

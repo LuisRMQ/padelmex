@@ -1,6 +1,8 @@
 <h2 mat-dialog-title>Registrar Club</h2>
 
 <form mat-dialog-content class="form-container" [formGroup]="clubForm">
+
+  <!-- Fila 1 -->
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
       <input matInput placeholder="Nombre..." formControlName="name">
@@ -10,25 +12,40 @@
     </mat-form-field>
   </div>
 
+  <!-- Fila 2 -->
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
-      <input matInput placeholder="Telefono..." formControlName="phone">
+      <input matInput placeholder="Teléfono..." formControlName="phone">
     </mat-form-field>
     <mat-form-field appearance="outline" class="flex-1">
       <input matInput placeholder="RFC..." formControlName="rfc">
     </mat-form-field>
   </div>
 
+  <!-- Fila 3 -->
   <div class="row">
     <mat-form-field appearance="outline" class="flex-1">
       <input matInput placeholder="Sitio web..." formControlName="web_site">
     </mat-form-field>
+
+    <!-- Estado -->
     <mat-form-field appearance="outline" class="flex-1">
-      <mat-select placeholder="Ciudad" formControlName="city_id">
-        <mat-option [value]="1">Ciudad 1</mat-option>
-        <mat-option [value]="2">Ciudad 2</mat-option>
+      <mat-select placeholder="Estado" formControlName="state" (selectionChange)="onStateChange($event.value)">
+        <mat-option *ngFor="let estado of estados" [value]="estado.nombre">
+          {{ estado.nombre }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
+
+    <!-- Ciudad -->
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-select placeholder="Ciudad" formControlName="city">
+        <mat-option *ngFor="let ciudad of ciudades" [value]="ciudad">
+          {{ ciudad }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
     <mat-form-field appearance="outline" class="flex-1">
       <mat-select placeholder="Tipo" formControlName="type">
         <mat-option value="public">Público</mat-option>
@@ -37,22 +54,24 @@
     </mat-form-field>
   </div>
 
+  <!-- Dirección -->
   <mat-form-field appearance="outline" class="full-width">
     <input matInput placeholder="Dirección..." formControlName="address">
   </mat-form-field>
 
-<div class="logo-row">
-  <div class="logo-section">
-    <button mat-raised-button class="btn-logo" type="button" (click)="fileInput.click()">AGREGAR LOGO</button>
-    <input type="file" accept="image/png, image/jpeg" hidden #fileInput (change)="onFileSelected($event)">
-    <span class="logo-info">
-      FORMATOS: JPG, PNG – TAMAÑO MÁXIMO: 5 MB – RESOLUCIÓN MÍNIMA: 500×500 PX
-    </span>
+  <!-- Logo -->
+  <div class="logo-row">
+    <div class="logo-section">
+      <button mat-raised-button class="btn-logo" type="button" (click)="fileInput.click()">AGREGAR LOGO</button>
+      <input type="file" accept="image/png, image/jpeg" hidden #fileInput (change)="onFileSelected($event)">
+      <span class="logo-info">
+        FORMATOS: JPG, PNG – TAMAÑO MÁXIMO: 5 MB – RESOLUCIÓN MÍNIMA: 500×500 PX
+      </span>
+    </div>
+    <div class="preview-image">
+      <img [src]="logoPreview" alt="Logo Preview">
+    </div>
   </div>
-  <div class="preview-image">
-    <img [src]="logoPreview" alt="Logo Preview">
-  </div>
-</div>
 </form>
 
 <mat-dialog-actions align="end">

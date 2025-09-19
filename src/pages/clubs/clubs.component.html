@@ -1,4 +1,3 @@
-
 <!-- <div class="page-content"> -->
 <div class="header">
   <h1>Clubes</h1>
@@ -12,7 +11,8 @@
 <div class="busqueda-container">
   <mat-form-field appearance="outline" class="busqueda-field">
     <mat-label>Buscar club</mat-label>
-    <input matInput placeholder="Nombre, correo o dirección" [(ngModel)]="busquedaClub" (ngModelChange)="filtrarClubes()">
+    <input matInput placeholder="Nombre, correo o dirección" [(ngModel)]="busquedaClub"
+      (ngModelChange)="filtrarClubes()">
     <button *ngIf="busquedaClub" matSuffix mat-icon-button aria-label="Limpiar" (click)="limpiarBusqueda()">
       <mat-icon>close</mat-icon>
     </button>
@@ -32,8 +32,8 @@
         </button>
       </div>
     </mat-card-header>
-    <img mat-card-image [src]="'assets/logos/azteca.png'" alt="Logo de {{ club.name }}">
-    <mat-card-content>
+    <img mat-card-image [src]="club.logo ? club.logo : 'assets/logos/azteca.png'" alt="Logo de {{ club.name }}"
+      (error)="onImageError($event)"> <mat-card-content>
       <p class="direccion-truncada"><strong>Dirección:</strong> <span class="direccion-text">{{ club.address }}</span>
       </p>
       <p><strong>Teléfono:</strong> {{ club.phone }}</p>

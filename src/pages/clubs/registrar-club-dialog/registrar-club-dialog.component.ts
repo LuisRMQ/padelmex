@@ -10,7 +10,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { ClubsService } from '../../../app/services/clubs.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogRef } from '@angular/material/dialog';
-
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-RegistrarClub',
@@ -26,13 +26,24 @@ import { MatDialogRef } from '@angular/material/dialog';
     MatSelectModule,
     ReactiveFormsModule,
     MatSnackBarModule,
-
+    CommonModule         
   ],
 })
 export class RegistrarClubDialogComponent {
   clubForm: FormGroup;
   logoFile: File | null = null;
   logoPreview: string = '../../assets/images/placeholder.png';
+
+  estados = [
+    { nombre: 'Jalisco', ciudades: ['Guadalajara', 'Zapopan', 'Puerto Vallarta'] },
+    { nombre: 'Nuevo León', ciudades: ['Monterrey', 'San Nicolás', 'Apodaca'] },
+    { nombre: 'Ciudad de México', ciudades: ['Iztapalapa', 'Coyoacán', 'Álvaro Obregón'] },
+    { nombre: 'Yucatán', ciudades: ['Mérida', 'Valladolid', 'Tizimín'] },
+    { nombre: 'Veracruz', ciudades: ['Veracruz', 'Xalapa', 'Coatzacoalcos'] }
+  ];
+  ciudades: string[] = [];
+
+
 
   constructor(
     private fb: FormBuilder,
@@ -46,11 +57,18 @@ export class RegistrarClubDialogComponent {
       phone: ['', Validators.required],
       rfc: ['', Validators.required],
       web_site: [''],
-      city_id: ['', Validators.required],
+      state: ['', Validators.required],  
+      city: ['', Validators.required], 
       address: ['', Validators.required],
       type: ['', Validators.required],
       status: [true]
     });
+  }
+
+   onStateChange(stateNombre: string) {
+    const estado = this.estados.find(e => e.nombre === stateNombre);
+    this.ciudades = estado ? estado.ciudades : [];
+    this.clubForm.get('city')?.reset();
   }
 
   onFileSelected(event: Event) {
@@ -85,6 +103,9 @@ export class RegistrarClubDialogComponent {
     Object.entries(this.clubForm.value).forEach(([key, value]) => {
       formData.append(key, value as string);
     });
+
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    formData.append('timezone', userTimezone);
 
     if (this.logoFile) {
       formData.append('logo', this.logoFile);
