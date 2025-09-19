@@ -1,34 +1,54 @@
-<h2 mat-dialog-title>Registrar Horario</h2>
-
-<form mat-dialog-content class="form-container" [formGroup]="scheduleForm">
-  <!-- Día -->
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-select placeholder="Día" formControlName="day">
-      <mat-option value="monday">Lunes</mat-option>
-      <mat-option value="tuesday">Martes</mat-option>
-      <mat-option value="wednesday">Miércoles</mat-option>
-      <mat-option value="thursday">Jueves</mat-option>
-      <mat-option value="friday">Viernes</mat-option>
-      <mat-option value="saturday">Sábado</mat-option>
-      <mat-option value="sunday">Domingo</mat-option>
-    </mat-select>
-  </mat-form-field>
-
-  <div class="row">
-    <!-- Hora inicio -->
-    <mat-form-field appearance="outline" class="flex-1">
-      <input matInput type="time" placeholder="Hora inicio" formControlName="start_time">
-    </mat-form-field>
-
-    <!-- Hora fin -->
-    <mat-form-field appearance="outline" class="flex-1">
-      <input matInput type="time" placeholder="Hora fin" formControlName="end_time">
-    </mat-form-field>
+<div class="modal-container">
+  <!-- Header -->
+  <div class="modal-header">
+    <div class="icon-circle">
+      <mat-icon>schedule</mat-icon>
+    </div>
+    <div>
+      <h2>Horarios de la Cancha</h2>
+      <p>Configura el horario semanal de tu cancha</p>
+    </div>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
 
-</form>
+  <mat-divider class="modal-divider"></mat-divider>
 
-<mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close>CANCELAR</button>
-  <button mat-raised-button color="primary" (click)="guardarHorario()">GUARDAR</button>
-</mat-dialog-actions>
+  <!-- Quick Selection -->
+  <div class="quick-selection">
+    <button mat-stroked-button color="primary" (click)="selectWeekdays()">Solo Días de Semana</button>
+    <button mat-stroked-button color="accent" (click)="selectAllDays()">Toda la Semana</button>
+    <button mat-stroked-button class="green" (click)="selectWeekends()">Solo Fines de Semana</button>
+    <button mat-stroked-button color="warn" (click)="clearAll()">Limpiar Todo</button>
+  </div>
+
+  <!-- Weekly Schedule -->
+  <div class="weekly-schedule">
+    <div class="day-row" *ngFor="let day of days">
+      <mat-checkbox [(ngModel)]="day.enabled">{{ day.name }}</mat-checkbox>
+
+      <div class="time-selectors" *ngIf="day.enabled">
+        <span>De:</span>
+        <mat-form-field appearance="outline" class="time-field">
+          <mat-select [(ngModel)]="day.start">
+            <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <span>A:</span>
+        <mat-form-field appearance="outline" class="time-field">
+          <mat-select [(ngModel)]="day.end">
+            <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="modal-actions">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-raised-button color="primary" (click)="guardarHorario()">Save</button>
+  </div>
+</div>

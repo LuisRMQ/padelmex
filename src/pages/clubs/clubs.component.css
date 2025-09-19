@@ -52,11 +52,6 @@
   border-radius: 0 !important;
 }
 
-
-.page-content {
-  padding: 0 30px; /* mismo padding horizontal que tu header */
-}
-
 .header {
   display: flex;
   justify-content: space-between;
