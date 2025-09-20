@@ -7,6 +7,7 @@ export interface Tournament {
   id: number;
   name: string;
   description?: string;
+  club_name?: string;
   club_id: number;
   start_date: string;
   end_date: string;
@@ -32,6 +33,11 @@ export interface TournamentFilters {
   name?: string;
 }
 
+export interface Category {
+  id: number;
+  category: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -52,6 +58,13 @@ export class TournamentService extends ApiBaseService {
   createTournament(data: any): Observable<any> {
     return this.post('/tournament/create', data);
   }
+
+
+
+  getCategories(): Observable<Category[]> {
+    return this.get<Category[]>('/categories');
+  }
+
 
   updateTournament(id: number, data: Partial<Tournament>): Observable<any> {
     return this.put(`/tournament/update/${id}`, data);

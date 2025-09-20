@@ -1,5 +1,3 @@
-
-<!-- <div class="page-content"> -->
 <div class="header">
   <h1>Torneos</h1>
   <button mat-raised-button color="primary" (click)="abrirModalRegistrarTorneo()" class="btn-registrar">
@@ -12,36 +10,59 @@
   <div class="torneo-item" *ngFor="let torneo of torneos">
     <mat-card class="torneo-card" (click)="abrirBracket(torneo)">
       <!-- Badge de estado -->
-      <div class="card-badge" [class.activo]="torneo.estado === 'activo'"
-        [class.finalizado]="torneo.estado === 'finalizado'">
-        {{ torneo.estado | titlecase }}
+      <div class="card-badge" 
+           [class.activo]="torneo.status === 'open' || torneo.status === 'in_progress'" 
+           [class.finalizado]="torneo.status === 'completed' || torneo.status === 'closed' || torneo.status === 'cancelled'"
+           [class.borrador]="torneo.status === 'draft'">
+        {{ getEstadoTorneo(torneo.status) }}
       </div>
 
-     <mat-card-header>
-  <div class="title-container">
-    <mat-card-title>{{ torneo.nombre }}</mat-card-title>
-    <mat-card-subtitle>{{ torneo.fecha | date:'dd MMM yyyy' }}</mat-card-subtitle>
-  </div>
-  <div class="card-badge" [class.activo]="torneo.estado === 'activo'" 
-       [class.finalizado]="torneo.estado === 'finalizado'">
-    {{ torneo.estado | titlecase }}
-  </div>
-</mat-card-header>
+      <mat-card-header class="torneo-card-header">
+        <div class="title-container">
+          <mat-card-title>{{ torneo.name }}</mat-card-title>
+          <mat-card-subtitle>
+            <mat-icon>calendar_today</mat-icon>
+            {{ torneo.start_date | date:'dd MMM yyyy' }} - {{ torneo.end_date | date:'dd MMM yyyy' }}
+          </mat-card-subtitle>
+        </div>
+      </mat-card-header>
 
-      <img mat-card-image [src]="torneo.imagen || 'assets/default-torneo.jpg'" alt="{{torneo.nombre}}">
+      <img mat-card-image [src]="torneo.photo || 'assets/default-torneo.jpg'" alt="{{ torneo.name }}"
+        (error)="onImageError($event)">
 
       <mat-card-content>
-        <p class="torneo-descripcion">{{ torneo.descripcion }}</p>
+        <p class="torneo-descripcion">{{ torneo.description || 'Sin descripción' }}</p>
 
         <div class="torneo-info">
           <div class="info-item">
-            <mat-icon>people</mat-icon>
-            <span>{{ torneo.participantes || 0 }} participantes</span>
+            <mat-icon>groups</mat-icon>
+            <span>{{ torneo.current_participants || 0 }}/{{ torneo.max_participants }} participantes</span>
           </div>
+          
           <div class="info-item">
-            <mat-icon>emoji_events</mat-icon>
-            <span>{{ torneo.premio || 'Sin premio' }}</span>
+            <mat-icon>event_available</mat-icon>
+            <span>Inscripción hasta: {{ torneo.registration_deadline | date:'dd MMM yyyy' }}</span>
           </div>
+          
+          <div class="info-item">
+            <mat-icon>payments</mat-icon>
+            <span>Cuota: {{ torneo.registration_fee | currency:'MXN':'symbol-narrow' }}</span>
+          </div>
+          
+          <div class="info-item" *ngIf="torneo.prizes">
+            <mat-icon>emoji_events</mat-icon>
+            <span>{{ torneo.prizes.length ? torneo.prizes.join(', ') : 'Sin premio' }}</span>
+          </div>
+          
+          <div class="info-item" *ngIf="torneo.club_name">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ torneo.club_name }}</span>
+          </div>
+        </div>
+        
+        <div class="torneo-rules" *ngIf="torneo.rules">
+          <h4>Reglas:</h4>
+          <p>{{ torneo.rules }}</p>
         </div>
       </mat-card-content>
 
@@ -56,4 +77,3 @@
     </mat-card>
   </div>
 </div>
-<!-- </div> -->

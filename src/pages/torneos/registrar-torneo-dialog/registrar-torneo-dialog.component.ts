@@ -12,6 +12,9 @@ import { MatOptionModule } from '@angular/material/core';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
 import { BracketModalComponent } from '../brackets-torneo-dialog/brackets-torneo-dialog.component';
 import { UsersService, User } from '../../../app/services/users.service';
+import { TournamentService } from '../../../app/services/torneos.service';
+import { AuthService } from '../../../app/services/auth.service';
+
 
 export interface Participante {
   id: number;
@@ -51,6 +54,7 @@ export interface Partido {
 export class RegistrarTorneoDialogComponent implements OnInit {
   form: FormGroup;
   logoPreview: string = '../../assets/images/placeholder.png';
+  logoFile: File | null = null;
 
   usuariosDisponibles: User[] = [];
   participantesSeleccionados: User[] = [];
@@ -60,21 +64,44 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<RegistrarTorneoDialogComponent>,
     private dialog: MatDialog,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private tournamentService: TournamentService,
+    private authService: AuthService,
   ) {
     this.form = this.fb.group({
-      nombre: ['', Validators.required],
-      descripcion: ['', Validators.required],
-      fecha: ['', Validators.required],
-      categoria: ['', Validators.required],
-      cantidad_jugadores: ['', [Validators.required, Validators.min(2)]],
-      ganador: [''],
-      precio: ['', Validators.required]
+      name: ['', Validators.required],
+      description: [''],
+      club_id: [null, Validators.required],
+      start_date: ['', Validators.required],
+      end_date: ['', Validators.required],
+      registration_deadline: ['', Validators.required],
+      registration_fee: [0],
+      max_participants: ['', [Validators.required, Validators.min(2)]],
+      prizes: [],
+      rules: [''],
+      photo: [null],
+      tournament_call: [null],
+      categories: [[]]
     });
   }
 
+
+  categoriasDisponibles: any[] = [];
+
+
   ngOnInit(): void {
     this.cargarUsuarios();
+    this.cargarCategorias();
+    const currentUser = this.authService.getUserData();
+    if (currentUser) {
+      this.form.patchValue({ club_id: currentUser.club_id });
+    }
+
+    this.authService.getCurrentUser().subscribe(user => {
+      if (user) {
+        this.form.patchValue({ club_id: user.club_id });
+      }
+    });
   }
 
   cargarUsuarios() {
@@ -90,6 +117,18 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     });
   }
 
+
+  cargarCategorias() {
+    this.tournamentService.getCategories().subscribe({
+      next: (res: any) => {
+        // Solo tomamos el array dentro de "data"
+        this.categoriasDisponibles = res.data;
+        console.log('Categorías cargadas:', this.categoriasDisponibles);
+      },
+      error: (err) => console.error('Error al cargar categorías', err)
+    });
+  }
+
   guardar() {
     if (this.form.valid) {
       const participantes: Participante[] = this.participantesSeleccionados.map(p => ({
@@ -100,23 +139,72 @@ export class RegistrarTorneoDialogComponent implements OnInit {
 
       this.bracketGenerado = this.generarBracket(participantes);
 
-      this.dialog.open(BracketModalComponent, {
-        width: '90%',
-        height: '80%',
-        data: { bracket: this.bracketGenerado }
+      const rawData = this.form.value;
+      const formData = new FormData();
+
+      // Campos básicos
+      formData.append('name', rawData.name);
+      formData.append('description', rawData.description || '');
+      formData.append('club_id', rawData.club_id.toString()); // ✅ importante
+      formData.append('start_date', rawData.start_date);
+      formData.append('end_date', rawData.end_date);
+      formData.append('registration_deadline', rawData.registration_deadline);
+      formData.append('registration_fee', rawData.registration_fee?.toString() ?? '0');
+      formData.append('max_participants', rawData.max_participants.toString());
+      formData.append('rules', rawData.rules || '');
+
+      // Archivos opcionales
+      if (this.logoFile) {
+        formData.append('photo', this.logoFile);
+      }
+      if (rawData.tournament_call instanceof File) {
+        formData.append('tournament_call', rawData.tournament_call);
+      }
+
+      // Premios
+      if (Array.isArray(rawData.prizes)) {
+        rawData.prizes.forEach((p: string, i: number) => {
+          formData.append(`prizes[${i}]`, p);
+        });
+      }
+
+      // Categorías
+      if (Array.isArray(rawData.categories)) {
+        rawData.categories.forEach((cat: any, i: number) => {
+          formData.append(`categories[${i}][id]`, cat.id.toString());
+          formData.append(`categories[${i}][max_participants]`, (cat.max_participants ?? '').toString());
+        });
+      }
+
+      // Participantes y bracket (estructuras propias)
+      formData.append('participantes', JSON.stringify(this.participantesSeleccionados));
+      formData.append('bracket', JSON.stringify(this.bracketGenerado));
+
+      // Enviar formulario
+      this.tournamentService.createTournament(formData).subscribe({
+        next: (res) => {
+          console.log('Torneo creado correctamente:', res);
+          this.dialogRef.close(true);
+        },
+        error: (err) => {
+          console.error('Error al crear torneo:', err);
+          alert('Error al crear torneo. Revisa la consola.');
+        }
       });
 
-      const data = {
-        ...this.form.value,
-        participantes: this.participantesSeleccionados,
-        bracket: this.bracketGenerado
-      };
 
-      console.log('Torneo guardado:', data);
+
+      // Abrir modal con bracket
+      // this.dialog.open(BracketModalComponent, {
+      //   width: '90%',
+      //   height: '80%',
+      //   data: { bracket: this.bracketGenerado }
+      // });
     } else {
       this.form.markAllAsTouched();
     }
   }
+
 
   private generarBracket(participantes: Participante[]): Partido[][] {
     const shuffled = [...participantes].sort(() => Math.random() - 0.5);
@@ -150,13 +238,14 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       return;
     }
 
+    this.logoFile = file;
     const reader = new FileReader();
     reader.onload = e => { this.logoPreview = e.target?.result as string; };
     reader.readAsDataURL(file);
   }
 
   drop(event: CdkDragDrop<User[]>) {
-    const limit = this.form.get('cantidad_jugadores')?.value || Infinity;
+    const limit = this.form.get('max_participants')?.value || Infinity;
 
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
@@ -178,11 +267,6 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       event.previousIndex,
       event.currentIndex
     );
-
-    const ganadorCtrl = this.form.get('ganador');
-    if (ganadorCtrl?.value && !this.participantesSeleccionados.find(u => u.id === ganadorCtrl.value.id)) {
-      ganadorCtrl.setValue('');
-    }
   }
 
   onCancel() { this.dialogRef.close(false); }

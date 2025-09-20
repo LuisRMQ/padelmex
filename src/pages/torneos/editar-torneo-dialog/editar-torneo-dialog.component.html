@@ -1,5 +1,5 @@
 <div class="modal-container">
-  <h2>Registrar Torneo</h2>
+  <h2>Editar Torneo</h2>
 
   <form [formGroup]="form" (ngSubmit)="guardar()" class="torneo-form">
 
@@ -27,7 +27,7 @@
       <input matInput type="date" formControlName="end_date" />
     </mat-form-field>
 
-    <!-- Límite de inscripción -->
+    <!-- Fecha límite de inscripción -->
     <mat-form-field appearance="outline" class="half-width">
       <mat-label>Fecha límite de inscripción</mat-label>
       <input matInput type="date" formControlName="registration_deadline" />
@@ -48,6 +48,7 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+
     <!-- Máx. participantes -->
     <mat-form-field appearance="outline" class="half-width">
       <mat-label>Máx. participantes</mat-label>

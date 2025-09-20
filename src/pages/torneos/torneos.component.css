@@ -1,3 +1,4 @@
+/* Variables de colores y estilos */
 :root {
   --primary-color: #2c3e50;
   --accent-color: #e74c3c;
@@ -9,6 +10,20 @@
   --text-light: #7f8c8d;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+  --border-radius: 15px;
+}
+
+/* Estilos generales */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f7fa;
+  color: var(--text-dark);
 }
 
 /* Header */
@@ -16,11 +31,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0px;
+  margin: 0;
   padding: 20px 30px;
   background: white;
-  border-radius: 15px;
-  box-shadow: var(--shadow);
+ border-radius: 15px;  box-shadow: var(--shadow);
 }
 
 .header h1 {
@@ -40,6 +54,9 @@
   box-shadow: var(--shadow) !important;
   transition: all 0.3s ease !important;
   border: none !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .btn-registrar:hover {
@@ -51,14 +68,28 @@
   margin-right: 8px;
 }
 
+/* Divisor */
+mat-divider {
+  margin-bottom: 24px;
+  opacity: 0.12;
+}
+
 /* Contenedor Grid */
 .torneos-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
   padding: 20px;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: calc(100vh - 150px);
+}
+
+.torneo-item {
+  transition: transform 0.3s ease;
+}
+
+.torneo-item:hover {
+  transform: translateY(-5px);
 }
 
 /* Card */
@@ -85,9 +116,9 @@
 /* Badge */
 .card-badge {
   flex-shrink: 0;
-  padding: 0.2em 0.6em;
+  padding: 0.4em 0.8em;
   border-radius: 15px;
-  font-size: clamp(0.5rem, 2vw, 0.7rem);
+  font-size: 0.75rem;
   font-weight: 600;
   color: white;
   text-transform: uppercase;
@@ -98,8 +129,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 15px;
+  z-index: 10;
 }
 
 /* Badge colores */
@@ -109,6 +141,10 @@
 
 .card-badge.finalizado {
   background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.card-badge.pendiente {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
 }
 
 /* Avatar */
@@ -133,21 +169,21 @@
   align-items: flex-start;
   justify-content: space-between;
   position: relative;
-  padding: 15px 20px;
+  padding: 20px 20px 10px 20px;
 }
 
 .title-container {
   flex: 1;
-  margin-right: 10px; /* espacio mínimo para la badge */
+  margin-right: 15px;
   overflow: hidden;
 }
 
 mat-card-title {
   color: var(--primary-color);
   font-weight: 700 !important;
-  font-size: clamp(1rem, 2.5vw, 1.3rem) !important;
+  font-size: 1.3rem !important;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -158,8 +194,8 @@ mat-card-subtitle {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: clamp(0.7rem, 1.5vw, 0.9rem);
-  margin-top: 4px;
+  font-size: 0.9rem;
+  margin-top: 6px;
 }
 
 mat-card-subtitle mat-icon {
@@ -171,7 +207,7 @@ mat-card-subtitle mat-icon {
 /* Imagen */
 img[mat-card-image] {
   width: 100%;
-  height: 160px;
+  height: 180px;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
@@ -193,19 +229,21 @@ mat-card-content {
   color: var(--text-dark);
   font-size: 0.95rem;
   line-height: 1.5;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: 68px;
 }
 
 .torneo-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px;
+  gap: 12px;
+  padding: 15px;
   background: #f8f9fa;
   border-radius: 10px;
+  margin-top: 10px;
 }
 
 .info-item {
@@ -233,7 +271,7 @@ mat-card-actions {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 20px 20px 20px;
+  padding: 15px 20px 20px 20px;
 }
 
 mat-card-actions button {
@@ -246,6 +284,9 @@ mat-card-actions button {
   gap: 5px;
   padding: 8px 16px;
   font-size: 0.85rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
 }
 
 mat-card-actions button:first-child {
@@ -258,22 +299,136 @@ mat-card-actions button:last-child {
   color: white !important;
 }
 
-
-/* Hover de tarjeta */
-.torneo-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: var(--shadow-hover);
+mat-card-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .header h1 { font-size: 2rem; }
-  .header { flex-direction: column; gap: 20px; text-align: center; }
+  .header h1 { 
+    font-size: 2rem; 
+  }
+  
+  .header { 
+    flex-direction: column; 
+    gap: 20px; 
+    text-align: center; 
+  }
+  
+  .torneos-container {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
-  .header { margin: 20px 15px; padding: 15px; }
-  .header h1 { font-size: 1.8rem; }
-  mat-card-actions { flex-direction: column; }
-  .card-badge { font-size: 0.6rem; padding: 3px 8px; top: 8px; right: 8px; max-width: 50%; }
+  .header { 
+    margin: 20px 15px; 
+    padding: 15px; 
+  }
+  
+  .header h1 { 
+    font-size: 1.8rem; 
+  }
+  
+  .torneos-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 15px;
+  }
+  
+  mat-card-actions { 
+    flex-direction: column; 
+  }
+  
+  .card-badge { 
+    font-size: 0.7rem; 
+    padding: 4px 10px; 
+    top: 12px; 
+    right: 12px; 
+    max-width: 50%; 
+  }
+  
+  img[mat-card-image] {
+    height: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 15px 10px;
+  }
+  
+  .header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .btn-registrar {
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .torneo-card-header {
+    padding: 15px 15px 8px 15px;
+  }
+  
+  mat-card-content {
+    padding: 12px 15px;
+  }
+  
+  mat-card-actions {
+    padding: 12px 15px 15px 15px;
+  }
+  
+  .torneo-info {
+    padding: 12px;
+  }
+}
+
+
+/* Estilos para el badge de borrador */
+.card-badge.borrador {
+  background: linear-gradient(135deg, #7f8c8d, #95a5a6);
+}
+
+/* Estilos para la sección de reglas */
+.torneo-rules {
+  margin-top: 15px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid var(--info-color);
+}
+
+.torneo-rules h4 {
+  margin: 0 0 8px 0;
+  color: var(--primary-color);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.torneo-rules p {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Ajustes para la información del torneo */
+.torneo-info .info-item mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--primary-color);
+}
+
+/* Mejora responsive para la información adicional */
+@media (max-width: 768px) {
+  .torneo-rules {
+    padding: 10px;
+  }
+  
+  .torneo-info .info-item {
+    font-size: 0.8rem;
+  }
 }

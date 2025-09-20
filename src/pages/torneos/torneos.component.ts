@@ -1,31 +1,17 @@
-import { Component, OnInit, ViewChild, ChangeDetectorRef, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { IntegrantesService, Integrante } from '../../app/services/integrantes.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatGridListModule } from '@angular/material/grid-list';
-import { RegistrarTorneoDialogComponent } from '../torneos/registrar-torneo-dialog/registrar-torneo-dialog.component';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { BracketModalComponent } from '../torneos/brackets-torneo-dialog/brackets-torneo-dialog.component';
-import { MatChipsModule } from '@angular/material/chips';
-import { DatePipe } from '@angular/common';
-import { MatDivider } from "@angular/material/divider";
+import { MatDividerModule } from '@angular/material/divider';
 
-interface Torneo {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  fecha: string;
-  estado?: string;
-  participantes?: number;
-  premio?: string;
-  imagen?: string;
-}
+import { TournamentService, Tournament } from '../../app/services/torneos.service';
+import { BracketModalComponent } from '../torneos/brackets-torneo-dialog/brackets-torneo-dialog.component';
+import { RegistrarTorneoDialogComponent } from '../torneos/registrar-torneo-dialog/registrar-torneo-dialog.component';
+import { EditarTorneoDialogComponent } from '../torneos/editar-torneo-dialog/editar-torneo-dialog.component';
+
 
 @Component({
   selector: 'app-torneos',
@@ -34,116 +20,90 @@ interface Torneo {
   styleUrls: ['./torneos.component.css'],
   imports: [
     CommonModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
-    MatButtonModule,
     MatCardModule,
+    MatButtonModule,
+    MatIconModule,
     MatGridListModule,
     MatDialogModule,
-    MatChipsModule,
-    MatDivider
+    MatDividerModule
   ],
   providers: [DatePipe]
 })
 export class TorneosComponent implements OnInit {
-  torneos: Torneo[] = [
-    { 
-      id: 1, 
-      nombre: 'Copa Verano', 
-      descripcion: 'Torneo amistoso de verano para todos los niveles. ¡Ven y diviértete!', 
-      fecha: '2025-09-20',
-      estado: 'activo',
-      participantes: 16,
-      premio: '$5,000 MXN',
-      imagen: '../../assets/images/padelaa.png'
-    },
-    { 
-      id: 2, 
-      nombre: 'Liga MX Padel', 
-      descripcion: 'Torneo profesional con los mejores jugadores de la región', 
-      fecha: '2025-10-01',
-      estado: 'activo',
-      participantes: 32,
-      premio: '$15,000 MXN',
-      imagen: '../../assets/images/padelaa.png'
-    },
-    { 
-      id: 3, 
-      nombre: 'Torneo Invierno', 
-      descripcion: 'Competencia de invierno con categorías para todos', 
-      fecha: '2025-12-15',
-      estado: 'finalizado',
-      participantes: 24,
-      premio: '$8,000 MXN',
-      imagen: '../../assets/images/padelaa.png'
-    },
-    { 
-      id: 4, 
-      nombre: 'Copa Amistad', 
-      descripcion: 'Torneo recreativo para hacer nuevos amigos', 
-      fecha: '2025-08-10',
-      estado: 'activo',
-      participantes: 20,
-      premio: '$3,000 MXN',
-      imagen: '../../assets/images/padelaa.png'
-    },
-    { 
-      id: 5, 
-      nombre: 'Champions Padel', 
-      descripcion: 'El torneo más prestigioso del año, ven con nosotros', 
-      fecha: '2025-11-05',
-      estado: 'activo',
-      participantes: 40,
-      premio: '$20,000 MXN',
-      imagen: '../../assets/images/padelaa.png'
-    },
-    { 
-      id: 6, 
-      nombre: 'Torneo Primavera', 
-      descripcion: 'Celebración de primavera con partidos emocionantes', 
-      fecha: '2025-03-20',
-      estado: 'finalizado',
-      participantes: 28,
-      premio: '$6,000 MXN',
-      imagen: '../../assets/images/padelaa.png'
-    }
-  ];
 
-  displayedColumns: string[] = ['foto', 'nombre', 'email', 'rol', 'club', 'categoria', 'acciones'];
-  dataSource!: MatTableDataSource<Integrante>;
-  selectedUsuario: Integrante | null = null;
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  torneos: Tournament[] = [];
 
   constructor(
-    private integrantesService: IntegrantesService, 
+    private tournamentService: TournamentService,
     private dialog: MatDialog,
     private changeDetectorRef: ChangeDetectorRef,
     private datePipe: DatePipe
   ) { }
 
   ngOnInit() {
-    this.integrantesService.getIntegrantes().subscribe({
+    this.cargarTorneos();
+  }
+
+  cargarTorneos() {
+    this.tournamentService.getTournaments().subscribe({
       next: (res: any) => {
-        const integrantesArray: Integrante[] = res.data ?? [];
-        this.dataSource = new MatTableDataSource(integrantesArray);
-        this.dataSource.paginator = this.paginator;
+        console.log('Respuesta completa de la API:', res);
+
+        const apiTorneos = res.data?.data || [];
+        console.log('Array de torneos crudo:', apiTorneos);
+
+        this.torneos = apiTorneos.map((t: any) => ({
+          id: t.tournament_id,
+          name: t.name,
+          description: t.description,
+          club_id: t.club_id,
+          club_name: t.club_name,
+          start_date: t.start_date,
+          end_date: t.end_date,
+          registration_deadline: t.registration_deadline,
+          registration_fee: t.registration_fee,
+          max_participants: t.max_participants,
+          current_participants: t.current_participants,
+          status: t.status,
+          prizes: t.prizes || [],
+          rules: t.rules,
+          photo: t.photo,
+          active: t.active
+        }));
+
+        console.log('Torneos finales para el HTML:', this.torneos);
       },
-      error: (err) => console.error('Error al obtener integrantes:', err)
+      error: (err) => console.error('Error al obtener torneos:', err)
     });
   }
 
-  getCols(): number {
-    if (window.innerWidth < 768) {
-      return 1;
-    } else if (window.innerWidth < 1024) {
-      return 2;
-    } else {
-      return 3;
+
+
+
+  getEstadoTorneo(status: Tournament['status']): string {
+    switch (status) {
+      case 'draft': return 'Borrador';
+      case 'open': return 'Activo';
+      case 'in_progress': return 'En progreso';
+      case 'completed': return 'Finalizado';
+      case 'closed': return 'Cerrado';
+      case 'cancelled': return 'Cancelado';
+      default: return '';
     }
+  }
+
+  isActivo(status: Tournament['status']): boolean {
+    return status === 'open';
+  }
+
+  isFinalizado(status: Tournament['status']): boolean {
+    return status === 'completed';
+  }
+
+  getCols(): number {
+    if (window.innerWidth < 768) return 1;
+    if (window.innerWidth < 1024) return 2;
+    return 3;
   }
 
   @HostListener('window:resize')
@@ -151,13 +111,13 @@ export class TorneosComponent implements OnInit {
     this.changeDetectorRef.detectChanges();
   }
 
-  abrirBracket(torneo: any) {
+  abrirBracket(torneo: Tournament) {
     this.dialog.open(BracketModalComponent, {
       width: '90vw',
       height: '80vh',
       maxWidth: '1200px',
       maxHeight: '800px',
-      data: { participantes: torneo.participantes },
+      data: { participantes: torneo.current_participants },
       panelClass: 'custom-dialog'
     });
   }
@@ -173,53 +133,38 @@ export class TorneosComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((nuevoTorneo) => {
       if (nuevoTorneo) {
-        this.torneos.push({
+        this.torneos.unshift({
           ...nuevoTorneo,
           id: this.torneos.length + 1,
           estado: 'activo',
-          participantes: 0,
-          premio: '$0 MXN'
+          current_participants: 0,
+          prizes: ['$0 MXN']
         });
       }
     });
   }
 
-  verDetalles(torneo: Torneo) {
-   
+  verDetalles(torneo: Tournament) {
     console.log('Ver detalles:', torneo);
-    // Aquí puedes implementar la lógica para ver detalles
   }
 
-  editarTorneo(torneo: Torneo) {
-    console.log('Editar torneo:', torneo);
-    // Aquí puedes implementar la lógica para editar
-  }
+ editarTorneo(torneo: Tournament) {
+  const dialogRef = this.dialog.open(EditarTorneoDialogComponent, {
+    width: '800px',
+    data: { torneoId: torneo.id }  // pasamos el ID al nuevo componente
+  });
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    if (this.dataSource) {
-      this.dataSource.filter = filterValue.trim().toLowerCase();
+  dialogRef.afterClosed().subscribe((torneoActualizado) => {
+    if (torneoActualizado) {
+      // Actualizamos la lista localmente
+      const index = this.torneos.findIndex(t => t.id === torneoActualizado.id);
+      if (index !== -1) this.torneos[index] = torneoActualizado;
     }
-  }
-
-  verDetalle(usuario: Integrante) {
-    this.selectedUsuario = usuario;
-  }
-
-  volverLista() {
-    this.selectedUsuario = null;
-  }
-
-  abrirFormulario() {
-    console.log('Abrir formulario de torneo');
-  }
-
-  eliminarUsuario(usuario: Integrante) {
-    console.log('Eliminar', usuario);
-  }
+  });
+}
 
   onImageError(event: Event) {
     const target = event.target as HTMLImageElement;
-    target.src = '../../../assets/images/placeholder.png';
+    target.src = '../../assets/images/placeholder.png';
   }
 }
