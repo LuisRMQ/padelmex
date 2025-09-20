@@ -9,10 +9,23 @@
 
     <!-- Status -->
     <div class="status-container">
-        <h3>Status</h3>
-        <span class="status-badge" [ngClass]="data.details.status">
-            {{ data.details.status | titlecase }}
-        </span>
+        <ng-container *ngIf="!isEditing; else editStatus">
+            <h3>Status</h3>
+            <span class="status-badge" [ngClass]="data.details.status">
+                {{ data.details.status | titlecase }}
+            </span>
+
+        </ng-container>
+        <ng-template #editStatus>
+            <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Status</mat-label>
+                <mat-select [(ngModel)]="editedData.status">
+                    <mat-option value="confirmed">Confirmada</mat-option>
+                    <mat-option value="pending">Pendiente</mat-option>
+                    <mat-option value="cancelled">Cancelada</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </ng-template>
     </div>
 
     <!-- Date & Time / Court Info -->
@@ -24,6 +37,7 @@
                 <p><strong>Fecha:</strong> {{ formatDateString(data.details.date) }}</p>
                 <p><strong>Inicio:</strong> {{ data.details.start_time }}</p>
                 <p><strong>Fin:</strong> {{ data.details.end_time }}</p>
+                <p><strong>Duración:</strong> {{ data.details.duration }}</p>
             </ng-container>
 
             <ng-template #editDate>
@@ -58,7 +72,8 @@
     <div class="card gray-card">
         <h4><mat-icon>payment</mat-icon>Detalles de pago</h4>
         <div class="payment-grid">
-            <div><strong>Método de Pago:</strong> {{ data.details.pay_method == 'single_payment' ? 'Pago Único' : 'Pago Dividido' }}</div>
+            <div><strong>Método de Pago:</strong> {{ data.details.pay_method == 'single_payment' ? 'Pago Único' : 'Pago
+                Dividido' }}</div>
             <div><strong>Comisión:</strong> ${{ data.details.commission }}</div>
             <div><strong>Tarifa de Cancha:</strong> ${{ data.details.total_court }}</div>
             <div><strong>Total:</strong>
@@ -88,13 +103,13 @@
 
     <!-- Actions -->
     <div class="actions">
-        <button class="btn btn-close" (click)="closeDialog()">Close</button>
+        <button class="btn btn-close" (click)="closeDialog()">Cerrar</button>
 
-        <button *ngIf="!isEditing" class="btn btn-edit" (click)="toggleEdit()">Edit Reservation</button>
+        <button *ngIf="!isEditing" class="btn btn-edit" (click)="toggleEdit()">Editar Reservación</button>
 
         <div *ngIf="isEditing">
-            <button class="btn btn-cancel" (click)="toggleEdit()">Cancel</button>
-            <button class="btn btn-save" (click)="saveChanges()">Save</button>
+            <button class="btn btn-cancel" (click)="toggleEdit()">Cancelar</button>
+            <button class="btn btn-save" (click)="saveChanges()">Guardar</button>
         </div>
     </div>
 </div>

@@ -59,19 +59,19 @@
     display: inline-block;
 }
 
-.status-badge.Pending {
+.status-badge.pending {
     background: #ffe9a7;
     color: #b58c00;
     border: 1px solid #ffe9a7;
 }
 
-.status-badge.Confirmed {
+.status-badge.confirmed {
     background: #c8f7c5;
     color: #2e7d32;
     border: 1px solid #c8f7c5;
 }
 
-.status-badge.Cancelled {
+.status-badge.cancelled {
     background: #ffcdd2;
     color: #c62828;
     border: 1px solid #ffcdd2;
@@ -180,7 +180,7 @@
     color: #fff;
 }
 
-.btn-confirm {
+.btn-save {
     background: #43a047;
     color: #fff;
 }
@@ -193,6 +193,6 @@
     background: #1565c0;
 }
 
-.btn-confirm:hover {
+.btn-save:hover {
     background: #388e3c;
 }

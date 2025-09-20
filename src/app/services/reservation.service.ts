@@ -15,7 +15,7 @@ export interface Reservation {
     commission: string;
     total: string;
     status: string;
-    userId: number;
+    user_id: number;
     user: string;
     lastname: string;
     court: string;
@@ -94,5 +94,9 @@ export class ReservationService extends ApiBaseService {
 
     deleteReservation(id: number): Observable<any> {
         return this.delete(`/reservation/delete/${id}`);
+    }
+
+    changeReservationStatus(id: number, status: string): Observable<any> {
+        return this.patch(`/reservation/changeStatus/${id}`, { status });
     }
 }

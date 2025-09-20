@@ -33,4 +33,8 @@ export class ApiBaseService {
   ): Observable<T> {
     return this.http.delete<T>(`${this.apiUrl}${endpoint}`, { ...options, observe: 'body' });
   }
+
+  patch<T>(endpoint: string, data: any, headers?: HttpHeaders): Observable<T> {
+    return this.http.patch<T>(`${this.apiUrl}${endpoint}`, data, { headers, observe: 'body' });
+  }
 }

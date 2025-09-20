@@ -390,7 +390,7 @@ export class CalendarioComponent implements OnInit {
     };
 
     const payload = {
-      user_id: res.originalData?.userId,
+      user_id: res.originalData?.user_id,
       court_id: newCourtId,
       date: res.originalData?.date,
       start_time: toHHMMSS(newStartMin),
