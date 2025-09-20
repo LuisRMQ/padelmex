@@ -13,6 +13,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { MatDividerModule } from "@angular/material/divider";
 
+interface DaySchedule {
+    name: string;
+    enabled: boolean;
+    start: string;
+    end: string;
+    hasSchedule: boolean;
+    schedules: { id: number; start: string; end: string }[];
+}
+
 @Component({
     selector: 'app-registrar-horario-dialog',
     templateUrl: './registrar-horario-dialog.component.html',
@@ -32,17 +41,18 @@ import { MatDividerModule } from "@angular/material/divider";
         MatDividerModule
     ]
 })
+
 export class RegistrarHorarioDialogComponent {
     scheduleForm: FormGroup;
 
-    days = [
-        { name: 'Lunes', enabled: false, start: '6:00 AM', end: '10:00 PM' },
-        { name: 'Martes', enabled: false, start: '6:00 AM', end: '10:00 PM' },
-        { name: 'Miercoles', enabled: false, start: '6:00 AM', end: '10:00 PM' },
-        { name: 'Jueves', enabled: false, start: '6:00 AM', end: '10:00 PM' },
-        { name: 'Viernes', enabled: false, start: '6:00 AM', end: '10:00 PM' },
-        { name: 'Sabado', enabled: false, start: '6:00 AM', end: '10:00 PM' },
-        { name: 'Domingo', enabled: false, start: '6:00 AM', end: '10:00 PM' },
+    days: DaySchedule[] = [
+        { name: 'Lunes', enabled: false, start: '6:00 AM', end: '10:00 PM', hasSchedule: false, schedules: [] },
+        { name: 'Martes', enabled: false, start: '6:00 AM', end: '10:00 PM', hasSchedule: false, schedules: [] },
+        { name: 'Miercoles', enabled: false, start: '6:00 AM', end: '10:00 PM', hasSchedule: false, schedules: [] },
+        { name: 'Jueves', enabled: false, start: '6:00 AM', end: '10:00 PM', hasSchedule: false, schedules: [] },
+        { name: 'Viernes', enabled: false, start: '6:00 AM', end: '10:00 PM', hasSchedule: false, schedules: [] },
+        { name: 'Sabado', enabled: false, start: '6:00 AM', end: '10:00 PM', hasSchedule: false, schedules: [] },
+        { name: 'Domingo', enabled: false, start: '6:00 AM', end: '10:00 PM', hasSchedule: false, schedules: [] },
     ];
 
     hours: string[] = [
@@ -60,7 +70,7 @@ export class RegistrarHorarioDialogComponent {
     constructor(
         private fb: FormBuilder,
         private dialogRef: MatDialogRef<RegistrarHorarioDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { courtId: number },
+        @Inject(MAT_DIALOG_DATA) public data: { courtId: number, horarios: any, clubId: number },
         private horarioCancha: HorariosServiceCancha
 
     ) {
@@ -73,16 +83,43 @@ export class RegistrarHorarioDialogComponent {
         });
     }
 
+    ngOnInit() {
+        console.log('Horarios recibidos:', this.data.horarios);
+        if (this.data?.horarios) {
+            this.data.horarios.forEach((h: any) => {
+                const dia = this.days.find(d => d.name.toLowerCase() === h.day.toLowerCase());
+                if (dia) {
+                    dia.hasSchedule = true;
+
+                    if (!dia.schedules) {
+                        dia.schedules = [];
+                    }
+
+                    dia.schedules.push({
+                        id: h.courts_schedules_id,
+                        start: this.convertToAMPM(h.start_time),
+                        end: this.convertToAMPM(h.end_time)
+                    });
+                }
+            });
+        }
+    }
+
+
+
     guardarHorario() {
         const selectedDays = this.days.filter(day => day.enabled);
+        const daysToUpdate = selectedDays.filter(day => day.hasSchedule);
+        const daysToCreate = selectedDays.filter(day => !day.hasSchedule);
+        console.log('Días seleccionados para crear horarios:', daysToCreate);
+        console.log('Días seleccionados para actualizar horarios:', daysToUpdate);
 
         if (selectedDays.length === 0) {
             console.warn('No hay días seleccionados.');
             return;
         }
 
-        // Recorremos cada día y lanzamos una petición POST
-        selectedDays.forEach(day => {
+        daysToCreate.forEach(day => {
             const horario = {
                 court_id: this.data.courtId,
                 day: day.name,
@@ -100,7 +137,25 @@ export class RegistrarHorarioDialogComponent {
             });
         });
 
-        // Cerramos el modal después de lanzar todas las peticiones
+        daysToUpdate.forEach(day => {
+            const horario = {
+                club_id: this.data.clubId,
+                court_id: this.data.courtId,
+                day: day.name,
+                start_time: this.formatTime(day.start),
+                end_time: this.formatTime(day.end),
+            };
+
+            this.horarioCancha.updateHorario(day.schedules[0].id, horario).subscribe({
+                next: (res) => {
+                    console.log(`Horario actualizado para ${day.name}:`, res);
+                },
+                error: (err) => {
+                    console.error(`Error al actualizar horario para ${day.name}`, err);
+                }
+            });
+        });
+
         this.dialogRef.close(true);
     }
 
@@ -141,5 +196,18 @@ export class RegistrarHorarioDialogComponent {
         if (modifier === 'AM' && hours === 12) hours = 0;
 
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+    }
+
+    convertToAMPM(time: string): string {
+        if (!time) return '';
+        const [hourStr, minuteStr] = time.split(':');
+        let hour = parseInt(hourStr, 10);
+        const minute = parseInt(minuteStr, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+
+        hour = hour % 12;
+        if (hour === 0) hour = 12;
+
+        return `${hour}:${minute.toString().padStart(2, '0')} ${ampm}`;
     }
 }

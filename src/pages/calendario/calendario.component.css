@@ -454,7 +454,7 @@ mat-spinner {
   border-radius: 16px;
   color: white;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -517,7 +517,7 @@ mat-spinner {
 }
 
 .reservation:hover {
-  z-index: 1002;
+  z-index: 1009;
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }

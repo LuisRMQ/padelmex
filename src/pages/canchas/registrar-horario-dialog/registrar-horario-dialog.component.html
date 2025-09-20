@@ -26,8 +26,14 @@
   <!-- Weekly Schedule -->
   <div class="weekly-schedule">
     <div class="day-row" *ngFor="let day of days">
-      <mat-checkbox [(ngModel)]="day.enabled">{{ day.name }}</mat-checkbox>
-
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 40%;">
+        <mat-checkbox [(ngModel)]="day.enabled">{{ day.name }}</mat-checkbox>
+        <div *ngIf="day.hasSchedule" style="justify-content: flex-end;">
+          <div class="badge" *ngFor="let s of day.schedules">
+            {{ s.start }} - {{ s.end }}
+          </div>
+        </div>
+      </div>
       <div class="time-selectors" *ngIf="day.enabled">
         <span>De:</span>
         <mat-form-field appearance="outline" class="time-field">
