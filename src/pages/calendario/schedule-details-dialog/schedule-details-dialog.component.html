@@ -1,0 +1,100 @@
+<div class="dialog-container">
+    <!-- Header -->
+    <div class="dialog-header">
+        <h2>Detalles de Reservación</h2>
+        <span class="reservation-id">ID: #{{ data.id }}</span>
+    </div>
+
+    <mat-divider style="opacity: 0.12;"></mat-divider>
+
+    <!-- Status -->
+    <div class="status-container">
+        <h3>Status</h3>
+        <span class="status-badge" [ngClass]="data.details.status">
+            {{ data.details.status | titlecase }}
+        </span>
+    </div>
+
+    <!-- Date & Time / Court Info -->
+    <div class="row">
+        <div class="card blue-card">
+            <h4><mat-icon>access_time</mat-icon> Fecha y Hora</h4>
+
+            <ng-container *ngIf="!isEditing; else editDate">
+                <p><strong>Fecha:</strong> {{ formatDateString(data.details.date) }}</p>
+                <p><strong>Inicio:</strong> {{ data.details.start_time }}</p>
+                <p><strong>Fin:</strong> {{ data.details.end_time }}</p>
+            </ng-container>
+
+            <ng-template #editDate>
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Fecha</mat-label>
+                    <input matInput [matDatepicker]="picker" [(ngModel)]="editedData.date">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Hora de Inicio</mat-label>
+                    <input matInput type="time" [(ngModel)]="editedData.start_time">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Hora de Fin</mat-label>
+                    <input matInput type="time" [(ngModel)]="editedData.end_time">
+                </mat-form-field>
+            </ng-template>
+        </div>
+
+        <div class="card green-card">
+            <h4><mat-icon>sports_tennis</mat-icon> Información de la Cancha</h4>
+            <p><strong>Cancha: </strong>{{ data.originalData.court }}</p>
+            <p><strong>Tipo:</strong> Standard</p>
+            <p><strong>Usuario:</strong> {{ data.user }}</p>
+        </div>
+    </div>
+
+    <!-- Payment Details -->
+    <div class="card gray-card">
+        <h4><mat-icon>payment</mat-icon>Detalles de pago</h4>
+        <div class="payment-grid">
+            <div><strong>Método de Pago:</strong> {{ data.details.pay_method == 'single_payment' ? 'Pago Único' : 'Pago Dividido' }}</div>
+            <div><strong>Comisión:</strong> ${{ data.details.commission }}</div>
+            <div><strong>Tarifa de Cancha:</strong> ${{ data.details.total_court }}</div>
+            <div><strong>Total:</strong>
+                <span class="total-amount">${{ data.details.total }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Observations -->
+    <div class="card blue-card">
+        <h4><mat-icon>sticky_note_2</mat-icon> Observaciones</h4>
+
+        <ng-container *ngIf="!isEditing; else editObs">
+            <input class="observation-input" type="text" [value]="data.details.observations" readonly />
+        </ng-container>
+
+        <ng-template #editObs>
+            <textarea [(ngModel)]="editedData.observations"></textarea>
+        </ng-template>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <small>Created: {{ data.details.created_at }}</small>
+        <small>Last Updated: {{ data.details.updated_at }}</small>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+        <button class="btn btn-close" (click)="closeDialog()">Close</button>
+
+        <button *ngIf="!isEditing" class="btn btn-edit" (click)="toggleEdit()">Edit Reservation</button>
+
+        <div *ngIf="isEditing">
+            <button class="btn btn-cancel" (click)="toggleEdit()">Cancel</button>
+            <button class="btn btn-save" (click)="saveChanges()">Save</button>
+        </div>
+    </div>
+</div>

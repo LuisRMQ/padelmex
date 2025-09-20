@@ -1,0 +1,198 @@
+.dialog-container {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px 20px 28px;
+    max-width: 600px;
+    min-width: 350px;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.12);
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+
+.dialog-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2e3c5d;
+    margin: 0;
+}
+
+.reservation-id {
+    font-size: 1rem;
+    color: #888;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-weight: 500;
+}
+
+.status-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 9px;
+    margin-bottom: 9px;
+    justify-content: space-between;
+}
+
+.status-container h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.status-badge {
+    padding: 6px 18px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    background: #ffe9a7;
+    color: #b58c00;
+    border: 1px solid #ffe9a7;
+    text-align: center;
+    min-width: 80px;
+    display: inline-block;
+}
+
+.status-badge.Pending {
+    background: #ffe9a7;
+    color: #b58c00;
+    border: 1px solid #ffe9a7;
+}
+
+.status-badge.Confirmed {
+    background: #c8f7c5;
+    color: #2e7d32;
+    border: 1px solid #c8f7c5;
+}
+
+.status-badge.Cancelled {
+    background: #ffcdd2;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.row {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 18px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.card {
+    flex: 1;
+    border-radius: 12px;
+    padding: 18px 18px 12px 18px;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+    margin-bottom: 0;
+}
+
+.blue-card {
+    background: #eaf3ff;
+    border: 1px solid #b3d1ff;
+}
+
+.green-card {
+    background: #eafaf1;
+    border: 1px solid #b3e6c9;
+}
+
+.gray-card {
+    background: #f7f7fa;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 18px;
+}
+
+.card h4 {
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2e3c5d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+    margin-top: 8px;
+}
+
+.total-amount {
+    color: #1976d2;
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.observation-input {
+    width: 100%;
+    background: #f5faff;
+    border: 1px solid #b3d1ff;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    margin-top: 6px;
+    color: #2e3c5d;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 9px;
+    color: #888;
+    font-size: 0.95rem;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.btn {
+    padding: 8px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+
+.btn-close {
+    background: #f5f5f5;
+    color: #2e3c5d;
+    width: 60px;
+    height: auto;
+}
+
+.btn-edit {
+    background: #1976d2;
+    color: #fff;
+}
+
+.btn-confirm {
+    background: #43a047;
+    color: #fff;
+}
+
+.btn-close:hover {
+    background: #e0e0e0;
+}
+
+.btn-edit:hover {
+    background: #1565c0;
+}
+
+.btn-confirm:hover {
+    background: #388e3c;
+}

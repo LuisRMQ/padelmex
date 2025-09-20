@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, ViewChildren, QueryList, ElementRef, TemplateRef } from '@angular/core';
 import { LOCALE_ID } from '@angular/core';
-import { formatDate, registerLocaleData } from '@angular/common';
+import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragEnd, CdkDragStart } from '@angular/cdk/drag-drop';
@@ -17,7 +17,8 @@ import { Club, CourtService, CourtsResponse } from '../../app/services/court.ser
 import { ReservationService, Reservation as ApiReservation, ReservationDetails } from '../../app/services/reservation.service';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
-import { MatTooltipModule, MatTooltip } from '@angular/material/tooltip';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ScheduleDetailsDialogComponent } from './schedule-details-dialog/schedule-details-dialog.component';
 
 interface Court { id: number; name: string; }
 interface CalendarReservation {
@@ -701,12 +702,9 @@ export class CalendarioComponent implements OnInit {
     return court ? court.name : '';
   }
 
-  async showReservationDetails(event: MouseEvent, reservation: CalendarReservation) {
-    console.log('Mouse enter en reservación:', reservation.id);
+  async showReservationDetails(reservation: CalendarReservation) {
     this.currentReservation = reservation;
-    this.tooltipPosition = { x: event.clientX, y: event.clientY };
 
-    // Si no tenemos los detalles completos, cargarlos
     if (!reservation.details) {
       this.isLoadingDetails = true;
       try {
@@ -720,52 +718,22 @@ export class CalendarioComponent implements OnInit {
     }
   }
 
-  hideReservationDetails() {
-    this.currentReservation = null;
-  }
+  async onReservationClick(res: any) {
+    console.log('Clicked reservation', res);
+    await this.showReservationDetails(res);
 
-  getStatusColor(status: string | undefined): string {
-    switch (status?.toLowerCase()) {
-      case 'confirmed': return '#4caf50';
-      case 'pending': return '#ff9800';
-      case 'cancelled': return '#f44336';
-      default: return '#9e9e9e';
-    }
-  }
-
-  formatDateString(dateString: string | undefined | null): string {
-    if (!dateString) {
-      return 'Fecha no disponible';
-    }
-    return formatDate(dateString, 'mediumDate', 'es');
-  }
-
-  formatCurrency(amount: string | undefined | null): string {
-    if (!amount) {
-      return '$0.00';
-    }
-    return `$${parseFloat(amount).toFixed(2)}`;
-  }
-
-  // Métodos para manejar el hover del tooltip
-  onTooltipEnter() {
-    console.log('🟢 Tooltip hover ENTER');
-    this.isTooltipHovered = true;
-    // Cancelar cualquier timeout de ocultamiento
-    if (this.hideTooltipTimeout) {
-      clearTimeout(this.hideTooltipTimeout);
-      this.hideTooltipTimeout = null;
-    }
-  }
-
-  onTooltipLeave() {
-    console.log('🔴 Tooltip hover LEAVE');
-    this.isTooltipHovered = false;
-    // Esperar un poco antes de ocultar para dar tiempo a volver
-    this.hideTooltipTimeout = setTimeout(() => {
-      if (!this.isTooltipHovered) {
-        this.hideReservationDetails();
+    const dialogRef = this.dialog.open(ScheduleDetailsDialogComponent, {
+      data: res,
+      width: '600px',
+      maxWidth: '95vw',
+      maxHeight: '96vh',
+      panelClass: 'custom-modal-panel',
+      height: '96vh'
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log("Dialog closed with result:", result);
       }
-    }, 300);
+    });
   }
 }

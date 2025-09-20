@@ -110,7 +110,7 @@
             [ngStyle]="getReservationStyle(res)" cdkDrag
             (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
             (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)"
-            (mouseenter)="showReservationDetails($event, res)" (mouseleave)="hideReservationDetails()">
+            (click)="onReservationClick(res)">
 
             <div class="res-title">
               {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
@@ -126,101 +126,4 @@
       </div>
     </div>
   </div>
-</div>
-
-<!-- TEMPLATE DEL TOOLTIP (FUERA de cualquier otro div) -->
-<ng-template #reservationTooltip>
-  <div class="reservation-details-tooltip" [style.left.px]="tooltipPosition.x" [style.top.px]="tooltipPosition.y">
-    <div *ngIf="isLoadingDetails" class="loading-details">
-      <mat-spinner diameter="20"></mat-spinner>
-      <span>Cargando detalles...</span>
-    </div>
-
-    <div *ngIf="!isLoadingDetails && currentReservation?.details" class="details-content">
-      <!-- Header -->
-      <div class="tooltip-header">
-        <h4>Detalles de la Reservación #{{ currentReservation?.details?.id }}</h4>
-        <span class="status-badge" [style.background-color]="getStatusColor(currentReservation?.details?.status)">
-          {{ currentReservation?.details?.status | titlecase }}
-        </span>
-      </div>
-
-      <!-- Información principal -->
-      <div class="detail-section">
-        <div class="detail-row">
-          <mat-icon>calendar_today</mat-icon>
-          <span><strong>Fecha:</strong> {{ formatDateString(currentReservation?.details?.date) }}</span>
-          <div class="detail-row">
-          <mat-icon style="margin-top: 6px;">schedule</mat-icon>
-          <span style="margin-top: 6px;"><strong>Horario:</strong> {{ currentReservation?.details?.start_time | slice:0:5 }} - {{
-            currentReservation?.details?.end_time | slice:0:5 }}</span>
-        </div>
-        </div>
-        <div class="detail-row">
-          <mat-icon>timer</mat-icon>
-          <span><strong>Duración:</strong> {{ currentReservation?.details?.duration }} minutos</span>
-        </div>
-      </div>
-
-      <!-- Información de pago -->
-      <div class="detail-section">
-        <div class="detail-row">
-          <mat-icon>payment</mat-icon>
-          <span><strong>Método pago:</strong> {{ currentReservation?.details?.pay_method == "single_payment" ? "Pago único" : "Pago dividido" }}</span>
-        </div>
-        <div class="detail-row">
-          <mat-icon>attach_money</mat-icon>
-          <span><strong>Total Cancha:</strong> {{ formatCurrency(currentReservation?.details?.total_court) }}</span>
-        </div>
-        <div class="detail-row total-row">
-          <mat-icon>point_of_sale</mat-icon>
-          <span><strong>Total:</strong> {{ formatCurrency(currentReservation?.details?.total) }}</span>
-        </div>
-      </div>
-
-      <!-- Información adicional -->
-      <div class="detail-section" *ngIf="currentReservation?.details?.observations">
-        <div class="detail-row">
-          <mat-icon>notes</mat-icon>
-          <span><strong>Observaciones:</strong> {{ currentReservation?.details?.observations }}</span>
-        </div>
-      </div>
-
-      <!-- Fechas del sistema -->
-      <div class="detail-section dates-section">
-        <div class="detail-row">
-          <mat-icon>event</mat-icon>
-          <span><strong>Creado:</strong> {{ formatDateString(currentReservation?.details?.created_at) }}</span>
-        </div>
-        <div class="detail-row">
-          <mat-icon>update</mat-icon>
-          <span><strong>Actualizado:</strong> {{ formatDateString(currentReservation?.details?.updated_at) }}</span>
-        </div>
-      </div>
-
-      <!-- Botones de acción -->
-      <!-- <div class="action-buttons">
-        <button mat-button color="primary" (click)="editReservation(currentReservation!)">
-          <mat-icon>edit</mat-icon>
-          Editar
-        </button>
-        <button mat-button color="warn" (click)="cancelReservation(currentReservation!)" 
-                *ngIf="currentReservation?.details?.status !== 'cancelled' && currentReservation?.details?.status !== 'deleted'">
-          <mat-icon>cancel</mat-icon>
-          Cancelar
-        </button>
-      </div> -->
-    </div>
-
-    <div *ngIf="!isLoadingDetails && !currentReservation?.details" class="error-message">
-      No se pudieron cargar los detalles de la reservación.
-    </div>
-  </div>
-</ng-template>
-
-<!-- OVERLAY DEL TOOLTIP (FUERA del template, al final del archivo) -->
-<div *ngIf="currentReservation" class="tooltip-overlay" 
-     (mouseenter)="onTooltipEnter()" 
-     (mouseleave)="onTooltipLeave()">
-  <ng-container *ngTemplateOutlet="reservationTooltip"></ng-container>
 </div>
