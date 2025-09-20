@@ -142,7 +142,6 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       const rawData = this.form.value;
       const formData = new FormData();
 
-      // Campos básicos
       formData.append('name', rawData.name);
       formData.append('description', rawData.description || '');
       formData.append('club_id', rawData.club_id.toString()); // ✅ importante
@@ -153,7 +152,6 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       formData.append('max_participants', rawData.max_participants.toString());
       formData.append('rules', rawData.rules || '');
 
-      // Archivos opcionales
       if (this.logoFile) {
         formData.append('photo', this.logoFile);
       }
@@ -161,14 +159,12 @@ export class RegistrarTorneoDialogComponent implements OnInit {
         formData.append('tournament_call', rawData.tournament_call);
       }
 
-      // Premios
       if (Array.isArray(rawData.prizes)) {
         rawData.prizes.forEach((p: string, i: number) => {
           formData.append(`prizes[${i}]`, p);
         });
       }
 
-      // Categorías
       if (Array.isArray(rawData.categories)) {
         rawData.categories.forEach((cat: any, i: number) => {
           formData.append(`categories[${i}][id]`, cat.id.toString());
@@ -176,11 +172,9 @@ export class RegistrarTorneoDialogComponent implements OnInit {
         });
       }
 
-      // Participantes y bracket (estructuras propias)
       formData.append('participantes', JSON.stringify(this.participantesSeleccionados));
       formData.append('bracket', JSON.stringify(this.bracketGenerado));
 
-      // Enviar formulario
       this.tournamentService.createTournament(formData).subscribe({
         next: (res) => {
           console.log('Torneo creado correctamente:', res);
@@ -194,12 +188,7 @@ export class RegistrarTorneoDialogComponent implements OnInit {
 
 
 
-      // Abrir modal con bracket
-      // this.dialog.open(BracketModalComponent, {
-      //   width: '90%',
-      //   height: '80%',
-      //   data: { bracket: this.bracketGenerado }
-      // });
+    
     } else {
       this.form.markAllAsTouched();
     }

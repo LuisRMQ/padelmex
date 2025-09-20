@@ -23,6 +23,7 @@ export interface Tournament {
   active: boolean;
   created_at: string;
   updated_at: string;
+  categories?: Category[];
 }
 
 export interface TournamentFilters {

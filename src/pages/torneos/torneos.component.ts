@@ -148,18 +148,34 @@ export class TorneosComponent implements OnInit {
     console.log('Ver detalles:', torneo);
   }
 
- editarTorneo(torneo: Tournament) {
-  const dialogRef = this.dialog.open(EditarTorneoDialogComponent, {
-    width: '800px',
-    data: { torneoId: torneo.id }  // pasamos el ID al nuevo componente
-  });
+  editarTorneo(torneo: Tournament) {
+    const dialogRef = this.dialog.open(EditarTorneoDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      height: 'auto',
+      maxHeight: '90vh',
+      data: { torneoId: torneo.id },
+      panelClass: 'custom-dialog'
+    });
 
-  dialogRef.afterClosed().subscribe((torneoActualizado) => {
-    if (torneoActualizado) {
-      // Actualizamos la lista localmente
-      const index = this.torneos.findIndex(t => t.id === torneoActualizado.id);
-      if (index !== -1) this.torneos[index] = torneoActualizado;
-    }
+    dialogRef.afterClosed().subscribe((torneoActualizado) => {
+      if (torneoActualizado) {
+        const index = this.torneos.findIndex(t => t.id === torneoActualizado.id);
+        if (index !== -1) this.torneos[index] = torneoActualizado;
+      }
+    });
+  }
+
+
+  eliminarTorneo(torneo: Tournament) {
+  if (!confirm(`¿Estás seguro de eliminar el torneo "${torneo.name}"?`)) return;
+
+  this.tournamentService.deleteTournament(torneo.id).subscribe({
+    next: () => {
+      this.torneos = this.torneos.filter(t => t.id !== torneo.id);
+      console.log(`Torneo ${torneo.name} eliminado`);
+    },
+    error: (err) => console.error('Error al eliminar torneo:', err)
   });
 }
 

@@ -73,6 +73,9 @@
         <button mat-button color="accent" (click)="$event.stopPropagation(); editarTorneo(torneo)">
           <mat-icon>edit</mat-icon> Editar
         </button>
+         <button mat-button color="danger" (click)="$event.stopPropagation(); eliminarTorneo(torneo)">
+          <mat-icon>delete</mat-icon> Eliminar
+        </button>
       </mat-card-actions>
     </mat-card>
   </div>
