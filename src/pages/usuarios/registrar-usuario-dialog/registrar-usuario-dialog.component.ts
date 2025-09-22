@@ -45,6 +45,8 @@ export class RegistrarUsuarioDialogComponent {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
       gender: ['', Validators.required],
+      phone: ['', Validators.required],
+      area_code: ['', Validators.required],
       club_id: ['', Validators.required],
       profile_photo: [null, Validators.required],
       rol_id: ['', Validators.required],
@@ -97,8 +99,8 @@ export class RegistrarUsuarioDialogComponent {
         const value = this.userForm.value[key];
         if (value !== null) {
           formData.append(key, value);
-          formData.append( 'phone', '8712119023');
-          formData.append( 'area_code', '+52');
+          formData.append('phone', '8712119023');
+          formData.append('area_code', '+52');
         }
       });
 

@@ -11,6 +11,8 @@ export interface User {
     email: string;
     password?: string;
     gender: string;
+    phone:string;
+    area_code:string;
     club_id: number;
     profile_photo: string | null;
     rol?: string;

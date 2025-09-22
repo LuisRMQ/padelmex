@@ -26,6 +26,18 @@
         <input matInput type="email" formControlName="email" placeholder="correo@ejemplo.com">
       </mat-form-field>
 
+      <!-- Código de Área -->
+      <mat-form-field appearance="outline">
+        <mat-label>Código de Área</mat-label>
+        <input matInput formControlName="area_code" placeholder="+52">
+      </mat-form-field>
+
+      <!-- Teléfono -->
+      <mat-form-field appearance="outline">
+        <mat-label>Teléfono</mat-label>
+        <input matInput formControlName="phone" placeholder="8712119023">
+      </mat-form-field>
+
       <!-- Password -->
       <mat-form-field appearance="outline">
         <mat-label>Contraseña</mat-label>
@@ -43,9 +55,6 @@
       </mat-form-field>
 
       <!-- Club -->
-
-
-
       <mat-form-field appearance="outline" class="flex-1">
         <mat-select placeholder="Club" formControlName="club_id">
           <mat-option *ngFor="let club of clubs" [value]="club.id">
@@ -90,8 +99,6 @@
           <mat-option value="6">Contador</mat-option>
           <mat-option value="7">Caja</mat-option>
           <mat-option value="8">Jugador</mat-option>
-
-
         </mat-select>
       </mat-form-field>
     </div>
