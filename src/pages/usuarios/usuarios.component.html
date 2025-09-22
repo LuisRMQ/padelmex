@@ -1,263 +1,130 @@
 <!-- <div class="usuarios-container"> -->
 
-  <!-- Vista de tabla -->
-  <div *ngIf="!selectedUsuario">
+<!-- Vista de tabla -->
+<div *ngIf="!selectedUsuario">
 
-    <!-- Encabezado -->
-    <div class="header">
-      <h2>Usuarios</h2>
-      <button mat-raised-button color="accent" class="btn-agregar" (click)="abrirModalRegistrarUsuario()">
-         <mat-icon>add</mat-icon> AGREGAR USUARIO
-      </button>
-
-
-
-    </div>
-
-    <!-- Buscador -->
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-icon matPrefix>search</mat-icon>
-      <input matInput placeholder="Buscar..." (keyup)="applyFilter($event)">
-    </mat-form-field>
-
-    <!-- Tabla de usuarios -->
-    <div class="tabla-container">
-      <table mat-table [dataSource]="dataSource" class="mat-elevation-z1">
-
-        <!-- Nombre -->
-        <ng-container matColumnDef="nombre">
-          <th mat-header-cell *matHeaderCellDef> Nombre </th>
-          <td mat-cell *matCellDef="let usuario" class="nombre-cell">
-            <a href="" class="nombre-link" (click)="verDetalle(usuario); $event.preventDefault()">
-              {{ usuario.nombre }}
-            </a>
-          </td>
-        </ng-container>
-
-        <!-- Victorias/Torneos -->
-        <ng-container matColumnDef="victorias">
-          <th mat-header-cell *matHeaderCellDef> Victorias/Torneos </th>
-          <td mat-cell *matCellDef="let usuario"> {{ usuario.victorias }} </td>
-        </ng-container>
-
-        <!-- Puntos -->
-        <ng-container matColumnDef="puntos">
-          <th mat-header-cell *matHeaderCellDef> Puntos </th>
-          <td mat-cell *matCellDef="let usuario"> {{ usuario.puntos }} </td>
-        </ng-container>
-
-        <!-- Rol -->
-        <ng-container matColumnDef="rol">
-          <th mat-header-cell *matHeaderCellDef> Rol </th>
-          <td mat-cell *matCellDef="let usuario"> {{ usuario.rol }} </td>
-        </ng-container>
-
-        <!-- Club -->
-        <ng-container matColumnDef="club">
-          <th mat-header-cell *matHeaderCellDef> Club </th>
-          <td mat-cell *matCellDef="let usuario"> {{ usuario.club }} </td>
-        </ng-container>
-
-        <!-- Categoria -->
-        <ng-container matColumnDef="categoria">
-          <th mat-header-cell *matHeaderCellDef> Categoría </th>
-          <td mat-cell *matCellDef="let usuario"> {{ usuario.categoria }} </td>
-        </ng-container>
-
-        <!-- Acciones -->
-        <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let usuario">
-            <button mat-icon-button color="warn" (click)="eliminarUsuario(usuario)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <!-- Encabezado y Filas -->
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-      </table>
-
-      <!-- Paginador -->
-      <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
-    </div>
+  <!-- Encabezado -->
+  <div class="header">
+    <h2>Usuarios</h2>
+    <button mat-raised-button color="accent" class="btn-agregar" (click)="abrirModalRegistrarUsuario()">
+      <mat-icon>add</mat-icon> AGREGAR USUARIO
+    </button>
   </div>
 
-  <!-- Vista de detalle -->
-  <div class="detalle-container" *ngIf="selectedUsuario">
+  <div class="usuarios-container">
 
-    <!-- Botón volver -->
-    <button mat-icon-button (click)="volverLista()" style="margin-bottom: 15px;">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-
-    <!-- Grid superior con foto e identificación -->
-    <div class="detalle-grid">
-      <!-- Foto de Perfil -->
-      <mat-card class="foto-card">
-        <mat-card-header>
-          <mat-card-title>Foto de Perfil</mat-card-title>
-        </mat-card-header>
-
-        <!-- Imagen de perfil -->
-        <img mat-card-image [src]="selectedUsuario.fotoPerfil" alt="Foto de perfil">
-
-        <div class="card-actions">
-          <button mat-raised-button color="accent" (click)="fileInput.click()">CAMBIAR FOTO</button>
-          <input #fileInput type="file" accept="image/*" style="display:none" (change)="onProfilePhotoSelected($event)">
-          <small>FORMATOS: JPG, PNG - TAMAÑO MÁXIMO: 5 MB - RESOLUCIÓN MÍNIMA: 500x500 PX</small>
-        </div>
-      </mat-card>
-
-
-      <!-- Identificación -->
-      <mat-card class="foto-card">
-        <mat-card-header>
-          <mat-card-title>Identificación</mat-card-title>
-        </mat-card-header>
-        <img mat-card-image [src]="selectedUsuario.identificacion" alt="Identificación">
-        <div class="card-actions">
-          <button mat-raised-button color="accent">CAMBIAR FOTO</button>
-          <small>FORMATOS: JPG, PNG - TAMAÑO MÁXIMO: 5 MB - RESOLUCIÓN MÍNIMA: 500x500 PX</small>
-        </div>
-      </mat-card>
+    <!-- Filtros y resumen -->
+    <div class="usuarios-filtros">
+      <input class="usuarios-search" type="text" placeholder="Buscar usuarios..." (keyup)="applyFilter($event)">
+      <mat-form-field appearance="outline" class="usuarios-select">
+        <mat-label>Roles</mat-label>
+        <mat-select [(ngModel)]="selectedRol">
+          <mat-option value="">Todos los roles</mat-option>
+          <mat-option *ngFor="let rol of roles" [value]="rol.id">{{ rol.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="usuarios-select">
+        <mat-select [(ngModel)]="selectedCategoria">
+          <mat-option value="">Todas las categorías</mat-option>
+          <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
 
-    <!-- Datos del usuario -->
-    <!-- Datos del usuario -->
-    <mat-card class="datos-card">
+    <!-- Tarjetas resumen -->
+    <div class="usuarios-resumen">
+      <div class="resumen-card">
+        <div class="resumen-icon total"><mat-icon>groups</mat-icon></div>
+        <div class="resumen-label">Total Usuarios</div>
+        <div class="resumen-value">{{ 10 }}</div>
+      </div>
+      <div class="resumen-card">
+        <div class="resumen-icon activos"><mat-icon>directions_run</mat-icon></div>
+        <div class="resumen-label">Jugadores Activos</div>
+        <div class="resumen-value">{{ 10 }}</div>
+      </div>
+      <div class="resumen-card">
+        <div class="resumen-icon entrenadores"><mat-icon>emoji_events</mat-icon></div>
+        <div class="resumen-label">Entrenadores</div>
+        <div class="resumen-value">{{ 2 }}</div>
+      </div>
+      <div class="resumen-card">
+        <div class="resumen-icon victorias"><mat-icon>military_tech</mat-icon></div>
+        <div class="resumen-label">Victorias Totales</div>
+        <div class="resumen-value">{{ 5 }}</div>
+      </div>
+    </div>
 
-      <!-- Header con nombre y acciones -->
-      <mat-card-header class="datos-header">
-        <mat-card-title *ngIf="!editando">{{ selectedUsuario.nombre }} {{ selectedUsuario.apellidos }}</mat-card-title>
-
-        <!-- Modo edición -->
-        <mat-card-title *ngIf="editando">Editando Usuario</mat-card-title>
-
-        <!-- Botones -->
-        <div class="acciones-header">
-          <!-- Si NO está editando -->
-          <button *ngIf="!editando" mat-icon-button color="primary" (click)="editando = true">
-            <mat-icon>edit</mat-icon>
-          </button>
-
-          <!-- Si está editando -->
-          <ng-container *ngIf="editando">
-            <button mat-icon-button color="accent" (click)="guardarCambios()">
-              <mat-icon>save</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="cancelarEdicion()">
-              <mat-icon>close</mat-icon>
-            </button>
-          </ng-container>
-        </div>
-      </mat-card-header>
-
-      <!-- Línea divisoria -->
-      <mat-divider></mat-divider>
-
-      <!-- Contenido -->
-      <mat-card-content>
-        <div class="datos-grid">
-          <!-- Nombre -->
-          <div>
-            <strong>Nombre</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.nombre }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <input matInput [(ngModel)]="formUsuario.nombre">
-            </mat-form-field>
-          </div>
-
-          <!-- Apellidos -->
-          <div>
-            <strong>Apellidos</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.apellidos }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <input matInput [(ngModel)]="formUsuario.apellidos">
-            </mat-form-field>
-          </div>
-
-          <!-- Correo -->
-          <div>
-            <strong>Correo</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.correo }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <input matInput [(ngModel)]="formUsuario.correo">
-            </mat-form-field>
-          </div>
-
-          <!-- Género -->
-          <div>
-            <strong>Género</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.genero }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <mat-select [(ngModel)]="formUsuario.genero">
-                <mat-option value="Masculino">Masculino</mat-option>
-                <mat-option value="Femenino">Femenino</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          <!-- Club -->
-          <div>
-            <strong>Club</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.club }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <mat-select [(ngModel)]="formUsuario.club_id">
-                <mat-option *ngFor="let club of clubs" [value]="club.id">
-                  {{ club.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-          </div>
-
-          <!-- Mano Preferida -->
-          <div>
-            <strong>Mano Preferida</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.manoPreferida }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <mat-select [(ngModel)]="formUsuario.manoPreferida">
-                <mat-option value="left-handed">Zurdo</mat-option>
-                <mat-option value="'right-handed">Diestro</mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          <!-- Categoría -->
-          <div>
-            <strong>Categoría</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.categoria }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <mat-select [(ngModel)]="formUsuario.category_id">
-                <mat-option *ngFor="let cat of categories" [value]="cat.id">
-                  {{ cat.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-          <!-- Victorias/Torneos -->
-
-
-
-          <!-- Rol -->
-          <div>
-            <strong>Rol</strong><br>
-            <span *ngIf="!editando">{{ selectedUsuario.rol }}</span>
-            <mat-form-field *ngIf="editando" appearance="outline" style="width:100%">
-              <mat-select [(ngModel)]="formUsuario.rol_id">
-                <mat-option *ngFor="let rol of roles" [value]="rol.id">
-                  {{ rol.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-
-  <!-- </div> -->
+    <!-- Tabla de usuarios -->
+    <div class="usuarios-lista">
+      <div class="usuarios-lista-header">
+        <span>Lista de Usuarios</span>
+      </div>
+      <table class="usuarios-table">
+        <thead>
+          <tr>
+            <th>NOMBRE</th>
+            <th>VICTORIAS/TORNEOS</th>
+            <th>PUNTOS</th>
+            <th>ROL</th>
+            <th>CLUB</th>
+            <th>CATEGORÍA</th>
+            <th>ACCIONES</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let usuario of usuariosTabla">
+            <td>
+              <div class="usuario-nombre">
+                <img class="usuario-avatar" [src]="usuario.fotoPerfil || 'assets/img/user.png'" alt="avatar">
+                <div>
+                  <div class="nombre">{{ usuario.nombre }} {{ usuario.apellidos }}</div>
+                  <div class="correo">{{ usuario.correo }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span>{{ 5 }}/{{ 25 }}</span>
+              <div class="barra-victorias">
+                <div class="barra" [style.width.%]="(5/25)*100">
+                </div>
+              </div>
+            </td>
+            <td>
+              <span>{{ usuario.puntos | number }}</span>
+            </td>
+            <td>
+              <span class="badge-rol" [ngClass]="usuario.rol | lowercase">{{ usuario.rol }}</span>
+            </td>
+            <td>
+              {{ usuario.club }}
+            </td>
+            <td>
+              <span class="badge-categoria" [ngClass]="usuario.categoria | lowercase">{{ usuario.categoria }}</span>
+            </td>
+            <td>
+              <button mat-icon-button color="primary" (click)="verDetalle(usuario)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button color="accent" (click)="editarUsuario(usuario)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="eliminarUsuario(usuario)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- <div class="usuarios-paginacion">
+      <span>Mostrando {{ inicio }} a {{ fin }} de {{ totalUsuarios }} resultados</span>
+      <div class="paginador">
+        <button [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+        <ng-container *ngFor="let p of paginas">
+          <button [class.active]="p === paginaActual" (click)="cambiarPagina(p)">{{ p }}</button>
+        </ng-container>
+        <button [disabled]="paginaActual === paginas.length" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+      </div>
+    </div> -->
+    </div>
+  </div>

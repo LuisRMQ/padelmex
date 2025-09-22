@@ -15,6 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 
 import { RegistrarUsuarioDialogComponent } from './registrar-usuario-dialog/registrar-usuario-dialog.component';
 import { UsersService, User } from '../../app/services/users.service';
+import { area } from 'd3';
 
 export interface UsuarioTabla {
   id?: number;
@@ -82,6 +83,9 @@ export class UsuariosComponent implements OnInit {
   ];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  selectedRol: any;
+  selectedCategoria: any;
+  usuariosTabla: UsuarioTabla[] = [];
 
   constructor(private dialog: MatDialog, private usersService: UsersService) { }
 
@@ -92,7 +96,7 @@ export class UsuariosComponent implements OnInit {
   cargarUsuarios() {
     this.usersService.getUsers().subscribe({
       next: (usuarios) => {
-        const usuariosTabla: UsuarioTabla[] = usuarios.map(u => ({
+        this.usuariosTabla= usuarios.map(u => ({
           id: u.id,
           nombre: u.name,
           apellidos: u.lastname,
@@ -109,7 +113,7 @@ export class UsuariosComponent implements OnInit {
           manoPreferida: '-',
           identificacion: '-'
         }));
-        this.dataSource = new MatTableDataSource<UsuarioTabla>(usuariosTabla);
+        this.dataSource = new MatTableDataSource<UsuarioTabla>(this.usuariosTabla);
         this.dataSource.paginator = this.paginator;
       },
       error: (err) => console.error('Error al cargar usuarios:', err)
@@ -146,9 +150,9 @@ export class UsuariosComponent implements OnInit {
       correo: usuario.correo,
       genero: usuario.genero,
       rol: usuario.rol,
-      rol_id: usuario.rol_id,    
+      rol_id: usuario.rol_id,
       club: usuario.club,
-      club_id: usuario.club_id,  
+      club_id: usuario.club_id,
       categoria: usuario.categoria,
       puntos: usuario.puntos,
       manoPreferida: usuario.manoPreferida,
@@ -181,7 +185,7 @@ export class UsuariosComponent implements OnInit {
       category_id: Number(this.formUsuario.category_id),
       hand: this.formUsuario.manoPreferida,
       club_id: Number(this.formUsuario.club_id),
-      rol_id: Number(this.formUsuario.rol_id)
+      rol_id: Number(this.formUsuario.rol_id),
     };
 
     if (this.formUsuario.profile_photoFile) {
@@ -213,47 +217,47 @@ export class UsuariosComponent implements OnInit {
 
 
   onProfilePhotoSelected(event: any) {
-  const file: File = event.target.files[0];
-  if (!file) return;
+    const file: File = event.target.files[0];
+    if (!file) return;
 
-  const formData = new FormData();
-  formData.append('profile_photo', file);
-  formData.append('name', this.formUsuario.nombre);
-  formData.append('lastname', this.formUsuario.apellidos);
-  formData.append('email', this.formUsuario.correo);
-  formData.append('gender', this.formUsuario.genero);
-  formData.append('club_id', String(this.formUsuario.club_id));
+    const formData = new FormData();
+    formData.append('profile_photo', file);
+    formData.append('name', this.formUsuario.nombre);
+    formData.append('lastname', this.formUsuario.apellidos);
+    formData.append('email', this.formUsuario.correo);
+    formData.append('gender', this.formUsuario.genero);
+    formData.append('club_id', String(this.formUsuario.club_id));
 
-  if (this.formUsuario.rol_id) formData.append('rol_id', String(this.formUsuario.rol_id));
-  if (this.formUsuario.category_id) formData.append('category_id', String(this.formUsuario.category_id));
-  if (this.formUsuario.manoPreferida) formData.append('hand', this.formUsuario.manoPreferida);
+    if (this.formUsuario.rol_id) formData.append('rol_id', String(this.formUsuario.rol_id));
+    if (this.formUsuario.category_id) formData.append('category_id', String(this.formUsuario.category_id));
+    if (this.formUsuario.manoPreferida) formData.append('hand', this.formUsuario.manoPreferida);
 
-  console.log('Contenido real de FormData:');
-  formData.forEach((value, key) => console.log(key, value));
+    console.log('Contenido real de FormData:');
+    formData.forEach((value, key) => console.log(key, value));
 
-  formData.append('_method', 'PUT');
+    formData.append('_method', 'PUT');
 
-  this.usersService.updateUserById(this.formUsuario.id, formData).subscribe({
-    next: (res) => {
-      alert('✅ Foto actualizada correctamente');
-      this.selectedUsuario.fotoPerfil = URL.createObjectURL(file);
-      this.cargarUsuarios();
-    },
-    error: (err) => {
-      console.error('Error completo:', err);
+    this.usersService.updateUserById(this.formUsuario.id, formData).subscribe({
+      next: (res) => {
+        alert('✅ Foto actualizada correctamente');
+        this.selectedUsuario.fotoPerfil = URL.createObjectURL(file);
+        this.cargarUsuarios();
+      },
+      error: (err) => {
+        console.error('Error completo:', err);
 
-      console.log('Mensaje:', err.message);
+        console.log('Mensaje:', err.message);
 
-      console.log('Status:', err.status);
+        console.log('Status:', err.status);
 
-      console.log('Body de la respuesta:', err.error);
+        console.log('Body de la respuesta:', err.error);
 
-      if (err.error?.errors) {
-        console.log('Errores de validación detallados:', err.error.errors);
+        if (err.error?.errors) {
+          console.log('Errores de validación detallados:', err.error.errors);
+        }
       }
-    }
-  });
-}
+    });
+  }
 
 
 

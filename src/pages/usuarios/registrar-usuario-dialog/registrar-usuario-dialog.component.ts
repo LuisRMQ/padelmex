@@ -97,6 +97,8 @@ export class RegistrarUsuarioDialogComponent {
         const value = this.userForm.value[key];
         if (value !== null) {
           formData.append(key, value);
+          formData.append( 'phone', '8712119023');
+          formData.append( 'area_code', '+52');
         }
       });
 

@@ -13,12 +13,8 @@
 
 /* Contenedor principal */
 .usuarios-container {
-  margin: 30px;
-  padding: 20px;
-  background: linear-gradient(135deg, #0000 0%, #0000 100%);
-  border-radius: 15px;
-  box-shadow: var(--shadow);
-  min-height: calc(100vh - 100px);
+  margin: 0 auto;
+  font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 /* Header */
@@ -198,4 +194,205 @@ tr:hover {
   .header { flex-direction: column; gap: 15px; text-align: center; }
   .search-field { width: 100%; }
   .detalle-grid { grid-template-columns: 1fr; }
+}
+
+.usuarios-filtros {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.usuarios-search {
+  flex: 2;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 1rem;
+  background: #f7f7fa;
+}
+
+.usuarios-select {
+  min-width: 180px;
+}
+
+.usuarios-resumen {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.resumen-card {
+  background: #f8fcff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+  padding: 18px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 160px;
+}
+
+.resumen-icon {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resumen-icon.total { background: #eaf3ff; color: #1976d2; }
+.resumen-icon.activos { background: #eafaf1; color: #43a047; }
+.resumen-icon.entrenadores { background: #fffbe7; color: #fbc02d; }
+.resumen-icon.victorias { background: #eafaf1; color: #43a047; }
+
+.resumen-label {
+  font-size: 1rem;
+  color: #607d8b;
+  margin-bottom: 2px;
+}
+
+.resumen-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2e3c5d;
+}
+
+.usuarios-lista {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+  padding: 18px 24px;
+}
+
+.usuarios-lista-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.usuarios-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 12px;
+}
+
+.usuarios-table th {
+  text-align: left;
+  font-size: 0.98rem;
+  color: #607d8b;
+  font-weight: 600;
+  padding: 10px 8px;
+  background: #f7f7fa;
+}
+
+.usuarios-table td {
+  padding: 12px 8px;
+  vertical-align: middle;
+  font-size: 1rem;
+}
+
+.usuario-nombre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.usuario-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.nombre {
+  font-weight: 600;
+  color: #2e3c5d;
+}
+
+.correo {
+  font-size: 0.95rem;
+  color: #607d8b;
+}
+
+.barra-victorias {
+  background: #eafaf1;
+  border-radius: 8px;
+  height: 6px;
+  width: 70px;
+  margin-top: 4px;
+  position: relative;
+}
+
+.barra {
+  background: #43a047;
+  height: 100%;
+  border-radius: 8px;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.badge-rol {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-block;
+}
+
+.badge-rol.jugador { background: #eaf3ff; color: #1976d2; }
+.badge-rol.entrenador { background: #fffbe7; color: #fbc02d; }
+.badge-rol.administrador { background: #f3eafc; color: #8e24aa; }
+
+.badge-categoria {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #eafaf1;
+  color: #43a047;
+  display: inline-block;
+}
+
+.badge-categoria.senior { background: #eafaf1; color: #43a047; }
+.badge-categoria.juvenil { background: #eaf3ff; color: #1976d2; }
+.badge-categoria.veterano { background: #fffbe7; color: #fbc02d; }
+
+.usuarios-paginacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 0.98rem;
+  color: #607d8b;
+}
+
+.paginador button {
+  background: #f7f7fa;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  margin: 0 2px;
+  font-weight: 600;
+  color: #2e3c5d;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.paginador button.active,
+.paginador button:hover {
+  background: #1976d2;
+  color: #fff;
+}
+
+.paginador button:disabled {
+  background: #e0e0e0;
+  color: #888;
+  cursor: not-allowed;
 }
