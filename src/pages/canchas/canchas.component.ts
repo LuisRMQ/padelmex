@@ -50,6 +50,8 @@ export class CanchasComponent implements OnInit {
   editandoCanchaID: number | null = null;
   backupCancha: Partial<Court> | null = null;
   logoFile: File | null = null;
+  currentPage = 1;
+  lastPage = 1;
 
   constructor(
     private courtService: CourtService,
@@ -94,16 +96,18 @@ export class CanchasComponent implements OnInit {
     }
   }
 
-  loadCourts() {
+  loadCourts(page: number = 1) {
     if (!this.selectedClubId) return;
 
     this.loading = true;
     this.courts = [];
     this.error = '';
 
-    this.courtService.getCourtsByClub(this.selectedClubId).subscribe({
+    this.courtService.getCourtsByClub(this.selectedClubId, 5, page).subscribe({
       next: (response: CourtsResponse) => {
         this.courts = response.data;
+        this.currentPage = response.current_page;
+        this.lastPage = response.last_page;
         this.loading = false;
       },
       error: (error) => {
@@ -112,6 +116,11 @@ export class CanchasComponent implements OnInit {
         console.error(error);
       }
     });
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.lastPage) return;
+    this.loadCourts(page);
   }
 
   abrirModalRegistrarCancha() {
@@ -123,16 +132,18 @@ export class CanchasComponent implements OnInit {
       panelClass: 'custom-dialog'
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(async result => {
+      console.log('Dialog result:', result);
       if (result) {
-        this.snackBar.open('✅ Cancha registrada exitosamente', 'Cerrar', {
+        this.snackBar.open('Cancha registrada exitosamente', 'Cerrar', {
           duration: 3000,
           panelClass: ['snackbar-success'],
           horizontalPosition: 'center',
           verticalPosition: 'bottom'
         });
 
-        this.loadCourts();
+        await this.loadCourts();
+        this.abrirModalRegistrarHorario(result.club);
       }
     });
   }
@@ -246,7 +257,7 @@ export class CanchasComponent implements OnInit {
         const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
           maxWidth: '80vw',
           maxHeight: '80vh',
-          data: { courtId: court.id, horarios, clubId: court.club_id }, // 👉 ahora ya es array, no observable
+          data: { courtId: court.id, horarios, clubId: court.club_id, courtName: court.name },
         });
 
         dialogRef.afterClosed().subscribe(result => {

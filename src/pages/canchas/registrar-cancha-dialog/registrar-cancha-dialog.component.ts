@@ -107,7 +107,7 @@ export class RegistrarCanchaDialogComponent implements OnInit {
       this.courtService.createCourt(formData).subscribe({
         next: (response) => {
           this.loading = false;
-          this.dialogRef.close(true);
+          this.dialogRef.close(response);
           
           console.log('Cancha creada:', response);
         },

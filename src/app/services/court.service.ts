@@ -24,6 +24,7 @@ export interface CourtsResponse {
   data: Court[];
   per_page: number;
   total: number;
+  last_page: number;
 }
 
 @Injectable({
@@ -38,10 +39,11 @@ export class CourtService extends ApiBaseService {
     return this.post('/court/create', formData);
   }
 
-  getCourtsByClub(clubId: number, limit: number = 5): Observable<CourtsResponse> {
+  getCourtsByClub(clubId: number, limit: number = 5, page: number = 1): Observable<CourtsResponse> {
     let params = new HttpParams()
       .append('club_id', clubId.toString())
-      .append('limit', limit.toString());
+      .append('limit', limit.toString())
+      .append('page', page.toString());
     return this.get<CourtsResponse>('/courts', params);
   }
 

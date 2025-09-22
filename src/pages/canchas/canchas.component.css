@@ -114,7 +114,15 @@ mat-card-actions {
   color: #2b2c2c;
 }
 
-.card-actions{
+.card-actions {
   justify-content: flex-start;
   gap: 0;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin: 24px 0 0 0;
 }

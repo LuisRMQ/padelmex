@@ -1,5 +1,3 @@
-<!-- <div class="container"> -->
-
 <!-- Header -->
 <div class="header">
   <h1>Canchas</h1>
@@ -57,7 +55,7 @@
       <p><strong>Costo Renta:</strong> {{ court.price_hour }}</p>
     </mat-card-content>
 
-    <mat-card-actions class ="card-actions">
+    <mat-card-actions class="card-actions">
       <button mat-icon-button (click)="abrirModalRegistrarHorario(court)">
         <mat-icon>more_time</mat-icon>
       </button>
@@ -70,10 +68,17 @@
     </mat-card-actions>
   </mat-card>
 </div>
-<!-- ...existing code... -->
+
+<div class="pagination-container" *ngIf="lastPage > 1">
+  <button mat-button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+    &laquo; Anterior
+  </button>
+  <span>Página {{ currentPage }} de {{ lastPage }}</span>
+  <button mat-button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === lastPage">
+    Siguiente &raquo;
+  </button>
+</div>
 
 <div *ngIf="courts.length === 0 && !loading && !error" class="no-canchas">
   No hay canchas registradas para este club.
 </div>
-
-<!-- </div> -->

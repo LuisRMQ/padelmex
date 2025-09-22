@@ -12,6 +12,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { MatDividerModule } from "@angular/material/divider";
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface DaySchedule {
     name: string;
@@ -70,8 +71,9 @@ export class RegistrarHorarioDialogComponent {
     constructor(
         private fb: FormBuilder,
         private dialogRef: MatDialogRef<RegistrarHorarioDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { courtId: number, horarios: any, clubId: number },
-        private horarioCancha: HorariosServiceCancha
+        @Inject(MAT_DIALOG_DATA) public data: { courtId: number, horarios: any, clubId: number, courtName: string },
+        private horarioCancha: HorariosServiceCancha,
+        private snackBar: MatSnackBar
 
     ) {
         this.scheduleForm = this.fb.group({
@@ -111,11 +113,15 @@ export class RegistrarHorarioDialogComponent {
         const selectedDays = this.days.filter(day => day.enabled);
         const daysToUpdate = selectedDays.filter(day => day.hasSchedule);
         const daysToCreate = selectedDays.filter(day => !day.hasSchedule);
-        console.log('Días seleccionados para crear horarios:', daysToCreate);
-        console.log('Días seleccionados para actualizar horarios:', daysToUpdate);
 
         if (selectedDays.length === 0) {
-            console.warn('No hay días seleccionados.');
+            this.snackBar.open('Por favor, selecciona al menos un día para guardar los horarios.', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-info'],
+                horizontalPosition: 'right',
+                verticalPosition: 'top'
+
+            });
             return;
         }
 
