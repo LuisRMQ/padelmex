@@ -78,3 +78,24 @@
   margin-top: 20px;
   gap: 12px;
 }
+
+.badge {
+  background-color: #ecf5ff;
+  color: white;
+  font-size: 13px;
+  border-radius: 4px;
+  margin-left: 32px;
+  height: 25px;
+  font-weight: 500;
+  color: #336699;
+}
+
+.badge-rojo {
+  background-color: #fef2f2;
+  color: #ef4444;
+  font-size: 13px;
+  border-radius: 4px;
+  margin-left: 32px;
+  height: 25px;
+  font-weight: 500;
+}

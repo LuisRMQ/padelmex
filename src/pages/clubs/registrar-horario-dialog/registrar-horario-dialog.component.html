@@ -5,8 +5,8 @@
       <mat-icon>schedule</mat-icon>
     </div>
     <div>
-      <h2>Horarios del Club</h2>
-      <p>Configura el horario semanal de tu Club</p>
+      <h2>Horarios de Club</h2>
+      <p>Configura el horario semanal de tu cancha</p>
     </div>
     <button mat-icon-button mat-dialog-close>
       <mat-icon>close</mat-icon>
@@ -26,8 +26,19 @@
   <!-- Weekly Schedule -->
   <div class="weekly-schedule">
     <div class="day-row" *ngFor="let day of days">
-      <mat-checkbox [(ngModel)]="day.enabled">{{ day.name }}</mat-checkbox>
-
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 40%;">
+        <mat-checkbox [(ngModel)]="day.enabled">{{ day.name }}</mat-checkbox>
+        <div *ngIf="day.hasSchedule; else noHorario" style="justify-content: flex-end;">
+          <div class="badge" *ngFor="let s of day.schedules">
+            {{ s.start }} - {{ s.end }}
+          </div>
+        </div>
+        <ng-template #noHorario>
+          <div class="badge badge-rojo">
+            Sin horario definido
+          </div>
+        </ng-template>
+      </div>
       <div class="time-selectors" *ngIf="day.enabled">
         <span>De:</span>
         <mat-form-field appearance="outline" class="time-field">

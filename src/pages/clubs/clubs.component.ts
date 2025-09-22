@@ -286,24 +286,36 @@ export class ClubsComponent implements OnInit {
 
 
   abrirModalRegistrarHorario(club: Club) {
-    const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
-       maxWidth: '80vw',
-      maxHeight: '80vh',
-      data: { clubId: club.id }
-    });
+  this.horariosService.getHorariosByClub(club.id).subscribe({
+    next: (horarios) => {
+      const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
+        maxWidth: '80vw',
+        maxHeight: '80vh',
+        data: { 
+          clubId: club.id, 
+          name: club.name,
+          horarios 
+        }
+      });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open('✅ Horario registrado exitosamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success'],
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom'
-        });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.snackBar.open('✅ Horario registrado exitosamente', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-success'],
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom'
+          });
+        }
+      });
+    },
+    error: (err) => {
+      console.error('❌ Error al obtener horarios del club', err);
+      this.snackBar.open('Error al cargar los horarios', 'Cerrar', { duration: 3000 });
+    }
+  });
+}
 
-      }
-    });
-  }
 
 
   abrirModalHorarios(club: Club) {
