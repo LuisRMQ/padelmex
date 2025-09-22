@@ -55,20 +55,24 @@
 				<input matInput [(ngModel)]="club.address" name="address">
 			</mat-form-field>
 		</div>
+
 		<div class="form-row">
 			<mat-form-field appearance="outline" class="form-field">
-				<mat-label>City ID</mat-label>
-				<input matInput [(ngModel)]="club.city_id" name="city_id" type="number">
+				<mat-label>Estado</mat-label>
+				<input matInput [(ngModel)]="club.state" name="state">
 			</mat-form-field>
+
+			<mat-form-field appearance="outline" class="form-field">
+				<mat-label>Ciudad</mat-label>
+				<input matInput [(ngModel)]="club.city" name="city">
+			</mat-form-field>
+		</div>
+
+		<div class="form-row">
+
 			<mat-form-field appearance="outline" class="form-field">
 				<mat-label>RFC</mat-label>
 				<input matInput [(ngModel)]="club.rfc" name="rfc">
-			</mat-form-field>
-		</div>
-		<div class="form-row">
-			<mat-form-field appearance="outline" class="form-field">
-				<mat-label>Sitio Web</mat-label>
-				<input matInput [(ngModel)]="club.web_site" name="web_site">
 			</mat-form-field>
 		</div>
 

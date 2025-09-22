@@ -8,7 +8,7 @@
 
 <div class="torneos-container">
   <div class="torneo-item" *ngFor="let torneo of torneos">
-    <mat-card class="torneo-card" (click)="abrirBracket(torneo)">
+    <mat-card class="torneo-card">
       <!-- Badge de estado -->
       <div class="card-badge" 
            [class.activo]="torneo.status === 'open' || torneo.status === 'in_progress'" 

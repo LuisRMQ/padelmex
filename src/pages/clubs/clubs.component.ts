@@ -185,56 +185,78 @@ export class ClubsComponent implements OnInit {
   }
 
   guardarClubEditado(clubOrForm: Club | FormData) {
-    // Permitir validación tanto para objeto Club como para FormData
-    let values: any = {};
-    if (clubOrForm instanceof FormData) {
-      clubOrForm.forEach((value, key) => {
-        values[key] = value;
-      });
-    } else {
-      values = clubOrForm;
+  // Permitir validación tanto para objeto Club como para FormData
+  let values: any = {};
+  if (clubOrForm instanceof FormData) {
+    clubOrForm.forEach((value, key) => {
+      values[key] = value;
+    });
+    console.log("📦 Datos recibidos (FormData):", values);
+  } else {
+    values = { ...clubOrForm };
+
+    // 🚫 Si logo viene como string (URL o base64), lo quitamos
+    if (typeof values.logo === 'string') {
+      delete values.logo;
     }
-    // Validación de campos obligatorios
-    if (!values.name || !values.email || !values.phone || !values.rfc || !values.address || !values.type || !values.city_id) {
-      this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
-      return;
-    }
-    // Si es FormData, enviar como tal
-    if (clubOrForm instanceof FormData) {
-      this.clubsService.updateClub(values.id, clubOrForm).subscribe({
-        next: (res) => {
-          this.editandoClubId = null;
-          this.logoFile = null;
-          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-success']
-          });
-        },
-        error: (err) => {
-          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    } else {
-      this.clubsService.updateClub(values.id, values).subscribe({
-        next: (res) => {
-          this.editandoClubId = null;
-          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-success']
-          });
-        },
-        error: (err) => {
-          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    }
+
+    console.log("📦 Datos recibidos (Objeto Club):", values);
   }
+
+  // Validación de campos obligatorios
+  if (!values.name || !values.email || !values.phone || !values.rfc || !values.address || !values.type) {
+    console.error("❌ Falta un campo obligatorio:", values);
+    this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', {
+      duration: 3000,
+      panelClass: ['snackbar-error']
+    });
+    return;
+  }
+
+  // Si es FormData, enviar como tal
+  if (clubOrForm instanceof FormData) {
+    console.log("🚀 Enviando FormData al backend:", values);
+    this.clubsService.updateClub(values.id, clubOrForm).subscribe({
+      next: (res) => {
+        console.log("✅ Respuesta del backend:", res);
+        this.editandoClubId = null;
+        this.logoFile = null;
+        this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-success']
+        });
+      },
+      error: (err) => {
+        console.error("🔥 Error al actualizar (FormData):", err);
+        this.snackBar.open('Error al actualizar el club', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  } else {
+    console.log("🚀 Enviando objeto normal al backend:", values);
+    this.clubsService.updateClub(values.id, values).subscribe({
+      next: (res) => {
+        console.log("✅ Respuesta del backend:", res);
+        this.editandoClubId = null;
+        this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-success']
+        });
+      },
+      error: (err) => {
+        console.error("🔥 Error al actualizar (Objeto Club):", err);
+        this.snackBar.open('Error al actualizar el club', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }
+}
+
+
 
   onLogoSelected(event: Event, club: Club) {
     const file = (event.target as HTMLInputElement).files?.[0];

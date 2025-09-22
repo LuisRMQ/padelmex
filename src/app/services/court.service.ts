@@ -45,7 +45,7 @@ export class CourtService extends ApiBaseService {
     return this.get<CourtsResponse>('/courts', params);
   }
 
-  updateCourt(id: number, data: Partial<Court>): Observable<any> {
+  updateCourt(id: number, data: Partial<Court> | FormData): Observable<any> {
     return this.put(`/court/update/${id}`, data);
   }
 

@@ -6,7 +6,7 @@ import { MatSelectModule } from "@angular/material/select";
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 export interface Club {
   id: number;
@@ -17,7 +17,8 @@ export interface Club {
   phone: string;
   email: string;
   web_site: string;
-  city_id: number;
+  state: string;
+  city: string;
   logo: string;
   status: boolean;
 }
@@ -53,24 +54,36 @@ export class EditarClubDialogComponent {
   }
 
   guardar() {
-    // Si se seleccionó un nuevo archivo de logo, enviar como FormData
+  try {
     if (this.logoFile) {
+      // Si hay archivo, mandamos FormData
       const formData = new FormData();
       Object.entries(this.club).forEach(([key, value]) => {
         if (key !== 'logo' && value !== undefined && value !== null) {
           formData.append(key, String(value));
         }
       });
+
       formData.append('logo', this.logoFile);
-      // Debug: mostrar el contenido del FormData
+
+      console.log("🚀 Enviando con archivo (FormData):");
       for (const pair of formData.entries()) {
-        console.log(pair[0]+ ':', pair[1]);
+        console.log(pair[0] + ':', pair[1]);
       }
-      console.log(formData);
+
       this.dialogRef.close(formData);
     } else {
-      // Si no se cambió el logo, solo enviar los datos normales
-      this.dialogRef.close(this.club);
+      // ⚠️ No mandamos logo si no se seleccionó un nuevo archivo
+      const { logo, ...clubSinLogo } = this.club;
+
+      console.log("🚀 Enviando sin archivo (Objeto Club):", clubSinLogo);
+
+      this.dialogRef.close(clubSinLogo);
     }
+  } catch (error) {
+    console.error("Error en guardar():", error);
   }
+}
+
+
 }

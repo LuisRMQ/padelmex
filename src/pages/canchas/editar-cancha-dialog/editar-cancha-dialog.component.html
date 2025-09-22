@@ -1,0 +1,85 @@
+<div class="edit-cancha-dialog">
+  <div class="edit-header">
+    <div class="edit-header-title">
+      <mat-icon class="edit-header-icon">edit</mat-icon>
+      <div>
+        <h2>Editar Cancha</h2>
+        <div class="edit-header-desc">Actualiza la información y configuración de la cancha</div>
+      </div>
+    </div>
+  </div>
+
+  <form class="edit-form" [formGroup]="courtForm" autocomplete="off">
+    <!-- Foto -->
+    <div class="logo-section">
+      <div class="logo-box">
+        <img class="club-logo" [src]="logoPreview" alt="Foto de la cancha">
+        <div class="logo-actions">
+          <label class="change-logo-label">
+            <input type="file" accept="image/*" (change)="onFileSelected($event)">
+            <mat-icon>photo_camera</mat-icon> Cambiar Foto
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nombre y Sponsor -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Nombre de la Cancha *</mat-label>
+        <input matInput formControlName="name" required>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Patrocinador *</mat-label>
+        <input matInput formControlName="sponsor" required>
+      </mat-form-field>
+    </div>
+
+    <!-- Club y Tipo -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Club *</mat-label>
+        <mat-select formControlName="club_id" required>
+         <mat-option *ngFor="let club of clubs" [value]="club.id">
+  {{ club.name }}
+</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+       
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Tipo *</mat-label>
+        <mat-select formControlName="type" required>
+          <mat-option value="open">Abierta</mat-option>
+          <mat-option value="indoor">Techada</mat-option>
+          <mat-option value="grass">Pasto</mat-option>
+          <mat-option value="clay">Arcilla</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Disponibilidad y Precio -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Disponibilidad</mat-label>
+        <mat-select formControlName="availability">
+          <mat-option value="1">Disponible</mat-option>
+          <mat-option value="0">No disponible</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Precio por Hora *</mat-label>
+        <input matInput type="number" formControlName="price_hour" required>
+      </mat-form-field>
+    </div>
+
+    <!-- Acciones -->
+     <div class="form-actions">
+    <button mat-raised-button type="button" (click)="guardar()">Guardar Cambios</button>
+    <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+  </div>
+  </form>
+</div>

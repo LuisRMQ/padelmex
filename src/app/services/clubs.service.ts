@@ -19,6 +19,12 @@ export interface Club {
     updated_at: string;
 }
 
+export interface ClubsResponse {
+  current_page: number;
+  data: Club[];
+  total: number;
+  per_page: number;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -40,6 +46,10 @@ export class ClubsService extends ApiBaseService {
 
     deleteClub(id: number): Observable<any> {
         return this.delete(`/delete/club/${id}`);
+    }
+
+    getClubsa(): Observable<ClubsResponse> {
+        return this.get<ClubsResponse>('/clubs');
     }
 }
 

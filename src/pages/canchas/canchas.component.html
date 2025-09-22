@@ -41,10 +41,11 @@
           <mat-card-title class="club-title cancha-title">{{ court.name }}</mat-card-title>
           <mat-card-subtitle class="club-subtitle cancha-subtitle">{{ getClubName(court.club_id) }}</mat-card-subtitle>
         </div>
-        <button mat-icon-button class="edit-btn" (click)="editarCancha(court)">
+        <button mat-icon-button class="edit-btn" (click)="abrirEditarCanchaDialog(court)">
           <mat-icon>edit</mat-icon>
         </button>
       </div>
+
 
     </mat-card-header>
 

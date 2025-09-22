@@ -18,6 +18,7 @@ import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog
 import { RegistrarHorarioDialogComponent } from './registrar-horario-dialog/registrar-horario-dialog.component';
 import { HorariosServiceCancha } from '../../app/services/horarios-canchas.service';
 import { InfoCanchaDialogComponent } from './info-cancha-dialog/info-cancha-dialog.component';
+import { EditarCanchaDialogComponent } from './editar-cancha-dialog/editar-cancha-dialog.component';
 
 @Component({
   selector: 'app-canchas',
@@ -136,33 +137,50 @@ export class CanchasComponent implements OnInit {
     });
   }
 
-  editarCancha(court: Court) {
-    this.editandoCanchaID = court.id;
-    this.backupCancha = { ...court };
+  abrirEditarCanchaDialog(court: Court) {
+    const dialogRef = this.dialog.open(EditarCanchaDialogComponent, {
+      width: '800px',
+      maxWidth: '50vw',
+      height: 'auto',
+      maxHeight: '70vh',
+      panelClass: 'custom-dialog',
+      data: { court }
+    });
+
+    dialogRef.afterClosed().subscribe((formData: FormData) => {
+      if (formData) {
+        this.courtService.updateCourt(court.id, formData).subscribe({
+          next: () => {
+            this.snackBar.open('✅ Cancha actualizada correctamente', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            });
+            this.loadCourts();
+          },
+          error: (err) => {
+            console.error('Error al actualizar cancha:', err);
+            this.snackBar.open('❌ Error al actualizar la cancha', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+      }
+    });
   }
+
+
+
+
+
 
   onImageError(event: Event) {
     const target = event.target as HTMLImageElement;
     target.src = '../../../assets/images/logoclub.jpg';
   }
 
-  guardarCanchaEditada(court: Court) {
-    this.courtService.updateCourt(court.id, court).subscribe({
-      next: (res) => {
-        this.editandoCanchaID = null;
-        this.snackBar.open('Cancha actualizada correctamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success']
-        });
-      },
-      error: (err) => {
-        this.snackBar.open('Error al actualizar la cancha', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-error']
-        });
-      }
-    });
-  }
+
+
 
   cancelarEdicion(court: Court) {
     if (this.backupCancha) {
