@@ -36,6 +36,8 @@ export class EditarTorneoDialogComponent implements OnInit {
   logoPreview: string | ArrayBuffer | null = null;
   categoriasDisponibles: Category[] = [];
 
+  logoFile: File | null = null;
+
   constructor(
     private fb: FormBuilder,
     private tournamentService: TournamentService,
@@ -59,7 +61,7 @@ export class EditarTorneoDialogComponent implements OnInit {
       photo: [null]
     });
 
- this.tournamentService.getCategories().subscribe({
+    this.tournamentService.getCategories().subscribe({
       next: (res: any) => {
         this.categoriasDisponibles = res.data;
         console.log('Categorías cargadas:', this.categoriasDisponibles);
@@ -83,7 +85,7 @@ export class EditarTorneoDialogComponent implements OnInit {
         prizes: torneo.prizes?.join(', '),
         rules: torneo.rules,
         photo: torneo.photo,
-        categories: torneo.categories ?? []  
+        categories: torneo.categories ?? []
       });
 
       if (torneo.photo) {
@@ -109,21 +111,69 @@ export class EditarTorneoDialogComponent implements OnInit {
   }
 
   guardar() {
-    if (this.form.invalid) return;
+  if (this.form.invalid) return;
 
-    const torneoData = {
-      ...this.form.value,
-      prizes: this.form.value.prizes
-        ? this.form.value.prizes.split(',').map((p: string) => p.trim())
-        : [],
-      categories: this.form.value.categories ?? []
-    };
+  const formData = new FormData();
 
-    this.tournamentService.updateTournament(this.data.torneoId, torneoData)
-      .subscribe(res => {
-        this.dialogRef.close(res);
-      });
+  formData.append('name', this.form.value.name ?? '');
+  formData.append('description', this.form.value.description ?? '');
+  formData.append('start_date', this.form.value.start_date ?? '');
+  formData.append('end_date', this.form.value.end_date ?? '');
+  formData.append('registration_deadline', this.form.value.registration_deadline ?? '');
+  formData.append('registration_fee', (this.form.value.registration_fee ?? 0).toString());
+  formData.append('max_participants', (this.form.value.max_participants ?? 2).toString());
+  formData.append('club_id', (this.form.value.club_id ?? 1).toString());
+  formData.append('rules', this.form.value.rules ?? '');
+
+  if (this.form.value.prizes) {
+    this.form.value.prizes.split(',').map((p: string) => p.trim()).forEach((p: string, i: number) => {
+      if (p) formData.append(`prizes[${i}]`, p);
+    });
   }
+
+  (this.form.value.categories || []).forEach((cat: any, i: number) => {
+    if (cat != null) {
+      const categoryId = typeof cat === 'object' ? cat.torneoId ?? cat.id : cat;
+      if (categoryId != null) {
+        formData.append(`categories[${i}][id]`, categoryId.toString());
+      }
+    }
+  });
+
+  // Foto
+  if (this.logoFile instanceof File) {
+    formData.append('photo', this.logoFile);
+  }
+
+  console.log('📦 FormData final:', [...formData.entries()]);
+
+  this.tournamentService.updateTournament(this.data.torneoId, formData)
+  .subscribe({
+    next: (res) => {
+      console.log('✅ Torneo actualizado', res);
+      this.dialogRef.close(true);
+    },
+    error: (err) => {
+      console.error('❌ Error al actualizar', err);
+    }
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   onCancel() {
     this.dialogRef.close();

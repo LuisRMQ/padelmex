@@ -1,13 +1,22 @@
 import { Component, Inject, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import * as d3 from 'd3';
-import { Participante, Partido } from '../registrar-torneo-dialog/registrar-torneo-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { User } from '../../../app/services/users.service';
+
+export interface Partido {
+  jugador1?: User;
+  jugador2?: User;
+  ganador?: User;
+  x?: number;
+  y?: number;
+  height?: number;
+}
 
 @Component({
   selector: 'app-bracket-modal',
   template: `
     <h2>Bracket del Torneo</h2>
-    <div #bracketContainer class="bracket-container" style="width: 100%; height: 600px;"></div>
+    <div #bracketContainer class="bracket-container"></div>
     <button mat-raised-button color="primary" (click)="cerrar()">Cerrar</button>
   `,
   styles: [`
@@ -15,10 +24,11 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       border: 1px solid #ccc;
       margin-top: 10px;
       overflow: auto;
+      width: 100%;
+      height: 600px;
     }
+    text { font-family: Arial, sans-serif; }
   `],
-  standalone: true,
-  imports: []
 })
 export class BracketModalComponent implements AfterViewInit {
   @ViewChild('bracketContainer', { static: false }) bracketContainer!: ElementRef;
@@ -33,8 +43,7 @@ export class BracketModalComponent implements AfterViewInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { bracket: Partido[][] },
-    private dialogRef: MatDialogRef<BracketModalComponent>,
-    private el: ElementRef
+    private dialogRef: MatDialogRef<BracketModalComponent>
   ) {
     if (data?.bracket) {
       this.bracket = data.bracket;
@@ -47,52 +56,47 @@ export class BracketModalComponent implements AfterViewInit {
   }
 
   private drawBracket() {
-  if (!this.bracketContainer?.nativeElement) return;
+    if (!this.bracketContainer?.nativeElement) return;
 
-  const container = this.bracketContainer.nativeElement as HTMLElement;
-  
-  // Calcular el tamaño necesario del SVG
-  const width = this.bracket.length * (this.matchWidth + this.spacingX) + 100;
-  const maxMatches = Math.max(...this.bracket.map(r => r.length));
-  const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
+    const container = this.bracketContainer.nativeElement as HTMLElement;
+    const width = this.bracket.length * (this.matchWidth + this.spacingX) + 100;
+    const maxMatches = Math.max(...this.bracket.map(r => r.length));
+    const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
 
-  this.svg = d3.select(container).select('svg');
-  if (this.svg.empty()) {
-    this.svg = d3.select(container).append('svg');
+    this.svg = d3.select(container).select('svg');
+    if (this.svg.empty()) {
+      this.svg = d3.select(container).append('svg');
+    }
+
+    this.svg.attr('width', width).attr('height', height);
+    this.svg.selectAll('*').remove();
+
+    this.calculatePositions(height);
+
+    this.bracket.forEach((ronda, roundIndex) => {
+      ronda.forEach((partido, matchIndex) => {
+        this.drawMatch(partido, roundIndex, matchIndex);
+        if (roundIndex < this.bracket.length - 1) {
+          this.drawConnections(partido, roundIndex, matchIndex);
+        }
+      });
+    });
   }
 
-  this.svg.attr('width', width)
-          .attr('height', height);
-
-  this.svg.selectAll('*').remove();
-
-  this.calculatePositions(height);
-
-  this.bracket.forEach((ronda, roundIndex) => {
-    ronda.forEach((partido, matchIndex) => {
-      this.drawMatch(partido, roundIndex, matchIndex);
-      if (roundIndex < this.bracket.length - 1) {
-        this.drawConnections(partido, roundIndex, matchIndex);
-      }
-    });
-  });
-}
-
-
   private calculatePositions(containerHeight: number) {
-  this.bracket.forEach((ronda, roundIndex) => {
-    const x = roundIndex * (this.matchWidth + this.spacingX) + 50;
-    const matchesInRound = ronda.length;
-    const totalHeight = matchesInRound * (this.matchHeight + this.verticalSpacing) - this.verticalSpacing;
-    const startY = (containerHeight - totalHeight) / 2; // centra verticalmente
+    this.bracket.forEach((ronda, roundIndex) => {
+      const x = roundIndex * (this.matchWidth + this.spacingX) + 50;
+      const matchesInRound = ronda.length;
+      const totalHeight = matchesInRound * (this.matchHeight + this.verticalSpacing) - this.verticalSpacing;
+      const startY = (containerHeight - totalHeight) / 2;
 
-    ronda.forEach((partido, i) => {
-      partido.x = x;
-      partido.y = startY + i * (this.matchHeight + this.verticalSpacing);
-      partido.height = this.matchHeight;
+      ronda.forEach((partido, i) => {
+        partido.x = x;
+        partido.y = startY + i * (this.matchHeight + this.verticalSpacing);
+        partido.height = this.matchHeight;
+      });
     });
-  });
-}
+  }
 
   private drawMatch(partido: Partido, roundIndex: number, matchIndex: number) {
     const x = partido.x!;
@@ -117,7 +121,7 @@ export class BracketModalComponent implements AfterViewInit {
     }
   }
 
-  private drawPlayer(group: any, jugador: Participante, yOffset: number, esGanador: boolean, partido: Partido, roundIndex: number, matchIndex: number) {
+  private drawPlayer(group: any, jugador: User, yOffset: number, esGanador: boolean, partido: Partido, roundIndex: number, matchIndex: number) {
     group.append('rect')
       .attr('x', 0)
       .attr('y', yOffset)
@@ -129,9 +133,9 @@ export class BracketModalComponent implements AfterViewInit {
       .style('cursor', 'pointer')
       .on('click', () => this.marcarGanador(jugador, roundIndex, matchIndex));
 
-    if (jugador.logo) {
+    if (jugador.profile_photo) {
       group.append('image')
-        .attr('xlink:href', jugador.logo)
+        .attr('xlink:href', jugador.profile_photo)
         .attr('x', 5)
         .attr('y', yOffset + 5)
         .attr('width', this.logoSize)
@@ -139,8 +143,8 @@ export class BracketModalComponent implements AfterViewInit {
     }
 
     group.append('text')
-      .text(jugador.nombre)
-      .attr('x', this.logoSize + 15)
+      .text(`${jugador.name} ${jugador.lastname}`)
+      .attr('x', this.logoSize + 10)
       .attr('y', yOffset + (this.matchHeight / 4))
       .attr('dy', '0.35em')
       .attr('fill', 'white')
@@ -148,7 +152,7 @@ export class BracketModalComponent implements AfterViewInit {
       .attr('font-size', '12px');
   }
 
-  private marcarGanador(jugador: Participante, roundIndex: number, matchIndex: number) {
+  private marcarGanador(jugador: User, roundIndex: number, matchIndex: number) {
     const partido = this.bracket[roundIndex][matchIndex];
     partido.ganador = jugador;
 

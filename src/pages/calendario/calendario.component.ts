@@ -19,6 +19,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScheduleDetailsDialogComponent } from './schedule-details-dialog/schedule-details-dialog.component';
+import { SettingsDialogComponent } from './settings-dialog/settings-dialog.component';
 
 interface Court { id: number; name: string; }
 interface CalendarReservation {
@@ -154,6 +155,26 @@ export class CalendarioComponent implements OnInit {
       return true;
     }
     return false;
+  }
+
+
+  openSettingsDialog() {
+    const dialogRef = this.dialog.open(SettingsDialogComponent, {
+      width: '400px',
+      data: {
+        // Puedes pasar datos iniciales si quieres
+        minReservationDuration: 30,
+        cancellationLimitHours: 2,
+        maxReservationsPerUser: 3
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Configuración guardada:', result);
+        // Aquí puedes actualizar la configuración en tu componente o enviar a backend
+      }
+    });
   }
 
   // ---- helpers de tiempo / formato ----

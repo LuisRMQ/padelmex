@@ -11,6 +11,7 @@ import { TournamentService, Tournament } from '../../app/services/torneos.servic
 import { BracketModalComponent } from '../torneos/brackets-torneo-dialog/brackets-torneo-dialog.component';
 import { RegistrarTorneoDialogComponent } from '../torneos/registrar-torneo-dialog/registrar-torneo-dialog.component';
 import { EditarTorneoDialogComponent } from '../torneos/editar-torneo-dialog/editar-torneo-dialog.component';
+import { InicioTorneoDialogComponent } from '../torneos/inicio-torneo-dialog/inicio-torneo.dialog.component';
 
 
 @Component({
@@ -144,9 +145,16 @@ export class TorneosComponent implements OnInit {
     });
   }
 
-  verDetalles(torneo: Tournament) {
-    console.log('Ver detalles:', torneo);
-  }
+verDetalles(torneo: Tournament) {
+  this.dialog.open(InicioTorneoDialogComponent, {
+    width: '90vw',      
+    maxWidth: '1000px',  
+    height: 'auto',      
+    maxHeight: '80vh',   
+    data: { torneoId: torneo.id },
+    panelClass: 'custom-dialog'
+  });
+}
 
   editarTorneo(torneo: Tournament) {
     const dialogRef = this.dialog.open(EditarTorneoDialogComponent, {

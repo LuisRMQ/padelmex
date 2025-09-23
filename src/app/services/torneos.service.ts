@@ -66,9 +66,8 @@ export class TournamentService extends ApiBaseService {
     return this.get<Category[]>('/categories');
   }
 
-
-  updateTournament(id: number, data: Partial<Tournament>): Observable<any> {
-    return this.put(`/tournament/update/${id}`, data);
+updateTournament(id: number, data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/tournament/update/${id}?_method=PUT`, data);
   }
 
   updateTournamentStatus(id: number, status: Tournament['status']): Observable<any> {
