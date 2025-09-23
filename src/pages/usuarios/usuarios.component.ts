@@ -14,8 +14,8 @@ import { FormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 
 import { RegistrarUsuarioDialogComponent } from './registrar-usuario-dialog/registrar-usuario-dialog.component';
-import { UsersService, User } from '../../app/services/users.service';
-import { area } from 'd3';
+import { UsersService } from '../../app/services/users.service';
+import { CourtService } from '../../app/services/court.service';
 
 export interface UsuarioTabla {
   id?: number;
@@ -33,6 +33,8 @@ export interface UsuarioTabla {
   fotoPerfil: string;
   manoPreferida: string;
   identificacion: string;
+  telefono: string;
+  area_code: string;
 }
 
 
@@ -63,17 +65,13 @@ export class UsuariosComponent implements OnInit {
   editando: boolean = false;
   formUsuario: any = {};
   selectedUsuario: any = null;
+  clubs: any[] = [];
+  usuariosFiltrados: UsuarioTabla[] = [];
 
 
   roles: { id: number; name: string }[] = [
     { id: 1, name: 'Jugador' },
     { id: 2, name: 'Administrador' }
-  ];
-
-  clubs: { id: number; name: string }[] = [
-    { id: 1, name: 'Club 1' },
-    { id: 2, name: 'Club 2' },
-    { id: 3, name: 'Club 3' },
   ];
 
   categories: { id: number; name: string }[] = [
@@ -87,16 +85,17 @@ export class UsuariosComponent implements OnInit {
   selectedCategoria: any;
   usuariosTabla: UsuarioTabla[] = [];
 
-  constructor(private dialog: MatDialog, private usersService: UsersService) { }
+  constructor(private dialog: MatDialog, private usersService: UsersService, private courtService: CourtService) { }
 
   ngOnInit() {
     this.cargarUsuarios();
+    this.cargarClubs();
   }
 
   cargarUsuarios() {
     this.usersService.getUsers().subscribe({
       next: (usuarios) => {
-        this.usuariosTabla= usuarios.map(u => ({
+        this.usuariosTabla = usuarios.map(u => ({
           id: u.id,
           nombre: u.name,
           apellidos: u.lastname,
@@ -104,25 +103,31 @@ export class UsuariosComponent implements OnInit {
           genero: u.gender,
           rol: u.rol || '-',
           rol_id: u.rol_id,
-          club: `Club ${u.club_id}` || '-',
+          club: this.clubs.find(c => c.id === u.club_id)?.name || '-',
           club_id: u.club_id,
           categoria: u.category || '-',
           victorias: '-',
           puntos: 0,
           fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
           manoPreferida: '-',
-          identificacion: '-'
+          identificacion: '-',
+          telefono: u.phone || '-',
+          area_code: u.area_code || '-'
         }));
-        this.dataSource = new MatTableDataSource<UsuarioTabla>(this.usuariosTabla);
-        this.dataSource.paginator = this.paginator;
+        this.usuariosFiltrados = [...this.usuariosTabla];
       },
       error: (err) => console.error('Error al cargar usuarios:', err)
     });
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    this.usuariosFiltrados = this.usuariosTabla.filter(u =>
+      u.nombre.toLowerCase().includes(filterValue) ||
+      u.apellidos.toLowerCase().includes(filterValue) ||
+      u.correo.toLowerCase().includes(filterValue) ||
+      u.club.toLowerCase().includes(filterValue)
+    );
   }
 
   eliminarUsuario(usuario: UsuarioTabla) {
@@ -259,19 +264,6 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   cancelarEdicion() {
     this.editando = false;
     this.formUsuario = { ...this.selectedUsuario };
@@ -289,5 +281,36 @@ export class UsuariosComponent implements OnInit {
     dialogRef.afterClosed().subscribe(() => {
       this.cargarUsuarios();
     });
+  }
+
+  cargarClubs() {
+    this.courtService.getClubs().subscribe({
+      next: (data) => {
+        this.clubs = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar clubes:', err);
+      }
+    });
+  }
+
+  getTotalUsuarios(): number {
+    return this.usuariosTabla.length;
+  }
+
+  getTotalUsuariosByRol(rol: string): number {
+    return this.usuariosTabla.filter(u => u.rol.toLowerCase() === rol.toLowerCase()).length;
+  }
+
+  getCategoriaConMasUsuarios(): string {
+    const categoriaCount: { [key: string]: number } = {};
+
+    this.usuariosTabla.forEach(u => {
+      const categoria = u.categoria.toLowerCase();
+      categoriaCount[categoria] = (categoriaCount[categoria] || 0) + 1;
+    });
+
+    const maxCategoria = Object.keys(categoriaCount).reduce((a, b) => categoriaCount[a] > categoriaCount[b] ? a : b, '');
+    return maxCategoria.charAt(0).toUpperCase() + maxCategoria.slice(1);
   }
 }

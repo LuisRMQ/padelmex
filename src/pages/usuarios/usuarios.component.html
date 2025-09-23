@@ -1,6 +1,3 @@
-<!-- <div class="usuarios-container"> -->
-
-<!-- Vista de tabla -->
 <div *ngIf="!selectedUsuario">
 
   <!-- Encabezado -->
@@ -16,7 +13,7 @@
     <!-- Filtros y resumen -->
     <div class="usuarios-filtros">
       <input class="usuarios-search" type="text" placeholder="Buscar usuarios..." (keyup)="applyFilter($event)">
-      <mat-form-field appearance="outline" class="usuarios-select">
+      <!-- <mat-form-field appearance="outline" class="usuarios-select">
         <mat-label>Roles</mat-label>
         <mat-select [(ngModel)]="selectedRol">
           <mat-option value="">Todos los roles</mat-option>
@@ -24,11 +21,12 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field appearance="outline" class="usuarios-select">
+        <mat-label>Categorías</mat-label>
         <mat-select [(ngModel)]="selectedCategoria">
           <mat-option value="">Todas las categorías</mat-option>
           <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
     </div>
 
     <!-- Tarjetas resumen -->
@@ -36,22 +34,22 @@
       <div class="resumen-card">
         <div class="resumen-icon total"><mat-icon>groups</mat-icon></div>
         <div class="resumen-label">Total Usuarios</div>
-        <div class="resumen-value">{{ 10 }}</div>
+        <div class="resumen-value">{{ getTotalUsuarios() }}</div>
       </div>
       <div class="resumen-card">
         <div class="resumen-icon activos"><mat-icon>directions_run</mat-icon></div>
         <div class="resumen-label">Jugadores Activos</div>
-        <div class="resumen-value">{{ 10 }}</div>
+        <div class="resumen-value">{{ getTotalUsuariosByRol('jugador') }}</div>
       </div>
       <div class="resumen-card">
         <div class="resumen-icon entrenadores"><mat-icon>emoji_events</mat-icon></div>
         <div class="resumen-label">Entrenadores</div>
-        <div class="resumen-value">{{ 2 }}</div>
+        <div class="resumen-value">{{ getTotalUsuariosByRol('coach') }}</div>
       </div>
       <div class="resumen-card">
         <div class="resumen-icon victorias"><mat-icon>military_tech</mat-icon></div>
-        <div class="resumen-label">Victorias Totales</div>
-        <div class="resumen-value">{{ 5 }}</div>
+        <div class="resumen-label">Categoria con mas Usuarios</div>
+        <div class="resumen-value">{{ getCategoriaConMasUsuarios() }}</div>
       </div>
     </div>
 
@@ -64,8 +62,7 @@
         <thead>
           <tr>
             <th>NOMBRE</th>
-            <th>VICTORIAS/TORNEOS</th>
-            <th>PUNTOS</th>
+            <th>TELEFONO</th>
             <th>ROL</th>
             <th>CLUB</th>
             <th>CATEGORÍA</th>
@@ -73,7 +70,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let usuario of usuariosTabla">
+          <tr *ngFor="let usuario of usuariosFiltrados">
             <td>
               <div class="usuario-nombre">
                 <img class="usuario-avatar" [src]="usuario.fotoPerfil || 'assets/img/user.png'" alt="avatar">
@@ -84,14 +81,7 @@
               </div>
             </td>
             <td>
-              <span>{{ 5 }}/{{ 25 }}</span>
-              <div class="barra-victorias">
-                <div class="barra" [style.width.%]="(5/25)*100">
-                </div>
-              </div>
-            </td>
-            <td>
-              <span>{{ usuario.puntos | number }}</span>
+              <span>{{usuario.area_code}} {{usuario.telefono}}</span>
             </td>
             <td>
               <span class="badge-rol" [ngClass]="usuario.rol | lowercase">{{ usuario.rol }}</span>
@@ -116,15 +106,5 @@
           </tr>
         </tbody>
       </table>
-      <!-- <div class="usuarios-paginacion">
-      <span>Mostrando {{ inicio }} a {{ fin }} de {{ totalUsuarios }} resultados</span>
-      <div class="paginador">
-        <button [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
-        <ng-container *ngFor="let p of paginas">
-          <button [class.active]="p === paginaActual" (click)="cambiarPagina(p)">{{ p }}</button>
-        </ng-container>
-        <button [disabled]="paginaActual === paginas.length" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
-      </div>
-    </div> -->
     </div>
   </div>
