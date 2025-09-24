@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 
 export interface Category {
   id?: number;
-  name: string;
+category: string;
   description?: string;
   active?: boolean;
   created_at?: string;
@@ -14,7 +14,7 @@ export interface Category {
 
 export interface Rol {
   id?: number;
-  name: string;
+  rol: string;
   description?: string;
   created_at?: string;
   updated_at?: string;
@@ -59,10 +59,12 @@ export class ConfigService extends ApiBaseService {
   // 📌 ROLES
   // ================================
 
-  getRoles(): Observable<Rol[]> {
-    return this.get<{ success: boolean, data: Rol[] }>('/roles')
-      .pipe(map(res => res.data));
-  }
+ getRoles(): Observable<Rol[]> {
+  return this.get<{ msg: string, roles: Rol[] }>('/roles')
+    .pipe(
+      map(res => res.roles)
+    );
+}
 
   getRolById(id: number): Observable<Rol> {
     return this.get<{ success: boolean, data: Rol }>(`/roles/${id}`)

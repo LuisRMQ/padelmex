@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,6 +6,22 @@ import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { ConfigService, Category, Rol } from '../../app/services/config.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role_id: number;
+  role_name?: string;
+}
+
+interface EditableCategory extends Category { editing?: boolean }
+interface EditableRol extends Rol { editing?: boolean }
 
 @Component({
   selector: 'app-config-categorias-roles',
@@ -17,37 +33,120 @@ import { MatIconModule } from '@angular/material/icon';
     MatInputModule,
     MatListModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    MatCardModule,
+    MatChipsModule
   ],
   templateUrl: './setup.component.html',
   styleUrls: ['./setup.component.css']
 })
-export class ConfigCategoriasRolesComponent {
-  categories: string[] = ['General', 'Noticias'];
-  roles: string[] = ['Admin', 'Editor'];
+export class ConfigCategoriasRolesComponent implements OnInit {
+  categories: EditableCategory[] = [];
+  roles: EditableRol[] = [];
+  loading = false;
+  errorMessage = '';
 
   newCategory = '';
   newRole = '';
 
+  categoriesCollapsed = false;
+  rolesCollapsed = false;
+  constructor(
+    private configService: ConfigService,
+    private dialog: MatDialog
+  ) {}
+
+  ngOnInit() {
+    this.loadData();
+  }
+
+  loadData() {
+    this.loading = true;
+    this.errorMessage = '';
+    Promise.all([
+      this.configService.getCategories().toPromise(),
+      this.configService.getRoles().toPromise()
+    ]).then(([categories, roles]) => {
+      // Agregamos propiedad editing
+      this.categories = (categories || []).map(cat => ({ ...cat, editing: false }));
+      this.roles = (roles || []).map(role => ({ ...role, editing: false }));
+      this.loading = false;
+    }).catch(error => {
+      this.errorMessage = 'Error al cargar los datos: ' + (error.message || 'Error desconocido');
+      this.loading = false;
+    });
+  }
+
+  // ========================
+  // Categorías
+  // ========================
   addCategory() {
-    if (this.newCategory.trim()) {
-      this.categories.push(this.newCategory.trim());
-      this.newCategory = '';
+    if (!this.newCategory.trim()) return;
+    this.loading = true;
+    const categoryData = { category: this.newCategory.trim() };
+    this.configService.createCategory(categoryData).subscribe({
+      next: () => { this.loadData(); this.newCategory = ''; },
+      error: (err) => { this.errorMessage = 'Error al crear categoría'; this.loading = false; }
+    });
+  }
+
+
+
+
+  
+  removeCategory(category: EditableCategory) {
+    if (!category.id) return;
+    this.loading = true;
+    this.configService.deleteCategory(category.id).subscribe({
+      next: () => this.loadData(),
+      error: () => { this.errorMessage = 'Error al eliminar categoría'; this.loading = false; }
+    });
+  }
+
+  toggleEditCategory(cat: EditableCategory) {
+    if (cat.editing) {
+      // Guardamos cambios
+      this.configService.updateCategory(cat.id!, { category: cat.category }).subscribe({
+        next: () => cat.editing = false,
+        error: () => { this.errorMessage = 'Error al actualizar categoría'; }
+      });
+    } else {
+      cat.editing = true;
     }
   }
 
-  removeCategory(cat: string) {
-    this.categories = this.categories.filter(c => c !== cat);
-  }
-
+  // ========================
+  // Roles
+  // ========================
   addRole() {
-    if (this.newRole.trim()) {
-      this.roles.push(this.newRole.trim());
-      this.newRole = '';
-    }
+    if (!this.newRole.trim()) return;
+    this.loading = true;
+    const roleData = { rol: this.newRole.trim() };
+    this.configService.createRol(roleData).subscribe({
+      next: () => { this.loadData(); this.newRole = ''; },
+      error: () => { this.errorMessage = 'Error al crear rol'; this.loading = false; }
+    });
   }
 
-  removeRole(role: string) {
-    this.roles = this.roles.filter(r => r !== role);
+  removeRole(role: EditableRol) {
+    if (!role.id) return;
+    this.loading = true;
+    this.configService.deleteRol(role.id).subscribe({
+      next: () => this.loadData(),
+      error: () => { this.errorMessage = 'Error al eliminar rol'; this.loading = false; }
+    });
+  }
+
+  toggleEditRole(role: EditableRol) {
+    if (role.editing) {
+      this.configService.updateRol(role.id!, { rol: role.rol }).subscribe({
+        next: () => role.editing = false,
+        error: () => { this.errorMessage = 'Error al actualizar rol'; }
+      });
+    } else {
+      role.editing = true;
+    }
   }
 }
