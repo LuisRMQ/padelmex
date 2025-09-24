@@ -14,6 +14,8 @@ import { FormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
 
 import { RegistrarUsuarioDialogComponent } from './registrar-usuario-dialog/registrar-usuario-dialog.component';
+import { EditarUsuarioDialogComponent } from './editar-usuario-dialog/editar-usuario-dialog.component';
+
 import { UsersService } from '../../app/services/users.service';
 import { CourtService } from '../../app/services/court.service';
 
@@ -174,10 +176,7 @@ export class UsuariosComponent implements OnInit {
     this.selectedUsuario = null;
   }
 
-  editarUsuario(usuario: UsuarioTabla) {
-    this.editando = true;
-    this.formUsuario = { ...usuario };
-  }
+ 
 
   guardarCambios() {
     if (!this.formUsuario.id) return;
@@ -282,6 +281,20 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
+
+   abrirModalEditarUsuario(usuario: UsuarioTabla) {
+  const dialogRef = this.dialog.open(EditarUsuarioDialogComponent, {
+    width: '60vw',
+    maxWidth: '80vw',
+    maxHeight: '90vh',
+    data: { userId: usuario.id },  
+    panelClass: 'custom-dialog'
+  });
+
+  dialogRef.afterClosed().subscribe(() => {
+    this.cargarUsuarios();
+  });
+}
   cargarClubs() {
     this.courtService.getClubs().subscribe({
       next: (data) => {

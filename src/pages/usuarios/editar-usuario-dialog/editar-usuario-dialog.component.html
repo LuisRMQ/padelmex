@@ -1,0 +1,205 @@
+<div class="modern-container">
+  <mat-card [formGroup]="userForm" class="modern-card">
+    <!-- Header con gradiente -->
+    <mat-card-header class="modern-header">
+      <div class="header-content">
+        <div class="icon-container">
+          <mat-icon class="header-icon">edit</mat-icon>
+        </div>
+        <div>
+          <mat-card-title class="modern-title">Editar Usuario</mat-card-title>
+          <mat-card-subtitle class="modern-subtitle">Complete la información para editar un 
+            usuario</mat-card-subtitle>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <!-- Contenido del formulario -->
+    <mat-card-content class="modern-content">
+      <!-- Sección de información personal -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">person</mat-icon>
+          Información Personal
+        </h3>
+        <div class="form-grid">
+          <!-- Nombre -->
+          <mat-form-field appearance="fill" class="modern-field">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="name" placeholder="Ej: Juan">
+            <mat-icon matPrefix>person_outline</mat-icon>
+          </mat-form-field>
+
+          <!-- Apellidos -->
+          <mat-form-field appearance="fill" class="modern-field">
+            <mat-label>Apellidos</mat-label>
+            <input matInput formControlName="lastname" placeholder="Ej: Pérez López">
+            <mat-icon matPrefix>badge</mat-icon>
+          </mat-form-field>
+
+          <!-- Género -->
+          <mat-form-field appearance="fill" class="modern-field">
+            <mat-label>Género</mat-label>
+            <mat-select formControlName="gender">
+              <mat-option value="masculino">Masculino</mat-option>
+              <mat-option value="femenino">Femenino</mat-option>
+              <mat-option value="otro">Otro</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>wc</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Sección de contacto -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">contact_phone</mat-icon>
+          Información de Contacto
+        </h3>
+        <div class="form-grid">
+          <!-- Teléfono con código de área integrado -->
+          <div class="phone-field-container">
+            <mat-form-field appearance="fill" style="width: 30%;">
+              <mat-label>Código de Área</mat-label>
+              <input matInput formControlName="area_code" placeholder="+52">
+            </mat-form-field>
+            <mat-form-field appearance="fill" class="phone-field">
+              <mat-label>Teléfono</mat-label>
+              <input matInput formControlName="phone" placeholder="8712119023">
+              <mat-icon matSuffix>phone</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <!-- Email -->
+          <mat-form-field appearance="fill" class="modern-field">
+            <mat-label>Correo Electrónico</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="correo@ejemplo.com">
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Sección de credenciales -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">lock</mat-icon>
+          Credenciales de Acceso
+        </h3>
+        <div class="form-grid">
+          <!-- Password -->
+          <mat-form-field appearance="fill" class="modern-field">
+            <mat-label>Contraseña</mat-label>
+            <input matInput type="password" formControlName="password" placeholder="********">
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button matSuffix (click)="togglePasswordVisibility()">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Sección de membresía -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">sports_tennis</mat-icon>
+          Información de Membresía
+        </h3>
+        <div class="form-grid">
+          <!-- Club -->
+          <mat-form-field appearance="fill" class="modern-field">
+            <mat-label>Club</mat-label>
+            <mat-select formControlName="club_id">
+              <mat-option *ngFor="let club of clubs" [value]="club.id">
+                {{ club.name }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matPrefix>business</mat-icon>
+          </mat-form-field>
+
+          <!-- Categoría -->
+          <mat-form-field appearance="fill" class="modern-field">
+            <mat-label>Categoría</mat-label>
+            <mat-select formControlName="category_id">
+              <mat-option value="1">Primera Varonil</mat-option>
+              <mat-option value="2">Segunda Varonil</mat-option>
+              <mat-option value="3">Tercera Varonil</mat-option>
+              <mat-option value="4">Cuarta Varonil</mat-option>
+              <mat-option value="5">Quinta Varonil</mat-option>
+              <mat-option value="6">Sexta Varonil</mat-option>
+              <mat-option value="7">Septima Varonil</mat-option>
+              <mat-option value="8">Primera Femenil</mat-option>
+              <mat-option value="9">Segunda Femenil</mat-option>
+              <mat-option value="10">Tercera Femenil</mat-option>
+              <mat-option value="11">Cuarta Femenil</mat-option>
+              <mat-option value="12">Quinta Femenil</mat-option>
+              <mat-option value="13">Sexta Femenil</mat-option>
+              <mat-option value="14">Septima Femenil</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>emoji_events</mat-icon>
+          </mat-form-field>
+
+          <!-- Rol -->
+          <mat-form-field appearance="fill" class="modern-field">
+            <mat-label>Rol</mat-label>
+            <mat-select formControlName="rol_id">
+              <mat-option value="1">Administrador</mat-option>
+              <mat-option value="2">Socio</mat-option>
+              <mat-option value="3">Finanzas</mat-option>
+              <mat-option value="4">Gerente</mat-option>
+              <mat-option value="5">Coach</mat-option>
+              <mat-option value="6">Contador</mat-option>
+              <mat-option value="7">Caja</mat-option>
+              <mat-option value="8">Jugador</mat-option>
+            </mat-select>
+            <mat-icon matPrefix>admin_panel_settings</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Sección de foto de perfil -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">photo_camera</mat-icon>
+          Foto de Perfil
+        </h3>
+        <div class="photo-section">
+          <div class="upload-area" (click)="fileInput.click()">
+            <input type="file" hidden (change)="onFileSelected($event)" #fileInput accept="image/*">
+            <div class="upload-content">
+              <mat-icon class="upload-icon">cloud_upload</mat-icon>
+              <p>Haga clic para subir una foto</p>
+              <span class="upload-hint">Formatos: JPG, PNG (Máx. 5MB)</span>
+            </div>
+          </div>
+
+          <div class="preview-container">
+            <div class="preview-card" [class.has-image]="logoPreview">
+              <ng-container *ngIf="logoPreview; else noFoto">
+                <img [src]="logoPreview" alt="Vista previa" class="preview-image">
+                <button mat-icon-button class="remove-btn" (click)="removePhoto()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </ng-container>
+              <ng-template #noFoto>
+                <div class="no-image">
+                  <mat-icon>photo</mat-icon>
+                  <span>Sin foto</span>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <!-- Acciones -->
+    <mat-card-actions class="modern-actions">
+      <button mat-button class="cancel-btn" (click)="onCancel()">
+        <mat-icon>close</mat-icon> Cancelar
+      </button>
+      <button mat-raised-button class="save-btn" (click)="guardarUsuario()">
+        <mat-icon>save</mat-icon> Guardar Usuario
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

@@ -86,15 +86,21 @@ export class UsersService extends ApiBaseService {
             );
     }
 
-    updateUserById(id: number, data: any) {
-        const isFormData = data instanceof FormData;
-        if (isFormData) {
-            return this.post(`/user/update/${id}`, data);
-        } else {
-            return this.put(`/user/update/${id}`, data);
-        }
-    }
+    // updateUserById(id: number, data: any) {
+    //     const isFormData = data instanceof FormData;
+    //     if (isFormData) {
+    //         return this.post(`/user/update/${id}`, data);
+    //     } else {
+    //         return this.put(`/user/update/${id}`, data);
+    //     }
+    // }
 
+updateUserById(id: number, data: any) {
+  // Siempre usar PUT
+  return this.put(`/user/update/${id}`, data);
+}
+
+    
     deleteUser(id: number): Observable<any> {
         return this.delete(`/user/delete/${id}`);
     }
