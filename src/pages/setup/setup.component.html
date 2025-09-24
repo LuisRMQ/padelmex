@@ -1,0 +1,33 @@
+<div class="container">
+  <h2>Configuración de Categorías</h2>
+  <mat-form-field appearance="outline">
+    <mat-label>Nueva Categoría</mat-label>
+    <input matInput [(ngModel)]="newCategory" placeholder="Escribe una categoría">
+  </mat-form-field>
+  <button mat-raised-button color="primary" (click)="addCategory()">Agregar</button>
+
+  <mat-list>
+    <mat-list-item *ngFor="let cat of categories">
+      {{ cat }}
+      <button mat-icon-button color="warn" (click)="removeCategory(cat)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-list-item>
+  </mat-list>
+
+  <h2>Configuración de Roles</h2>
+  <mat-form-field appearance="outline">
+    <mat-label>Nuevo Rol</mat-label>
+    <input matInput [(ngModel)]="newRole" placeholder="Escribe un rol">
+  </mat-form-field>
+  <button mat-raised-button color="accent" (click)="addRole()">Agregar</button>
+
+  <mat-list>
+    <mat-list-item *ngFor="let role of roles">
+      {{ role }}
+      <button mat-icon-button color="warn" (click)="removeRole(role)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </mat-list-item>
+  </mat-list>
+</div>

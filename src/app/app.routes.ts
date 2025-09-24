@@ -11,11 +11,13 @@ import { IntegrantesComponent } from '../pages/integrantes/integrantes.component
 import { EstadisticasComponent } from '../pages/estadisticas/estadisticas.component';
 import { ConfiguracionComponent } from '../pages/configuracion/configuracion.component';
 import { TorneosComponent } from '../pages/torneos/torneos.component';
+import { ConfigCategoriasRolesComponent } from '../pages/setup/setup.component';
 
 import { AuthGuard } from '../../src/app/services/auth.guard';
 import { NoAuthGuard } from '../../src/app/services/unauth.guard';
 import { AppComponent } from './app.component';
 import { MainLayoutComponent } from './pages/main-layout/main-layout.component';
+
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -36,6 +38,9 @@ export const routes: Routes = [
       { path: 'estadisticas', component: EstadisticasComponent },
       { path: 'configuracion', component: ConfiguracionComponent },
       { path: 'torneos', component: TorneosComponent },
+      { path: 'configadmin', component: ConfigCategoriasRolesComponent },
+
+      
 
       
 

@@ -32,6 +32,9 @@ export class CustomSidenavComponent implements OnInit {
     { label: 'Calendario', icon: 'calendar_today', route: '/calendario' },
     { label: 'Usuarios', icon: 'people', route: '/usuarios' },
     { label: 'Torneos', icon: 'star', route: '/torneos' },
+    { label: 'Configuracion', icon: 'settings', route: '/configadmin' },
+
+    
 
   ];
 
