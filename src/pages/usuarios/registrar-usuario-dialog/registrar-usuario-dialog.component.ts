@@ -11,6 +11,7 @@ import { UsersService, Club } from '../../../app/services/users.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-RegistrarUsuario',
@@ -27,14 +28,15 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     ReactiveFormsModule,
     MatDialogModule,
     MatSnackBarModule,
-    CommonModule
-
+    CommonModule,
+    MatDividerModule
   ],
 })
 export class RegistrarUsuarioDialogComponent {
   userForm!: FormGroup;
   logoPreview: string = '../../assets/images/placeholder.png';
   clubs: Club[] = [];
+  hidePassword = true;
 
   constructor(private fb: FormBuilder, private usersService: UsersService, private snackBar: MatSnackBar, private dialogRef: MatDialogRef<RegistrarUsuarioDialogComponent>
   ) {
@@ -99,8 +101,6 @@ export class RegistrarUsuarioDialogComponent {
         const value = this.userForm.value[key];
         if (value !== null) {
           formData.append(key, value);
-          formData.append('phone', '8712119023');
-          formData.append('area_code', '+52');
         }
       });
 
@@ -127,6 +127,21 @@ export class RegistrarUsuarioDialogComponent {
         panelClass: ['snackbar-warning']
       });
     }
+  }
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
+
+    // Cambiar el tipo de input según la visibilidad
+    const passwordField = document.querySelector('input[formControlName="password"]') as HTMLInputElement;
+    if (passwordField) {
+      passwordField.type = this.hidePassword ? 'password' : 'text';
+    }
+  }
+
+  removePhoto(): void {
+    this.logoPreview = '../../assets/images/placeholder.png';
+    // También debes limpiar el archivo seleccionado si lo tienes en una variable
   }
 
 }

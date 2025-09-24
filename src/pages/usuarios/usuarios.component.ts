@@ -271,10 +271,9 @@ export class UsuariosComponent implements OnInit {
 
   abrirModalRegistrarUsuario() {
     const dialogRef = this.dialog.open(RegistrarUsuarioDialogComponent, {
-      width: '800px',
-      maxWidth: '50vw',
-      height: 'auto',
-      maxHeight: '70vh',
+      width: '60vw',
+      maxWidth: '80vw',
+      maxHeight: '90vh',
       panelClass: 'custom-dialog'
     });
 
