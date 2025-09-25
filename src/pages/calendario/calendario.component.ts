@@ -32,6 +32,10 @@ interface CalendarReservation {
   details?: ReservationDetails;
 }
 
+interface Player {
+  id: number; 
+}
+
 @Component({
   selector: 'app-calendario',
   standalone: true,
@@ -285,85 +289,74 @@ export class CalendarioComponent implements OnInit {
     console.log('Tiempo fin:', endTime24);
 
     // Abrir modal de reservación
-    const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
-      data: {
-        user: '',
-        startTime: startTime24,
-        endTime: endTime24,
-        courtId: court.id,
-        date: this.selectedDate,
-        courtName: court.name
-      },
-      width: '600px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      panelClass: 'custom-modal-panel',
-      height: '85vh'
-    });
+ const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
+  data: {
+    user: '',
+    startTime: startTime24,
+    endTime: endTime24,
+    courtId: court.id,
+    date: this.selectedDate,
+    courtName: court.name
+  },
+  width: '600px',
+  maxWidth: '95vw',
+  maxHeight: '90vh',
+  panelClass: 'custom-modal-panel',
+  height: '85vh'
+});
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log("Payload que se enviará al backend:", result);
+dialogRef.afterClosed().subscribe(result => {
+  if (!result) return; // Canceló el modal
+  console.log('Resultado del modal:', result);
 
-        this.reservationService.createReservation(result).subscribe({
-          next: (response) => {
-            console.log(response)
-            const newRes: CalendarReservation = {
-              id: response.reservation.id,
-              courtId: result.court_id,
-              user: `Usuario ${result.user_id}`,
-              startMin: this.timeStringToMinutes(result.start_time),
-              endMin: this.timeStringToMinutes(result.end_time),
-              originalData: response.reservation
-            };
+  // **Usamos directamente el payload que envía el modal**
+  // Para pruebas puedes usar los jugadores fijos dentro del modal
+  const payload = result;
 
-            this.reservations = [...this.reservations, newRes];
-            console.log('✅ Reservación creada:', response);
-            this.error = null;
+  console.log("Payload final que se enviará al backend:", payload);
 
-            if (response.whatsapp_status) {
-              if (response.whatsapp_status === 'sent') {
-                this.warningMsg = 'Mensaje de WhatsApp enviado correctamente.';
-              } else if (response.whatsapp_status.startsWith('error')) {
-                this.warningMsg = 'No se pudo enviar WhatsApp: ' + response.whatsapp_status.replace('error: ', '');
-              }
+  this.reservationService.createReservation(payload).subscribe({
+    next: (response) => {
+      console.log('✅ Reservación creada:', response);
 
-              setTimeout(() => { this.warningMsg = null; }, 5000);
-            }
+      // Mapeo para mostrar en calendario
+      const newRes: CalendarReservation = {
+        id: response.reservation.id,
+        courtId: payload.court_id,
+        user: `Usuario ${payload.user_id}`,
+        startMin: this.timeStringToMinutes(payload.start_time),
+        endMin: this.timeStringToMinutes(payload.end_time),
+        originalData: response.reservation
+      };
 
-            this.loadAllReservations();
-          },
-          error: (error) => {
-            console.error('❌ Error creando reservación:', error);
+      this.reservations = [...this.reservations, newRes];
 
-            if (error.status === 422 && error.error?.errors) {
-              const backendErrors = error.error.errors;
-              let messages: string[] = [];
-              for (const field in backendErrors) {
-                if (backendErrors.hasOwnProperty(field)) {
-                  messages.push(...backendErrors[field]);
-                }
-              }
-              this.error = messages.join(', ');
-              console.warn('Errores de validación:', this.error);
-            } else if (error.error?.msg) {
-              this.error = error.error.msg;
-            } else {
-              this.error = 'Error desconocido al crear la reservación: ' +
-                (error.error?.message || error.message || 'Error desconocido');
-
-              setTimeout(() => { this.error = null; }, 5000);
-            }
-
-            console.log('Detalles completos del error del backend:', error.error);
-          }
-        });
-
+      // Mensaje WhatsApp
+      if (response.whatsapp_status) {
+        if (response.whatsapp_status === 'sent') {
+          this.warningMsg = 'Mensaje de WhatsApp enviado correctamente.';
+        } else if (response.whatsapp_status.startsWith('error')) {
+          this.warningMsg = 'No se pudo enviar WhatsApp: ' + response.whatsapp_status.replace('error: ', '');
+        }
+        setTimeout(() => { this.warningMsg = null; }, 5000);
       }
-    });
 
-  }
-
+      this.loadAllReservations();
+    },
+    error: (error) => {
+      console.error('❌ Error creando reservación:', error);
+      if (error.status === 422 && error.error?.errors) {
+        this.error = Object.values(error.error.errors).flat().join(', ');
+      } else if (error.error?.msg) {
+        this.error = error.error.msg;
+      } else {
+        this.error = 'Error desconocido: ' + (error.error?.message || error.message);
+      }
+      setTimeout(() => { this.error = null; }, 5000);
+    }
+  });
+});
+ }
   // ---- drag & drop ----
   onDragStarted(e: CdkDragStart, res: CalendarReservation, resEl: HTMLElement) {
     const rect = resEl.getBoundingClientRect();

@@ -6,6 +6,7 @@
         <ng-template matStepLabel>Datos de reserva</ng-template>
 
         <div class="modal-grid">
+          <!-- Fecha -->
           <mat-form-field class="modal-field" appearance="outline">
             <mat-label>Fecha</mat-label>
             <input matInput [matDatepicker]="picker" [value]="selectedDate" (dateChange)="onDateChange($event)">
@@ -13,6 +14,7 @@
             <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
 
+          <!-- Hora inicio -->
           <mat-form-field class="modal-field" appearance="outline">
             <mat-label>Hora de inicio</mat-label>
             <mat-select formControlName="start_time" required>
@@ -25,6 +27,7 @@
             </mat-error>
           </mat-form-field>
 
+          <!-- Hora fin -->
           <mat-form-field class="modal-field" appearance="outline">
             <mat-label>Hora de fin</mat-label>
             <mat-select formControlName="end_time" required>
@@ -37,9 +40,9 @@
             </mat-error>
           </mat-form-field>
 
-          <!-- Autocomplete para usuarios -->
+          <!-- Autocomplete para usuario principal -->
           <mat-form-field class="modal-field" appearance="outline">
-            <mat-label>Buscar Usuario</mat-label>
+            <mat-label>Buscar Usuario (Dueño de la reserva)</mat-label>
             <input type="text" matInput [formControl]="userControl" [matAutocomplete]="auto"
               placeholder="Escribe al menos 2 caracteres para buscar...">
             <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
@@ -49,7 +52,6 @@
                 <span *ngIf="user.email">- {{ user.email }}</span>
               </mat-option>
 
-              <!-- Indicador de carga -->
               <mat-option *ngIf="isLoadingUsers" disabled>
                 <div style="display: flex; align-items: center;">
                   <mat-spinner diameter="20"></mat-spinner>
@@ -57,24 +59,57 @@
                 </div>
               </mat-option>
 
-              <!-- Mensaje si no hay resultados -->
-              <mat-option *ngIf="
-                (filteredUsers | async)?.length === 0 &&
-                !isLoadingUsers &&
-                hasValidSearchTerm()
-              " disabled>
+              <mat-option *ngIf="(filteredUsers | async)?.length === 0 && !isLoadingUsers && hasValidSearchTerm()"
+                disabled>
                 No se encontraron usuarios
               </mat-option>
             </mat-autocomplete>
-            <mat-hint>Escribe al menos 2 caracteres para buscar usuarios</mat-hint>
+            <mat-hint>Dueño de la reserva</mat-hint>
             <mat-error *ngIf="reservationForm.get('user_id')?.hasError('required')">
               Debes seleccionar un usuario
             </mat-error>
           </mat-form-field>
-
-          <!-- Campo oculto para user_id -->
           <input type="hidden" formControlName="user_id">
 
+          <!-- Selección de jugadores -->
+          <mat-form-field class="modal-field" appearance="outline">
+            <mat-label>Agregar Jugadores</mat-label>
+            <input type="text" matInput [formControl]="playersControl" [matAutocomplete]="autoPlayers"
+              placeholder="Busca jugadores para agregar">
+            <mat-autocomplete #autoPlayers="matAutocomplete" [displayWith]="displayFn"
+              (optionSelected)="addPlayer($event.option.value)">
+              <mat-option *ngFor="let user of filteredPlayers | async" [value]="user">
+                {{ user.name }} {{ user.lastname }}
+                <span *ngIf="user.email">- {{ user.email }}</span>
+              </mat-option>
+
+              <mat-option *ngIf="isLoadingPlayers" disabled>
+                <div style="display: flex; align-items: center;">
+                  <mat-spinner diameter="20"></mat-spinner>
+                  <span style="margin-left: 10px;">Buscando jugadores...</span>
+                </div>
+              </mat-option>
+
+              <mat-option
+                *ngIf="(filteredPlayers | async)?.length === 0 && !isLoadingPlayers && hasValidSearchTermPlayers()"
+                disabled>
+                No se encontraron jugadores
+              </mat-option>
+            </mat-autocomplete>
+            <mat-hint>Máximo 3 jugadores</mat-hint>
+          </mat-form-field>
+
+          <!-- Lista de jugadores seleccionados -->
+          <div class="jugadores-seleccionados">
+            <div *ngFor="let player of selectedPlayers; let i = index" class="jugador-item">
+              {{ player.name }} {{ player.lastname }}
+              <button mat-icon-button color="warn" (click)="removePlayer(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tipo reserva -->
           <mat-form-field class="modal-field" appearance="outline">
             <mat-label>Tipo de Reserva</mat-label>
             <mat-select formControlName="reservation_type_id" required>
@@ -84,6 +119,7 @@
             </mat-select>
           </mat-form-field>
 
+          <!-- Método pago -->
           <mat-form-field class="modal-field" appearance="outline">
             <mat-label>Método de Pago</mat-label>
             <mat-select formControlName="pay_method" required>
@@ -93,13 +129,14 @@
             </mat-select>
           </mat-form-field>
 
+          <!-- Observaciones -->
           <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
             <mat-label>Observaciones</mat-label>
             <textarea matInput formControlName="observations" rows="3"
               placeholder="Observaciones adicionales..."></textarea>
           </mat-form-field>
 
-          <!-- Campos ocultos para la API -->
+          <!-- Hidden -->
           <input type="hidden" formControlName="court_id">
           <input type="hidden" formControlName="date">
         </div>
@@ -130,8 +167,18 @@
             <strong>Usuario:</strong> {{ selectedUser.name }} {{ selectedUser.lastname }}
             <span *ngIf="selectedUser.email">({{ selectedUser.email }})</span>
           </div>
+          <div class="detail-row" *ngIf="selectedPlayers.length > 0">
+            <strong>Jugadores:</strong>
+            <ul>
+              <li *ngFor="let player of selectedPlayers">
+                {{ player.name }} {{ player.lastname }}
+                <span *ngIf="player.email">({{ player.email }})</span>
+              </li>
+            </ul>
+          </div>
           <div class="detail-row">
-            <strong>Tipo de Reserva:</strong> {{ reservationForm.value.reservation_type_id == 1 ? 'Torneo' : (reservationForm.value.reservation_type_id == 2 ? 'Juego' : 'Clase') }}
+            <strong>Tipo de Reserva:</strong>
+            {{ reservationForm.value.reservation_type_id == 1 ? 'Torneo' : (reservationForm.value.reservation_type_id == 2 ? 'Juego' : 'Clase') }}
           </div>
           <div class="detail-row">
             <strong>Método de Pago:</strong> {{ getMetodoPagoLabel(reservationForm.value.pay_method) }}

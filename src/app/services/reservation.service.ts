@@ -85,8 +85,13 @@ export class ReservationService extends ApiBaseService {
     }
 
     createReservation(reservationData: any): Observable<any> {
-        return this.post('/reservation/create', reservationData);
-    }
+    console.log("Enviando payload:", JSON.stringify(reservationData, null, 2));
+    return this.http.post(`${this.apiUrl}/reservation/create`, reservationData, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}
 
     updateReservation(id: number, data: Partial<Reservation>): Observable<any> {
         return this.put(`/reservation/update/${id}`, data);
@@ -99,4 +104,10 @@ export class ReservationService extends ApiBaseService {
     changeReservationStatus(id: number, status: string): Observable<any> {
         return this.patch(`/reservation/changeStatus/${id}`, { status });
     }
+
+    getReservationDetailsByUser(user_id: number, reservation_id: number) {
+  return this.http.get(`${this.apiUrl}/reservationDetail`, {
+    params: { user_id, reservation_id }
+  });
+}
 }

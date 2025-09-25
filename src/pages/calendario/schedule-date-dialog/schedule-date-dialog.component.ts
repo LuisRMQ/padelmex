@@ -12,9 +12,10 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Observable, map, debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
-
+import { MatIconModule } from "@angular/material/icon";
 import { UsersService, User } from '../../../app/services/users.service';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatChipsModule } from '@angular/material/chips';
 
 export interface DialogData {
   user: string;
@@ -41,7 +42,9 @@ export interface DialogData {
     MatNativeDateModule,
     MatDialogModule,
     MatAutocompleteModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatChipsModule,
+    MatIconModule
   ],
   templateUrl: './schedule-date-dialog.component.html',
   styleUrls: ['./schedule-date-dialog.component.css']
@@ -54,14 +57,16 @@ export class ScheduleDateDialogComponent implements OnInit {
     { value: 'split_payment', label: 'Pago dividido' }
   ];
 
-  // Autocomplete
   userControl = new FormControl<string | User>('');
   filteredUsers: Observable<User[]>;
   selectedUser: User | null = null;
   isLoadingUsers = false;
-  searchError: string | null = null;
 
-  // Propiedad para almacenar la fecha en formato Date para el datepicker
+  playersControl = new FormControl<string | User>('');
+  filteredPlayers: Observable<User[]>;
+  selectedPlayers: User[] = [];
+  isLoadingPlayers = false;
+
   selectedDate: Date;
 
   constructor(
@@ -83,7 +88,6 @@ export class ScheduleDateDialogComponent implements OnInit {
       observations: ['']
     });
 
-    // Configurar autocomplete con búsqueda en tiempo real
     this.filteredUsers = this.userControl.valueChanges.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -91,12 +95,17 @@ export class ScheduleDateDialogComponent implements OnInit {
         const searchTerm = typeof value === 'string' ? value : '';
         return this.searchUsers(searchTerm);
       }),
-      catchError(error => {
-        this.searchError = 'Error al buscar usuarios';
-        this.isLoadingUsers = false;
-        console.error('Error searching users:', error);
-        return of([]);
-      })
+      catchError(() => of([]))
+    );
+
+    this.filteredPlayers = this.playersControl.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(value => {
+        const searchTerm = typeof value === 'string' ? value : '';
+        return this.searchPlayers(searchTerm);
+      }),
+      catchError(() => of([]))
     );
   }
 
@@ -104,82 +113,102 @@ export class ScheduleDateDialogComponent implements OnInit {
     this.generarHoras();
   }
 
-  // Buscar usuarios en la API con filtros
   private searchUsers(searchTerm: string): Observable<User[]> {
-    console.log('Searching users with term:', searchTerm);
-    if (searchTerm.length < 2) {
-      this.searchError = null;
-      return of([]);
-    }
-
+    if (searchTerm.length < 2) return of([]);
     this.isLoadingUsers = true;
-    this.searchError = null;
-
-    // Usar el club_id si está disponible en los datos
-    const clubId = this.data.clubId;
-
-    return this.usersService.searchUsers(searchTerm, clubId).pipe(
-      map(users => {
-        this.isLoadingUsers = false;
-        console.log('Usuarios encontrados:', users);
-        return users;
-      }),
-      catchError(error => {
-        this.isLoadingUsers = false;
-        this.searchError = 'Error al cargar usuarios';
-        console.error('Search error:', error);
-        return of([]);
-      })
+    return this.usersService.searchUsers(searchTerm, this.data.clubId).pipe(
+      map(users => { this.isLoadingUsers = false; return users; }),
+      catchError(() => { this.isLoadingUsers = false; return of([]); })
     );
   }
 
-  // Mostrar el nombre del usuario en el autocomplete
+  private searchPlayers(searchTerm: string): Observable<User[]> {
+    if (searchTerm.length < 2) return of([]);
+    this.isLoadingPlayers = true;
+    return this.usersService.searchUsers(searchTerm, this.data.clubId).pipe(
+      map(users => { this.isLoadingPlayers = false; return users; }),
+      catchError(() => { this.isLoadingPlayers = false; return of([]); })
+    );
+  }
+
   displayFn(user: User): string {
     return user && user.name ? `${user.name} ${user.lastname}` : '';
   }
 
-  // Cuando se selecciona un usuario del autocomplete
   onUserSelected(user: User): void {
-    this.selectedUser = user;
-    this.reservationForm.patchValue({
-      user_id: user.id
-    });
+  this.selectedUser = user;
+  // Backend necesita user_id, pero User tiene id
+  this.reservationForm.patchValue({ user_id: user.id });
+  console.log('Usuario dueño seleccionado:', user);
+}
+
+  addPlayer(user: User): void {
+  console.log('Jugador seleccionado:', user);
+  if (this.selectedPlayers.length >= 3) return;
+
+  // Evitamos duplicados por id
+  if (!this.selectedPlayers.find(p => p.id === user.id)) {
+    this.selectedPlayers.push(user);
+    console.log('Lista de jugadores actuales:', this.selectedPlayers);
+  }
+  this.playersControl.setValue('');
+}
+
+  removePlayer(index: number): void {
+    this.selectedPlayers.splice(index, 1);
+    console.log('Jugador eliminado, lista actual:', this.selectedPlayers);
   }
 
-  // Resto de los métodos se mantienen igual...
+  onSubmit(): void {
+  if (!this.reservationForm.valid) return;
+
+  console.log('Jugadores antes de enviar:', this.selectedPlayers);
+
+  const payload = {
+    user_id: this.reservationForm.value.user_id,
+    court_id: this.reservationForm.value.court_id,
+    reservation_type_id: this.reservationForm.value.reservation_type_id,
+    date: this.formatDateForApi(this.selectedDate),
+    start_time: this.formatTimeForApi(this.reservationForm.value.start_time),
+    end_time: this.formatTimeForApi(this.reservationForm.value.end_time),
+    pay_method: this.reservationForm.value.pay_method,
+    observations: this.reservationForm.value.observations,
+    players: this.selectedPlayers.map(p => ({ user_id: p.id }))
+
+  
+
+  };
+
+  console.log('Payload final que cierra modal:', payload);
+
+  this.dialogRef.close(payload);
+}
+
   private convertToDate(dateValue: string | Date): Date {
     if (dateValue instanceof Date) return dateValue;
-    if (typeof dateValue === 'string') {
-      if (dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const [year, month, day] = dateValue.split('-').map(Number);
-        return new Date(year, month - 1, day);
-      }
-      const parsed = Date.parse(dateValue);
-      if (!isNaN(parsed)) return new Date(parsed);
-    }
-    return new Date();
+    const parsed = Date.parse(dateValue as string);
+    return isNaN(parsed) ? new Date() : new Date(parsed);
   }
 
   private formatDateForApi(date: Date): string {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const y = date.getFullYear();
+    const m = (date.getMonth() + 1).toString().padStart(2, '0');
+    const d = date.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  private formatTimeForApi(time: string): string {
+    if (/^\d{2}:\d{2}:\d{2}$/.test(time)) return time;
+    if (/^\d{2}:\d{2}$/.test(time)) return `${time}:00`;
+    return time;
   }
 
   generarHoras(): void {
-    this.horas = []; // limpiar por si ya tenía valores
-
-    for (let h = 6; h <= 23; h++) { // <= para incluir la hora 23
+    this.horas = [];
+    for (let h = 6; h <= 23; h++) {
       for (let m = 0; m < 60; m += 30) {
-        // si es 23:30 lo permitimos, pero no más allá
-        if (h === 23 && m > 30) {
-          break;
-        }
-
-        const hora = h.toString().padStart(2, '0');
-        const minuto = m.toString().padStart(2, '0');
-        this.horas.push(`${hora}:${minuto}`);
+        if (h === 23 && m > 30) break;
+        this.horas.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
       }
     }
   }
@@ -187,8 +216,7 @@ export class ScheduleDateDialogComponent implements OnInit {
   onDateChange(event: any): void {
     const selectedDate = event.value;
     if (selectedDate) {
-      const apiFormattedDate = this.formatDateForApi(selectedDate);
-      this.reservationForm.patchValue({ date: apiFormattedDate });
+      this.reservationForm.patchValue({ date: this.formatDateForApi(selectedDate) });
     }
   }
 
@@ -196,30 +224,18 @@ export class ScheduleDateDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  onSubmit(): void {
-    if (this.reservationForm.valid) {
-      const formValue = { ...this.reservationForm.value };
-
-      formValue.start_time = this.formatTimeForApi(formValue.start_time);
-      formValue.end_time = this.formatTimeForApi(formValue.end_time);
-
-      this.dialogRef.close(formValue);
-    }
-  }
-
   getMetodoPagoLabel(value: string): string {
     const found = this.metodosPago.find(m => m.value === value);
     return found ? found.label : '';
   }
 
-  private formatTimeForApi(time: string): string {
-    if (time.match(/^\d{2}:\d{2}:\d{2}$/)) return time;
-    if (time.match(/^\d{2}:\d{2}$/)) return `${time}:00`;
-    return time;
-  }
-
   hasValidSearchTerm(): boolean {
     const value = this.userControl.value;
+    return typeof value === 'string' && value.length >= 2;
+  }
+
+  hasValidSearchTermPlayers(): boolean {
+    const value = this.playersControl.value;
     return typeof value === 'string' && value.length >= 2;
   }
 }

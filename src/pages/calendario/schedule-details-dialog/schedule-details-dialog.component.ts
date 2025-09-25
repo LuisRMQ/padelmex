@@ -19,6 +19,7 @@ export class ScheduleDetailsDialogComponent {
   isEditing = false; // controla si está en modo edición
   editedData: any;   // copia editable de los datos originales
   initialStatus: string = "";
+  players: any[] = [];
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -31,6 +32,21 @@ export class ScheduleDetailsDialogComponent {
 
   ngOnInit(): void {
     this.initialStatus = this.data.details.status;
+    if (this.data.details.user_id && this.data.details.id) {
+    this.reservationService.getReservationDetailsByUser(
+      this.data.details.user_id,
+      this.data.details.id
+    ).subscribe({
+      next: (res: any) => {
+        console.log('Reserva completa:', res);
+        this.players = res.reservation_players?.map((rp: any) => rp.user) || [];
+        console.log('Jugadores cargados:', this.players);
+      },
+      error: (err) => {
+        console.error('Error cargando jugadores:', err);
+      }
+    });
+  }
 
   }
 
