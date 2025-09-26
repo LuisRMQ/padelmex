@@ -16,6 +16,8 @@ import { MatIconModule } from "@angular/material/icon";
 import { UsersService, User } from '../../../app/services/users.service';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfigService, Category } from '../../../app/services/config.service';
 
 export interface DialogData {
   user: string;
@@ -68,24 +70,33 @@ export class ScheduleDateDialogComponent implements OnInit {
   isLoadingPlayers = false;
 
   selectedDate: Date;
+  minReservationTime = 60;
+
+  categories: Category[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<ScheduleDateDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private fb: FormBuilder,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private snackBar: MatSnackBar,
+    private configService: ConfigService
   ) {
     this.selectedDate = this.convertToDate(data.date);
+
+    const defaultEndTime = this.getDefaultEndTime(data.startTime, this.minReservationTime);
 
     this.reservationForm = this.fb.group({
       user_id: ['', Validators.required],
       court_id: [data.courtId, Validators.required],
-      reservation_type_id: ['2', Validators.required],
+      reservation_type_id: ['', Validators.required],
       date: [this.formatDateForApi(this.selectedDate), Validators.required],
       start_time: [data.startTime, Validators.required],
-      end_time: [data.endTime, Validators.required],
+      end_time: [defaultEndTime, Validators.required],
       pay_method: ['single_payment', Validators.required],
-      observations: ['']
+      observations: [''],
+      type: ['', Validators.required],
+      category: ['', Validators.required]
     });
 
     this.filteredUsers = this.userControl.valueChanges.pipe(
@@ -111,13 +122,44 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.generarHoras();
+    this.configService.getCategories().subscribe(categories => {
+      this.categories = categories;
+    });
+
+    this.reservationForm.get('end_time')?.valueChanges.subscribe(endTime => {
+      const startTime = this.reservationForm.get('start_time')?.value;
+      if (startTime && endTime) {
+        const duration = this.getMinutesDiff(startTime, endTime);
+        if (duration < this.minReservationTime) {
+          this.snackBar.open(
+            `La duración mínima de la reservación es de ${this.minReservationTime / 60} hora(s).`,
+            'Cerrar',
+            { duration: 3000, panelClass: ['snackbar-error'] }
+          );
+          this.reservationForm.get('end_time')?.setValue('');
+        }
+      }
+    });
+  }
+
+  getMinutesDiff(start: string, end: string): number {
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    return (eh * 60 + em) - (sh * 60 + sm);
   }
 
   private searchUsers(searchTerm: string): Observable<User[]> {
     if (searchTerm.length < 2) return of([]);
     this.isLoadingUsers = true;
-    return this.usersService.searchUsers(searchTerm, this.data.clubId).pipe(
-      map(users => { this.isLoadingUsers = false; return users; }),
+    const normalizedTerm = searchTerm.toLowerCase();
+    return this.usersService.searchUsers('', this.data.clubId).pipe(
+      map(users => {
+        this.isLoadingUsers = false;
+        return users.filter(u =>
+        (`${u.name} ${u.lastname}`.toLowerCase().includes(normalizedTerm) ||
+          (u.email && u.email.toLowerCase().includes(normalizedTerm)))
+        );
+      }),
       catchError(() => { this.isLoadingUsers = false; return of([]); })
     );
   }
@@ -125,9 +167,24 @@ export class ScheduleDateDialogComponent implements OnInit {
   private searchPlayers(searchTerm: string): Observable<User[]> {
     if (searchTerm.length < 2) return of([]);
     this.isLoadingPlayers = true;
-    return this.usersService.searchUsers(searchTerm, this.data.clubId).pipe(
-      map(users => { this.isLoadingPlayers = false; return users; }),
-      catchError(() => { this.isLoadingPlayers = false; return of([]); })
+    const normalizedTerm = searchTerm.toLowerCase();
+    return this.usersService.searchUsers('', this.data.clubId).pipe(
+      map(users => {
+        this.isLoadingPlayers = false;
+        const ownerId = this.reservationForm.value.user_id;
+        // Filtrado insensible a mayúsculas/minúsculas y excluye el dueño
+        return users.filter(u =>
+          u.id !== ownerId &&
+          (
+            (`${u.name} ${u.lastname}`.toLowerCase().includes(normalizedTerm)) ||
+            (u.email && u.email.toLowerCase().includes(normalizedTerm))
+          )
+        );
+      }),
+      catchError(() => {
+        this.isLoadingPlayers = false;
+        return of([]);
+      })
     );
   }
 
@@ -136,23 +193,37 @@ export class ScheduleDateDialogComponent implements OnInit {
   }
 
   onUserSelected(user: User): void {
-  this.selectedUser = user;
-  // Backend necesita user_id, pero User tiene id
-  this.reservationForm.patchValue({ user_id: user.id });
-  console.log('Usuario dueño seleccionado:', user);
-}
+    this.selectedUser = user;
+    // Backend necesita user_id, pero User tiene id
+    this.reservationForm.patchValue({ user_id: user.id });
+    console.log('Usuario dueño seleccionado:', user);
+  }
+
+  getDefaultEndTime(start: string, minMinutes: number): string {
+    const [sh, sm] = start.split(':').map(Number);
+    const totalMinutes = sh * 60 + sm + minMinutes;
+    const eh = Math.floor(totalMinutes / 60);
+    const em = totalMinutes % 60;
+    return `${eh.toString().padStart(2, '0')}:${em.toString().padStart(2, '0')}`;
+  }
 
   addPlayer(user: User): void {
-  console.log('Jugador seleccionado:', user);
-  if (this.selectedPlayers.length >= 3) return;
+    if (this.selectedPlayers.length >= 3) {
+      this.snackBar.open('No puedes agregar más de 3 jugadores adicionales.', 'Cerrar', {
+        duration: 2500,
+        panelClass: ['snackbar-error']
+      });
+      this.playersControl.setValue('');
+      return;
+    }
 
-  // Evitamos duplicados por id
-  if (!this.selectedPlayers.find(p => p.id === user.id)) {
-    this.selectedPlayers.push(user);
-    console.log('Lista de jugadores actuales:', this.selectedPlayers);
+    // Evitamos duplicados por id
+    if (!this.selectedPlayers.find(p => p.id === user.id)) {
+      this.selectedPlayers = [...this.selectedPlayers, user]; // Cambio de referencia
+      console.log('Lista de jugadores actuales:', this.selectedPlayers);
+    }
+    this.playersControl.setValue('');
   }
-  this.playersControl.setValue('');
-}
 
   removePlayer(index: number): void {
     this.selectedPlayers.splice(index, 1);
@@ -160,29 +231,28 @@ export class ScheduleDateDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
-  if (!this.reservationForm.valid) return;
+    if (!this.reservationForm.valid) return;
 
-  console.log('Jugadores antes de enviar:', this.selectedPlayers);
+    console.log('Jugadores antes de enviar:', this.selectedPlayers);
 
-  const payload = {
-    user_id: this.reservationForm.value.user_id,
-    court_id: this.reservationForm.value.court_id,
-    reservation_type_id: this.reservationForm.value.reservation_type_id,
-    date: this.formatDateForApi(this.selectedDate),
-    start_time: this.formatTimeForApi(this.reservationForm.value.start_time),
-    end_time: this.formatTimeForApi(this.reservationForm.value.end_time),
-    pay_method: this.reservationForm.value.pay_method,
-    observations: this.reservationForm.value.observations,
-    players: this.selectedPlayers.map(p => ({ user_id: p.id }))
+    const payload = {
+      user_id: this.reservationForm.value.user_id,
+      court_id: this.reservationForm.value.court_id,
+      reservation_type_id: this.reservationForm.value.reservation_type_id,
+      date: this.formatDateForApi(this.selectedDate),
+      start_time: this.formatTimeForApi(this.reservationForm.value.start_time),
+      end_time: this.formatTimeForApi(this.reservationForm.value.end_time),
+      pay_method: this.reservationForm.value.pay_method,
+      observations: this.reservationForm.value.observations,
+      type: this.reservationForm.value.type,
+      category: this.reservationForm.value.category,
+      players: this.selectedPlayers.map(p => ({ user_id: p.id })),
+    };
 
-  
+    console.log('Payload final que cierra modal:', payload);
 
-  };
-
-  console.log('Payload final que cierra modal:', payload);
-
-  this.dialogRef.close(payload);
-}
+    this.dialogRef.close(payload);
+  }
 
   private convertToDate(dateValue: string | Date): Date {
     if (dateValue instanceof Date) return dateValue;

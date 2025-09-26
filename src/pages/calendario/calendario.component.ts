@@ -302,7 +302,7 @@ export class CalendarioComponent implements OnInit {
   maxWidth: '95vw',
   maxHeight: '90vh',
   panelClass: 'custom-modal-panel',
-  height: '85vh'
+  height: '90vh'
 });
 
 dialogRef.afterClosed().subscribe(result => {
