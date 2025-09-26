@@ -18,6 +18,9 @@ import { HorariosDialogComponent } from './info-horarios-club-dialog/info-horari
 import { MatCardModule } from '@angular/material/card';
 import { InformacionClubDialogComponent } from './informacion-club-dialog/informacion-club-dialog.component';
 import { EditarClubDialogComponent } from './editar-club-dialog/editar-club-dialog.component';
+import { ClubAmenitiesModalComponent } from './registrar-comodidad-dialog/registrar-comodidad-dialog.component';
+
+
 
 /**
  * @title Card overview
@@ -336,5 +339,31 @@ export class ClubsComponent implements OnInit {
       }
     });
   }
+
+
+
+  abrirModalComodidades(club: Club) {
+    const dialogRef = this.dialog.open(ClubAmenitiesModalComponent, {
+      width: '600px',
+      maxWidth: '80vw',
+      maxHeight: '80vh',
+      data: { clubId: club.id }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('✅ Comodidades actualizadas', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom'
+        });
+      }
+    });
+  }
+
+
+  
+ 
 
 }

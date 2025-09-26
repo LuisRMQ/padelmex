@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { ConfigService, Category, Rol } from '../../app/services/config.service';
+import { ConfigService, Category, Rol, Comidad } from '../../app/services/config.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 
@@ -22,9 +22,10 @@ export interface User {
 
 interface EditableCategory extends Category { editing?: boolean }
 interface EditableRol extends Rol { editing?: boolean }
+interface EditableComidad extends Comidad { editing?: boolean }
 
 @Component({
-  selector: 'app-config-categorias-roles',
+  selector: 'app-config-categorias-roles-comidades',
   standalone: true,
   imports: [
     CommonModule,
@@ -45,18 +46,23 @@ interface EditableRol extends Rol { editing?: boolean }
 export class ConfigCategoriasRolesComponent implements OnInit {
   categories: EditableCategory[] = [];
   roles: EditableRol[] = [];
+  comidades: EditableComidad[] = [];
+
   loading = false;
   errorMessage = '';
 
   newCategory = '';
   newRole = '';
+  newComidad = '';
 
   categoriesCollapsed = false;
   rolesCollapsed = false;
+  comidadesCollapsed = false;
+
   constructor(
     private configService: ConfigService,
     private dialog: MatDialog
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadData();
@@ -67,11 +73,12 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     this.errorMessage = '';
     Promise.all([
       this.configService.getCategories().toPromise(),
-      this.configService.getRoles().toPromise()
-    ]).then(([categories, roles]) => {
-      // Agregamos propiedad editing
+      this.configService.getRoles().toPromise(),
+      this.configService.getComidades().toPromise()
+    ]).then(([categories, roles, comidades]) => {
       this.categories = (categories || []).map(cat => ({ ...cat, editing: false }));
       this.roles = (roles || []).map(role => ({ ...role, editing: false }));
+      this.comidades = (comidades || []).map(c => ({ ...c, editing: false }));
       this.loading = false;
     }).catch(error => {
       this.errorMessage = 'Error al cargar los datos: ' + (error.message || 'Error desconocido');
@@ -88,14 +95,10 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     const categoryData = { category: this.newCategory.trim() };
     this.configService.createCategory(categoryData).subscribe({
       next: () => { this.loadData(); this.newCategory = ''; },
-      error: (err) => { this.errorMessage = 'Error al crear categoría'; this.loading = false; }
+      error: () => { this.errorMessage = 'Error al crear categoría'; this.loading = false; }
     });
   }
 
-
-
-
-  
   removeCategory(category: EditableCategory) {
     if (!category.id) return;
     this.loading = true;
@@ -107,7 +110,6 @@ export class ConfigCategoriasRolesComponent implements OnInit {
 
   toggleEditCategory(cat: EditableCategory) {
     if (cat.editing) {
-      // Guardamos cambios
       this.configService.updateCategory(cat.id!, { category: cat.category }).subscribe({
         next: () => cat.editing = false,
         error: () => { this.errorMessage = 'Error al actualizar categoría'; }
@@ -147,6 +149,39 @@ export class ConfigCategoriasRolesComponent implements OnInit {
       });
     } else {
       role.editing = true;
+    }
+  }
+
+  // ========================
+  // Comidades
+  // ========================
+  addComidad() {
+    if (!this.newComidad.trim()) return;
+    this.loading = true;
+    const comidadData = { name: this.newComidad.trim() };
+    this.configService.createComidad(comidadData).subscribe({
+      next: () => { this.loadData(); this.newComidad = ''; },
+      error: () => { this.errorMessage = 'Error al crear comidad'; this.loading = false; }
+    });
+  }
+
+  removeComidad(comidad: EditableComidad) {
+    if (!comidad.id) return;
+    this.loading = true;
+    this.configService.deleteComidad(comidad.id).subscribe({
+      next: () => this.loadData(),
+      error: () => { this.errorMessage = 'Error al eliminar comidad'; this.loading = false; }
+    });
+  }
+
+  toggleEditComidad(com: EditableComidad) {
+    if (com.editing) {
+      this.configService.updateComidad(com.id!, { name: com.name }).subscribe({
+        next: () => com.editing = false,
+        error: () => { this.errorMessage = 'Error al actualizar comidad'; }
+      });
+    } else {
+      com.editing = true;
     }
   }
 }

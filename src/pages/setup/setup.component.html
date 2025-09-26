@@ -3,14 +3,6 @@
 </div>
 
 <div class="container">
-  <!-- Loading -->
-  <ng-container *ngIf="loading">
-    <div class="loading-overlay">
-      <mat-spinner diameter="50"></mat-spinner>
-      <p>Cargando datos...</p>
-    </div>
-  </ng-container>
-
   <!-- Categorías -->
   <mat-card class="config-section">
     <mat-card-header>
@@ -31,9 +23,7 @@
         <div *ngFor="let cat of categories" class="category-item-card">
           <div class="category-item-content">
             <div class="category-text">
-              <!-- Modo visual -->
               <div *ngIf="!cat.editing" class="category-name">{{ cat.category }}</div>
-              <!-- Modo edición -->
               <mat-form-field *ngIf="cat.editing" appearance="outline" class="full-width">
                 <input matInput [(ngModel)]="cat.category">
               </mat-form-field>
@@ -58,50 +48,96 @@
     </mat-card-content>
   </mat-card>
 
-  <!-- Roles -->
-  <mat-card class="config-section">
-    <mat-card-header>
-      <mat-card-title>👥 Configuración de Roles</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="input-group">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nuevo rol</mat-label>
-          <input matInput [(ngModel)]="newRole">
-          <button mat-icon-button matSuffix color="primary" (click)="addRole()">
-            <mat-icon>add</mat-icon>
-          </button>
-        </mat-form-field>
-      </div>
+  <!-- Contenedor Roles + Comidades -->
+  <div class="roles-comidades">
+    <!-- Roles -->
+    <mat-card class="config-section">
+      <mat-card-header>
+        <mat-card-title>👥 Configuración de Roles</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="input-group">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nuevo rol</mat-label>
+            <input matInput [(ngModel)]="newRole">
+            <button mat-icon-button matSuffix color="primary" (click)="addRole()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
 
-      <div *ngIf="roles.length > 0" class="roles-list">
-        <div *ngFor="let role of roles" class="role-item-card">
-          <div class="role-item-content">
-            <div class="role-text">
-              <!-- Modo visual -->
-              <div *ngIf="!role.editing" class="role-name">{{ role.rol }}</div>
-              <!-- Modo edición -->
-              <mat-form-field *ngIf="role.editing" appearance="outline" class="full-width">
-                <input matInput [(ngModel)]="role.rol">
-              </mat-form-field>
+        <div *ngIf="roles.length > 0" class="roles-list">
+          <div *ngFor="let role of roles" class="role-item-card">
+            <div class="role-item-content">
+              <div class="role-text">
+                <div *ngIf="!role.editing" class="role-name">{{ role.rol }}</div>
+                <mat-form-field *ngIf="role.editing" appearance="outline" class="full-width">
+                  <input matInput [(ngModel)]="role.rol">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="card-buttons">
+              <button mat-icon-button color="accent" (click)="toggleEditRole(role)">
+                <mat-icon>{{ role.editing ? 'check' : 'edit' }}</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="removeRole(role)">
+                <mat-icon>delete</mat-icon>
+              </button>
             </div>
           </div>
+        </div>
 
-          <div class="card-buttons">
-            <button mat-icon-button color="accent" (click)="toggleEditRole(role)">
-              <mat-icon>{{ role.editing ? 'check' : 'edit' }}</mat-icon>
+        <div *ngIf="roles.length === 0 && !loading" class="empty-state">
+          <mat-icon>group</mat-icon>
+          <p>No hay roles registrados</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Comidades -->
+    <mat-card class="config-section">
+      <mat-card-header>
+        <mat-card-title>🍽️ Configuración de Comidades</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="input-group">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nueva comidad</mat-label>
+            <input matInput [(ngModel)]="newComidad">
+            <button mat-icon-button matSuffix color="primary" (click)="addComidad()">
+              <mat-icon>add</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="removeRole(role)">
-              <mat-icon>delete</mat-icon>
-            </button>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="comidades.length > 0" class="comidades-list">
+          <div *ngFor="let com of comidades" class="comidad-item-card">
+            <div class="comidad-item-content">
+              <div class="comidad-text">
+                <div *ngIf="!com.editing" class="comidad-name">{{ com.name }}</div>
+                <mat-form-field *ngIf="com.editing" appearance="outline" class="full-width">
+                  <input matInput [(ngModel)]="com.name">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="card-buttons">
+              <button mat-icon-button color="accent" (click)="toggleEditComidad(com)">
+                <mat-icon>{{ com.editing ? 'check' : 'edit' }}</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="removeComidad(com)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div *ngIf="roles.length === 0 && !loading" class="empty-state">
-        <mat-icon>group</mat-icon>
-        <p>No hay roles registrados</p>
-      </div>
-    </mat-card-content>
-  </mat-card>
+        <div *ngIf="comidades.length === 0 && !loading" class="empty-state">
+          <mat-icon>restaurant</mat-icon>
+          <p>No hay comidades registradas</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>

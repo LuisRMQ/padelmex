@@ -20,10 +20,32 @@ export interface Club {
 }
 
 export interface ClubsResponse {
-  current_page: number;
-  data: Club[];
-  total: number;
-  per_page: number;
+    current_page: number;
+    data: Club[];
+    total: number;
+    per_page: number;
+}
+
+
+export interface ClubAmenity {
+    id: number;
+    club_id: number;
+    amenity_id: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Comidad {
+    id?: number;
+    name: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+
+export interface ClubAmenityWithName {
+  id: number;
+  amenity_name: string;
 }
 
 @Injectable({
@@ -50,6 +72,40 @@ export class ClubsService extends ApiBaseService {
 
     getClubsa(): Observable<ClubsResponse> {
         return this.get<ClubsResponse>('/clubs');
+    }
+
+
+    // ================================
+    // 📌 CLUB AMENITIES
+    // ================================
+   getClubAmenities(club_id: number): Observable<ClubAmenityWithName[]> {
+    return this.get<ClubAmenityWithName[]>(`/clubAmenities?club_id=${club_id}`);
+}
+
+    getClubAmenityById(id: number): Observable<ClubAmenity> {
+        return this.get<ClubAmenity>(`/clubAmenities/${id}`);
+    }
+
+    createClubAmenity(clubId: number, amenityId: number) {
+        const body = { club_id: clubId, amenity_id: amenityId };
+        return this.post('/clubAmenities/create', body);
+    }
+    updateClubAmenity(clubId: number, amenities: number[]) {
+        const params = amenities.map(id => `amenity_id[]=${id}`).join('&');
+        const url = `/clubAmenities/create?club_id=${clubId}&${params}`;
+
+        return this.post(url, {});
+    }
+
+    deleteClubAmenity(id: number): Observable<any> {
+        return this.delete(`/clubAmenities/delete/${id}`);
+    }
+
+
+    //Comidades 
+    getComidades(): Observable<Comidad[]> {
+        return this.get<Comidad[]>('/amenities');
+
     }
 }
 

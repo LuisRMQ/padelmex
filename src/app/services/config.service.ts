@@ -20,6 +20,16 @@ export interface Rol {
   updated_at?: string;
 }
 
+
+export interface Comidad {
+  id?: number;         
+  name: string;         
+  created_at?: string;
+  updated_at?: string;
+}
+
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -82,4 +92,30 @@ export class ConfigService extends ApiBaseService {
   deleteRol(id: number): Observable<any> {
     return this.delete(`/roles/delete/${id}`);
   }
+
+
+  // ================================
+  // 📌 COMODIDADES
+  // ================================
+ getComidades(): Observable<Comidad[]> {
+   return this.get<Comidad[]>('/amenities');
+
+}
+
+getComidadById(id: number): Observable<Comidad> {
+  return this.get<{ success: boolean, data: Comidad }>(`/amenities/${id}`)
+    .pipe(map(res => res.data));
+}
+
+createComidad(data: any): Observable<any> {
+  return this.post('/amenities/create', data);
+}
+
+updateComidad(id: number, data: any): Observable<any> {
+  return this.put(`/amenities/update/${id}`, data);
+}
+
+deleteComidad(id: number): Observable<any> {
+  return this.delete(`/amenities/delete/${id}`);
+}
 }

@@ -220,3 +220,43 @@
 }
 
 
+.comidad-item-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.comidad-item-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.comidad-item-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.comidad-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.comidad-name {
+  font-weight: 600;
+}
+
+.roles-comidades {
+  display: grid;
+  gap: 20px;
+}
