@@ -19,6 +19,7 @@ import { MatCardModule } from '@angular/material/card';
 import { InformacionClubDialogComponent } from './informacion-club-dialog/informacion-club-dialog.component';
 import { EditarClubDialogComponent } from './editar-club-dialog/editar-club-dialog.component';
 import { ClubAmenitiesModalComponent } from './registrar-comodidad-dialog/registrar-comodidad-dialog.component';
+import { ClubCloseDialogComponent } from './close-club-dialog/close-club-dialog.component';
 
 
 
@@ -344,7 +345,6 @@ export class ClubsComponent implements OnInit {
 
   abrirModalComodidades(club: Club) {
     const dialogRef = this.dialog.open(ClubAmenitiesModalComponent, {
-      width: '600px',
       maxWidth: '80vw',
       maxHeight: '80vh',
       data: { clubId: club.id }
@@ -353,6 +353,26 @@ export class ClubsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.snackBar.open('✅ Comodidades actualizadas', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom'
+        });
+      }
+    });
+  }
+
+
+
+  addCloseDays(){
+    const dialogRef = this.dialog.open(ClubCloseDialogComponent, {
+      maxWidth: '80vw',
+      maxHeight: '80vh',
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('✅ Se añadio con exito', 'Cerrar', {
           duration: 3000,
           panelClass: ['snackbar-success'],
           horizontalPosition: 'center',

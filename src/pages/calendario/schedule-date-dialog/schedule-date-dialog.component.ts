@@ -95,7 +95,7 @@ export class ScheduleDateDialogComponent implements OnInit {
       end_time: [defaultEndTime, Validators.required],
       pay_method: ['single_payment', Validators.required],
       observations: [''],
-      type: ['', Validators.required],
+      type: ['private', Validators.required],
       category: ['', Validators.required]
     });
 

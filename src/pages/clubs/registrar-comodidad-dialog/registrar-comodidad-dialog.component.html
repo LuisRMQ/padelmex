@@ -4,7 +4,7 @@
     <div class="icon-circle">
       <mat-icon>restaurant</mat-icon>
     </div>
-    <div>
+    <div class="modal-title">
       <h2>Comodidades del Club</h2>
       <p>Selecciona las comodidades que tiene este club</p>
     </div>
@@ -16,14 +16,15 @@
   <mat-divider class="modal-divider"></mat-divider>
 
   <!-- Club Amenities List -->
-<div *ngFor="let amenity of amenities">
-  <mat-checkbox [(ngModel)]="amenity.selected">
-    {{ amenity.amenity_name }}
-  </mat-checkbox>
-</div>
+  <div class="amenities-list">
+    <mat-checkbox *ngFor="let amenity of amenities" [(ngModel)]="amenity.selected">
+      {{ amenity.amenity_name }}
+    </mat-checkbox>
+  </div>
+
   <!-- Actions -->
   <div class="modal-actions">
-    <button mat-button mat-dialog-close>Cancelar</button>
+<button mat-stroked-button mat-dialog-close>Cancelar</button>
     <button mat-raised-button color="primary" (click)="guardarComodidades()">Guardar</button>
   </div>
 </div>

@@ -1,10 +1,20 @@
 <!-- <div class="page-content"> -->
-<div class="header">
-  <h1>Clubes</h1>
-  <button mat-raised-button class="btn-registrar" (click)="abrirModalRegistrarClub()">
+<div class="header" style="display: flex; align-items: center; justify-content: space-between;">
+  <!-- Botón nuevo a la izquierda -->
+
+
+  <h1 style="flex-grow: 1; margin: 0;">Clubes</h1>
+  <button mat-icon-button color="primary" (click)="addCloseDays()" style="margin-right: 16px;">
+    <mat-icon>warning</mat-icon>
+  </button>
+  <!-- Botón registrar club a la derecha -->
+  <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarClub()">
     <mat-icon>add</mat-icon> REGISTRAR CLUB
   </button>
 </div>
+
+
+
 
 <mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
 

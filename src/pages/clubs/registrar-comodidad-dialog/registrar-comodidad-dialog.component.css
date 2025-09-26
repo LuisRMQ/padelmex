@@ -1,11 +1,76 @@
-.amenities-list {
+.modal-container {
+  max-width: 500px;
+  width: 90vw;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 16px 0;
+  gap: 16px;
 }
 
-.amenity-row {
+.modal-divider {
+  opacity: 0.1;
+  margin: 8px 0;
+}
+
+.modal-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.modal-header p {
+  margin: 4px 0 0 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.icon-circle {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 50%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.amenities-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-top: 8px;
+}
+
+.amenities-list mat-checkbox {
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.amenities-list mat-checkbox:hover {
+  background: #f3f6fb;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
 }

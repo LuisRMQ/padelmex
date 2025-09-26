@@ -1,0 +1,29 @@
+<!-- club-close-dialog.component.html -->
+<div class="modal-container">
+  <h2>Agregar día cerrado</h2>
+  <mat-divider class="modal-divider"></mat-divider>
+
+  <form [formGroup]="form">
+    <mat-form-field appearance="outline" class="modal-field">
+      <mat-label>Selecciona un club</mat-label>
+      <mat-select formControlName="club_id" required>
+        <mat-option *ngFor="let club of clubs" [value]="club.id">{{ club.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="modal-field">
+      <mat-label>Día</mat-label>
+      <input matInput type="date" formControlName="day" required>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="modal-field">
+      <mat-label>Motivo</mat-label>
+      <input matInput formControlName="reason" required>
+    </mat-form-field>
+  </form>
+
+  <div class="modal-actions">
+    <button mat-stroked-button (click)="cancelar()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="guardar()">Guardar</button>
+  </div>
+</div>

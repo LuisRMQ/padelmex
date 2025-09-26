@@ -1,0 +1,25 @@
+/* club-close-dialog.component.css */
+.modal-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.modal-divider {
+  margin: 12px 0;
+  opacity: 0.1;
+}
+
+.modal-field {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}

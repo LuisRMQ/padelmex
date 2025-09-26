@@ -42,10 +42,19 @@ export interface Comidad {
     updated_at?: string;
 }
 
+export interface ClubClosedDay {
+    id?: number;
+    club_id: number;
+    date: string;
+    reason?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 
 export interface ClubAmenityWithName {
-  id: number;
-  amenity_name: string;
+    id: number;
+    amenity_name: string;
 }
 
 @Injectable({
@@ -78,9 +87,9 @@ export class ClubsService extends ApiBaseService {
     // ================================
     // 📌 CLUB AMENITIES
     // ================================
-   getClubAmenities(club_id: number): Observable<ClubAmenityWithName[]> {
-    return this.get<ClubAmenityWithName[]>(`/clubAmenities?club_id=${club_id}`);
-}
+    getClubAmenities(club_id: number): Observable<ClubAmenityWithName[]> {
+        return this.get<ClubAmenityWithName[]>(`/clubAmenities?club_id=${club_id}`);
+    }
 
     getClubAmenityById(id: number): Observable<ClubAmenity> {
         return this.get<ClubAmenity>(`/clubAmenities/${id}`);
@@ -106,6 +115,30 @@ export class ClubsService extends ApiBaseService {
     getComidades(): Observable<Comidad[]> {
         return this.get<Comidad[]>('/amenities');
 
+    }
+
+    // ================================
+    // 📌 CLUB CLOSED DAYS
+    // ================================
+
+    getClubClosedDays(): Observable<ClubClosedDay[]> {
+        return this.get<ClubClosedDay[]>('/clubClosedDays');
+    }
+
+    createClubClosedDay(data: { club_id: number; date: string; reason?: string }): Observable<ClubClosedDay> {
+        return this.post<ClubClosedDay>('/clubClosedDays/create', data);
+    }
+
+    getClubClosedDayById(id: number): Observable<ClubClosedDay> {
+        return this.get<ClubClosedDay>(`/clubClosedDays/${id}`);
+    }
+
+    updateClubClosedDay(id: number, data: Partial<ClubClosedDay>): Observable<ClubClosedDay> {
+        return this.put<ClubClosedDay>(`/clubClosedDays/update/${id}`, data);
+    }
+
+    deleteClubClosedDay(id: number): Observable<any> {
+        return this.delete(`/clubClosedDays/delete/${id}`);
     }
 }
 
