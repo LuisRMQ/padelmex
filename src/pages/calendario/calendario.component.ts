@@ -20,6 +20,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScheduleDetailsDialogComponent } from './schedule-details-dialog/schedule-details-dialog.component';
 import { SettingsDialogComponent } from './settings-dialog/settings-dialog.component';
+import { ConfigService } from '../../app/services/config.service';
 
 interface Court { id: number; name: string; }
 interface CalendarReservation {
@@ -33,7 +34,7 @@ interface CalendarReservation {
 }
 
 interface Player {
-  id: number; 
+  id: number;
 }
 
 @Component({
@@ -71,13 +72,18 @@ export class CalendarioComponent implements OnInit {
   clubs: Club[] = [];
   courtNameToIdMap: Map<string, number> = new Map();
   allReservations: ApiReservation[] = [];
-  private hideTooltipTimeout: any = null;
   isTooltipHovered = false;
+
+  // Configuración de reservas
+  advance_reservation_limit = 0;
+  cancellation_policy = 0;
+  activate_reservation = 0;
 
   constructor(
     private dialog: MatDialog,
     private courtService: CourtService,
-    private reservationService: ReservationService
+    private reservationService: ReservationService,
+    private configService: ConfigService
   ) {
     registerLocaleData(localeEs);
   }
@@ -136,10 +142,31 @@ export class CalendarioComponent implements OnInit {
   onClubChange() {
     if (this.selectedClubId) {
       this.loadCourts();
+      this.loadReservationConfiguration();
+      console.log('Club cambiado, ID:', this.selectedClubId);
+      console.log('Configuración de reservas:', {
+        advance_reservation_limit: this.advance_reservation_limit,
+        cancellation_policy: this.cancellation_policy,
+        activate_reservation: this.activate_reservation
+      });
     } else {
       this.courts = [];
       this.selectedCourtId = null;
       this.applyFilters();
+    }
+  }
+
+  loadReservationConfiguration() {
+    if (this.selectedClubId) {
+      this.configService.getReservationConfigFromClub(this.selectedClubId).subscribe({
+        next: (data) => {
+          if (data) {
+            this.advance_reservation_limit = data[0].advance_reservation_limit;
+            this.cancellation_policy = data[0].cancellation_policy;
+            this.activate_reservation = data[0].activate_reservation;
+          }
+        }
+      });
     }
   }
 
@@ -158,18 +185,35 @@ export class CalendarioComponent implements OnInit {
     if (isToday && (now.getHours() * 60 + now.getMinutes()) >= this.dayEndMin) {
       return true;
     }
+
+    if (this.advance_reservation_limit !== null && this.advance_reservation_limit > 0) {
+      console.log('Verificando restricción de anticipación...');
+      // La columna representa el día seleccionado, así que validamos todos los slots del día
+      // Si la fecha es hoy, y la hora actual + límite supera el final del día, toda la columna es "no seleccionable"
+      const minReservableTime = now.getTime() + this.advance_reservation_limit * 60 * 60 * 1000;
+      const endOfDay = new Date(selected);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      if (selected.getTime() === now.setHours(0, 0, 0, 0)) {
+        console.log('La fecha seleccionada es hoy.');
+        // Si el mínimo reservable es después del final del día, no se puede reservar nada hoy
+        if (minReservableTime > endOfDay.getTime()) {
+          console.log('El mínimo reservable está después del final del día. Columna desactivada.');
+          return true;
+        }
+      }
+      // Si la fecha seleccionada es hoy y el mínimo reservable está dentro del rango del día, la columna sigue activa
+      // Si la fecha seleccionada es futura, no aplica restricción
+    }
     return false;
   }
 
 
-  openSettingsDialog() {
+  openSettingsDialog(selectedClubId: number | null) {
     const dialogRef = this.dialog.open(SettingsDialogComponent, {
       width: '400px',
       data: {
-        // Puedes pasar datos iniciales si quieres
-        minReservationDuration: 30,
-        cancellationLimitHours: 2,
-        maxReservationsPerUser: 3
+        selectedClubId: selectedClubId
       }
     });
 
@@ -289,74 +333,74 @@ export class CalendarioComponent implements OnInit {
     console.log('Tiempo fin:', endTime24);
 
     // Abrir modal de reservación
- const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
-  data: {
-    user: '',
-    startTime: startTime24,
-    endTime: endTime24,
-    courtId: court.id,
-    date: this.selectedDate,
-    courtName: court.name
-  },
-  width: '600px',
-  maxWidth: '95vw',
-  maxHeight: '90vh',
-  panelClass: 'custom-modal-panel',
-  height: '90vh'
-});
+    const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
+      data: {
+        user: '',
+        startTime: startTime24,
+        endTime: endTime24,
+        courtId: court.id,
+        date: this.selectedDate,
+        courtName: court.name
+      },
+      width: '600px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      panelClass: 'custom-modal-panel',
+      height: '90vh'
+    });
 
-dialogRef.afterClosed().subscribe(result => {
-  if (!result) return; // Canceló el modal
-  console.log('Resultado del modal:', result);
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return; // Canceló el modal
+      console.log('Resultado del modal:', result);
 
-  // **Usamos directamente el payload que envía el modal**
-  // Para pruebas puedes usar los jugadores fijos dentro del modal
-  const payload = result;
+      // **Usamos directamente el payload que envía el modal**
+      // Para pruebas puedes usar los jugadores fijos dentro del modal
+      const payload = result;
 
-  console.log("Payload final que se enviará al backend:", payload);
+      console.log("Payload final que se enviará al backend:", payload);
 
-  this.reservationService.createReservation(payload).subscribe({
-    next: (response) => {
-      console.log('✅ Reservación creada:', response);
+      this.reservationService.createReservation(payload).subscribe({
+        next: (response) => {
+          console.log('✅ Reservación creada:', response);
 
-      // Mapeo para mostrar en calendario
-      const newRes: CalendarReservation = {
-        id: response.reservation.id,
-        courtId: payload.court_id,
-        user: `Usuario ${payload.user_id}`,
-        startMin: this.timeStringToMinutes(payload.start_time),
-        endMin: this.timeStringToMinutes(payload.end_time),
-        originalData: response.reservation
-      };
+          // Mapeo para mostrar en calendario
+          const newRes: CalendarReservation = {
+            id: response.reservation.id,
+            courtId: payload.court_id,
+            user: `Usuario ${payload.user_id}`,
+            startMin: this.timeStringToMinutes(payload.start_time),
+            endMin: this.timeStringToMinutes(payload.end_time),
+            originalData: response.reservation
+          };
 
-      this.reservations = [...this.reservations, newRes];
+          this.reservations = [...this.reservations, newRes];
 
-      // Mensaje WhatsApp
-      if (response.whatsapp_status) {
-        if (response.whatsapp_status === 'sent') {
-          this.warningMsg = 'Mensaje de WhatsApp enviado correctamente.';
-        } else if (response.whatsapp_status.startsWith('error')) {
-          this.warningMsg = 'No se pudo enviar WhatsApp: ' + response.whatsapp_status.replace('error: ', '');
+          // Mensaje WhatsApp
+          if (response.whatsapp_status) {
+            if (response.whatsapp_status === 'sent') {
+              this.warningMsg = 'Mensaje de WhatsApp enviado correctamente.';
+            } else if (response.whatsapp_status.startsWith('error')) {
+              this.warningMsg = 'No se pudo enviar WhatsApp: ' + response.whatsapp_status.replace('error: ', '');
+            }
+            setTimeout(() => { this.warningMsg = null; }, 5000);
+          }
+
+          this.loadAllReservations();
+        },
+        error: (error) => {
+          console.error('❌ Error creando reservación:', error);
+          if (error.status === 422 && error.error?.errors) {
+            this.error = Object.values(error.error.errors).flat().join(', ');
+          } else if (error.error?.msg) {
+            this.error = error.error.msg;
+          } else {
+            this.error = 'Error desconocido: ' + (error.error?.message || error.message);
+          }
+          setTimeout(() => { this.error = null; }, 5000);
         }
-        setTimeout(() => { this.warningMsg = null; }, 5000);
-      }
-
-      this.loadAllReservations();
-    },
-    error: (error) => {
-      console.error('❌ Error creando reservación:', error);
-      if (error.status === 422 && error.error?.errors) {
-        this.error = Object.values(error.error.errors).flat().join(', ');
-      } else if (error.error?.msg) {
-        this.error = error.error.msg;
-      } else {
-        this.error = 'Error desconocido: ' + (error.error?.message || error.message);
-      }
-      setTimeout(() => { this.error = null; }, 5000);
-    }
-  });
-});
- }
+      });
+    });
+  }
   // ---- drag & drop ----
   onDragStarted(e: CdkDragStart, res: CalendarReservation, resEl: HTMLElement) {
     const rect = resEl.getBoundingClientRect();

@@ -5,6 +5,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { MatCardModule } from "@angular/material/card";
+import { ConfigService } from '../../../app/services/config.service';
 
 @Component({
   selector: 'app-settings-dialog',
@@ -17,28 +19,57 @@ import { CommonModule } from '@angular/common';
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatCardModule
   ]
 })
 export class SettingsDialogComponent {
-  minReservationDuration: number;
-  cancellationLimitHours: number;
-  maxReservationsPerUser: number;
+  advance_reservation_limit = '';
+  cancellation_policy = '';
+  activate_reservation = '';
+  editable = false;
 
   constructor(
     private dialogRef: MatDialogRef<SettingsDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private configService: ConfigService
   ) {
-    this.minReservationDuration = data.minReservationDuration ?? 30;
-    this.cancellationLimitHours = data.cancellationLimitHours ?? 2;
-    this.maxReservationsPerUser = data.maxReservationsPerUser ?? 3;
+
+  }
+
+  ngOnInit() {
+    this.configService.getReservationConfigFromClub(this.data.selectedClubId).subscribe({
+      next: (data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const config = data[0];
+          this.advance_reservation_limit = config.advance_reservation_limit;
+          this.cancellation_policy = config.cancellation_policy;
+          this.activate_reservation = config.activate_reservation;
+          this.editable = true;
+        }
+      }
+    });
   }
 
   save() {
-    this.dialogRef.close({
-      minReservationDuration: this.minReservationDuration,
-      cancellationLimitHours: this.cancellationLimitHours,
-      maxReservationsPerUser: this.maxReservationsPerUser
+    const configData = {
+      club_id: this.data.selectedClubId,
+      advance_reservation_limit: this.advance_reservation_limit,
+      cancellation_policy: this.cancellation_policy,
+      activate_reservation: this.activate_reservation
+    };
+    if (this.editable) {
+      this.configService.updateReservationConfig(configData).subscribe({
+        next: () => {
+          this.dialogRef.close(configData);
+        }
+      });
+      return;
+    }
+    this.configService.createReservationConfig(configData).subscribe({
+      next: () => {
+        this.dialogRef.close(configData);
+      }
     });
   }
 

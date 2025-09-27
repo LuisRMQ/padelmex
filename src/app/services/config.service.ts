@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 
 export interface Category {
   id?: number;
-category: string;
+  category: string;
   description?: string;
   active?: boolean;
   created_at?: string;
@@ -22,8 +22,8 @@ export interface Rol {
 
 
 export interface Comidad {
-  id?: number;         
-  name: string;         
+  id?: number;
+  name: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -69,12 +69,12 @@ export class ConfigService extends ApiBaseService {
   // 📌 ROLES
   // ================================
 
- getRoles(): Observable<Rol[]> {
-  return this.get<{ msg: string, roles: Rol[] }>('/roles')
-    .pipe(
-      map(res => res.roles)
-    );
-}
+  getRoles(): Observable<Rol[]> {
+    return this.get<{ msg: string, roles: Rol[] }>('/roles')
+      .pipe(
+        map(res => res.roles)
+      );
+  }
 
   getRolById(id: number): Observable<Rol> {
     return this.get<{ success: boolean, data: Rol }>(`/roles/${id}`)
@@ -97,25 +97,42 @@ export class ConfigService extends ApiBaseService {
   // ================================
   // 📌 COMODIDADES
   // ================================
- getComidades(): Observable<Comidad[]> {
-   return this.get<Comidad[]>('/amenities');
+  getComidades(): Observable<Comidad[]> {
+    return this.get<Comidad[]>('/amenities');
 
-}
+  }
 
-getComidadById(id: number): Observable<Comidad> {
-  return this.get<{ success: boolean, data: Comidad }>(`/amenities/${id}`)
-    .pipe(map(res => res.data));
-}
+  getComidadById(id: number): Observable<Comidad> {
+    return this.get<{ success: boolean, data: Comidad }>(`/amenities/${id}`)
+      .pipe(map(res => res.data));
+  }
 
-createComidad(data: any): Observable<any> {
-  return this.post('/amenities/create', data);
-}
+  createComidad(data: any): Observable<any> {
+    return this.post('/amenities/create', data);
+  }
 
-updateComidad(id: number, data: any): Observable<any> {
-  return this.put(`/amenities/update/${id}`, data);
-}
+  updateComidad(id: number, data: any): Observable<any> {
+    return this.put(`/amenities/update/${id}`, data);
+  }
 
-deleteComidad(id: number): Observable<any> {
-  return this.delete(`/amenities/delete/${id}`);
-}
+  deleteComidad(id: number): Observable<any> {
+    return this.delete(`/amenities/delete/${id}`);
+  }
+
+  // ================================
+  // 📌 RESERVACIONES
+  // ================================
+
+  getReservationConfigFromClub(clubId: number): Observable<any> {
+    return this.get<{ success: boolean, data: any }>(`/reservationConfigure?club_id=${clubId}`)
+      .pipe(map(res => res.data));
+  }
+
+  createReservationConfig(data: any): Observable<any> {
+    return this.post('/reservationConfigure/create', data);
+  }
+
+  updateReservationConfig(data: any): Observable<any> {
+    return this.put(`/reservationConfigure/update/${data.club_id}`, data);
+  }
 }
