@@ -6,8 +6,8 @@
     <!-- Encabezado -->
     <div class="header">
       <h2>Integrantes</h2>
-      <button mat-raised-button  class="btn-agregar" (click)="abrirModalRegistrarIntegrante()">
-        AGREGAR Integrante
+      <button mat-raised-button color="accent" class="btn-registrar" (click)="abrirModalRegistrarIntegrante()">
+        <mat-icon>add</mat-icon> AGREGAR INTEGRANTE
       </button>
     </div>
 
@@ -17,27 +17,59 @@
       <input matInput placeholder="Buscar..." (keyup)="applyFilter($event)">
     </mat-form-field>
 
-    <!-- Tabla de usuarios -->
-    <div class="tabla-container">
-      <table mat-table [dataSource]="dataSource" class="mat-elevation-z1">
+    <!-- Tarjetas resumen -->
+    <!-- <div class="usuarios-resumen">
+      <div class="resumen-card">
+        <div class="resumen-icon total"><mat-icon>groups</mat-icon></div>
+        <div class="resumen-label">Total Integrantes</div>
+        <div class="resumen-value">{{ dataSource?.data.length }}</div>
+      </div>
+      <div class="resumen-card">
+        <div class="resumen-icon activos"><mat-icon>directions_run</mat-icon></div>
+        <div class="resumen-label">Jugadores</div>
+        <div class="resumen-value">{{ getTotalIntegrantesByRol('jugador') }}</div>
+      </div>
+      <div class="resumen-card">
+        <div class="resumen-icon entrenadores"><mat-icon>emoji_events</mat-icon></div>
+        <div class="resumen-label">Entrenadores</div>
+        <div class="resumen-value">{{ getTotalIntegrantesByRol('coach') }}</div>
+      </div>
+      <div class="resumen-card">
+        <div class="resumen-icon victorias"><mat-icon>military_tech</mat-icon></div>
+        <div class="resumen-label">Categoría con más Integrantes</div>
+        <div class="resumen-value">{{ getCategoriaConMasIntegrantes() }}</div>
+      </div>
+    </div> -->
 
+    <!-- Tabla de integrantes -->
+    <div class="usuarios-lista tabla-container">
+      <div class="usuarios-lista-header">
+        <span>Lista de Integrantes</span>
+      </div>
+      <table class="usuarios-table" mat-table [dataSource]="dataSource">
+        
         <!-- Foto -->
         <ng-container matColumnDef="foto">
           <th mat-header-cell *matHeaderCellDef> Foto </th>
           <td mat-cell *matCellDef="let usuario">
             <img 
-              [src]="usuario.profile_photo" 
-              alt="Foto" 
-              class="avatar"
+              class="usuario-avatar" 
+              [src]="usuario.profile_photo || 'assets/images/iconuser.png'" 
+              alt="Foto"
               (error)="onImageError($event)">
           </td>
         </ng-container>
 
-        <!-- Nombre completo -->
+        <!-- Nombre -->
         <ng-container matColumnDef="nombre">
           <th mat-header-cell *matHeaderCellDef> Nombre </th>
           <td mat-cell *matCellDef="let usuario">
-            {{ usuario.name }} {{ usuario.lastname }}
+            <div class="usuario-nombre">
+              <div>
+                <div class="nombre">{{ usuario.name }} {{ usuario.lastname }}</div>
+                <div class="correo">{{ usuario.email }}</div>
+              </div>
+            </div>
           </td>
         </ng-container>
 
@@ -50,35 +82,43 @@
         <!-- Rol -->
         <ng-container matColumnDef="rol">
           <th mat-header-cell *matHeaderCellDef> Rol </th>
-          <td mat-cell *matCellDef="let usuario"> {{ usuario.rol }} </td>
+          <td mat-cell *matCellDef="let usuario">
+            <span class="badge-rol" [ngClass]="usuario.rol | lowercase">{{ usuario.rol }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Club -->
+        <ng-container matColumnDef="club">
+          <th mat-header-cell *matHeaderCellDef> Club </th>
+          <td mat-cell *matCellDef="let usuario"> {{ usuario.club_id }} </td>
         </ng-container>
 
         <!-- Categoría -->
         <ng-container matColumnDef="categoria">
           <th mat-header-cell *matHeaderCellDef> Categoría </th>
-          <td mat-cell *matCellDef="let usuario"> {{ usuario.category }} </td>
-        </ng-container>
-
-        <!-- Club ID -->
-        <ng-container matColumnDef="club">
-          <th mat-header-cell *matHeaderCellDef> Club </th>
-          <td mat-cell *matCellDef="let usuario"> {{ usuario.club_id }} </td>
+          <td mat-cell *matCellDef="let usuario">
+            <span class="badge-categoria" [ngClass]="usuario.category | lowercase">{{ usuario.category }}</span>
+          </td>
         </ng-container>
 
         <!-- Acciones -->
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef> Acciones </th>
           <td mat-cell *matCellDef="let usuario">
+            <button mat-icon-button color="primary" (click)="verDetalle(usuario)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="accent" (click)="abrirModalRegistrarIntegrante()">
+              <mat-icon>edit</mat-icon>
+            </button>
             <button mat-icon-button color="warn" (click)="eliminarUsuario(usuario)">
               <mat-icon>delete</mat-icon>
             </button>
           </td>
         </ng-container>
 
-        <!-- Header y filas -->
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
       </table>
 
       <!-- Paginador -->
@@ -86,4 +126,25 @@
     </div>
   </div>
 
+  <!-- Vista detalle integrante -->
+  <div *ngIf="selectedUsuario" class="detalle-grid">
+    <div class="foto-card">
+      <img [src]="selectedUsuario.profile_photo || 'assets/images/iconuser.png'" (error)="onImageError($event)" alt="Foto">
+      <div class="card-actions">
+        <button mat-button color="primary" (click)="volverLista()">Volver</button>
+      </div>
+    </div>
+    <div class="datos-card">
+      <div class="datos-header">
+        <mat-card-title>Información del Integrante</mat-card-title>
+      </div>
+      <div class="datos-grid">
+        <div><strong>Nombre:</strong> {{ selectedUsuario.name }} {{ selectedUsuario.lastname }}</div>
+        <div><strong>Email:</strong> {{ selectedUsuario.email }}</div>
+        <!-- <div><strong>Rol:</strong> {{ selectedUsuario.rol }}</div> -->
+        <div><strong>Club:</strong> {{ selectedUsuario.club_id }}</div>
+        <!-- <div><strong>Categoría:</strong> {{ selectedUsuario.category }}</div> -->
+      </div>
+    </div>
+  </div>
 </div>

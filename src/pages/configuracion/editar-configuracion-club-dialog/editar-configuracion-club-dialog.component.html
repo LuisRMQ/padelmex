@@ -1,37 +1,91 @@
-<h2 mat-dialog-title>Editar Club</h2>
-<mat-dialog-content>
-  <form [formGroup]="clubForm" class="form-grid">
-    <mat-form-field appearance="outline">
-      <mat-label>Nombre</mat-label>
-      <input matInput formControlName="name">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Dirección</mat-label>
-      <input matInput formControlName="address">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Teléfono</mat-label>
-      <input matInput formControlName="phone">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Email</mat-label>
-      <input matInput type="email" formControlName="email">
-    </mat-form-field>
-
-    <div class="imagenes-section">
-      <button mat-raised-button color="primary" (click)="fileInput.click()">Cambiar Logo</button>
-      <input type="file" hidden (change)="onFileSelected($event)" #fileInput>
-      <mat-card class="preview-card">
-        <img [src]="logoPreview" width="150" alt="Preview">
-      </mat-card>
+<div class="edit-club-dialog">
+  <!-- Header -->
+  <div class="edit-header">
+    <div class="edit-header-title">
+      <mat-icon class="edit-header-icon">edit</mat-icon>
+      <div>
+        <h2>Editar Club</h2>
+        <div class="edit-header-desc">Actualiza la información y configuración de tu club</div>
+      </div>
     </div>
-  </form>
-</mat-dialog-content>
+  </div>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="cancelar()">Cancelar</button>
-  <button mat-raised-button color="primary" (click)="guardar()">Guardar</button>
-</mat-dialog-actions>
+  <mat-dialog-content>
+    <form [formGroup]="clubForm" class="edit-form" autocomplete="off">
+      <!-- Logo -->
+      <div class="logo-section">
+        <div class="logo-box">
+          <img class="club-logo" [src]="logoPreview || clubForm.get('logo')?.value || 'assets/logos/azteca.png'" alt="Club Logo">
+          <div class="logo-actions">
+            <label class="change-logo-label">
+              <input type="file" accept="image/*" (change)="onFileSelected($event)">
+              <mat-icon>photo_camera</mat-icon> Cambiar Logo
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información general -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Nombre del Club *</mat-label>
+          <input matInput formControlName="name" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Tipo de Club</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="private">Privado</mat-option>
+            <mat-option value="public">Público</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Contacto -->
+      <div class="section-title"><mat-icon>contact_mail</mat-icon> Información de Contacto</div>
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="phone">
+        </mat-form-field>
+      </div>
+
+      <!-- Ubicación -->
+      <div class="section-title"><mat-icon>location_on</mat-icon> Ubicación y Dirección</div>
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Calle</mat-label>
+          <input matInput formControlName="address">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Estado</mat-label>
+          <input matInput formControlName="state">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Ciudad</mat-label>
+          <input matInput formControlName="city">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>RFC</mat-label>
+          <input matInput formControlName="rfc">
+        </mat-form-field>
+      </div>
+
+      <!-- Estado activo -->
+      <div class="form-row">
+        <mat-slide-toggle formControlName="status">Activo</mat-slide-toggle>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="form-actions">
+    <button mat-button (click)="cancelar()">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="guardar()">Guardar Cambios</button>
+  </mat-dialog-actions>
+</div>

@@ -1,0 +1,237 @@
+/* Contenedor principal del modal */
+.reservacion-dialog {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px 20px 28px;
+    max-width: 700px;
+    min-width: 350px;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.12);
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Header */
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.dialog-header h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2e3c5d;
+    margin: 0;
+}
+
+.reservation-id {
+    font-size: 1rem;
+    color: #888;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-weight: 500;
+}
+
+/* Status */
+.status-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 12px 0;
+    gap: 16px;
+}
+
+.status-container h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.status-badge {
+    padding: 6px 18px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    min-width: 80px;
+    display: inline-block;
+}
+
+.status-badge.pending {
+    background: #ffe9a7;
+    color: #b58c00;
+    border: 1px solid #ffe9a7;
+}
+
+.status-badge.confirmed {
+    background: #c8f7c5;
+    color: #2e7d32;
+    border: 1px solid #c8f7c5;
+}
+
+.status-badge.cancelled {
+    background: #ffcdd2;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* Filas de información */
+.info-row {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.card {
+    flex: 1;
+    border-radius: 12px;
+    padding: 18px 18px 12px 18px;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+    margin-bottom: 18px;
+}
+
+/* Colores de tarjetas */
+.blue-card {
+    background: #eaf3ff;
+    border: 1px solid #b3d1ff;
+}
+
+.green-card {
+    background: #eafaf1;
+    border: 1px solid #b3e6c9;
+}
+
+.gray-card {
+    background: #f7f7fa;
+    border: 1px solid #e0e0e0;
+}
+
+/* Títulos dentro de tarjetas */
+.card h4 {
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2e3c5d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Payment grid */
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+    margin-top: 8px;
+}
+
+.total-amount {
+    color: #1976d2;
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+/* Observaciones */
+.observation-input {
+    width: 100%;
+    background: #f5faff;
+    border: 1px solid #b3d1ff;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    margin-top: 6px;
+    color: #2e3c5d;
+}
+
+/* Footer del modal */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 9px;
+    color: #888;
+    font-size: 0.95rem;
+}
+
+/* Botones */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.btn {
+    padding: 8px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+
+.btn-close {
+    background: #f5f5f5;
+    color: #2e3c5d;
+    width: 60px;
+}
+
+.btn-edit {
+    background: #1976d2;
+    color: #fff;
+}
+
+.btn-save {
+    background: #43a047;
+    color: #fff;
+}
+
+.btn-cancel {
+    background: #e0e0e0;
+    color: #2e3c5d;
+}
+
+.btn-close:hover { background: #e0e0e0; }
+.btn-edit:hover { background: #1565c0; }
+.btn-save:hover { background: #388e3c; }
+.btn-cancel:hover { background: #cfcfcf; }
+
+/* Jugadores */
+.players-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.player-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    text-align: center;
+}
+
+.player-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 4px;
+}
+
+.player-card p {
+    font-size: 0.85rem;
+    color: #2e3c5d;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .info-row {
+        flex-direction: column;
+    }
+    .players-grid {
+        justify-content: center;
+    }
+}

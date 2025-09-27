@@ -1,19 +1,35 @@
-.integrantes-container {
-  margin: 20px;
+:root {
+  --primary-color: #2c3e50;
+  --accent-color: #e74c3c;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --info-color: #3498db;
+  --background-light: #ecf0f1;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
+/* Contenedor principal */
+.integrantes-container {
+  margin: 0 auto;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Header */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0; /* quitar margen */
-  padding: 20px 30px; /* mantener solo padding */
+  margin-bottom: 25px;
+  padding: 15px 20px;
   background: white;
   border-radius: 15px;
   box-shadow: var(--shadow);
 }
 
-.header h1 {
+.header h2 {
   color: var(--primary-color);
   font-size: 2.5rem;
   font-weight: 700;
@@ -21,7 +37,7 @@
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
-.btn-registrar {
+.btn-agregar {
   background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
   color: white !important;
   font-weight: 600 !important;
@@ -31,91 +47,172 @@
   transition: all 0.3s ease !important;
   border: none !important;
 }
-.search-field {
-  padding-top: 15px;
-  width: 300px;
-  margin-bottom: 15px;
+
+.btn-agregar:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover) !important;
 }
 
-.tabla-container {
-  background-color: white;
-  border-radius: 4px;
-  padding: 10px;
-}
-
-.nombre-link {
-  color: #4caf50;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.nombre-link:hover {
-  text-decoration: underline;
-}
-
-
-.detalle-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.foto-card {
+/* Buscador */
+.usuarios-filtros {
   display: flex;
-  flex-direction: column;
-  align-items: center;   /* Centra horizontal */
-  justify-content: center; /* Centra vertical si es necesario */
-  padding: 15px;
-  text-align: center;
-}
-
-/* Imagen */
-.foto-card img {
-  width: 250px;    /* Tamaño fijo */
-  height: 250px;   /* Tamaño fijo */
-  object-fit: contain; /* Para que no se deforme */
-  border-radius: 8px;
-}
-
-.card-actions {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  font-size: 12px;
-  color: gray;
-}
-
-.datos-card {
-  margin-top: 20px;
-}
-
-.datos-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin-top: 10px;
-}
-
-.datos-grid div {
-  font-size: 14px;
-}
-
-.datos-header {
-  display: flex;
-  justify-content: space-between;
+  gap: 16px;
   align-items: center;
+  margin-bottom: 18px;
 }
 
-.datos-header mat-card-title {
-  font-size: 18px;
-  font-weight: bold;
+.usuarios-search {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 1rem;
+  background: #f7f7fa;
+  width: 70%;
 }
 
+/* Tarjetas resumen */
+.usuarios-resumen {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 24px;
+}
 
+.resumen-card {
+  background: #f8fcff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+  padding: 18px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 160px;
+}
+
+.resumen-icon {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resumen-icon.total { background: #eaf3ff; color: #1976d2; }
+.resumen-icon.activos { background: #eafaf1; color: #43a047; }
+.resumen-icon.entrenadores { background: #fffbe7; color: #fbc02d; }
+.resumen-icon.victorias { background: #eafaf1; color: #43a047; }
+
+.resumen-label {
+  font-size: 1rem;
+  color: #607d8b;
+  margin-bottom: 2px;
+}
+
+.resumen-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2e3c5d;
+}
+
+/* Tabla */
+.usuarios-lista {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+  padding: 18px 24px;
+}
+
+.usuarios-lista-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.usuarios-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 12px;
+}
+
+.usuarios-table th {
+  text-align: left;
+  font-size: 0.98rem;
+  color: #607d8b;
+  font-weight: 600;
+  padding: 10px 8px;
+  background: #f7f7fa;
+}
+
+.usuarios-table td {
+  padding: 12px 8px;
+  vertical-align: middle;
+  font-size: 1rem;
+}
+
+.usuario-nombre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.usuario-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.nombre {
+  font-weight: 600;
+  color: #2e3c5d;
+}
+
+.correo {
+  font-size: 0.95rem;
+  color: #607d8b;
+}
+
+/* Badges */
+.badge-rol {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-block;
+}
+
+.badge-rol.jugador { background: #eaf3ff; color: #1976d2; }
+.badge-rol.entrenador { background: #fffbe7; color: #fbc02d; }
+.badge-rol.administrador { background: #f3eafc; color: #8e24aa; }
+
+.badge-categoria {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #eafaf1;
+  color: #43a047;
+  display: inline-block;
+}
+
+.badge-categoria.senior { background: #eafaf1; color: #43a047; }
+.badge-categoria.juvenil { background: #eaf3ff; color: #1976d2; }
+.badge-categoria.veterano { background: #fffbe7; color: #fbc02d; }
+
+/* Avatar extra para la tabla */
 .avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .header { flex-direction: column; gap: 15px; text-align: center; }
+  .usuarios-search { width: 100%; }
 }

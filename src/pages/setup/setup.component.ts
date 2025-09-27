@@ -11,6 +11,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { ConfigService, Category, Rol, Comidad } from '../../app/services/config.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 export interface User {
   id: number;
@@ -38,7 +39,8 @@ interface EditableComidad extends Comidad { editing?: boolean }
     MatProgressSpinnerModule,
     MatDialogModule,
     MatCardModule,
-    MatChipsModule
+    MatChipsModule,
+    MatExpansionModule
   ],
   templateUrl: './setup.component.html',
   styleUrls: ['./setup.component.css']

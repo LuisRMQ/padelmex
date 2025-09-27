@@ -7,6 +7,11 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { ReservationService, Reservation, ReservationsResponse } from '../../app/services/reservation.service';
+import { MatIconModule } from '@angular/material/icon';
+import { ReservacionesDetailsDialogComponent } from './reservaciones-details-dialog/reservaciones-details-dialog.component';
+
+
+
 
 @Component({
   selector: 'app-reservaciones',
@@ -20,12 +25,13 @@ import { ReservationService, Reservation, ReservationsResponse } from '../../app
     MatPaginatorModule,
     MatSortModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatIconModule
   ]
 })
 export class ReservacionesComponent implements OnInit {
 
-  displayedColumns: string[] = ['user', 'court', 'club', 'date', 'start_time', 'end_time', 'status'];
+  displayedColumns: string[] = ['user', 'court', 'club', 'date', 'start_time', 'end_time', 'status', 'acciones'];
   dataSource = new MatTableDataSource<Reservation>();
   loading = false;
   error = '';
@@ -49,9 +55,9 @@ export class ReservacionesComponent implements OnInit {
     this.reservationService.getReservations().subscribe({
       next: (res: ReservationsResponse) => {
         this.dataSource.data = res.data;
-        this.loading = false;
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
+        this.loading = false;
       },
       error: (err) => {
         console.error('Error al cargar reservaciones', err);
@@ -68,5 +74,33 @@ export class ReservacionesComponent implements OnInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+  
+verDetalle(res: Reservation) {
+  this.dialog.open(ReservacionesDetailsDialogComponent, {
+    width: '700px',
+    data: {
+      details: res,            // toda la reservación
+      user: res.user + ' ' + (res.lastname || ''),
+    }
+  });
+}
+
+
+  editarReservacion(res: Reservation) {
+    console.log('Editar reservación:', res);
+  }
+
+  eliminarReservacion(res: Reservation) {
+    console.log('Eliminar reservación:', res);
+  }
+
+  // Helpers para resumen
+  getTotalReservaciones(): number {
+    return this.dataSource.data.length;
+  }
+
+  getTotalReservacionesByStatus(status: string): number {
+    return this.dataSource.data.filter(r => r.status === status).length;
   }
 }

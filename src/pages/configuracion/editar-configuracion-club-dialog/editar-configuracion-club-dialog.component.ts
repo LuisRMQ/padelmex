@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ClubsService } from '../../../app/services/clubs.service'; 
+import { MatSelectModule } from "@angular/material/select";
 
 export interface ClubData {
   id: number;
@@ -29,7 +30,8 @@ export interface ClubData {
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSelectModule
   ]
 })
 export class EditarConfiguracionClubDialogComponent {

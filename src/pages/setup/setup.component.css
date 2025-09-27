@@ -1,4 +1,4 @@
-/* Variables CSS */
+/* Variables */
 :root {
   --primary-color: #3f51b5;
   --accent-color: #ff4081;
@@ -7,23 +7,20 @@
   --light-gray: #f8f9fa;
   --medium-gray: #e9ecef;
   --dark-gray: #495057;
-  --border-radius: 8px;
+  --border-radius: 12px;
   --transition: all 0.3s ease;
 }
 
-/* Estilos generales */
+/* Reset */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-
-
 /* Header */
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 20px 30px;
   background: white;
@@ -34,19 +31,39 @@
 
 .header h1 {
   color: var(--primary-color);
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Contenedor flexible para cards */
+/* Grid contenedor */
 .container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: 1fr;
   gap: 20px;
 }
 
-/* Secciones de configuración */
+/* Roles y Comidades en 2 columnas */
+/* Roles y Comodidades en 2 columnas */
+.roles-comidades {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.roles-comidades > div {
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* Responsivo: en móviles se apilan */
+@media (max-width: 768px) {
+  .roles-comidades {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tarjetas principales */
 .config-section {
   background: white;
   border-radius: var(--border-radius);
@@ -55,147 +72,72 @@
 }
 
 .config-section:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
 .config-section mat-card-header {
   border-bottom: 1px solid var(--medium-gray);
+  background: var(--light-gray);
+  border-radius: 12px 12px 0 0;
 }
 
 .config-section mat-card-title {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 600;
-  color: var(--dark-gray);
-}
-
-/* Input group y form-field */
-.input-group {
-  margin: 20px 0;
-}
-
-
-
-/* Cards individuales */
-.category-item-card,
-.role-item-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: var(--shadow);
-  padding: 12px 16px;
+  color: var(--primary-color);
   display: flex;
-  flex-direction: row;
   align-items: center;
+  gap: 8px;
+}
+
+/* Inputs */
+.input-group {
+  margin: 15px 0;
+}
+
+/* Items */
+.category-item-card,
+.role-item-card,
+.comidad-item-card {
+  background: #fafafa;
+  border-radius: 10px;
+  box-shadow: inset 0 0 3px rgba(0,0,0,0.05);
+  padding: 10px 14px;
+  display: flex;
   justify-content: space-between;
-  width: 100%;
+  align-items: center;
   transition: var(--transition);
-  box-sizing: border-box;
 }
 
 .category-item-card:hover,
-.role-item-card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+.role-item-card:hover,
+.comidad-item-card:hover {
+  background: #f0f4ff;
+  box-shadow: 0 4px 12px rgba(63,81,181,0.15);
 }
 
-/* Contenido principal de la card */
-.category-item-content,
-.role-item-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  flex-wrap: wrap;
-}
-
-/* Texto dentro de la card */
-.category-text,
-.role-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
+/* Texto items */
 .category-name,
-.role-name {
+.role-name,
+.comidad-name {
   font-weight: 600;
-}
-
-.category-description,
-.role-description {
-  font-size: 0.85rem;
-  opacity: 0.7;
-  white-space: normal;
-  word-break: break-word;
-}
-
-/* Botones a la derecha */
-.card-buttons {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-/* Chips de estado */
-.mat-chip {
-  font-size: 0.8rem;
-  padding: 2px 8px;
-}
-
-/* Icon buttons */
-.mat-icon-button {
-  width: 36px;
-  height: 36px;
-}
-
-.mat-icon-button:hover {
-  background-color: rgba(0,0,0,0.05);
-}
-
-/* Loading overlay */
-.loading-overlay {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: var(--border-radius);
-  margin-bottom: 20px;
-}
-
-.loading-overlay p {
-  margin-top: 15px;
   color: var(--dark-gray);
 }
 
-/* Mensaje de error */
-.error-message {
+/* Botones */
+.card-buttons {
   display: flex;
-  align-items: center;
-  background: #ffebee;
-  color: var(--warn-color);
-  padding: 15px 20px;
-  border-radius: var(--border-radius);
-  margin-bottom: 20px;
-  border-left: 4px solid var(--warn-color);
+  gap: 8px;
 }
 
-.error-message mat-icon {
-  margin-right: 10px;
+.card-buttons button {
+  border-radius: 50%;
+  transition: var(--transition);
 }
 
-.retry-btn {
-  margin-left: auto;
-  background: var(--warn-color);
-  color: white;
-  border: none;
-  padding: 5px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.retry-btn:hover {
-  background: #d32f2f;
+.card-buttons button:hover {
+  transform: scale(1.1);
 }
 
 /* Estado vacío */
@@ -203,60 +145,31 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  color: var(--dark-gray);
-  opacity: 0.6;
-  text-align: center;
+  padding: 30px 15px;
+  opacity: 0.7;
 }
 
 .empty-state mat-icon {
-  font-size: 3rem;
-  margin-bottom: 10px;
-}
-
-.empty-state p {
-  font-style: italic;
+  font-size: 2.5rem;
+  color: var(--medium-gray);
 }
 
 
-.comidad-item-card {
-  background: white;
-  border-radius: 8px;
+mat-expansion-panel {
+  border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  overflow: hidden;
   transition: var(--transition);
-  box-sizing: border-box;
 }
 
-.comidad-item-card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-}
-
-.comidad-item-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  flex-wrap: wrap;
-}
-
-.comidad-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.comidad-name {
+mat-expansion-panel-header {
+  background: var(--light-gray);
   font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--primary-color);
 }
 
-.roles-comidades {
-  display: grid;
-  gap: 20px;
+mat-expansion-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }

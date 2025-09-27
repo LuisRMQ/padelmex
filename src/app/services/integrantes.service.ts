@@ -35,16 +35,13 @@ export class IntegrantesService {
       return throwError(() => new Error('No se encontró el club_id del usuario'));
     }
 
-    // 🔹 Query params para GET
     const params = new HttpParams().set('club_id', user.club_id.toString());
 
-    // 🔹 Headers para autenticación
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Accept': 'application/json'
     });
 
-    // 🔹 Llamada GET con query params
     return this.api.get<Integrante[]>(this.apiUrl + `?${params.toString()}`, { headers }).pipe(
       tap(res => console.log('Integrantes del club:', res)),
       catchError(err => throwError(() => err))
