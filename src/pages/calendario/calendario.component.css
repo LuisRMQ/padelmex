@@ -521,3 +521,40 @@ mat-spinner {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
+
+/* Asegurar que las reservaciones sean clickeables */
+/* 
+.status-confirmed {
+  background: linear-gradient(135deg, #e8f5e8, #a5d6a7);
+  color: #2e7d32;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #fff3e0, #ffcc80);
+  color: #f57c00;
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #ffebee, #ef9a9a);
+  color: #d32f2f;
+} */
+
+/* Reservaciones según estatus */
+.reservation.status-confirmed {
+  background: linear-gradient(135deg, #e8f5e8, #a5d6a7);
+  color: black; /* texto en blanco */
+  border-color: #81c784;
+}
+
+.reservation.status-pending {
+  background: linear-gradient(135deg, #fff3e0, #ffcc80);
+  color: black; /* texto en blanco */
+  border-color: #ffb74d;
+}
+
+.reservation.status-cancelled {
+  background: linear-gradient(135deg, #ffebee, #ef9a9a);
+  color: black; /* texto en blanco */
+  border-color: #e57373;
+}

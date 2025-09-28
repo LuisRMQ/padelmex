@@ -1,36 +1,38 @@
 <div class="edit-club-dialog">
   <!-- Header -->
   <div class="edit-header">
-    <div class="edit-header-title">
-      <mat-icon class="edit-header-icon">edit</mat-icon>
-      <div>
-        <h2>Editar Club</h2>
-        <div class="edit-header-desc">Actualiza la información y configuración de tu club</div>
+    <mat-icon class="edit-header-icon">edit</mat-icon>
+    <div>
+      <h2>Editar Club</h2>
+      <div class="edit-header-desc">
+        Actualiza la información y configuración de tu club
       </div>
     </div>
   </div>
 
-  <mat-dialog-content>
+  <mat-dialog-content class="edit-content">
     <form [formGroup]="clubForm" class="edit-form" autocomplete="off">
+
       <!-- Logo -->
       <div class="logo-section">
-        <div class="logo-box">
-          <img class="club-logo" [src]="logoPreview || clubForm.get('logo')?.value || 'assets/logos/azteca.png'" alt="Club Logo">
-          <div class="logo-actions">
-            <label class="change-logo-label">
-              <input type="file" accept="image/*" (change)="onFileSelected($event)">
-              <mat-icon>photo_camera</mat-icon> Cambiar Logo
-            </label>
-          </div>
-        </div>
+        <img
+          class="club-logo"
+          [src]="logoPreview || clubForm.get('logo')?.value || 'assets/logos/azteca.png'"
+          alt="Club Logo"
+          (error)="onImageError($event)" />
+        <label class="change-logo-label">
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+          <mat-icon>photo_camera</mat-icon> Cambiar Logo
+        </label>
       </div>
 
       <!-- Información general -->
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Nombre del Club *</mat-label>
-          <input matInput formControlName="name" required>
+          <input matInput formControlName="name" required />
         </mat-form-field>
+
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Tipo de Club</mat-label>
           <mat-select formControlName="type">
@@ -41,39 +43,56 @@
       </div>
 
       <!-- Contacto -->
-      <div class="section-title"><mat-icon>contact_mail</mat-icon> Información de Contacto</div>
+      <div class="section-title">
+        <mat-icon>contact_mail</mat-icon> Información de Contacto
+      </div>
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="email" type="email">
+          <input matInput formControlName="email" type="email" />
         </mat-form-field>
+
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Teléfono</mat-label>
-          <input matInput formControlName="phone">
+          <input matInput formControlName="phone" />
         </mat-form-field>
       </div>
 
       <!-- Ubicación -->
-      <div class="section-title"><mat-icon>location_on</mat-icon> Ubicación y Dirección</div>
+      <div class="section-title">
+        <mat-icon>location_on</mat-icon> Ubicación y Dirección
+      </div>
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Calle</mat-label>
-          <input matInput formControlName="address">
+          <input matInput formControlName="address" />
         </mat-form-field>
+
+        <!-- Estado -->
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Estado</mat-label>
-          <input matInput formControlName="state">
+          <mat-select formControlName="state" (selectionChange)="onStateChange($event.value)">
+            <mat-option *ngFor="let estado of estados" [value]="estado.nombre">
+              {{ estado.nombre }}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
+
+        <!-- Ciudad -->
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Ciudad</mat-label>
-          <input matInput formControlName="city">
+          <mat-select formControlName="city">
+            <mat-option *ngFor="let ciudad of ciudades" [value]="ciudad">
+              {{ ciudad }}
+            </mat-option>
+          </mat-select>
         </mat-form-field>
       </div>
 
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>RFC</mat-label>
-          <input matInput formControlName="rfc">
+          <input matInput formControlName="rfc" />
         </mat-form-field>
       </div>
 
@@ -86,6 +105,8 @@
 
   <mat-dialog-actions align="end" class="form-actions">
     <button mat-button (click)="cancelar()">Cancelar</button>
-    <button mat-raised-button color="primary" (click)="guardar()">Guardar Cambios</button>
+    <button mat-raised-button color="primary" (click)="guardar()">
+      Guardar Cambios
+    </button>
   </mat-dialog-actions>
 </div>

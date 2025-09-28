@@ -73,6 +73,7 @@ export class ScheduleDateDialogComponent implements OnInit {
   minReservationTime = 60;
 
   categories: Category[] = [];
+  defaultAvatar = '../../../assets/images/iconuser.png'; 
 
   constructor(
     public dialogRef: MatDialogRef<ScheduleDateDialogComponent>,
@@ -190,6 +191,13 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   displayFn(user: User): string {
     return user && user.name ? `${user.name} ${user.lastname}` : '';
+  }
+
+
+
+  onImageError(event: Event) {
+    const imgElement = event.target as HTMLImageElement;
+    imgElement.src = this.defaultAvatar;
   }
 
   onUserSelected(user: User): void {

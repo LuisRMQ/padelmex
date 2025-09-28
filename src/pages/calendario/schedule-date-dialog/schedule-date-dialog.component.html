@@ -51,8 +51,15 @@
             <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
               (optionSelected)="onUserSelected($event.option.value)">
               <mat-option *ngFor="let user of filteredUsers | async" [value]="user">
-                {{ user.name }} {{ user.lastname }}
-                <span *ngIf="user.email">- {{ user.email }}</span>
+                <div class="player-option">
+                  <img [src]="user.profile_photo || defaultAvatar" class="player-photo" alt="Foto"
+                    (error)="onImageError($event)">
+                  <div class="player-info">
+                    <span class="player-name">{{ user.name }} {{ user.lastname }}</span>
+                    <span class="player-email" *ngIf="user.email">{{ user.email }}</span>
+                    <span class="player-phone" *ngIf="user.phone">{{ user.phone }}</span>
+                  </div>
+                </div>
               </mat-option>
 
               <mat-option *ngIf="isLoadingUsers" disabled>
@@ -140,8 +147,15 @@
           <mat-autocomplete #autoPlayers="matAutocomplete" [displayWith]="displayFn"
             (optionSelected)="addPlayer($event.option.value)">
             <mat-option *ngFor="let user of filteredPlayers | async" [value]="user">
-              {{ user.name }} {{ user.lastname }}
-              <span *ngIf="user.email">- {{ user.email }}</span>
+              <div class="player-option">
+                <img [src]="user.profile_photo || defaultAvatar" class="player-photo" alt="Foto"
+                  (error)="onImageError($event)">
+                <div class="player-info">
+                  <span class="player-name">{{ user.name }} {{ user.lastname }}</span>
+                  <span class="player-email" *ngIf="user.email">{{ user.email }}</span>
+                  <span class="player-phone" *ngIf="user.phone">{{ user.phone }}</span>
+                </div>
+              </div>
             </mat-option>
 
             <mat-option *ngIf="isLoadingPlayers" disabled>
@@ -163,9 +177,14 @@
         <!-- Lista de jugadores seleccionados -->
         <div class="jugadores-seleccionados">
           <div *ngFor="let player of selectedPlayers; let i = index" class="jugador-item">
-            <span class="badge-jugador">
-              {{ player.name }} {{ player.lastname }}
-            </span>
+            <img [src]="player.profile_photo || defaultAvatar" class="player-photo" alt="Foto"
+              (error)="onImageError($event)">
+            <div class="player-info">
+              <span class="player-name">{{ player.name }} {{ player.lastname }}</span>
+              <span class="player-phone">
+                {{ player.phone ? player.phone : 'Por asignar' }}
+              </span>
+            </div>
             <button mat-icon-button color="warn" (click)="removePlayer(i)">
               <mat-icon>delete</mat-icon>
             </button>

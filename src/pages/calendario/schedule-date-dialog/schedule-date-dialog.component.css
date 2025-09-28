@@ -143,3 +143,40 @@
   flex-direction: column;
   gap: 8px;
 }
+
+/* Opción para los jugadores en autocomplete y lista seleccionada */
+.player-option,
+.jugador-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Imagen pequeña tipo avatar */
+.player-option img,
+.jugador-item img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Contenedor del nombre y teléfono */
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espacio entre nombre y teléfono */
+  flex-wrap: wrap; /* En pantallas pequeñas, teléfono puede ir a la siguiente línea */
+}
+
+/* Nombre del jugador */
+.player-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Teléfono */
+.player-phone {
+  font-size: 0.85rem;
+  color: #666;
+}

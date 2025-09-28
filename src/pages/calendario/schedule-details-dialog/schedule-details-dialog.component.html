@@ -69,20 +69,26 @@
     </div>
 
     <div class="card green-card">
-    <h4><mat-icon>people</mat-icon> Jugadores</h4>
-    <div class="players-grid">
-        <ng-container *ngFor="let player of players">
-            <div class="player-card">
-                <img [src]="player.profile_photo || 'assets/default-user.png'" alt="{{ player.name }}" />
-                <p>{{ player.name }} {{ player.lastname }}</p>
-            </div>
-        </ng-container>
-        <ng-container *ngIf="players.length === 0">
-            <p>No hay jugadores adicionales.</p>
-        </ng-container>
-    </div>
+  <h4><mat-icon>people</mat-icon> Jugadores</h4>
+  <div class="players-grid">
+    <ng-container *ngFor="let player of players">
+      <div class="player-card">
+        <img [src]="player.user?.profile_photo || 'assets/default-user.png'" 
+             alt="{{ player.user?.name }} {{ player.user?.lastname }}" 
+             (error)="onImgError($event)" />
+        <p class="player-name">{{ player.user?.name }}</p>
+        <!-- <p class="player-lastname">{{ player.user?.lastname }}</p> -->
+        <p class="player-amount">${{ player.part_amount }}</p>
+        <span class="status-badge" [ngClass]="player.status">
+          {{ player.status | titlecase }}
+        </span>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="players.length === 0">
+      <p>No hay jugadores adicionales.</p>
+    </ng-container>
+  </div>
 </div>
-
     <!-- Payment Details -->
     <div class="card gray-card">
         <h4><mat-icon>payment</mat-icon>Detalles de pago</h4>

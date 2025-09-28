@@ -39,7 +39,7 @@ export class ScheduleDetailsDialogComponent {
     ).subscribe({
       next: (res: any) => {
         console.log('Reserva completa:', res);
-        this.players = res.reservation_players?.map((rp: any) => rp.user) || [];
+this.players = res.reservation_players || [];
         console.log('Jugadores cargados:', this.players);
       },
       error: (err) => {
@@ -98,6 +98,11 @@ export class ScheduleDetailsDialogComponent {
   closeDialog() {
     this.dialogRef.close();
   }
+
+  onImgError(event: Event) {
+  const imgElement = event.target as HTMLImageElement;
+  imgElement.src = '../../../assets/images/iconuser.png';
+}
 
   private formatTime(time: string): string {
     if (!time) return '';

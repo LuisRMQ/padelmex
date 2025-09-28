@@ -109,22 +109,29 @@
         </div>
 
         <div class="reservations-layer">
-          <div class="reservation" *ngFor="let res of reservations" [class.hidden]="res.courtId !== court.id"
-            [ngStyle]="getReservationStyle(res)" cdkDrag
-            (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
-            (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)"
-            (click)="onReservationClick(res)">
+         <div class="reservation" *ngFor="let res of reservations" 
+     [class.hidden]="res.courtId !== court.id"
+     [ngStyle]="getReservationStyle(res)"
+     [ngClass]="{
+       'status-confirmed': res.originalData?.status === 'confirmed',
+       'status-pending': res.originalData?.status === 'pending',
+       'status-cancelled': res.originalData?.status === 'cancelled'
+     }"
+     cdkDrag
+     (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
+     (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)"
+     (click)="onReservationClick(res)">
+     
+  <div class="res-title">
+    {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
+  </div>
 
-            <div class="res-title">
-              {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
-            </div>
+  <!-- Badge interno opcional -->
+  <!-- <div *ngIf="res.originalData?.status" class="res-status" [ngClass]="getStatusClass(res)">
+    {{ getStatusText(res) }}
+  </div> -->
 
-            <!-- Usando métodos del componente -->
-            <div *ngIf="res.originalData?.status" class="res-status" [ngClass]="getStatusClass(res)">
-              {{ getStatusText(res) }}
-            </div>
-
-          </div>
+</div>
         </div>
       </div>
     </div>

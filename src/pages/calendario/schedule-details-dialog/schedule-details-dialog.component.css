@@ -210,6 +210,20 @@
     width: 80px;
     text-align: center;
 }
+.player-card p {
+  margin: 2px 0;
+  word-break: break-word;
+  font-size: 0.9rem;
+}
+
+.player-name {
+  font-weight: 600;
+}
+
+.player-lastname {
+  font-weight: 400;
+  color: #555;
+}
 
 .player-card img {
     width: 50px;
@@ -217,4 +231,17 @@
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 4px;
+}
+
+.player-card p.player-amount {
+    font-size: 0.85rem;
+    color: #2e3c5d;
+    margin: 2px 0 2px 0;
+}
+
+.player-card .status-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-top: 2px;
 }

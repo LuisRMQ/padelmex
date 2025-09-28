@@ -135,13 +135,16 @@ export class ConfiguracionComponent implements OnInit {
 
   editarClub() {
     const dialogRef = this.dialog.open(EditarConfiguracionClubDialogComponent, {
-      width: '500px',
+              maxWidth: '80vw',
+              maxHeight: '80vh',
       data: {
         id: this.club.id,
         name: this.club.name,
         address: this.club.address,
         phone: this.club.phone,
         email: this.club.email,
+        rfc: this.club.rfc,
+
         logo: this.club.logo
       }
     });
