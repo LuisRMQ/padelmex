@@ -58,7 +58,6 @@ export class ReservacionesDetailsDialogComponent {
   }
 
   saveChanges() {
-    // Aquí podrías llamar a un service para actualizar en backend
     this.data.details = { ...this.editedData };
     this.isEditing = false;
   }
@@ -68,4 +67,8 @@ export class ReservacionesDetailsDialogComponent {
     const date = new Date(dateStr);
     return date.toLocaleDateString();
   }
+
+  onImgError(event: any) {
+  event.target.src = '../../../assets/images/iconuser.png';
+}
 }

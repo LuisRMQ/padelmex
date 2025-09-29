@@ -55,7 +55,7 @@
 
     <div class="card green-card">
       <h4><mat-icon>sports_tennis</mat-icon> Información de la Cancha</h4>
-      <p><strong>Cancha: </strong>{{ data.details.court }}</p>
+      <p><strong>Cancha: </strong>{{ data.details.court.name }}</p>
       <p><strong>Usuario:</strong> {{ data.user }}</p>
       <p><strong>Tipo:</strong> Standard</p>
     </div>
@@ -67,7 +67,8 @@
     <div class="players-grid">
       <ng-container *ngFor="let player of players">
         <div class="player-card">
-          <img [src]="player.profile_photo || 'assets/default-user.png'" alt="{{ player.name }}" />
+          <img [src]="player.profile_photo || 'assets/default-user.png'" (error)="onImgError($event)"
+            alt="{{ player.name }}" />
           <p>{{ player.name }} {{ player.lastname }}</p>
         </div>
       </ng-container>
@@ -96,10 +97,6 @@
 
   <div class="actions">
     <button class="btn btn-close" (click)="closeDialog()">Cerrar</button>
-    <button *ngIf="!isEditing" class="btn btn-edit" (click)="toggleEdit()">Editar Reservación</button>
-    <div *ngIf="isEditing">
-      <button class="btn btn-cancel" (click)="toggleEdit()">Cancelar</button>
-      <button class="btn btn-save" (click)="saveChanges()">Guardar</button>
-    </div>
+
   </div>
 </div>

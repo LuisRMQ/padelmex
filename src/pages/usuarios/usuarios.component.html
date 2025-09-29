@@ -73,7 +73,8 @@
           <tr *ngFor="let usuario of usuariosFiltrados">
             <td>
               <div class="usuario-nombre">
-                <img class="usuario-avatar" [src]="usuario.fotoPerfil || 'assets/img/user.png'" alt="avatar">
+                <img class="usuario-avatar" [src]="usuario.fotoPerfil || 'assets/img/user.png'"
+                  (error)="onImgError($event)" alt="avatar">
                 <div>
                   <div class="nombre">{{ usuario.nombre }} {{ usuario.apellidos }}</div>
                   <div class="correo">{{ usuario.correo }}</div>
@@ -81,7 +82,10 @@
               </div>
             </td>
             <td>
-              <span>{{usuario.area_code}} {{usuario.telefono}}</span>
+              <span>
+                {{ usuario.area_code && usuario.telefono ? (usuario.area_code + ' ' + usuario.telefono) : 'Sin Asignar'
+                }}
+              </span>
             </td>
             <td>
               <span class="badge-rol" [ngClass]="usuario.rol | lowercase">{{ usuario.rol }}</span>
@@ -93,9 +97,12 @@
               <span class="badge-categoria" [ngClass]="usuario.categoria | lowercase">{{ usuario.categoria }}</span>
             </td>
             <td>
-              <button mat-icon-button color="primary" (click)="verDetalle(usuario)">
-                <mat-icon>visibility</mat-icon>
+               <button mat-icon-button color="primary" (click)="VerReservaciones(usuario)">
+                <mat-icon>sports_handball</mat-icon>
               </button>
+              <!-- <button mat-icon-button color="primary" (click)="verDetalle(usuario)">
+                <mat-icon>visibility</mat-icon>
+              </button> -->
               <button mat-icon-button color="accent" (click)="abrirModalEditarUsuario(usuario)">
                 <mat-icon>edit</mat-icon>
               </button>

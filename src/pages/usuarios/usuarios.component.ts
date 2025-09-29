@@ -15,6 +15,8 @@ import { MatSelectModule } from '@angular/material/select';
 
 import { RegistrarUsuarioDialogComponent } from './registrar-usuario-dialog/registrar-usuario-dialog.component';
 import { EditarUsuarioDialogComponent } from './editar-usuario-dialog/editar-usuario-dialog.component';
+import { ReservacionesUsuarioDialogComponent } from './reservaciones-usuario-dialog/reservaciones-usuario-dialog.component';
+
 
 import { UsersService } from '../../app/services/users.service';
 import { CourtService } from '../../app/services/court.service';
@@ -148,26 +150,9 @@ export class UsuariosComponent implements OnInit {
   }
 
 
-  verDetalle(usuario: UsuarioTabla) {
-    this.selectedUsuario = usuario;
-
-    this.formUsuario = {
-      nombre: usuario.nombre,
-      apellidos: usuario.apellidos,
-      correo: usuario.correo,
-      genero: usuario.genero,
-      rol: usuario.rol,
-      rol_id: usuario.rol_id,
-      club: usuario.club,
-      club_id: usuario.club_id,
-      categoria: usuario.categoria,
-      puntos: usuario.puntos,
-      manoPreferida: usuario.manoPreferida,
-      fotoPerfil: usuario.fotoPerfil,
-      identificacion: usuario.identificacion,
-      id: usuario.id
-    };
-  }
+  // verDetalle(usuario: UsuarioTabla) {
+  //  console.log(usuario)
+  // }
 
 
 
@@ -176,7 +161,7 @@ export class UsuariosComponent implements OnInit {
     this.selectedUsuario = null;
   }
 
- 
+
 
   guardarCambios() {
     if (!this.formUsuario.id) return;
@@ -282,19 +267,19 @@ export class UsuariosComponent implements OnInit {
   }
 
 
-   abrirModalEditarUsuario(usuario: UsuarioTabla) {
-  const dialogRef = this.dialog.open(EditarUsuarioDialogComponent, {
-    width: '60vw',
-    maxWidth: '80vw',
-    maxHeight: '90vh',
-    data: { userId: usuario.id },  
-    panelClass: 'custom-dialog'
-  });
+  abrirModalEditarUsuario(usuario: UsuarioTabla) {
+    const dialogRef = this.dialog.open(EditarUsuarioDialogComponent, {
+      width: '60vw',
+      maxWidth: '80vw',
+      maxHeight: '90vh',
+      data: { userId: usuario.id },
+      panelClass: 'custom-dialog'
+    });
 
-  dialogRef.afterClosed().subscribe(() => {
-    this.cargarUsuarios();
-  });
-}
+    dialogRef.afterClosed().subscribe(() => {
+      this.cargarUsuarios();
+    });
+  }
   cargarClubs() {
     this.courtService.getClubs().subscribe({
       next: (data) => {
@@ -324,5 +309,21 @@ export class UsuariosComponent implements OnInit {
 
     const maxCategoria = Object.keys(categoriaCount).reduce((a, b) => categoriaCount[a] > categoriaCount[b] ? a : b, '');
     return maxCategoria.charAt(0).toUpperCase() + maxCategoria.slice(1);
+  }
+
+
+
+  onImgError(event: Event) {
+    (event.target as HTMLImageElement).src = '../../../assets/images/iconuser.png';
+  }
+
+
+  VerReservaciones(usuario: UsuarioTabla) {
+    this.dialog.open(ReservacionesUsuarioDialogComponent, {
+      width: 'auto',       
+      maxWidth: '95vw',   
+      maxHeight: '90vh',   
+      data: { userId: usuario.id!, nombre: usuario.nombre }
+    })
   }
 }

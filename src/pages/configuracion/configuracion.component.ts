@@ -51,7 +51,7 @@ export class ConfiguracionComponent implements OnInit {
     private authService: AuthService,
     private horariosService: HorariosService,
     private courtService: CourtService,
-    private dialog: MatDialog // 👈 inyecta MatDialog
+    private dialog: MatDialog 
   ) {}
 
   ngOnInit() {

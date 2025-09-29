@@ -259,4 +259,8 @@ export class RegistrarTorneoDialogComponent implements OnInit {
   }
 
   onCancel() { this.dialogRef.close(false); }
+
+   removePhoto(): void {
+    this.logoPreview = '../../assets/images/placeholder.png';
+  }
 }

@@ -11,6 +11,9 @@ import { CommonModule } from '@angular/common';
 import { CourtService, Club } from '../../../app/services/court.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 @Component({
   selector: 'app-RegistrarCancha',
   templateUrl: './registrar-cancha-dialog.component.html',
@@ -24,7 +27,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatDialogModule,
     MatSelectModule,
     ReactiveFormsModule, 
-    CommonModule
+    CommonModule,
+    MatCardModule
   ],
   standalone: true
 })
@@ -126,5 +130,8 @@ export class RegistrarCanchaDialogComponent implements OnInit {
 
   onCancel() {
     this.dialogRef.close(false);
+  }
+   removePhoto(): void {
+    this.logoPreview = '../../assets/images/placeholder.png';
   }
 }

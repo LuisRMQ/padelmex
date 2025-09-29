@@ -1,0 +1,198 @@
+/* ===================== */
+/* Variables de color y sombra */
+:root {
+  --primary-color: #2c3e50;
+  --accent-color: #e74c3c;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --info-color: #3498db;
+  --background-light: #ecf0f1;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ===================== */
+/* Modal */
+::ng-deep .mat-dialog-container {
+    max-width: 95vw !important;
+    width: auto !important;
+    min-width: 300px;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    overflow: visible !important;
+}
+
+.dialog-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    padding: 16px 24px;
+    border-bottom: 1px solid #eaeaea;
+    margin-bottom: 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+    border-radius: 12px 12px 0 0;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+}
+
+/* ===================== */
+/* Tabla Material adaptada */
+::ng-deep .custom-table {
+    width: 100% !important;
+    border-radius: 15px;
+    overflow: auto !important;
+    box-shadow: var(--shadow);
+    table-layout: auto !important;
+}
+
+/* Cabecera */
+::ng-deep .mat-header-cell {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 12px 14px;
+    text-align: left;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word;
+}
+
+/* Última columna */
+::ng-deep .mat-header-cell:last-child {
+    border-right: none;
+}
+
+/* Celdas */
+::ng-deep .mat-cell {
+    max-width: none !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word;
+    font-size: 0.95rem;
+    padding: 12px 8px;
+    vertical-align: middle;
+}
+
+/* Filas */
+::ng-deep .mat-row:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+::ng-deep .mat-row:hover {
+    background-color: #f1f8ff;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* Estados */
+.status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 12px;
+    display: inline-block;
+    min-width: 90px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.status-activo { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+.status-pendiente { background: linear-gradient(135deg, #f1c40f, #f39c12); color: white; }
+.status-cancelado { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+
+/* ===================== */
+/* Mensajes y loading */
+.empty-message {
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    margin: 30px 0;
+    padding: 20px;
+    background: var(--background-light);
+    border-radius: 8px;
+}
+
+.loading {
+    text-align: center;
+    color: var(--info-color);
+    font-size: 16px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    animation: pulse 1.5s infinite;
+}
+
+/* ===================== */
+/* Acciones del diálogo */
+mat-dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid #eaeaea;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+}
+
+/* ===================== */
+/* Animación de carga */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* ===================== */
+/* Responsive */
+@media (max-width: 1024px) {
+    ::ng-deep .mat-header-cell,
+    ::ng-deep .mat-cell {
+        font-size: 0.9rem;
+        padding: 10px 6px;
+    }
+
+    .dialog-title {
+        font-size: 1.3rem;
+        padding: 12px 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    ::ng-deep .custom-table {
+        overflow-x: auto !important;
+    }
+}
+
+.cancel-btn {
+  color: #666;
+}
+
+::ng-deep mat-dialog-actions .cancel-btn {
+  background: linear-gradient(135deg, #ecf0f1, #dfe4ea);
+  color: var(--primary-color);
+  font-weight: 600;
+  border-radius: 25px;
+  padding: 8px 20px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+::ng-deep mat-dialog-actions .cancel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  background: linear-gradient(135deg, #dfe4ea, #cfd6dd);
+  color: var(--primary-color);
+}
+
+/* Si quieres que tenga icono más bonito */
+::ng-deep mat-dialog-actions .cancel-btn mat-icon {
+  vertical-align: middle;
+  margin-right: 6px;
+  font-size: 18px;
+}

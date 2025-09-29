@@ -123,11 +123,11 @@ export class CanchasComponent implements OnInit {
     this.loadCourts(page);
   }
 
+     
   abrirModalRegistrarCancha() {
     const dialogRef = this.dialog.open(RegistrarCanchaDialogComponent, {
       width: '800px',
       maxWidth: '50vw',
-      height: 'auto',
       maxHeight: '70vh',
       panelClass: 'custom-dialog'
     });

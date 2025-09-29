@@ -1,86 +1,138 @@
-<div class="modal-container">
-  <h2>Registrar Torneo</h2>
+<div class="modern-container">
+  <mat-card [formGroup]="form" class="modern-card">
+    <!-- Header -->
+    <mat-card-header class="modern-header">
+      <div class="header-content">
+        <div class="icon-container">
+          <mat-icon class="header-icon">emoji_events</mat-icon>
+        </div>
+        <div>
+          <mat-card-title class="modern-title">Registrar Torneo</mat-card-title>
+          <mat-card-subtitle class="modern-subtitle">Complete la información para crear un nuevo torneo</mat-card-subtitle>
+        </div>
+      </div>
+    </mat-card-header>
 
-  <form [formGroup]="form" (ngSubmit)="guardar()" class="torneo-form">
+    <!-- Contenido del formulario -->
+    <mat-card-content class="modern-content">
+      <div class="form-grid">
+        <!-- Nombre -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Nombre del torneo</mat-label>
+          <input matInput formControlName="name" placeholder="Ej: Torneo Anual 2025">
+          <mat-icon matPrefix>emoji_events</mat-icon>
+        </mat-form-field>
 
-    <!-- Nombre -->
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nombre del torneo</mat-label>
-      <input matInput formControlName="name" />
-    </mat-form-field>
+        <!-- Descripción -->
+        <mat-form-field appearance="fill" class="modern-field full-width">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="description" placeholder="Descripción del torneo"></textarea>
+          <mat-icon matPrefix>description</mat-icon>
+        </mat-form-field>
 
-    <!-- Descripción -->
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Descripción</mat-label>
-      <textarea matInput formControlName="description"></textarea>
-    </mat-form-field>
+        <!-- Fecha inicio -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Fecha inicio</mat-label>
+          <input matInput type="date" formControlName="start_date">
+          <mat-icon matPrefix>today</mat-icon>
+        </mat-form-field>
 
-    <!-- Fecha inicio -->
-    <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Fecha inicio</mat-label>
-      <input matInput type="date" formControlName="start_date" />
-    </mat-form-field>
+        <!-- Fecha fin -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Fecha fin</mat-label>
+          <input matInput type="date" formControlName="end_date">
+          <mat-icon matPrefix>event</mat-icon>
+        </mat-form-field>
 
-    <!-- Fecha fin -->
-    <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Fecha fin</mat-label>
-      <input matInput type="date" formControlName="end_date" />
-    </mat-form-field>
+        <!-- Límite de inscripción -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Fecha límite de inscripción</mat-label>
+          <input matInput type="date" formControlName="registration_deadline">
+          <mat-icon matPrefix>schedule</mat-icon>
+        </mat-form-field>
 
-    <!-- Límite de inscripción -->
-    <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Fecha límite de inscripción</mat-label>
-      <input matInput type="date" formControlName="registration_deadline" />
-    </mat-form-field>
+        <!-- Costo -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Costo de inscripción</mat-label>
+          <input matInput type="number" min="0" formControlName="registration_fee">
+          <mat-icon matPrefix>attach_money</mat-icon>
+        </mat-form-field>
 
-    <!-- Costo de inscripción -->
-    <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Costo de inscripción</mat-label>
-      <input matInput type="number" min="0" formControlName="registration_fee" />
-    </mat-form-field>
+        <!-- Categorías -->
+        <mat-form-field appearance="fill" class="modern-field full-width">
+          <mat-label>Categorías</mat-label>
+          <mat-select formControlName="categories" multiple>
+            <mat-option *ngFor="let cat of categoriasDisponibles" [value]="cat">{{ cat.category }}</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>category</mat-icon>
+        </mat-form-field>
 
-    <!-- Categoría -->
-    <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Categorías</mat-label>
-      <mat-select formControlName="categories" multiple>
-        <mat-option *ngFor="let cat of categoriasDisponibles" [value]="cat">
-          {{ cat.category }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <!-- Máx. participantes -->
-    <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Máx. participantes</mat-label>
-      <input matInput type="number" min="2" formControlName="max_participants" />
-    </mat-form-field>
+        <!-- Máx. participantes -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Máx. participantes</mat-label>
+          <input matInput type="number" min="2" formControlName="max_participants">
+          <mat-icon matPrefix>groups</mat-icon>
+        </mat-form-field>
 
-    <!-- Premios -->
-    <mat-form-field appearance="outline" class="half-width">
-      <mat-label>Premios</mat-label>
-      <input matInput formControlName="prizes" />
-    </mat-form-field>
+        <!-- Premios -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Premios</mat-label>
+          <input matInput formControlName="prizes">
+          <mat-icon matPrefix>card_giftcard</mat-icon>
+        </mat-form-field>
 
-    <!-- Reglas -->
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Reglamento</mat-label>
-      <textarea matInput formControlName="rules"></textarea>
-    </mat-form-field>
+        <!-- Reglamento -->
+        <mat-form-field appearance="fill" class="modern-field full-width">
+          <mat-label>Reglamento</mat-label>
+          <textarea matInput formControlName="rules"></textarea>
+          <mat-icon matPrefix>rule</mat-icon>
+        </mat-form-field>
+      </div>
 
-    <!-- Logo -->
-    <div class="logo-upload">
-      <img [src]="logoPreview || 'assets/default-torneo.jpg'" alt="Logo preview" />
-      <input type="file" (change)="onFileSelected($event)" hidden #fileInput>
-      <button mat-stroked-button type="button" (click)="fileInput.click()">
-        <mat-icon>upload</mat-icon> Subir Logo
+      <!-- Logo -->
+      <div class="section">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">photo_camera</mat-icon>
+          Logo del Torneo
+        </h3>
+        <div class="photo-section">
+          <div class="upload-area" (click)="fileInput.click()">
+            <input type="file" hidden (change)="onFileSelected($event)" #fileInput accept="image/*">
+            <div class="upload-content">
+              <mat-icon class="upload-icon">cloud_upload</mat-icon>
+              <p>Haga clic para subir un logo</p>
+              <span class="upload-hint">Formatos: JPG, PNG (Máx. 5MB)</span>
+            </div>
+          </div>
+
+          <div class="preview-container">
+            <div class="preview-card" [class.has-image]="logoPreview">
+              <ng-container *ngIf="logoPreview; else noLogo">
+                <img [src]="logoPreview" alt="Vista previa" class="preview-image">
+                <button mat-icon-button class="remove-btn" (click)="removePhoto()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </ng-container>
+              <ng-template #noLogo>
+                <div class="no-image">
+                  <mat-icon>photo</mat-icon>
+                  <span>Sin logo</span>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <!-- Acciones -->
+    <mat-card-actions class="modern-actions">
+      <button mat-button class="cancel-btn" (click)="onCancel()">
+        <mat-icon>close</mat-icon> Cancelar
       </button>
-    </div>
-
-    <!-- Botones -->
-    <div class="actions">
-      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
-        Guardar
+      <button mat-raised-button class="save-btn" (click)="guardar()">
+        <mat-icon>save</mat-icon> Guardar Torneo
       </button>
-      <button mat-button type="button" (click)="onCancel()">Cancelar</button>
-    </div>
-  </form>
+    </mat-card-actions>
+  </mat-card>
 </div>

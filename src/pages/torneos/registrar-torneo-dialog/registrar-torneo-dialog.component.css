@@ -1,100 +1,275 @@
-.modal-container {
-  padding: 24px;
-  max-width: 800px;
+/* ===================== */
+/* Variables de color y sombra */
+:root {
+  --primary-color: #336699;
+  --accent-color: #f39c12;
+  --success-color: #28a745;
+  --warning-color: #f1c40f;
+  --info-color: #3498db;
+  --background-light: #f8f9fa;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --shadow: 0 10px 30px rgba(0,0,0,0.1);
+  --shadow-hover: 0 8px 25px rgba(0,0,0,0.15);
 }
 
-.torneo-form {
+/* ===================== */
+/* Container principal */
+.modern-container {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+}
+
+/* Card principal */
+.modern-card {
+  width: 100%;
+  max-width: 800px;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* Header */
+.modern-header {
+  background: var(--primary-color);
+  color: white;
+  padding: 24px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
   gap: 16px;
 }
 
-.full-width {
-  flex: 1 1 100%;
-}
-
-.half-width {
-  flex: 1 1 calc(50% - 16px);
-}
-
-.logo-upload {
+.icon-container {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1 1 100%;
+  justify-content: center;
+  backdrop-filter: blur(10px);
 }
 
-.logo-upload img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid #ddd;
+.header-icon {
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
 }
 
-.participantes-section {
-  flex: 1 1 100%;
-  margin-top: 20px;
+.modern-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
-.drag-drop-container {
+.modern-subtitle {
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+/* Contenido */
+.modern-content {
+  padding: 24px;
+}
+
+/* Secciones */
+.section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.section-icon {
+  color: var(--success-color);
+}
+
+/* Grid de formulario */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Campos */
+.modern-field {
+  width: 100%;
+}
+
+/* Upload de logo */
+.photo-section {
   display: flex;
   gap: 24px;
+  align-items: flex-start;
 }
 
-.list-box {
+.upload-area {
   flex: 1;
-  border: 1px solid #ddd;
+  border: 2px dashed #c3cfe2;
   border-radius: 12px;
-  padding: 12px;
-  min-height: 200px;
-  background: #fafafa;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--background-light);
 }
 
-.list {
-  min-height: 160px;
+.upload-area:hover {
+  border-color: var(--primary-color);
+  background: #f0f2f5;
+}
+
+.upload-content {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
 }
 
-.list-item {
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: white;
-  border: 1px solid #ccc;
-  cursor: grab;
-  transition: background 0.2s;
+.upload-icon {
+  font-size: 48px;
+  color: var(--primary-color);
 }
 
-.list-item:hover {
-  background: #f5f5f5;
+.upload-hint {
+  font-size: 12px;
+  color: #666;
 }
 
-.actions {
+/* Vista previa del logo */
+.preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-card {
+  width: 140px;
+  height: 140px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--background-light);
+}
+
+.preview-card.has-image {
+  border-color: var(--primary-color);
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  border-radius: 50%;
+}
+
+.remove-btn mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+}
+
+.no-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #999;
+}
+
+.no-image mat-icon {
+  font-size: 40px;
+}
+
+/* Acciones */
+.modern-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  flex: 1 1 100%;
-  margin-top: 16px;
+  padding: 16px 24px;
+  background: var(--background-light);
+  border-top: 1px solid #e0e0e0;
+  border-radius: 0 0 16px 16px;
 }
 
-.user-photo {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  margin-right: 8px;
-  object-fit: cover;
-  vertical-align: middle;
+.cancel-btn {
+  color: #666;
 }
 
-.list-item {
-  display: flex;
-  align-items: center;
-  padding: 4px;
-  margin-bottom: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #f8f9fa;
-  cursor: grab;
+.save-btn {
+  background: linear-gradient(135deg, #336699 0%, #2a5d7e 100%);
+  color: white;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modern-container {
+    padding: 10px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-section {
+    flex-direction: column;
+  }
+
+  .modern-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .modern-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .modern-content {
+    padding: 16px;
+  }
 }

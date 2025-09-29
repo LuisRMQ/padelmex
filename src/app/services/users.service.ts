@@ -11,8 +11,8 @@ export interface User {
     email: string;
     password?: string;
     gender: string;
-    phone:string;
-    area_code:string;
+    phone: string;
+    area_code: string;
     club_id: number;
     profile_photo: string | null;
     rol?: string;
@@ -26,6 +26,51 @@ export interface User {
 export interface UsersResponse {
     current_page: number;
     data: User[];
+    first_page_url: string;
+    from: number;
+    last_page: number;
+    last_page_url: string;
+    links: any[];
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number;
+    total: number;
+}
+
+export interface Reservation {
+    reservationId: number;
+    date: string;
+    start_time: string;
+    end_time: string;
+    duration: string;
+    max_players: number;
+    current_players: number;
+    pay_method: string;
+    observations: string | null;
+    totalCourtForHour: string;
+    commission: string;
+    totalToPay: string;
+    typeGame: string;
+    status: string;
+    userId: number;
+    user: string;
+    lastname: string;
+    courtId: number;
+    court: string;
+    sponsor: string;
+    club: string;
+    address: string;
+    typeReservation: string;
+    category: string | null;
+    level: string | null;
+    gender: string | null;
+}
+
+export interface ReservationsResponse {
+    current_page: number;
+    data: Reservation[];
     first_page_url: string;
     from: number;
     last_page: number;
@@ -95,12 +140,12 @@ export class UsersService extends ApiBaseService {
     //     }
     // }
 
-updateUserById(id: number, data: any) {
-  // Siempre usar PUT
-  return this.put(`/user/update/${id}`, data);
-}
+    updateUserById(id: number, data: any) {
+        // Siempre usar PUT
+        return this.put(`/user/update/${id}`, data);
+    }
 
-    
+
     deleteUser(id: number): Observable<any> {
         return this.delete(`/user/delete/${id}`);
     }
@@ -114,4 +159,11 @@ updateUserById(id: number, data: any) {
     desactivarUser(id: number): Observable<any> {
         return this.delete(`/user/disabled/${id}`);
     }
+
+   getUserReservations(user_id: number): Observable<Reservation[]> {
+        return this.get<ReservationsResponse>(`/reservations?user_id=${user_id}`).pipe(
+            map(res => res.data) 
+        );
+    }
+    
 }

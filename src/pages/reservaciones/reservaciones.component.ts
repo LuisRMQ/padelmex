@@ -54,6 +54,7 @@ export class ReservacionesComponent implements OnInit {
 
     this.reservationService.getReservations().subscribe({
       next: (res: ReservationsResponse) => {
+        console.log(res)
         this.dataSource.data = res.data;
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
@@ -76,15 +77,40 @@ export class ReservacionesComponent implements OnInit {
     }
   }
   
-verDetalle(res: Reservation) {
-  this.dialog.open(ReservacionesDetailsDialogComponent, {
-    width: '700px',
-    data: {
-      details: res,            // toda la reservación
-      user: res.user + ' ' + (res.lastname || ''),
+verDetalle(res: any) {
+  console.log('Reservación seleccionada:', res);
+  console.log('User ID:', res.userId, 'Reservation ID:', res.reservationId);
+
+  this.reservationService.getReservationDetailsByUser(res.userId, res.reservationId).subscribe({
+    next: (response: any) => {
+      console.log('Respuesta de API:', response);
+      const players = response.reservation_players?.map((rp: any) => ({
+        name: rp.user.name,
+        lastname: rp.user.lastname,
+        profile_photo: rp.user.profile_photo
+      })) || [];
+
+      this.dialog.open(ReservacionesDetailsDialogComponent, {
+         width: '800px',
+      maxWidth: '80vw',
+      maxHeight: '80vh',
+      panelClass: 'custom-modal-panel',
+      height: '80vh',
+        data: {
+          details: response,
+          players: players,
+          user: `${response.user.name} ${response.user.lastname}`
+        }
+      });
+    },
+    error: (err) => {
+      console.error('Error al obtener detalles de reservación', err);
     }
   });
 }
+
+
+
 
 
   editarReservacion(res: Reservation) {
