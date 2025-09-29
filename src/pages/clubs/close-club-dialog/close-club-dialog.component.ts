@@ -10,6 +10,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatIconModule } from "@angular/material/icon";
+import { MatDatepickerModule } from "@angular/material/datepicker";
 
 @Component({
     selector: 'app-club-close-dialog',
@@ -17,15 +19,17 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
     styleUrls: ['./close-club-dialog.component.css'],
     standalone: true,
     imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatButtonModule,
-        MatDividerModule,
-        MatSnackBarModule
-    ]
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatDividerModule,
+    MatSnackBarModule,
+    MatIconModule,
+    MatDatepickerModule
+]
 })
 export class ClubCloseDialogComponent implements OnInit {
     form: FormGroup;
@@ -36,10 +40,10 @@ export class ClubCloseDialogComponent implements OnInit {
         private clubsService: ClubsService,
         private dialogRef: MatDialogRef<ClubCloseDialogComponent>,
         private snackBar: MatSnackBar,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        @Inject(MAT_DIALOG_DATA) public data: { selectedClub: Club }
     ) {
+        console.log('Received data in dialog:', data);
         this.form = this.fb.group({
-            club_id: [null, Validators.required],
             day: [null, Validators.required],
             reason: ['', Validators.required]
         });
@@ -58,15 +62,17 @@ export class ClubCloseDialogComponent implements OnInit {
         }
 
         const payload = this.form.value;
+        payload.club_id = this.data.selectedClub.id;
+
+        console.log('Payload to send:', payload);
 
         this.clubsService.createClubClosedDay(payload).subscribe({
             next: (res: ClubClosedDay) => {
-                this.snackBar.open('✅ Día cerrado registrado', 'Cerrar', { duration: 3000 });
                 this.dialogRef.close(res);
             },
             error: err => {
                 console.error('Error al registrar día cerrado', err);
-                this.snackBar.open('❌ Error al guardar', 'Cerrar', { duration: 3000 });
+                this.snackBar.open('Error al registrar día cerrado', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
             }
         });
     }

@@ -6,7 +6,7 @@
 }
 
 .modal-divider {
-    opacity: 0.1;
+  opacity: 0.1;
 }
 
 .modal-header {
@@ -59,7 +59,8 @@
 .day-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
 .time-selectors {
@@ -98,4 +99,38 @@
   margin-left: 32px;
   height: 25px;
   font-weight: 500;
+}
+
+.horario-col {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.horario-badges {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.badge {
+  background: #eaf3ff;
+  color: #1976d2;
+  border-radius: 8px;
+  padding: 4px 12px;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.badge-rojo {
+  background: #ffeaea;
+  color: #e74c3c;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-weight: 500;
+}
+
+.horario-badges button {
+  margin-left: auto;
 }

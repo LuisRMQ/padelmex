@@ -26,13 +26,18 @@
   <!-- Weekly Schedule -->
   <div class="weekly-schedule">
     <div class="day-row" *ngFor="let day of days">
-      <div style="display: flex; align-items: center; justify-content: space-between; width: 40%;">
-        <mat-checkbox [(ngModel)]="day.enabled">{{ day.name }}</mat-checkbox>
-        <div *ngIf="day.hasSchedule; else noHorario" style="justify-content: flex-end;">
-          <div class="badge" *ngFor="let s of day.schedules">
-            {{ s.start }} - {{ s.end }}
+      <mat-checkbox [(ngModel)]="day.enabled" style="width: 100px;">{{ day.name }}</mat-checkbox>
+      <div class="horario-col">
+        <ng-container *ngIf="day.hasSchedule; else noHorario">
+          <div class="horario-badges">
+            <div class="badge" *ngFor="let s of day.schedules">
+              {{ s.start }} - {{ s.end }}
+            </div>
+            <button mat-icon-button color="warn" (click)="eliminarHorario(day.schedules)" style="margin-left: auto;" *ngIf="!day.enabled">
+              <mat-icon>delete</mat-icon>
+            </button>
           </div>
-        </div>
+        </ng-container>
         <ng-template #noHorario>
           <div class="badge badge-rojo">
             Sin horario definido

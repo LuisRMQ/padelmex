@@ -96,6 +96,8 @@
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
+	min-height: 200px;
+	justify-content: space-around;
 }
 .info-item {
 	display: flex;
@@ -124,5 +126,8 @@
 	color: #22c55e;
 }
 .highlights-content {
+	columns: 2;
+	column-gap: 52px;
 	font-size: 0.98rem;
+	justify-content: space-between;
 }

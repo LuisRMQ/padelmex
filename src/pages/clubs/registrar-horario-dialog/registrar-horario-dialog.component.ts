@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { HorariosService } from '../../../app/services/horarios-clubes.service';
+import { HorariosService, HorarioClub } from '../../../app/services/horarios-clubes.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,10 +23,10 @@ interface DaySchedule {
     schedules: { id: number; start: string; end: string }[];
 }
 interface Horario {
-  id: number;
-  day: string;
-  start_time: string;
-  end_time: string;
+    id: number;
+    day: string;
+    start_time: string;
+    end_time: string;
 }
 
 @Component({
@@ -72,7 +72,7 @@ export class RegistrarHorarioDialogComponent {
     constructor(
         private fb: FormBuilder,
         private dialogRef: MatDialogRef<RegistrarHorarioDialogComponent>,
-@Inject(MAT_DIALOG_DATA) public data: { clubId: number, horarios?: Horario[] },
+        @Inject(MAT_DIALOG_DATA) public data: { clubId: number, horarios?: Horario[] },
         private horariosService: HorariosService,
         private snackBar: MatSnackBar
     ) {
@@ -199,4 +199,46 @@ export class RegistrarHorarioDialogComponent {
         if (hour === 0) hour = 12;
         return `${hour}:${minute.toString().padStart(2, '0')} ${ampm}`;
     }
+
+    eliminarHorario(horarios: { id: number; start: string; end: string }[]) {
+        horarios.forEach(horario => {
+            this.horariosService.deleteHorario(horario.id ? horario.id : -1, this.data.clubId).subscribe({
+                next: () => {
+                    this.snackBar.open('Horario eliminado correctamente', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'], });
+                    this.recargarHorarios();
+                },
+                error: (err) => {
+                    console.error("Error en DELETE", err);
+                    this.snackBar.open('Error al eliminar el horario', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
+                },
+            });
+        });
+    }
+
+    recargarHorarios() {
+        this.horariosService.getHorariosByClub(this.data.clubId).subscribe({
+            next: (horarios: HorarioClub[]) => {
+                this.days.forEach(day => {
+                    day.hasSchedule = false;
+                    day.schedules = [];
+                });
+                horarios.forEach(h => {
+                    const dia = this.days.find(d => d.name.toLowerCase() === h.day.toLowerCase());
+                    if (dia) {
+                        dia.hasSchedule = true;
+                        if (!dia.schedules) dia.schedules = [];
+                        dia.schedules.push({
+                            id: h.id ?? -1,
+                            start: this.convertToAMPM(h.start_time),
+                            end: this.convertToAMPM(h.end_time)
+                        });
+                    }
+                });
+            },
+            error: (err) => {
+                console.error("Error al recargar horarios", err);
+            }
+        });
+    }
+
 }

@@ -1,29 +1,80 @@
-<!-- club-close-dialog.component.html -->
 <div class="modal-container">
-  <h2>Agregar día cerrado</h2>
+  <!-- Header -->
+  <div class="modal-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">event_busy</mat-icon>
+      <h2>Agregar día cerrado</h2>
+    </div>
+  </div>
+
   <mat-divider class="modal-divider"></mat-divider>
 
-  <form [formGroup]="form">
+  <!-- Form -->
+  <form [formGroup]="form" class="modal-form">
+
+    <!-- Date Selection -->
     <mat-form-field appearance="outline" class="modal-field">
-      <mat-label>Selecciona un club</mat-label>
-      <mat-select formControlName="club_id" required>
-        <mat-option *ngFor="let club of clubs" [value]="club.id">{{ club.name }}</mat-option>
-      </mat-select>
+      <mat-label>Día*</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="day" required 
+             placeholder="Selecciona una fecha">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="form.get('day')?.hasError('required')">
+        Este campo es requerido
+      </mat-error>
     </mat-form-field>
 
+    <!-- Reason -->
     <mat-form-field appearance="outline" class="modal-field">
-      <mat-label>Día</mat-label>
-      <input matInput type="date" formControlName="day" required>
+      <mat-label>Motivo*</mat-label>
+      <textarea matInput formControlName="reason" required 
+                placeholder="Describe el motivo del cierre..."
+                rows="3"></textarea>
+      <mat-icon matSuffix>description</mat-icon>
+      <mat-error *ngIf="form.get('reason')?.hasError('required')">
+        Este campo es requerido
+      </mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="modal-field">
-      <mat-label>Motivo</mat-label>
-      <input matInput formControlName="reason" required>
-    </mat-form-field>
+    <!-- Club Info Card (Visible when club is selected) -->
+    <div *ngIf="data.selectedClub" class="club-info-card">
+      <div class="club-info-header">
+        <mat-icon class="club-icon">sports_club</mat-icon>
+        <div class="club-details">
+          <h3>{{ data.selectedClub.name }}</h3>
+          <span class="club-type-badge" [class.private]="data.selectedClub.type === 'private'" 
+                [class.public]="data.selectedClub.type === 'public'">
+            {{ data.selectedClub.type === 'private' ? 'Club Privado' : 'Club Público' }}
+          </span>
+        </div>
+      </div>
+      <div class="club-contact-info">
+        <div class="contact-item" *ngIf="data.selectedClub.phone">
+          <mat-icon>phone</mat-icon>
+          <span>{{ data.selectedClub.phone }}</span>
+        </div>
+        <div class="contact-item" *ngIf="data.selectedClub.email">
+          <mat-icon>email</mat-icon>
+          <span>{{ data.selectedClub.email }}</span>
+        </div>
+        <div class="contact-item" *ngIf="data.selectedClub.web_site">
+          <mat-icon>language</mat-icon>
+          <span>{{ data.selectedClub.web_site }}</span>
+        </div>
+      </div>
+    </div>
   </form>
 
+  <!-- Actions -->
   <div class="modal-actions">
-    <button mat-stroked-button (click)="cancelar()">Cancelar</button>
-    <button mat-raised-button color="primary" (click)="guardar()">Guardar</button>
+    <button mat-stroked-button (click)="cancelar()" class="cancel-button">
+      <mat-icon>cancel</mat-icon>
+      Cancelar
+    </button>
+    <button mat-raised-button color="primary" (click)="guardar()" 
+            [disabled]="!form.valid" class="save-button">
+      <mat-icon>save</mat-icon>
+      Guardar
+    </button>
   </div>
 </div>

@@ -120,6 +120,17 @@ export class UsersService extends ApiBaseService {
         );
     }
 
+    searchUsersResponse(searchTerm: string, club_id?: number): Observable<UsersResponse> {
+        let params = new HttpParams()
+            .set('rol_id', '')
+            .set('category_id', '')
+            .set('name', searchTerm || '')
+            .set('lastname', '')
+            .set('club_id', club_id ? club_id.toString() : '')
+
+        return this.get<UsersResponse>('/users', params);
+    }
+
     createUser(data: FormData): Observable<any> {
         return this.post('/user/create', data);
     }

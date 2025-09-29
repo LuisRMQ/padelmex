@@ -1,101 +1,235 @@
 /* Header de la card con botón de editar */
-.card-header-row {
+:root {
+  --primary-color: #2c3e50;
+  --accent-color: #e74c3c;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --info-color: #3498db;
+  --background-light: #ecf0f1;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.clubs-resumen {
   display: flex;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.resumen-card {
+  background: #f8fcff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+  padding: 18px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 160px;
+}
+
+.resumen-icon {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  padding: 8px;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.edit-btn {
-  margin-left: 12px;
-  color: #336699;
-}
-
-.direccion-truncada {
-  display: flex;
-  align-items: center;
-}
-.direccion-text {
-  display: inline-block;
-  max-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
-  margin-left: 4px;
-}
-
-/* Contenedor de cards */
-.clubs-cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* igual que canchas */
-  gap: 16px;
-}
-
-/* Card individual */
-.club-card {
-  max-width: 300px;
-  padding: 0;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.club-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
-}
-
-/* Imagen del club */
-.club-img-container {
-  display: flex;
   justify-content: center;
-  align-items: center;
-  height: 160px; /* igual que canchas */
-  background: #f5f5f5;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 8px;
 }
 
-.club-img-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
+.resumen-icon.total {
+  background: #eaf3ff;
+  color: #1976d2;
 }
 
-/* Información dentro de la card */
-.club-card-content p {
-  margin: 4px 0;
-  font-size: 0.98rem;
+.resumen-icon.activos {
+  background: #eafaf1;
+  color: #43a047;
 }
 
-.club-name {
+.resumen-icon.entrenadores {
+  background: #fffbe7;
+  color: #fbc02d;
+}
+
+.resumen-icon.victorias {
+  background: #eafaf1;
+  color: #43a047;
+}
+
+.resumen-label {
+  font-size: 1rem;
+  color: #607d8b;
+  margin-bottom: 2px;
+}
+
+.resumen-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2e3c5d;
+}
+
+.clubs-lista {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+  padding: 18px 24px;
+}
+
+.clubs-lista-header {
   font-size: 1.1rem;
   font-weight: 600;
+  margin-bottom: 12px;
 }
 
-.club-subtitle {
-  font-size: 0.95rem;
-  color: #2b2c2c;
+.clubs-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 12px;
 }
 
-/* Botones de acción */
-.club-card-actions {
+.clubs-table th {
+  text-align: left;
+  font-size: 0.98rem;
+  color: #607d8b;
+  font-weight: 600;
+  padding: 10px 8px;
+  background: #f7f7fa;
+}
+
+.clubs-table td {
+  padding: 12px 8px;
+  vertical-align: middle;
+  font-size: 1rem;
+}
+
+.club-nombre {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-bottom: 8px;
+  align-items: center;
+  gap: 12px;
 }
 
-/* No clubs */
-.no-clubs {
-  text-align: center;
+.club-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.nombre {
+  cursor: pointer;
+  color: var(--info-color);
+  font-weight: 600;
+  transition: text-decoration 0.2s, color 0.2s;
+}
+
+.nombre:hover {
+  text-decoration: underline;
+  color: var(--primary-color);
+}
+
+.correo {
+  font-size: 0.95rem;
+  color: #607d8b;
+}
+
+.badge-rol {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-block;
+}
+
+.badge-rol.public {
+  background: #eafaf1;
+  color: #43a047;
+}
+
+.badge-rol.private {
+  background: #eaf3ff;
+  color: #1976d2;
+}
+
+.badge-categoria {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #eafaf1;
+  color: #43a047;
+  display: inline-block;
+}
+
+.badge-categoria.true {
+  background: #eafaf1;
+  color: #43a047;
+}
+
+/* .badge-categoria.private {
+  background: #eaf3ff;
+  color: #1976d2;
+} */
+
+.badge-categoria.false {
+  background: #fffbe7;
+  color: #fbc02d;
+}
+
+.clubs-paginacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 0.98rem;
+  color: #607d8b;
+}
+
+.paginador button {
+  background: #f7f7fa;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  margin: 0 2px;
+  font-weight: 600;
+  color: #2e3c5d;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.paginador button.active,
+.paginador button:hover {
+  background: #1976d2;
+  color: #fff;
+}
+
+.paginador button:disabled {
+  background: #e0e0e0;
   color: #888;
-  margin-top: 32px;
-  font-size: 1.1rem;
+  cursor: not-allowed;
 }
 
-/* Header y botón registrar */
+.clubs-filtros {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.clubs-search {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 1rem;
+  background: #f7f7fa;
+  width: 70%;
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -112,7 +246,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-registrar {

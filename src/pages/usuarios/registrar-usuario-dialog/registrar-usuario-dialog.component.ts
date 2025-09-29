@@ -141,7 +141,6 @@ export class RegistrarUsuarioDialogComponent {
 
   removePhoto(): void {
     this.logoPreview = '../../assets/images/placeholder.png';
-    // También debes limpiar el archivo seleccionado si lo tienes en una variable
   }
 
 }

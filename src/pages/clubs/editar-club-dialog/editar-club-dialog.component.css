@@ -1,5 +1,3 @@
-/* Contenedor principal del modal */
-/* Contenedor principal del modal */
 .edit-club-dialog {
 	background: #fff;
 	border-radius: 22px;
@@ -60,7 +58,7 @@
 	overflow-y: auto;
 	width: 100%;
 	min-height: 0;
-	max-height: calc(90vh - 90px);
+	max-height: 90vh;
 }
 
 /* Logo */

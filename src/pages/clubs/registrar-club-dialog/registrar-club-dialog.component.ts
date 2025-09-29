@@ -11,6 +11,7 @@ import { ClubsService } from '../../../app/services/clubs.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
+import { MatCardModule } from "@angular/material/card";
 
 @Component({
   selector: 'app-RegistrarClub',
@@ -26,7 +27,8 @@ import { CommonModule } from '@angular/common';
     MatSelectModule,
     ReactiveFormsModule,
     MatSnackBarModule,
-    CommonModule         
+    CommonModule,
+    MatCardModule
   ],
 })
 export class RegistrarClubDialogComponent {
@@ -49,7 +51,7 @@ export class RegistrarClubDialogComponent {
     private fb: FormBuilder,
     private clubsService: ClubsService,
     private snackBar: MatSnackBar,
-     private dialogRef: MatDialogRef<RegistrarClubDialogComponent>
+    private dialogRef: MatDialogRef<RegistrarClubDialogComponent>
   ) {
     this.clubForm = this.fb.group({
       name: ['', Validators.required],
@@ -57,15 +59,15 @@ export class RegistrarClubDialogComponent {
       phone: ['', Validators.required],
       rfc: ['', Validators.required],
       web_site: [''],
-      state: ['', Validators.required],  
-      city: ['', Validators.required], 
+      state: ['', Validators.required],
+      city: ['', Validators.required],
       address: ['', Validators.required],
       type: ['', Validators.required],
       status: [true]
     });
   }
 
-   onStateChange(stateNombre: string) {
+  onStateChange(stateNombre: string) {
     const estado = this.estados.find(e => e.nombre === stateNombre);
     this.ciudades = estado ? estado.ciudades : [];
     this.clubForm.get('city')?.reset();
@@ -115,7 +117,7 @@ export class RegistrarClubDialogComponent {
       next: (res) => {
         this.dialogRef.close(true);
         console.log('Club creado:', res);
-        
+
       },
       error: (err) => {
         console.error(err);
@@ -126,5 +128,13 @@ export class RegistrarClubDialogComponent {
         });
       }
     });
+  }
+
+  onCancel(): void {
+    this.dialogRef.close();
+  }
+
+  removePhoto(): void {
+    this.logoPreview = '../../assets/images/placeholder.png';
   }
 }

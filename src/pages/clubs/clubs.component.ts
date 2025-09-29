@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RegistrarClubDialogComponent } from './registrar-club-dialog/registrar-club-dialog.component';
 import { ClubsService, Club } from '../../app/services/clubs.service';
@@ -20,6 +20,8 @@ import { InformacionClubDialogComponent } from './informacion-club-dialog/inform
 import { EditarClubDialogComponent } from './editar-club-dialog/editar-club-dialog.component';
 import { ClubAmenitiesModalComponent } from './registrar-comodidad-dialog/registrar-comodidad-dialog.component';
 import { ClubCloseDialogComponent } from './close-club-dialog/close-club-dialog.component';
+import { MatTableModule } from '@angular/material/table';
+import { UsersService, User } from '../../app/services/users.service';
 
 
 
@@ -40,7 +42,8 @@ import { ClubCloseDialogComponent } from './close-club-dialog/close-club-dialog.
     MatDivider,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatTableModule,
   ],
 })
 export class ClubsComponent implements OnInit {
@@ -52,12 +55,14 @@ export class ClubsComponent implements OnInit {
   logoFile: File | null = null;
   logoPreview: string = '../../assets/images/placeholder.png';
   backupClub: Partial<Club> | null = null;
+  clubConMasUsuarios: Club | null = null;
 
   constructor(
     private dialog: MatDialog,
     private clubsService: ClubsService,
     private snackBar: MatSnackBar,
     private horariosService: HorariosService,
+    private usersService: UsersService
 
   ) { }
 
@@ -66,10 +71,35 @@ export class ClubsComponent implements OnInit {
       next: (res: any) => {
         this.clubs = res.data;
         this.clubesFiltrados = this.clubs;
+        this.calcularClubConMasUsuarios();
       },
       error: (err) => {
         console.error('Error al cargar clubs', err);
       }
+    });
+  }
+
+  calcularClubConMasUsuarios() {
+    let maxCount = 0;
+    let clubWithMostUsers: Club | null = null;
+
+    let pendientes = this.clubs.length;
+    if (pendientes === 0) {
+      this.clubConMasUsuarios = null;
+      return;
+    }
+
+    this.clubs.forEach(club => {
+      this.usersService.searchUsers('', club.id).subscribe(users => {
+        if (users.length > maxCount) {
+          maxCount = users.length;
+          clubWithMostUsers = club;
+        }
+        pendientes--;
+        if (pendientes === 0) {
+          this.clubConMasUsuarios = clubWithMostUsers;
+        }
+      });
     });
   }
 
@@ -150,9 +180,9 @@ export class ClubsComponent implements OnInit {
 
 
   onImageError(event: Event) {
-  const element = event.target as HTMLImageElement;
-  element.src = 'assets/logos/azteca.png'; 
-}
+    const element = event.target as HTMLImageElement;
+    element.src = 'assets/logos/azteca.png';
+  }
 
   abrirModalInfoClub(club: Club) {
     const dialogRef = this.dialog.open(InformacionClubDialogComponent, {
@@ -189,76 +219,76 @@ export class ClubsComponent implements OnInit {
   }
 
   guardarClubEditado(clubOrForm: Club | FormData) {
-  // Permitir validación tanto para objeto Club como para FormData
-  let values: any = {};
-  if (clubOrForm instanceof FormData) {
-    clubOrForm.forEach((value, key) => {
-      values[key] = value;
-    });
-    console.log("📦 Datos recibidos (FormData):", values);
-  } else {
-    values = { ...clubOrForm };
+    // Permitir validación tanto para objeto Club como para FormData
+    let values: any = {};
+    if (clubOrForm instanceof FormData) {
+      clubOrForm.forEach((value, key) => {
+        values[key] = value;
+      });
+      console.log("📦 Datos recibidos (FormData):", values);
+    } else {
+      values = { ...clubOrForm };
 
-    // 🚫 Si logo viene como string (URL o base64), lo quitamos
-    if (typeof values.logo === 'string') {
-      delete values.logo;
+      // 🚫 Si logo viene como string (URL o base64), lo quitamos
+      if (typeof values.logo === 'string') {
+        delete values.logo;
+      }
+
+      console.log("📦 Datos recibidos (Objeto Club):", values);
     }
 
-    console.log("📦 Datos recibidos (Objeto Club):", values);
-  }
+    // Validación de campos obligatorios
+    if (!values.name || !values.email || !values.phone || !values.rfc || !values.address || !values.type) {
+      console.error("❌ Falta un campo obligatorio:", values);
+      this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
+      return;
+    }
 
-  // Validación de campos obligatorios
-  if (!values.name || !values.email || !values.phone || !values.rfc || !values.address || !values.type) {
-    console.error("❌ Falta un campo obligatorio:", values);
-    this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', {
-      duration: 3000,
-      panelClass: ['snackbar-error']
-    });
-    return;
+    // Si es FormData, enviar como tal
+    if (clubOrForm instanceof FormData) {
+      console.log("🚀 Enviando FormData al backend:", values);
+      this.clubsService.updateClub(values.id, clubOrForm).subscribe({
+        next: (res) => {
+          console.log("✅ Respuesta del backend:", res);
+          this.editandoClubId = null;
+          this.logoFile = null;
+          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-success']
+          });
+        },
+        error: (err) => {
+          console.error("🔥 Error al actualizar (FormData):", err);
+          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    } else {
+      console.log("🚀 Enviando objeto normal al backend:", values);
+      this.clubsService.updateClub(values.id, values).subscribe({
+        next: (res) => {
+          console.log("✅ Respuesta del backend:", res);
+          this.editandoClubId = null;
+          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-success']
+          });
+        },
+        error: (err) => {
+          console.error("🔥 Error al actualizar (Objeto Club):", err);
+          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    }
   }
-
-  // Si es FormData, enviar como tal
-  if (clubOrForm instanceof FormData) {
-    console.log("🚀 Enviando FormData al backend:", values);
-    this.clubsService.updateClub(values.id, clubOrForm).subscribe({
-      next: (res) => {
-        console.log("✅ Respuesta del backend:", res);
-        this.editandoClubId = null;
-        this.logoFile = null;
-        this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success']
-        });
-      },
-      error: (err) => {
-        console.error("🔥 Error al actualizar (FormData):", err);
-        this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-error']
-        });
-      }
-    });
-  } else {
-    console.log("🚀 Enviando objeto normal al backend:", values);
-    this.clubsService.updateClub(values.id, values).subscribe({
-      next: (res) => {
-        console.log("✅ Respuesta del backend:", res);
-        this.editandoClubId = null;
-        this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success']
-        });
-      },
-      error: (err) => {
-        console.error("🔥 Error al actualizar (Objeto Club):", err);
-        this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-error']
-        });
-      }
-    });
-  }
-}
 
 
 
@@ -290,35 +320,35 @@ export class ClubsComponent implements OnInit {
 
 
   abrirModalRegistrarHorario(club: Club) {
-  this.horariosService.getHorariosByClub(club.id).subscribe({
-    next: (horarios) => {
-      const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
-        maxWidth: '80vw',
-        maxHeight: '80vh',
-        data: { 
-          clubId: club.id, 
-          name: club.name,
-          horarios 
-        }
-      });
+    this.horariosService.getHorariosByClub(club.id).subscribe({
+      next: (horarios) => {
+        const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
+          maxWidth: '80vw',
+          maxHeight: '80vh',
+          data: {
+            clubId: club.id,
+            name: club.name,
+            horarios
+          }
+        });
 
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.snackBar.open('✅ Horario registrado exitosamente', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-success'],
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom'
-          });
-        }
-      });
-    },
-    error: (err) => {
-      console.error('❌ Error al obtener horarios del club', err);
-      this.snackBar.open('Error al cargar los horarios', 'Cerrar', { duration: 3000 });
-    }
-  });
-}
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.snackBar.open('✅ Horario registrado exitosamente', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-success'],
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom'
+            });
+          }
+        });
+      },
+      error: (err) => {
+        console.error('❌ Error al obtener horarios del club', err);
+        this.snackBar.open('Error al cargar los horarios', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
 
 
 
@@ -364,15 +394,16 @@ export class ClubsComponent implements OnInit {
 
 
 
-  addCloseDays(){
+  addCloseDays(club: Club) {
     const dialogRef = this.dialog.open(ClubCloseDialogComponent, {
       maxWidth: '80vw',
       maxHeight: '80vh',
+      data: { selectedClub: club }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.snackBar.open('✅ Se añadio con exito', 'Cerrar', {
+        this.snackBar.open('Cierre de día registrado correctamente', 'Cerrar', {
           duration: 3000,
           panelClass: ['snackbar-success'],
           horizontalPosition: 'center',
@@ -382,8 +413,16 @@ export class ClubsComponent implements OnInit {
     });
   }
 
+  get totalClubsActivos(): number {
+    return this.clubs.filter(c => c.status === true).length;
+  }
 
-  
- 
+  get totalClubsPublicos(): number {
+    return this.clubs.filter(c => c.type === 'public').length;
+  }
+
+  get totalClubsPrivados(): number {
+    return this.clubs.filter(c => c.type === 'private').length;
+  }
 
 }

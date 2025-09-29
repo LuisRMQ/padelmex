@@ -1,35 +1,108 @@
-<!-- <div class="page-content"> -->
 <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
-  <!-- Botón nuevo a la izquierda -->
-
 
   <h1 style="flex-grow: 1; margin: 0;">Clubes</h1>
-  <button mat-icon-button color="primary" (click)="addCloseDays()" style="margin-right: 16px;">
-    <mat-icon>warning</mat-icon>
-  </button>
-  <!-- Botón registrar club a la derecha -->
   <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarClub()">
     <mat-icon>add</mat-icon> REGISTRAR CLUB
   </button>
 </div>
 
-
-
-
 <mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
 
-<div class="busqueda-container">
-  <mat-form-field appearance="outline" class="busqueda-field">
-    <mat-label>Buscar club</mat-label>
-    <input matInput placeholder="Nombre, correo o dirección" [(ngModel)]="busquedaClub"
-      (ngModelChange)="filtrarClubes()">
-    <button *ngIf="busquedaClub" matSuffix mat-icon-button aria-label="Limpiar" (click)="limpiarBusqueda()">
-      <mat-icon>close</mat-icon>
-    </button>
-  </mat-form-field>
+
+<div class="clubs-filtros">
+  <input class="clubs-search" type="text" placeholder="Buscar clubes por nombre, correo o dirección..."
+    [(ngModel)]="busquedaClub" (ngModelChange)="filtrarClubes()" />
 </div>
 
-<div class="clubs-cards-container">
+<!-- Tarjetas resumen -->
+<div class="clubs-resumen">
+  <div class="resumen-card">
+    <div class="resumen-icon total"><mat-icon>groups</mat-icon></div>
+    <div class="resumen-label">Total Clubes</div>
+    <div class="resumen-value">{{ totalClubsActivos }}</div>
+  </div>
+  <div class="resumen-card">
+    <div class="resumen-icon activos"><mat-icon>directions_run</mat-icon></div>
+    <div class="resumen-label">Clubes Publicos</div>
+    <div class="resumen-value">{{ totalClubsPublicos }}</div>
+  </div>
+  <div class="resumen-card">
+    <div class="resumen-icon entrenadores"><mat-icon>emoji_events</mat-icon></div>
+    <div class="resumen-label">Clubes Privados</div>
+    <div class="resumen-value">{{ totalClubsPrivados }}</div>
+  </div>
+  <div class="resumen-card">
+    <div class="resumen-icon victorias"><mat-icon>military_tech</mat-icon></div>
+    <div class="resumen-label">Club con mas Usuarios</div>
+    <div class="resumen-value">{{ clubConMasUsuarios?.name }}</div>
+  </div>
+</div>
+
+<!-- Tabla de usuarios -->
+<div class="clubs-lista">
+  <div class="clubs-lista-header">
+    <span>Lista de Clubs</span>
+  </div>
+  <table class="clubs-table">
+    <thead>
+      <tr>
+        <th>NOMBRE</th>
+        <th>TELEFONO</th>
+        <th>TIPO</th>
+        <th>EMAIL</th>
+        <th>ESTATUS</th>
+        <th>ACCIONES</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let club of clubesFiltrados">
+        <td>
+          <div class="club-nombre">
+            <img class="club-avatar" [src]="club.logo || 'assets/logos/azteca.png'" alt="avatar">
+            <div>
+              <div class="nombre" (click)="abrirModalInfoClub(club)">{{ club.name }}</div>
+              <div class="correo">{{ club.email }}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span>{{ club.phone }}</span>
+        </td>
+        <td>
+          <span class="badge-rol" [ngClass]="club.type | lowercase">{{ club.type === 'public' ? 'Público' : 'Privado'
+            }}</span>
+        </td>
+        <td>
+          {{ club.email }}
+        </td>
+        <td>
+          <span class="badge-categoria" [ngClass]="club.status.valueOf.toString() | lowercase">{{ club.status ? 'Activo'
+            : 'Inactivo' }}</span>
+        </td>
+        <td>
+          <button mat-icon-button aria-label="Editar club" (click)="abrirEditarClubDialog(club)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" (click)="abrirModalRegistrarHorario(club)">
+            <mat-icon>more_time</mat-icon>
+          </button>
+          <button mat-icon-button color="accent" (click)="abrirModalComodidades(club)">
+            <mat-icon>hotel_class</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="addCloseDays(club)">
+            <mat-icon>event_busy</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="confirmarEliminarClub(club)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- <div class="clubs-cards-container">
   <mat-card *ngFor="let club of clubesFiltrados" class="club-card" appearance="outlined">
     <mat-card-header>
       <div class="card-header-row">
@@ -53,7 +126,7 @@
       <button mat-icon-button color="accent" (click)="abrirModalRegistrarHorario(club)">
         <mat-icon>more_time</mat-icon>
       </button>
-        <button mat-icon-button (click)="abrirModalHorarios(club)">
+      <button mat-icon-button (click)="abrirModalHorarios(club)">
         <mat-icon>info</mat-icon>
       </button>
       <button mat-icon-button color="primary" (click)="abrirModalInfoClub(club)">
@@ -62,11 +135,10 @@
       <button mat-icon-button color="warn" (click)="confirmarEliminarClub(club)">
         <mat-icon>delete</mat-icon>
       </button>
-       <button mat-icon-button color="warn" (click)="abrirModalComodidades(club)">
+      <button mat-icon-button color="warn" (click)="abrirModalComodidades(club)">
         <mat-icon>monitor</mat-icon>
       </button>
 
     </mat-card-actions>
   </mat-card>
-</div>
-<!-- </div> -->
+</div> -->
