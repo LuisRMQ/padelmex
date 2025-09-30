@@ -1,0 +1,105 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon style="vertical-align: middle; margin-right: 8px;">event</mat-icon>
+  Reservaciones de {{ data.nombre }}
+</h2>
+
+<mat-dialog-content style="padding: 0;">
+  <div *ngIf="loading" class="loading">
+    <mat-spinner diameter="24"></mat-spinner>
+    Cargando reservaciones...
+  </div>
+
+  <table mat-table [dataSource]="dataSource" *ngIf="!loading && dataSource.data.length > 0" 
+         class="mat-elevation-z8 custom-table">
+
+    <!-- Fecha -->
+    <ng-container matColumnDef="date">
+      <th mat-header-cell *matHeaderCellDef> 
+        <mat-icon style="vertical-align: middle; font-size: 18px; margin-right: 4px;">today</mat-icon>
+        Fecha 
+      </th>
+      <td mat-cell *matCellDef="let r" class="expandable"> {{ r.date  }} </td>
+    </ng-container>
+
+    <!-- Hora -->
+    <ng-container matColumnDef="hora">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-icon style="vertical-align: middle; font-size: 18px; margin-right: 4px;">schedule</mat-icon>
+        Hora 
+      </th>
+      <td mat-cell *matCellDef="let r"> {{ r.start_time }} - {{ r.end_time }} </td>
+    </ng-container>
+
+    <!-- Cancha -->
+    <ng-container matColumnDef="court">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-icon style="vertical-align: middle; font-size: 18px; margin-right: 4px;">sports_tennis</mat-icon>
+        Cancha 
+      </th>
+      <td mat-cell *matCellDef="let r" class="expandable"> {{ r.court }} </td>
+    </ng-container>
+
+    <!-- Precio -->
+    <ng-container matColumnDef="precio">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-icon style="vertical-align: middle; font-size: 18px; margin-right: 4px;">attach_money</mat-icon>
+        Precio 
+      </th>
+      <td mat-cell *matCellDef="let r"> ${{ r.totalToPay }} </td>
+    </ng-container>
+
+    <!-- Club -->
+    <ng-container matColumnDef="club">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-icon style="vertical-align: middle; font-size: 18px; margin-right: 4px;">location_on</mat-icon>
+        Club 
+      </th>
+      <td mat-cell *matCellDef="let r" class="expandable"> {{ r.club }} </td>
+    </ng-container>
+
+    <!-- Estado -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-icon style="vertical-align: middle; font-size: 18px; margin-right: 4px;">flag</mat-icon>
+        Estado 
+      </th>
+      <td mat-cell *matCellDef="let r">
+        <span class="status" [ngClass]="{
+          'status-activo': r.status === 'Activo',
+          'status-pendiente': r.status === 'Pendiente',
+          'status-cancelado': r.status === 'Cancelado'
+        }">
+          {{ r.status }}
+        </span>
+      </td>
+    </ng-container>
+
+    <!-- Tipo -->
+    <ng-container matColumnDef="typeReservation">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-icon style="vertical-align: middle; font-size: 18px; margin-right: 4px;">category</mat-icon>
+        Tipo 
+      </th>
+      <td mat-cell *matCellDef="let r" class="expandable"> {{ r.typeReservation }} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+  </table>
+
+  <div *ngIf="!loading && dataSource.data.length === 0" class="empty-message">
+    <mat-icon style="font-size: 48px; color: #bdc3c7; margin-bottom: 16px;">event_busy</mat-icon>
+    <h3 style="color: #7f8c8d; margin-bottom: 8px;">No hay reservaciones</h3>
+    <p>No se encontraron reservaciones registradas para {{ data.nombre }}.</p>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+ 
+  <button mat-button class="cancel-btn" (click)="cerrar()">
+    <mat-icon>check</mat-icon>
+    Aceptar
+  </button>
+
+    
+</mat-dialog-actions>

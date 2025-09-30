@@ -10,6 +10,9 @@ import { MatCardModule } from '@angular/material/card';
 import { IntegrantesService, Integrante } from '../../app/services/integrantes.service';
 import { RegistrarIntegranteDialogComponent } from './registrar-integrantes-dialog/registrar-integrante-dialog.component';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { ReservacionesIntegranteDialogComponent } from './reservaciones-integrantes-dialog/reservaciones-integrantes-dialog.component';
+
+
 
 @Component({
   selector: 'app-integrantes',
@@ -92,4 +95,15 @@ export class IntegrantesComponent implements OnInit {
     const target = event.target as HTMLImageElement;
     target.src = '../../../assets/images/iconuser.png';
   }
+
+
+  
+    VerReservaciones(usuario: Integrante) {
+      this.dialog.open(ReservacionesIntegranteDialogComponent, {
+        width: 'auto',       
+        maxWidth: '95vw',   
+        maxHeight: '90vh',   
+        data: { userId: usuario.id!, nombre: usuario.name }
+      })
+    }
 }
