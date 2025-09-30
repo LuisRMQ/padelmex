@@ -8,6 +8,7 @@ import { ReservationService } from '../../../app/services/reservation.service';
 import { MatInputModule } from "@angular/material/input";
 import { MatDatepickerModule } from "@angular/material/datepicker";
 import { MatSelectModule } from "@angular/material/select";
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-schedule-details-dialog',
@@ -24,11 +25,19 @@ export class ScheduleDetailsDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private reservationService: ReservationService,
-    private dialogRef: MatDialogRef<ScheduleDetailsDialogComponent>
+    private dialogRef: MatDialogRef<ScheduleDetailsDialogComponent>,
+    private snackBar: MatSnackBar
+
   ) {
     console.log('Dialog data:', data);
     this.editedData = { ...data.details };
   }
+
+  playersEditable = false; // por defecto no editable
+
+togglePlayersEdit() {
+    this.playersEditable = !this.playersEditable;
+}
 
   ngOnInit(): void {
     this.initialStatus = this.data.details.status;
@@ -109,4 +118,33 @@ this.players = res.reservation_players || [];
     // Si viene en HH:mm -> agregar ":00"
     return time.length === 5 ? `${time}:00` : time;
   }
+
+
+  confirmPlayerStatusChange(player: any) {
+    const newStatus = 'paid';
+
+    const snack = this.snackBar.open(
+      `¿Marcar como pagado a ${player.user.name}?`,
+      'Confirmar',
+      {
+        duration: 5000,
+        horizontalPosition: 'center', 
+        verticalPosition: 'top'       
+      }
+    );
+
+    snack.onAction().subscribe(() => {
+      this.reservationService.updatePlayerStatusPayment(player.id, newStatus)
+        .subscribe({
+          next: (res) => {
+            console.log('Status actualizado a paid:', res);
+            player.status = newStatus;
+          },
+          error: (err) => console.error('Error cambiando status:', err)
+        });
+    });
+  }
+
+
+
 }

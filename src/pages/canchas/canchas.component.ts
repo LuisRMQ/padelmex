@@ -312,4 +312,6 @@ get totalCanchasPrivadas(): number {
 }
 
 
+onImgError(){}
+
 }

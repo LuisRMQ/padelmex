@@ -58,7 +58,8 @@
       <tr *ngFor="let club of clubesFiltrados">
         <td>
           <div class="club-nombre">
-            <img class="club-avatar" [src]="club.logo || 'assets/logos/azteca.png'" alt="avatar">
+              <img class="club-avatar" [src]="club.logo || 'assets/img/logoclub.jpg'"
+                  (error)="onImgError($event)" alt="avatar">
             <div>
               <div class="nombre" (click)="abrirModalInfoClub(club)">{{ club.name }}</div>
               <div class="correo">{{ club.email }}</div>

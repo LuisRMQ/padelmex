@@ -132,4 +132,14 @@ export class ReservationService extends ApiBaseService {
     disableReservationConfig(id: number): Observable<any> {
         return this.http.delete(`${this.apiUrl}/reservationConfigure/disabled/${id}`);
     }
+
+
+    //ACTUALIZAR STATUS JUGADOR
+    updatePlayerStatusPayment(playerId: number, status: string): Observable<any> {
+        return this.http.patch(
+            `${this.apiUrl}/reservationPlayer/updateStatusPayment/${playerId}`,
+            { status },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+    }
 }

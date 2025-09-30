@@ -428,4 +428,9 @@ export class ClubsComponent implements OnInit {
     return this.clubs.filter(c => c.type === 'private').length;
   }
 
+    onImgError(event: Event) {
+    (event.target as HTMLImageElement).src = '../../../assets/images/logoclub.jpg';
+  }
+
+
 }

@@ -77,6 +77,7 @@
       <tr *ngFor="let court of courts">
         <td>
           <img class="club-avatar" [src]="court.photo || 'assets/img/no-image.png'" alt="foto cancha">
+          
         </td>
         <td>{{ court.name }}</td>
         <td>{{ getClubName(court.club_id) }}</td>

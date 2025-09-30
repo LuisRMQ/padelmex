@@ -244,7 +244,7 @@ export class ScheduleDateDialogComponent implements OnInit {
     console.log('Jugadores antes de enviar:', this.selectedPlayers);
 
     const payload = {
-      user_id: this.reservationForm.value.user_id,
+      user_id: this.reservationForm.value.user_id,  
       court_id: this.reservationForm.value.court_id,
       reservation_type_id: this.reservationForm.value.reservation_type_id,
       date: this.formatDateForApi(this.selectedDate),
@@ -254,13 +254,17 @@ export class ScheduleDateDialogComponent implements OnInit {
       observations: this.reservationForm.value.observations,
       type: this.reservationForm.value.type,
       category: this.reservationForm.value.category,
-      players: this.selectedPlayers.map(p => ({ user_id: p.id })),
+      players: this.selectedPlayers.map((p, index) => ({
+        user_id: p.id,
+        player_number: index + 2  
+      }))
     };
 
     console.log('Payload final que cierra modal:', payload);
 
     this.dialogRef.close(payload);
   }
+
 
   private convertToDate(dateValue: string | Date): Date {
     if (dateValue instanceof Date) return dateValue;
