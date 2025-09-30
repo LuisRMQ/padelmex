@@ -1,26 +1,16 @@
-.card-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+:root {
+  --primary-color: #2c3e50;
+  --accent-color: #e74c3c;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --info-color: #3498db;
+  --background-light: #ecf0f1;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.edit-btn {
-  margin-left: 12px;
-  color: #336699;
-}
-
-.canchas-cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-mat-card img {
-  height: 160px;
-  object-fit: cover;
-}
-
+/* Header */
 .header {
   display: flex;
   justify-content: space-between;
@@ -51,42 +41,72 @@ mat-card img {
   border: none !important;
 }
 
-
-.card-header-info {
-  display: flex;
-  flex-direction: column;
+/* Contenedor de tabla */
+.clubs-lista {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+  padding: 18px 24px;
+  margin-top: 20px;
 }
 
-.cancha-img-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 180px;
-  background: #f5f5f5;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 8px;
+.clubs-lista-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
 }
 
-.cancha-img-container img {
+/* Tabla de canchas */
+.clubs-table {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 12px;
 }
 
-mat-card-content p {
-  margin: 4px 0;
+.clubs-table th {
+  text-align: left;
   font-size: 0.98rem;
+  color: #607d8b;
+  font-weight: 600;
+  padding: 10px 8px;
+  background: #f7f7fa;
 }
 
-mat-card-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-bottom: 8px;
+.clubs-table td {
+  padding: 12px 8px;
+  vertical-align: middle;
+  font-size: 1rem;
 }
 
+.club-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Badge de estado */
+.badge-categoria {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-block;
+  text-align: center;
+}
+
+.badge-categoria.true {
+  background: #eafaf1;
+  color: #43a047;
+}
+
+.badge-categoria.false {
+  background: #fffbe7;
+  color: #fbc02d;
+}
+
+/* No canchas */
 .no-canchas {
   text-align: center;
   color: #888;
@@ -94,35 +114,95 @@ mat-card-actions {
   font-size: 1.1rem;
 }
 
-.cancha-card {
-  max-width: 300px;
-  padding: 0;
-  font-size: 0.9rem;
-}
-
-.cancha-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
-}
-
-.cancha-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.cancha-subtitle {
-  font-size: 0.95rem;
-  color: #2b2c2c;
-}
-
-.card-actions {
-  justify-content: flex-start;
-  gap: 0;
-}
-
+/* Paginación */
 .pagination-container {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 18px;
   margin: 24px 0 0 0;
+}
+
+.pagination-container button {
+  background: #f7f7fa;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 600;
+  color: #2e3c5d;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pagination-container button:hover:not(:disabled) {
+  background: #1976d2;
+  color: white;
+}
+
+.pagination-container button:disabled {
+  background: #e0e0e0;
+  color: #888;
+  cursor: not-allowed;
+}
+
+
+.canchas-resumen {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+
+.resumen-card {
+  background: #f8fcff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+  padding: 18px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 160px;
+}
+
+.resumen-icon {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resumen-icon.total {
+  background: #eaf3ff;
+  color: #1976d2;
+}
+
+.resumen-icon.activos {
+  background: #eafaf1;
+  color: #43a047;
+}
+
+.resumen-icon.entrenadores {
+  background: #fffbe7;
+  color: #fbc02d;
+}
+
+.resumen-icon.victorias {
+  background: #eafaf1;
+  color: #43a047;
+}
+
+.resumen-label {
+  font-size: 1rem;
+  color: #607d8b;
+  margin-bottom: 2px;
+}
+
+.resumen-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2e3c5d;
 }

@@ -298,4 +298,18 @@ export class CanchasComponent implements OnInit {
       }
     });
   }
+
+get totalCanchas(): number {
+  return this.courts.length;
+}
+
+get totalCanchasPublicas(): number {
+  return this.courts.filter(c => c.type === 'Público').length;
+}
+
+get totalCanchasPrivadas(): number {
+  return this.courts.filter(c => c.type === 'Privado').length;
+}
+
+
 }

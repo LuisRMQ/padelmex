@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Court } from '../../../app/services/court.service';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,8 +10,12 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from "@angular/material/icon";
 import { FormsModule } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-
+import { MatCardModule } from '@angular/material/card';
 import { ClubsService, Club } from '../../../app/services/clubs.service';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 @Component({
     selector: 'app-editar-cancha-dialog',
     templateUrl: './editar-cancha-dialog.component.html',
@@ -26,7 +30,10 @@ import { ClubsService, Club } from '../../../app/services/clubs.service';
         CommonModule,
         FormsModule,
         MatSlideToggleModule,
-        MatIconModule
+        MatIconModule,
+        MatExpansionModule,
+        MatDialogModule,
+        MatCardModule
     ]
 })
 export class EditarCanchaDialogComponent {
@@ -82,39 +89,49 @@ export class EditarCanchaDialogComponent {
     }
 
     guardar() {
-    if (!this.courtForm.valid) {
-        Object.keys(this.courtForm.controls).forEach(key => {
-            this.courtForm.get(key)?.markAsTouched();
-        });
-        return;
-    }
-
-    const formData = new FormData();
-
-    Object.keys(this.courtForm.value).forEach(key => {
-        if (key !== 'photo') {
-            formData.append(key, this.courtForm.value[key]);
+        if (!this.courtForm.valid) {
+            Object.keys(this.courtForm.controls).forEach(key => {
+                this.courtForm.get(key)?.markAsTouched();
+            });
+            return;
         }
-    });
 
-    if (this.selectedFile) {
-        formData.append('photo', this.selectedFile);
+        const formData = new FormData();
+
+        Object.keys(this.courtForm.value).forEach(key => {
+            if (key !== 'photo') {
+                formData.append(key, this.courtForm.value[key]);
+            }
+        });
+
+        if (this.selectedFile) {
+            formData.append('photo', this.selectedFile);
+        }
+
+        // Incluye el id de la cancha
+        formData.append('id', this.data.court.id.toString());
+
+        console.log('FormData enviado al backend:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0], ':', pair[1]);
+        }
+
+        this.dialogRef.close(formData); // <-- Devuelve FormData al componente padre
     }
-
-    // Incluye el id de la cancha
-    formData.append('id', this.data.court.id.toString());
-
-    console.log('FormData enviado al backend:');
-    for (let pair of formData.entries()) {
-        console.log(pair[0], ':', pair[1]);
-    }
-
-    this.dialogRef.close(formData); // <-- Devuelve FormData al componente padre
-}
 
 
 
     cancelar() {
+        this.dialogRef.close(false);
+    }
+
+
+    removePhoto() {
+
+    }
+
+
+    onCancel() {
         this.dialogRef.close(false);
     }
 }

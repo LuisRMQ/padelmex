@@ -6,7 +6,7 @@
   </button>
 </div>
 
-<mat-divider style="margin-bottom: 24px; opacity: 0.0;"></mat-divider>
+<mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
 
 <!-- Selector de Club -->
 <div class="club-selector">
@@ -20,6 +20,30 @@
   </mat-form-field>
 </div>
 
+<!-- Tarjetas resumen -->
+<div class="canchas-resumen">
+  <div class="resumen-card">
+    <div class="resumen-icon total"><mat-icon>groups</mat-icon></div>
+    <div class="resumen-label">Total Canchas</div>
+    <div class="resumen-value">{{ totalCanchas }}</div>
+  </div>
+  <div class="resumen-card">
+    <div class="resumen-icon activos"><mat-icon>directions_run</mat-icon></div>
+    <div class="resumen-label">Canchas Publicas</div>
+    <div class="resumen-value">{{ totalCanchasPublicas }}</div>
+  </div>
+  <div class="resumen-card">
+    <div class="resumen-icon entrenadores"><mat-icon>emoji_events</mat-icon></div>
+    <div class="resumen-label">Canchas Privadas</div>
+    <div class="resumen-value">{{ totalCanchasPrivadas }}</div>
+  </div>
+  <!-- <div class="resumen-card">
+    <div class="resumen-icon victorias"><mat-icon>military_tech</mat-icon></div>
+    <div class="resumen-label">Mas Reservada</div>
+    <div class="resumen-value">{{ totalCanchasPrivadas }}</div>
+  </div> -->
+</div>
+
 <!-- Loading -->
 <div *ngIf="loading" class="loading" style="text-align: center; padding: 20px;">
   <mat-spinner diameter="40"></mat-spinner>
@@ -31,44 +55,64 @@
   {{ error }}
 </div>
 
-<div class="canchas-cards-container">
-  <mat-card *ngFor="let court of courts" class="club-card cancha-card" appearance="outlined">
-    <mat-card-header>
-      <div class="card-header-row">
-        <div>
-          <mat-card-title class="club-title cancha-title">{{ court.name }}</mat-card-title>
-          <mat-card-subtitle class="club-subtitle cancha-subtitle">{{ getClubName(court.club_id) }}</mat-card-subtitle>
-        </div>
-        <button mat-icon-button class="edit-btn" (click)="abrirEditarCanchaDialog(court)">
-          <mat-icon>edit</mat-icon>
-        </button>
-      </div>
-
-
-    </mat-card-header>
-
-    <img mat-card-image [src]="court.photo || 'assets/img/no-image.png'" alt="{{ court.name }}">
-    <mat-card-content>
-      <p><strong>Patrocinador:</strong> {{ court.sponsor || 'Sin patrocinador' }}</p>
-      <p><strong>Tipo:</strong> {{ court.type }}</p>
-      <p><strong>Estado:</strong> {{ court.availability ? 'Disponible' : 'No disponible' }}</p>
-      <p><strong>Costo Renta:</strong> {{ court.price_hour }}</p>
-    </mat-card-content>
-
-    <mat-card-actions class="card-actions">
-      <button mat-icon-button (click)="abrirModalRegistrarHorario(court)">
-        <mat-icon>more_time</mat-icon>
-      </button>
-      <button mat-icon-button (click)="abrirModalHorarios(court)">
-        <mat-icon>info</mat-icon>
-      </button>
-      <button mat-icon-button (click)="confirmarEliminarCancha(court)">
-        <mat-icon>delete</mat-icon>
-      </button>
-    </mat-card-actions>
-  </mat-card>
+<!-- Tabla de Canchas -->
+<div class="clubs-lista" *ngIf="courts.length > 0 && !loading && !error">
+  <div class="clubs-lista-header">
+    <span>Lista de Canchas</span>
+  </div>
+  <table class="clubs-table">
+    <thead>
+      <tr>
+        <th>FOTO</th>
+        <th>NOMBRE</th>
+        <th>CLUB</th>
+        <th>PATROCINADOR</th>
+        <th>TIPO</th>
+        <th>ESTADO</th>
+        <th>COSTO RENTA</th>
+        <th>ACCIONES</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let court of courts">
+        <td>
+          <img class="club-avatar" [src]="court.photo || 'assets/img/no-image.png'" alt="foto cancha">
+        </td>
+        <td>{{ court.name }}</td>
+        <td>{{ getClubName(court.club_id) }}</td>
+        <td>{{ court.sponsor || 'Sin patrocinador' }}</td>
+        <td>{{ court.type }}</td>
+        <td>
+          <span class="badge-categoria" [ngClass]="court.availability ? 'true' : 'false'">
+            {{ court.availability ? 'Disponible' : 'No disponible' }}
+          </span>
+        </td>
+        <td>{{ court.price_hour }}</td>
+        <td>
+          <button mat-icon-button (click)="abrirEditarCanchaDialog(court)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="primary" (click)="abrirModalRegistrarHorario(court)">
+            <mat-icon>more_time</mat-icon>
+          </button>
+          <button mat-icon-button (click)="abrirModalHorarios(court)">
+            <mat-icon>info</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="confirmarEliminarCancha(court)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
+<!-- Sin canchas -->
+<div *ngIf="courts.length === 0 && !loading && !error" class="no-canchas">
+  No hay canchas registradas para este club.
+</div>
+
+<!-- Paginación -->
 <div class="pagination-container" *ngIf="lastPage > 1">
   <button mat-button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
     &laquo; Anterior
@@ -77,8 +121,4 @@
   <button mat-button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === lastPage">
     Siguiente &raquo;
   </button>
-</div>
-
-<div *ngIf="courts.length === 0 && !loading && !error" class="no-canchas">
-  No hay canchas registradas para este club.
 </div>

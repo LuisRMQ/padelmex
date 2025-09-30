@@ -1,20 +1,40 @@
 <h2 mat-dialog-title>Configuración de Reservaciones</h2>
 <mat-dialog-content>
 
+  <!-- Seleccionar Club -->
+  <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
+    <mat-label>Seleccionar Club</mat-label>
+    <mat-select [(ngModel)]="club_id">
+      <mat-option *ngFor="let club of clubs" [value]="club.id">{{ club.name }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Seleccionar Rol -->
+  <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
+    <mat-label>Seleccionar Rol</mat-label>
+    <mat-select [(ngModel)]="rol_id">
+      <mat-option *ngFor="let rol of roles" [value]="rol.id">{{ rol.rol }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Límite para cancelar -->
   <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
     <mat-label>Límite para cancelar (horas antes)</mat-label>
     <input matInput type="number" min="0" [(ngModel)]="cancellation_policy">
   </mat-form-field>
 
+  <!-- Límite para reservar -->
   <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
     <mat-label>Límite para reservar (horas antes)</mat-label>
     <input matInput type="number" min="0" [(ngModel)]="advance_reservation_limit">
   </mat-form-field>
 
+  <!-- Máximo de reservaciones -->
   <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
     <mat-label>Cantidad máxima de reservaciones por usuario</mat-label>
     <input matInput type="number" min="1" [(ngModel)]="activate_reservation">
   </mat-form-field>
+
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

@@ -85,13 +85,13 @@ export class ReservationService extends ApiBaseService {
     }
 
     createReservation(reservationData: any): Observable<any> {
-    console.log("Enviando payload:", JSON.stringify(reservationData, null, 2));
-    return this.http.post(`${this.apiUrl}/reservation/create`, reservationData, {
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
-}
+        console.log("Enviando payload:", JSON.stringify(reservationData, null, 2));
+        return this.http.post(`${this.apiUrl}/reservation/create`, reservationData, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
 
     updateReservation(id: number, data: Partial<Reservation>): Observable<any> {
         return this.put(`/reservation/update/${id}`, data);
@@ -106,8 +106,30 @@ export class ReservationService extends ApiBaseService {
     }
 
     getReservationDetailsByUser(user_id: number, reservation_id: number) {
-  return this.http.get(`${this.apiUrl}/reservationDetail`, {
-    params: { user_id, reservation_id }
-  });
-}
+        return this.http.get(`${this.apiUrl}/reservationDetail`, {
+            params: { user_id, reservation_id }
+        });
+    }
+
+
+     // --- Configuración de reservaciones ---
+    getReservationConfig(): Observable<any> {
+        return this.get('/reservationConfigure');
+    }
+
+    createReservationConfig(configData: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/reservationConfigure/create`, configData, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    updateReservationConfig(id: number, configData: any): Observable<any> {
+        return this.http.put(`${this.apiUrl}/reservationConfigure/update/${id}`, configData, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    disableReservationConfig(id: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/reservationConfigure/disabled/${id}`);
+    }
 }
