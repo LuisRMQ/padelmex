@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatCardModule } from "@angular/material/card";
 
 export interface Club {
   id: number;
@@ -28,7 +29,7 @@ export interface Club {
   templateUrl: './editar-club-dialog.component.html',
   styleUrls: ['./editar-club-dialog.component.css'],
   standalone: true,
-  imports: [MatIconModule, MatInputModule, MatSelectModule, CommonModule, FormsModule, MatButtonModule, MatSlideToggleModule],
+  imports: [MatIconModule, MatInputModule, MatSelectModule, CommonModule, FormsModule, MatButtonModule, MatSlideToggleModule, MatCardModule],
 })
 export class EditarClubDialogComponent {
   club: Club;
@@ -56,7 +57,6 @@ export class EditarClubDialogComponent {
   guardar() {
   try {
     if (this.logoFile) {
-      // Si hay archivo, mandamos FormData
       const formData = new FormData();
       Object.entries(this.club).forEach(([key, value]) => {
         if (key !== 'logo' && value !== undefined && value !== null) {

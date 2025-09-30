@@ -12,6 +12,10 @@ import { ConfigService, Category, Rol, Comidad } from '../../app/services/config
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSelectModule } from "@angular/material/select";
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface User {
   id: number;
@@ -40,7 +44,10 @@ interface EditableComidad extends Comidad { editing?: boolean }
     MatDialogModule,
     MatCardModule,
     MatChipsModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatTabsModule,
+    MatTooltipModule,
+    MatSelectModule
   ],
   templateUrl: './setup.component.html',
   styleUrls: ['./setup.component.css']
@@ -54,6 +61,10 @@ export class ConfigCategoriasRolesComponent implements OnInit {
   errorMessage = '';
 
   newCategory = '';
+  gender = 'varonil';
+  level = '';
+
+
   newRole = '';
   newComidad = '';
 
@@ -63,7 +74,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
 
   constructor(
     private configService: ConfigService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit() {
@@ -92,12 +104,16 @@ export class ConfigCategoriasRolesComponent implements OnInit {
   // Categorías
   // ========================
   addCategory() {
-    if (!this.newCategory.trim()) return;
+    if (!this.newCategory || !this.newCategory.trim() || !this.gender || !this.level) {
+      this.snackBar.open('Completa todos los campos para agregar una categoría', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
+      return;
+    }
     this.loading = true;
-    const categoryData = { category: this.newCategory.trim() };
+    const categoryData = { category: this.newCategory.trim(), gender: this.gender, level: this.level };
     this.configService.createCategory(categoryData).subscribe({
-      next: () => { this.loadData(); this.newCategory = ''; },
-      error: () => { this.errorMessage = 'Error al crear categoría'; this.loading = false; }
+      next: () => { this.loadData(); this.newCategory = ''; this.gender = 'varonil'; this.level = ''; },
+      error: () => { this.errorMessage = 'Error al crear categoría'; this.loading = false; },
+      complete: () => { this.snackBar.open('Categoría agregada con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
     });
   }
 
@@ -106,7 +122,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     this.loading = true;
     this.configService.deleteCategory(category.id).subscribe({
       next: () => this.loadData(),
-      error: () => { this.errorMessage = 'Error al eliminar categoría'; this.loading = false; }
+      error: () => { this.errorMessage = 'Error al eliminar categoría'; this.loading = false; },
+      complete: () => { this.snackBar.open('Categoría eliminada con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
     });
   }
 
@@ -114,7 +131,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     if (cat.editing) {
       this.configService.updateCategory(cat.id!, { category: cat.category }).subscribe({
         next: () => cat.editing = false,
-        error: () => { this.errorMessage = 'Error al actualizar categoría'; }
+        error: () => { this.errorMessage = 'Error al actualizar categoría'; },
+        complete: () => { this.snackBar.open('Categoría actualizada con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
       });
     } else {
       cat.editing = true;
@@ -130,7 +148,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     const roleData = { rol: this.newRole.trim() };
     this.configService.createRol(roleData).subscribe({
       next: () => { this.loadData(); this.newRole = ''; },
-      error: () => { this.errorMessage = 'Error al crear rol'; this.loading = false; }
+      error: () => { this.errorMessage = 'Error al crear rol'; this.loading = false; },
+      complete: () => { this.snackBar.open('Rol creado con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
     });
   }
 
@@ -139,7 +158,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     this.loading = true;
     this.configService.deleteRol(role.id).subscribe({
       next: () => this.loadData(),
-      error: () => { this.errorMessage = 'Error al eliminar rol'; this.loading = false; }
+      error: () => { this.errorMessage = 'Error al eliminar rol'; this.loading = false; },
+      complete: () => { this.snackBar.open('Rol eliminado con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
     });
   }
 
@@ -147,7 +167,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     if (role.editing) {
       this.configService.updateRol(role.id!, { rol: role.rol }).subscribe({
         next: () => role.editing = false,
-        error: () => { this.errorMessage = 'Error al actualizar rol'; }
+        error: () => { this.errorMessage = 'Error al actualizar rol'; },
+        complete: () => { this.snackBar.open('Rol actualizado con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
       });
     } else {
       role.editing = true;
@@ -163,7 +184,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     const comidadData = { name: this.newComidad.trim() };
     this.configService.createComidad(comidadData).subscribe({
       next: () => { this.loadData(); this.newComidad = ''; },
-      error: () => { this.errorMessage = 'Error al crear comidad'; this.loading = false; }
+      error: () => { this.errorMessage = 'Error al crear comidad'; this.loading = false; },
+      complete: () => { this.snackBar.open('Comidad creada con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
     });
   }
 
@@ -172,7 +194,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     this.loading = true;
     this.configService.deleteComidad(comidad.id).subscribe({
       next: () => this.loadData(),
-      error: () => { this.errorMessage = 'Error al eliminar comidad'; this.loading = false; }
+      error: () => { this.errorMessage = 'Error al eliminar comidad'; this.loading = false; },
+      complete: () => { this.snackBar.open('Comidad eliminada con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
     });
   }
 
@@ -180,7 +203,8 @@ export class ConfigCategoriasRolesComponent implements OnInit {
     if (com.editing) {
       this.configService.updateComidad(com.id!, { name: com.name }).subscribe({
         next: () => com.editing = false,
-        error: () => { this.errorMessage = 'Error al actualizar comidad'; }
+        error: () => { this.errorMessage = 'Error al actualizar comidad'; },
+        complete: () => { this.snackBar.open('Comidad actualizada con éxito', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] }); }
       });
     } else {
       com.editing = true;

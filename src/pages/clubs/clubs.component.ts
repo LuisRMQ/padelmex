@@ -209,6 +209,9 @@ export class ClubsComponent implements OnInit {
       //maxWidth: '50vw',
       //height: '80vh',
       //maxHeight: '95vh',
+      minWidth: '60vw',
+      minHeight: '80vh',
+      maxHeight: '80vh',
       data: { club }
     });
     dialogRef.afterClosed().subscribe(result => {

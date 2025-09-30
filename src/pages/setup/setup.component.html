@@ -1,151 +1,231 @@
-<div class="header">
-  <h1>Configuración</h1>
-</div>
+<div class="config-container">
 
-<div class="container">
-  <!-- Categorías -->
-  <mat-expansion-panel expanded>
-    <mat-expansion-panel-header>
-      <mat-panel-title>📂 Configuración de Categorías</mat-panel-title>
-    </mat-expansion-panel-header>
-    <mat-card class="config-section">
-      <mat-card-content>
-        <div class="input-group">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nueva categoría</mat-label>
-            <input matInput [(ngModel)]="newCategory">
-            <button mat-icon-button matSuffix color="primary" (click)="addCategory()">
-              <mat-icon>add</mat-icon>
+  <div class="header">
+    <div class="hero-text">
+      <h1>Configuración del Sistema</h1>
+      <p>Administra todas las configuraciones de tu aplicación en un solo lugar</p>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-number">{{ categories.length }}</div>
+        <div class="stat-label">Categorías</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">{{ roles.length }}</div>
+        <div class="stat-label">Roles</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">{{ comidades.length }}</div>
+        <div class="stat-label">Comodidades</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación por Pestañas -->
+  <mat-tab-group class="config-tabs" animationDuration="0ms">
+    <!-- Pestaña Categorías -->
+    <mat-tab label="Categorías">
+      <div class="tab-content">
+        <div class="tab-header-section">
+          <div class="tab-header">
+            <div class="tab-title">
+              <mat-icon>category</mat-icon>
+              <h2>Gestión de Categorías</h2>
+            </div>
+            <p>Organiza y gestiona las categorías disponibles en el sistema</p>
+          </div>
+          <div class="action-section">
+            <mat-form-field appearance="outline" class="action-input">
+              <mat-label>Nombre categoría</mat-label>
+              <input matInput [(ngModel)]="newCategory" placeholder="Ej: Deportes, Entretenimiento...">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="action-input">
+              <mat-label>Género</mat-label>
+              <mat-select [(ngModel)]="gender" appearance="outline">
+                <mat-option value="varonil">Varonil</mat-option>
+                <mat-option value="femenil">Femenil</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="action-input">
+              <mat-label>Nivel</mat-label>
+              <mat-select [(ngModel)]="level" appearance="outline">
+                <mat-option value="1">1</mat-option>
+                <mat-option value="2">2</mat-option>
+                <mat-option value="3">3</mat-option>
+                <mat-option value="4">4</mat-option>
+                <mat-option value="5">5</mat-option>
+                <mat-option value="6">6</mat-option>
+                <mat-option value="7">7</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-raised-button class="add-button" (click)="addCategory()"
+               [disabled]="!newCategory || newCategory.trim() === '' || !gender || !level" style="margin-top: 10px;">
+              Agregar
             </button>
-          </mat-form-field>
+          </div>
         </div>
 
-        <div *ngIf="categories.length > 0" class="categories-list">
-          <div *ngFor="let cat of categories" class="category-item-card">
-            <div class="category-item-content">
-              <div class="category-text">
-                <div *ngIf="!cat.editing" class="category-name">{{ cat.category }}</div>
-                <mat-form-field *ngIf="cat.editing" appearance="outline" class="full-width">
-                  <input matInput [(ngModel)]="cat.category">
+        <div class="items-grid" *ngIf="categories.length > 0; else noCategories">
+          <div *ngFor="let cat of categories" class="item-card" [class.editing]="cat.editing">
+            <div class="item-main">
+              <mat-icon class="item-icon">folder</mat-icon>
+              <div class="item-content">
+                <div *ngIf="!cat.editing" class="item-name">{{ cat.category }}</div>
+                <mat-form-field *ngIf="cat.editing" appearance="outline" class="edit-field">
+                  <input matInput [(ngModel)]="cat.category" (keyup.enter)="toggleEditCategory(cat)">
                 </mat-form-field>
+                <div class="item-meta">Creado recientemente</div>
               </div>
             </div>
-
-            <div class="card-buttons">
-              <button mat-icon-button color="accent" (click)="toggleEditCategory(cat)">
+            <div class="item-actions">
+              <button mat-icon-button color="accent" (click)="toggleEditCategory(cat)"
+                [matTooltip]="cat.editing ? 'Guardar cambios' : 'Editar categoría'">
                 <mat-icon>{{ cat.editing ? 'check' : 'edit' }}</mat-icon>
               </button>
-              <button mat-icon-button color="warn" (click)="removeCategory(cat)">
+              <button mat-icon-button color="warn" (click)="removeCategory(cat)" matTooltip="Eliminar categoría">
                 <mat-icon>delete</mat-icon>
               </button>
             </div>
           </div>
         </div>
 
-        <div *ngIf="categories.length === 0 && !loading" class="empty-state">
-          <mat-icon>inbox</mat-icon>
-          <p>No hay categorías registradas</p>
-        </div>
-      </mat-card-content>
-    </mat-card>
-  </mat-expansion-panel>
-
-  <!-- Contenedor Roles + Comodidades -->
-  <div class="roles-comidades">
-    <!-- Comodidades -->
-    <div>
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>🍽️ Configuración de Comodidades</mat-panel-title>
-        </mat-expansion-panel-header>
-        <mat-card class="config-section">
-          <mat-card-content>
-            <div class="input-group">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nueva comidad</mat-label>
-                <input matInput [(ngModel)]="newComidad">
-                <button mat-icon-button matSuffix color="primary" (click)="addComidad()">
-                  <mat-icon>add</mat-icon>
-                </button>
-              </mat-form-field>
+        <ng-template #noCategories>
+          <div class="empty-state">
+            <div class="empty-icon">
+              <mat-icon>inventory_2</mat-icon>
             </div>
+            <h3>No hay categorías</h3>
+            <p>Comienza agregando tu primera categoría al sistema</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
 
-            <div *ngIf="comidades.length > 0" class="comidades-list">
-              <div *ngFor="let com of comidades" class="comidad-item-card">
-                <div class="comidad-item-content">
-                  <div class="comidad-text">
-                    <div *ngIf="!com.editing" class="comidad-name">{{ com.name }}</div>
-                    <mat-form-field *ngIf="com.editing" appearance="outline" class="full-width">
-                      <input matInput [(ngModel)]="com.name">
-                    </mat-form-field>
-                  </div>
-                </div>
-                <div class="card-buttons">
-                  <button mat-icon-button color="accent" (click)="toggleEditComidad(com)">
-                    <mat-icon>{{ com.editing ? 'check' : 'edit' }}</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="removeComidad(com)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div *ngIf="comidades.length === 0 && !loading" class="empty-state">
+    <!-- Pestaña Comodidades -->
+    <mat-tab label="Comodidades">
+      <div class="tab-content">
+        <div class="tab-header-section">
+          <div class="tab-header">
+            <div class="tab-title">
               <mat-icon>restaurant</mat-icon>
-              <p>No hay comidades registradas</p>
+              <h2>Gestión de Comodidades</h2>
             </div>
-          </mat-card-content>
-        </mat-card>
-      </mat-expansion-panel>
-    </div>
-
-    <!-- Roles -->
-    <div>
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>👥 Configuración de Roles</mat-panel-title>
-        </mat-expansion-panel-header>
-        <mat-card class="config-section">
-          <mat-card-content>
-            <div class="input-group">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Nuevo rol</mat-label>
-                <input matInput [(ngModel)]="newRole">
-                <button mat-icon-button matSuffix color="primary" (click)="addRole()">
-                  <mat-icon>add</mat-icon>
-                </button>
-              </mat-form-field>
-            </div>
-
-            <div *ngIf="roles.length > 0" class="roles-list">
-              <div *ngFor="let role of roles" class="role-item-card">
-                <div class="role-item-content">
-                  <div class="role-text">
-                    <div *ngIf="!role.editing" class="role-name">{{ role.rol }}</div>
-                    <mat-form-field *ngIf="role.editing" appearance="outline" class="full-width">
-                      <input matInput [(ngModel)]="role.rol">
-                    </mat-form-field>
-                  </div>
-                </div>
-                <div class="card-buttons">
-                  <button mat-icon-button color="accent" (click)="toggleEditRole(role)">
-                    <mat-icon>{{ role.editing ? 'check' : 'edit' }}</mat-icon>
-                  </button>
-                  <button mat-icon-button color="warn" (click)="removeRole(role)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
+            <p>Administra las comodidades y servicios disponibles</p>
+          </div>
+          <div class="action-section">
+            <mat-form-field appearance="outline" class="action-input">
+              <mat-label>Nueva comodidad</mat-label>
+              <input matInput [(ngModel)]="newComidad" placeholder="Ej: WiFi, Estacionamiento, Café...">
+              <button mat-icon-button matSuffix color="primary" (click)="addComidad()"
+                [disabled]="!newComidad || newComidad.trim() === ''">
+                <mat-icon>add_circle</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="items-grid" *ngIf="comidades.length > 0; else noComidades">
+          <div *ngFor="let com of comidades" class="item-card" [class.editing]="com.editing">
+            <div class="item-main">
+              <mat-icon class="item-icon">emoji_food_beverage</mat-icon>
+              <div class="item-content">
+                <div *ngIf="!com.editing" class="item-name">{{ com.name }}</div>
+                <mat-form-field *ngIf="com.editing" appearance="outline" class="edit-field">
+                  <input matInput [(ngModel)]="com.name" (keyup.enter)="toggleEditComidad(com)">
+                </mat-form-field>
+                <div class="item-meta">Comodidad del sistema</div>
               </div>
             </div>
-
-            <div *ngIf="roles.length === 0 && !loading" class="empty-state">
-              <mat-icon>group</mat-icon>
-              <p>No hay roles registrados</p>
+            <div class="item-actions">
+              <button mat-icon-button color="accent" (click)="toggleEditComidad(com)"
+                [matTooltip]="com.editing ? 'Guardar cambios' : 'Editar comodidad'">
+                <mat-icon>{{ com.editing ? 'check' : 'edit' }}</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="removeComidad(com)" matTooltip="Eliminar comodidad">
+                <mat-icon>delete</mat-icon>
+              </button>
             </div>
-          </mat-card-content>
-        </mat-card>
-      </mat-expansion-panel>
-    </div>
-  </div>
+          </div>
+        </div>
+
+        <ng-template #noComidades>
+          <div class="empty-state">
+            <div class="empty-icon">
+              <mat-icon>restaurant_menu</mat-icon>
+            </div>
+            <h3>No hay comodidades</h3>
+            <p>Agrega comodidades para mejorar la experiencia de los usuarios</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- Pestaña Roles -->
+    <mat-tab label="Roles">
+      <div class="tab-content">
+        <div class="tab-header-section">
+          <div class="tab-header">
+            <div class="tab-title">
+              <mat-icon>admin_panel_settings</mat-icon>
+              <h2>Gestión de Roles</h2>
+            </div>
+            <p>Define y administra los roles de acceso en el sistema</p>
+          </div>
+          <div class="action-section">
+            <mat-form-field appearance="outline" class="action-input">
+              <mat-label>Nuevo rol</mat-label>
+              <input matInput [(ngModel)]="newRole" placeholder="Ej: Administrador, Usuario, Invitado...">
+              <button mat-icon-button matSuffix color="primary" (click)="addRole()"
+                [disabled]="!newRole || newRole.trim() === ''">
+                <mat-icon>add_circle</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="items-grid" *ngIf="roles.length > 0; else noRoles">
+          <div *ngFor="let role of roles" class="item-card" [class.editing]="role.editing">
+            <div class="item-main">
+              <mat-icon class="item-icon">badge</mat-icon>
+              <div class="item-content">
+                <div *ngIf="!role.editing" class="item-name">{{ role.rol }}</div>
+                <mat-form-field *ngIf="role.editing" appearance="outline" class="edit-field">
+                  <input matInput [(ngModel)]="role.rol" (keyup.enter)="toggleEditRole(role)">
+                </mat-form-field>
+                <div class="item-meta">Nivel de acceso básico</div>
+              </div>
+            </div>
+            <div class="item-actions">
+              <button mat-icon-button color="accent" (click)="toggleEditRole(role)"
+                [matTooltip]="role.editing ? 'Guardar cambios' : 'Editar rol'">
+                <mat-icon>{{ role.editing ? 'check' : 'edit' }}</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="removeRole(role)" matTooltip="Eliminar rol">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noRoles>
+          <div class="empty-state">
+            <div class="empty-icon">
+              <mat-icon>group</mat-icon>
+            </div>
+            <h3>No hay roles</h3>
+            <p>Define los roles de acceso para los usuarios del sistema</p>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- Pestaña adicional para futuras configuraciones -->
+    <mat-tab label="Más Configuraciones" disabled>
+      <div class="tab-content">
+        <div class="coming-soon">
+          <mat-icon>construction</mat-icon>
+          <h3>Próximamente</h3>
+          <p>Más opciones de configuración estarán disponibles pronto</p>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
 </div>
