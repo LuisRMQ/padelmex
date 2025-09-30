@@ -10,15 +10,14 @@
     <!-- Status -->
     <div class="status-container">
         <ng-container *ngIf="!isEditing; else editStatus">
-            <h3>Status</h3>
-            <span class="status-badge" [ngClass]="data.details.status">
-                {{ data.details.status | titlecase }}
-            </span>
-
+            <h3>Estatus</h3>
+        <span class="status-badge" [ngClass]="data.details.status">
+  {{ getStatusLabel(data.details.status) }}
+</span>
         </ng-container>
         <ng-template #editStatus>
             <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Status</mat-label>
+                <mat-label>Estatus</mat-label>
                 <mat-select [(ngModel)]="editedData.status">
                     <mat-option value="confirmed">Confirmada</mat-option>
                     <mat-option value="pending">Pendiente</mat-option>
@@ -92,8 +91,8 @@
         'disabled-badge': !playersEditable,
         'clickable': playersEditable
       }" (click)="playersEditable && confirmPlayerStatusChange(player)">
-                        {{ player.status | titlecase }}
-                    </span>
+    {{ getStatusLabel(player.status) }}
+</span>
                 </div>
             </ng-container>
             <ng-container *ngIf="players.length === 0">

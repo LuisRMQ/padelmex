@@ -22,6 +22,12 @@ export class ScheduleDetailsDialogComponent {
   initialStatus: string = "";
   players: any[] = [];
 
+  statusLabels: { [key: string]: string } = {
+  pending: 'Pendiente',
+  confirmed: 'Confirmada',
+  cancelled: 'Cancelada',
+  paid: 'Pagado' 
+};
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private reservationService: ReservationService,
@@ -39,6 +45,10 @@ togglePlayersEdit() {
     this.playersEditable = !this.playersEditable;
 }
 
+getStatusLabel(status: string): string {
+  return this.statusLabels[status] || status;
+}
+
   ngOnInit(): void {
     this.initialStatus = this.data.details.status;
     if (this.data.details.user_id && this.data.details.id) {
@@ -48,7 +58,7 @@ togglePlayersEdit() {
     ).subscribe({
       next: (res: any) => {
         console.log('Reserva completa:', res);
-this.players = res.reservation_players || [];
+        this.players = res.reservation_players || [];
         console.log('Jugadores cargados:', this.players);
       },
       error: (err) => {
