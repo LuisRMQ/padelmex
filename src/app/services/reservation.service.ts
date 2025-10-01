@@ -142,4 +142,15 @@ export class ReservationService extends ApiBaseService {
             { headers: { 'Content-Type': 'application/json' } }
         );
     }
+
+    //AGREGAR JUGADOR A RESERVA
+    addPlayerToReservation(reservationId: number, playerData: any): Observable<any> {
+        const payload = {
+            reservation_id: reservationId,
+            ...playerData
+        };
+        return this.http.post(`${this.apiUrl}/reservationPlayer/create`, payload, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
 }

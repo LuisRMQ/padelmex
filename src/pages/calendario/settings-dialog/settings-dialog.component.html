@@ -1,43 +1,126 @@
-<h2 mat-dialog-title>Configuración de Reservaciones</h2>
-<mat-dialog-content>
+<div class="settings-dialog">
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">settings</mat-icon>
+      <div class="header-text">
+        <h2>Configuración de Reservaciones</h2>
+        <p class="header-subtitle">Configura los límites y políticas de reservas</p>
+      </div>
+    </div>
+  </div>
 
-  <!-- Seleccionar Club -->
-  <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
-    <mat-label>Seleccionar Club</mat-label>
-    <mat-select [(ngModel)]="club_id">
-      <mat-option *ngFor="let club of clubs" [value]="club.id">{{ club.name }}</mat-option>
-    </mat-select>
-  </mat-form-field>
+  <div class="dialog-content">
+    <div class="configuration-sections">
+      
+      <!-- Sección Club y Rol -->
+      <div class="config-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">business</mat-icon>
+          <h3>Configuración General</h3>
+        </div>
+        
+        <div class="form-row">
+          <!-- Seleccionar Club -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Seleccionar Club</mat-label>
+            <mat-select [(ngModel)]="club_id">
+              <mat-option *ngFor="let club of clubs" [value]="club.id">
+                {{ club.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
 
-  <!-- Seleccionar Rol -->
-  <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
-    <mat-label>Seleccionar Rol</mat-label>
-    <mat-select [(ngModel)]="rol_id">
-      <mat-option *ngFor="let rol of roles" [value]="rol.id">{{ rol.rol }}</mat-option>
-    </mat-select>
-  </mat-form-field>
+          <!-- Seleccionar Rol -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Seleccionar Rol</mat-label>
+            <mat-select [(ngModel)]="rol_id">
+              <mat-option *ngFor="let rol of roles" [value]="rol.id">
+                {{ rol.rol }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>people</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
 
-  <!-- Límite para cancelar -->
-  <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
-    <mat-label>Límite para cancelar (horas antes)</mat-label>
-    <input matInput type="number" min="0" [(ngModel)]="cancellation_policy">
-  </mat-form-field>
+      <!-- Sección Límites de Tiempo -->
+      <div class="config-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">access_time</mat-icon>
+          <h3>Límites de Tiempo</h3>
+        </div>
+        
+        <div class="limits-grid">
+          <!-- Límite para cancelar -->
+          <div class="limit-card">
+            <div class="limit-header">
+              <mat-icon class="limit-icon">cancel</mat-icon>
+              <div class="limit-info">
+                <span class="limit-label">Límite para cancelar</span>
+                <span class="limit-description">Horas antes de la reservación</span>
+              </div>
+            </div>
+            <mat-form-field appearance="outline" class="number-field">
+              <input matInput type="number" min="0" [(ngModel)]="cancellation_policy" 
+                     placeholder="0">
+              <span matSuffix class="suffix">horas</span>
+            </mat-form-field>
+          </div>
 
-  <!-- Límite para reservar -->
-  <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
-    <mat-label>Límite para reservar (horas antes)</mat-label>
-    <input matInput type="number" min="0" [(ngModel)]="advance_reservation_limit">
-  </mat-form-field>
+          <!-- Límite para reservar -->
+          <div class="limit-card">
+            <div class="limit-header">
+              <mat-icon class="limit-icon">event_available</mat-icon>
+              <div class="limit-info">
+                <span class="limit-label">Límite para reservar</span>
+                <span class="limit-description">Horas de anticipación</span>
+              </div>
+            </div>
+            <mat-form-field appearance="outline" class="number-field">
+              <input matInput type="number" min="0" [(ngModel)]="advance_reservation_limit" 
+                     placeholder="0">
+              <span matSuffix class="suffix">horas</span>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
 
-  <!-- Máximo de reservaciones -->
-  <mat-form-field appearance="outline" style="width: 100%; margin-top: 1rem;">
-    <mat-label>Cantidad máxima de reservaciones por usuario</mat-label>
-    <input matInput type="number" min="1" [(ngModel)]="activate_reservation">
-  </mat-form-field>
+      <!-- Sección Límites de Cantidad -->
+      <div class="config-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">numbers</mat-icon>
+          <h3>Límites de Cantidad</h3>
+        </div>
+        
+        <div class="quantity-card">
+          <div class="quantity-header">
+            <mat-icon class="quantity-icon">person</mat-icon>
+            <div class="quantity-info">
+              <span class="quantity-label">Reservaciones por usuario</span>
+              <span class="quantity-description">Máximo número de reservaciones activas</span>
+            </div>
+          </div>
+          <mat-form-field appearance="outline" class="quantity-field">
+            <input matInput type="number" min="1" [(ngModel)]="activate_reservation" 
+                   placeholder="1">
+            <span matSuffix class="suffix">reservaciones</span>
+          </mat-form-field>
+        </div>
+      </div>
 
-</mat-dialog-content>
+    </div>
+  </div>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Cancelar</button>
-  <button mat-raised-button color="primary" (click)="save()">Guardar</button>
-</mat-dialog-actions>
+  <!-- Acciones - FUERA del contenido con scroll -->
+  <div class="dialog-actions">
+    <button mat-button (click)="cancel()" class="cancel-btn">
+      <mat-icon>close</mat-icon>
+      Cancelar
+    </button>
+    <button mat-raised-button color="primary" (click)="save()" class="save-btn">
+      <mat-icon>save</mat-icon>
+      Guardar Configuración
+    </button>
+  </div>
+</div>

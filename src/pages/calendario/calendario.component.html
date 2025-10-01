@@ -15,10 +15,11 @@
       (click)="setToToday()">Hoy</button>
     <button mat-raised-button style="border-radius: 15px;" color="primary" class="btn-header"
       (click)="setToTomorrow()">Mañana</button>
-      <mat-icon color="primary" style="font-size: 28px; cursor: pointer;" (click)="openSettingsDialog(selectedClubId)">
+    <!-- <mat-icon color="primary" style="font-size: 28px; cursor: pointer;" (click)="openSettingsDialog(selectedClubId)">
       settings
-    </mat-icon>
+    </mat-icon> -->
   </div>
+
 </div>
 
 <mat-divider class="divider"></mat-divider>
@@ -42,6 +43,7 @@
     </mat-form-field>
   </div>
 
+
   <h6>
     <span *ngIf="selectedCourtId === null || selectedCourtId === undefined">
       Ocupación: {{ getTotalOccupationHours() }} horas
@@ -54,6 +56,12 @@
       ({{ getCourtOccupationPercentage(selectedCourtId) }}%,
       {{ getCourtClients(selectedCourtId) }} Clientes)
     </span>
+    <div justify-content="center" style="margin-left: 24px;">
+      <button mat-button color="primary" (click)="openSettingsDialog(selectedClubId)"
+        [disabled]="!selectedClubId || courts.length === 0">
+        <mat-icon>settings</mat-icon> Configurar Reservaciones del Club
+      </button>
+    </div>
   </h6>
 </div>
 
@@ -109,29 +117,25 @@
         </div>
 
         <div class="reservations-layer">
-         <div class="reservation" *ngFor="let res of reservations" 
-     [class.hidden]="res.courtId !== court.id"
-     [ngStyle]="getReservationStyle(res)"
-     [ngClass]="{
+          <div class="reservation" *ngFor="let res of reservations" [class.hidden]="res.courtId !== court.id"
+            [ngStyle]="getReservationStyle(res)" [ngClass]="{
        'status-confirmed': res.originalData?.status === 'confirmed',
        'status-pending': res.originalData?.status === 'pending',
        'status-cancelled': res.originalData?.status === 'cancelled'
-     }"
-     cdkDrag
-     (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
-     (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)"
-     (click)="onReservationClick(res)">
-     
-  <div class="res-title">
-    {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
-  </div>
+     }" cdkDrag (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
+            (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)"
+            (click)="onReservationClick(res)">
 
-  <!-- Badge interno opcional -->
-  <!-- <div *ngIf="res.originalData?.status" class="res-status" [ngClass]="getStatusClass(res)">
+            <div class="res-title">
+              {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
+            </div>
+
+            <!-- Badge interno opcional -->
+            <!-- <div *ngIf="res.originalData?.status" class="res-status" [ngClass]="getStatusClass(res)">
     {{ getStatusText(res) }}
   </div> -->
 
-</div>
+          </div>
         </div>
       </div>
     </div>

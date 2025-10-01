@@ -21,6 +21,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScheduleDetailsDialogComponent } from './schedule-details-dialog/schedule-details-dialog.component';
 import { SettingsDialogComponent } from './settings-dialog/settings-dialog.component';
 import { ConfigService } from '../../app/services/config.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface Court { id: number; name: string; }
 interface CalendarReservation {
@@ -55,7 +56,7 @@ interface Player {
     MatSelectModule,
     MatProgressSpinnerModule,
     MatIconModule,
-    MatTooltipModule
+    MatTooltipModule,
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es' }
@@ -73,6 +74,7 @@ export class CalendarioComponent implements OnInit {
   courtNameToIdMap: Map<string, number> = new Map();
   allReservations: ApiReservation[] = [];
   isTooltipHovered = false;
+  hasConfiguration = false;
 
   // Configuración de reservas
   advance_reservation_limit = 0;
@@ -83,7 +85,8 @@ export class CalendarioComponent implements OnInit {
     private dialog: MatDialog,
     private courtService: CourtService,
     private reservationService: ReservationService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private snackBar: MatSnackBar
   ) {
     registerLocaleData(localeEs);
   }
@@ -103,7 +106,6 @@ export class CalendarioComponent implements OnInit {
 
   @ViewChildren('courtColRef') courtCols!: QueryList<ElementRef<HTMLElement>>;
   @ViewChildren('boardScrollRef') boardScroll!: QueryList<ElementRef<HTMLElement>>;
-  //@ViewChildren('reservationTooltip') reservationTooltip!: TemplateRef<any>;
   currentReservation: CalendarReservation | null = null;
   tooltipPosition = { x: 0, y: 0 };
   isLoadingDetails = false;
@@ -114,7 +116,7 @@ export class CalendarioComponent implements OnInit {
   ngOnInit(): void {
     this.times = this.buildTimeScale(this.dayStartMin, this.dayEndMin, this.snapMinutes);
     this.loadClubs();
-    this.loadAllReservations(); // Cargar todas las reservaciones al iniciar
+    this.loadAllReservations();
   }
 
   onDateChange(date: Date) {
@@ -160,10 +162,13 @@ export class CalendarioComponent implements OnInit {
     if (this.selectedClubId) {
       this.configService.getReservationConfigFromClub(this.selectedClubId).subscribe({
         next: (data) => {
-          if (data) {
+          if (Array.isArray(data) && data.length > 0) {
             this.advance_reservation_limit = data[0].advance_reservation_limit;
             this.cancellation_policy = data[0].cancellation_policy;
             this.activate_reservation = data[0].activate_reservation;
+            this.hasConfiguration = true;
+          } else {
+            this.hasConfiguration = false;
           }
         }
       });
@@ -185,33 +190,15 @@ export class CalendarioComponent implements OnInit {
     if (isToday && (now.getHours() * 60 + now.getMinutes()) >= this.dayEndMin) {
       return true;
     }
-
-    if (this.advance_reservation_limit !== null && this.advance_reservation_limit > 0) {
-      console.log('Verificando restricción de anticipación...');
-      // La columna representa el día seleccionado, así que validamos todos los slots del día
-      // Si la fecha es hoy, y la hora actual + límite supera el final del día, toda la columna es "no seleccionable"
-      const minReservableTime = now.getTime() + this.advance_reservation_limit * 60 * 60 * 1000;
-      const endOfDay = new Date(selected);
-      endOfDay.setHours(23, 59, 59, 999);
-
-      if (selected.getTime() === now.setHours(0, 0, 0, 0)) {
-        console.log('La fecha seleccionada es hoy.');
-        // Si el mínimo reservable es después del final del día, no se puede reservar nada hoy
-        if (minReservableTime > endOfDay.getTime()) {
-          console.log('El mínimo reservable está después del final del día. Columna desactivada.');
-          return true;
-        }
-      }
-      // Si la fecha seleccionada es hoy y el mínimo reservable está dentro del rango del día, la columna sigue activa
-      // Si la fecha seleccionada es futura, no aplica restricción
-    }
     return false;
   }
 
 
   openSettingsDialog(selectedClubId: number | null) {
     const dialogRef = this.dialog.open(SettingsDialogComponent, {
-      width: '400px',
+      width: '50vw',
+      minWidth: '50vw',
+      height: '80vh',
       data: {
         selectedClubId: selectedClubId
       }
@@ -219,8 +206,7 @@ export class CalendarioComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Configuración guardada:', result);
-        // Aquí puedes actualizar la configuración en tu componente o enviar a backend
+        this.snackBar.open('Configuración guardada correctamente.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] });
       }
     });
   }
@@ -316,6 +302,11 @@ export class CalendarioComponent implements OnInit {
       return;
     }
 
+    if (!this.hasConfiguration) {
+      this.snackBar.open('La configuración de reservas no está establecida para este club.', 'Cerrar', { duration: 5000, panelClass: ['snackbar-error'] });
+      return;
+    }
+
     this.warningMsg = null;
 
     // Preparar datos para el modal
@@ -325,12 +316,18 @@ export class CalendarioComponent implements OnInit {
     const endHour = Math.floor((slotMin + this.snapMinutes) / 60);
     const endMin = (slotMin + this.snapMinutes) % 60;
 
+    if (isToday) {
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const startMinutes = startHour * 60 + startMin;
+      const diffHours = (startMinutes - nowMinutes) / 60;
+      if (diffHours < this.advance_reservation_limit) {
+        this.snackBar.open(`Debes reservar con al menos ${this.advance_reservation_limit} horas de anticipación.`, 'Cerrar', { duration: 4000, panelClass: ['snackbar-error'] });
+        return;
+      }
+    }
+
     const startTime24 = `${pad(startHour)}:${pad(startMin)}`;
     const endTime24 = `${pad(endHour)}:${pad(endMin)}`;
-
-    console.log('Slot seleccionado:', this.formatTime(slotMin));
-    console.log('Tiempo inicio:', startTime24);
-    console.log('Tiempo fin:', endTime24);
 
     // Abrir modal de reservación
     const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
@@ -523,6 +520,7 @@ export class CalendarioComponent implements OnInit {
         if (clubs.length > 0 && !this.selectedClubId) {
           this.selectedClubId = clubs[0].id;
           this.loadCourts();
+          this.loadReservationConfiguration();
         }
       },
       error: (error) => {
@@ -782,11 +780,12 @@ export class CalendarioComponent implements OnInit {
 
     const dialogRef = this.dialog.open(ScheduleDetailsDialogComponent, {
       data: res,
-      width: '600px',
+      width: '55vw',
       maxWidth: '95vw',
       maxHeight: '96vh',
+      height: '96vh',
       panelClass: 'custom-modal-panel',
-      height: '96vh'
+
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

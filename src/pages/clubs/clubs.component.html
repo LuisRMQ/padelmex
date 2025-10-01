@@ -80,7 +80,7 @@
           <span class="badge-categoria" [ngClass]="club.status.valueOf.toString() | lowercase">{{ club.status ? 'Activo'
             : 'Inactivo' }}</span>
         </td>
-        <td>
+        <td class="acciones-cell">
           <button mat-icon-button aria-label="Editar club" (click)="abrirEditarClubDialog(club)">
             <mat-icon>edit</mat-icon>
           </button>

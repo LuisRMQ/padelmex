@@ -9,7 +9,10 @@ import { MatCardModule } from "@angular/material/card";
 import { ConfigService, Rol } from '../../../app/services/config.service';
 import { ClubsService, Club } from '../../../app/services/clubs.service';
 import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core'; // <-- agregar esto
+import { MatOptionModule } from '@angular/material/core';
+import { MatIconModule } from "@angular/material/icon";
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 @Component({
   selector: 'app-settings-dialog',
   templateUrl: './settings-dialog.component.html',
@@ -24,7 +27,8 @@ import { MatOptionModule } from '@angular/material/core'; // <-- agregar esto
     MatButtonModule,
     MatCardModule,
     MatSelectModule,
-    MatOptionModule
+    MatOptionModule,
+    MatIconModule
   ]
 })
 export class SettingsDialogComponent {
@@ -42,14 +46,16 @@ export class SettingsDialogComponent {
     private dialogRef: MatDialogRef<SettingsDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private configService: ConfigService,
-    private clubsService: ClubsService
-  ) {}
+    private clubsService: ClubsService,
+    private snackBar: MatSnackBar
+  ) { }
 
   ngOnInit() {
     this.loadClubs();
     this.loadRoles();
 
     if (this.data.selectedClubId) {
+      this.club_id = this.data.selectedClubId;
       this.configService.getReservationConfigFromClub(this.data.selectedClubId).subscribe({
         next: (data) => {
           if (Array.isArray(data) && data.length > 0) {
@@ -69,14 +75,14 @@ export class SettingsDialogComponent {
   loadClubs() {
     this.clubsService.getClubsa().subscribe({
       next: res => this.clubs = res.data,
-      error: err => console.error(err)
+      error: err => this.snackBar.open('Error al cargar los clubes.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] })
     });
   }
 
   loadRoles() {
     this.configService.getRoles().subscribe({
       next: res => this.roles = res,
-      error: err => console.error(err)
+      error: err => this.snackBar.open('Error al cargar los roles.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] })
     });
   }
 
@@ -91,13 +97,15 @@ export class SettingsDialogComponent {
 
     if (this.editable) {
       this.configService.updateReservationConfig(configData).subscribe({
-        next: () => this.dialogRef.close(configData)
+        next: () => this.dialogRef.close(configData),
+        error: () => this.snackBar.open('Error al actualizar la configuración.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] })
       });
       return;
     }
 
     this.configService.createReservationConfig(configData).subscribe({
-      next: () => this.dialogRef.close(configData)
+      next: () => this.dialogRef.close(configData),
+      error: () => this.snackBar.open('Error al guardar la configuración.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] })
     });
   }
 

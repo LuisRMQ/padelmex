@@ -11,9 +11,9 @@
     <div class="status-container">
         <ng-container *ngIf="!isEditing; else editStatus">
             <h3>Estatus</h3>
-        <span class="status-badge" [ngClass]="data.details.status">
-  {{ getStatusLabel(data.details.status) }}
-</span>
+            <span class="status-badge" [ngClass]="data.details.status">
+                {{ getStatusLabel(data.details.status) }}
+            </span>
         </ng-container>
         <ng-template #editStatus>
             <mat-form-field appearance="outline" class="w-100">
@@ -65,16 +65,69 @@
             <p><strong>Tipo:</strong> Standard</p>
             <p><strong>Usuario:</strong> {{ data.user }}</p>
         </div>
+
+        <div class="card gray-card">
+            <h4><mat-icon>payment</mat-icon>Detalles de pago</h4>
+            <div class="payment-grid">
+                <div><strong>Método de Pago:</strong> {{ data.details.pay_method == 'single_payment' ? 'Pago Único' :
+                    'Pago Dividido' }}</div>
+                <div><strong>Comisión:</strong> ${{ data.details.commission }}</div>
+                <div><strong>Tarifa de Cancha:</strong> ${{ data.details.total_court }}</div>
+                <div><strong>Total:</strong>
+                    <span class="total-amount">${{ data.details.total }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card green-card">
         <h4>
             <mat-icon>people</mat-icon> Jugadores
             <!-- Icono lápiz en la esquina derecha -->
-            <button class="edit-btn" (click)="togglePlayersEdit()">
+            <button class="edit-btn" (click)="togglePlayersEdit()" *ngIf="!playersEditable">
                 <mat-icon>edit</mat-icon>
             </button>
+            <div class="edit-btn" *ngIf="playersEditable">
+                <!-- <button class="edit-btn" *ngIf="playersEditable && players.length < 3" (click)="addPlayerToReservation()">
+                    <mat-icon>person_add</mat-icon>
+                </button> -->
+                <button class="edit-btn" (click)="togglePlayersEdit()" *ngIf="playersEditable">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
         </h4>
+
+        <mat-form-field class="modal-field" appearance="outline" *ngIf="playersEditable">
+            <mat-label>Agregar Jugadores</mat-label>
+            <input type="text" matInput [formControl]="playerSearchControl" [matAutocomplete]="autoPlayers"
+                placeholder="Busca jugadores para agregar">
+            <mat-autocomplete #autoPlayers="matAutocomplete" [displayWith]="displayFn"
+                (optionSelected)="addPlayer($event.option.value)">
+                <mat-option *ngFor="let user of filteredPlayers | async" [value]="user">
+                    <div class="player-option">
+                        <img [src]="user.profile_photo || defaultAvatar" class="player-photo" alt="Foto"
+                            (error)="onImageError($event)">
+                        <div class="player-info">
+                            <span class="player-name">{{ user.name }} {{ user.lastname }}</span>
+                            <span class="player-email" *ngIf="user.email">{{ user.email }}</span>
+                            <span class="player-phone" *ngIf="user.phone">{{ user.phone }}</span>
+                        </div>
+                    </div>
+                </mat-option>
+
+                <mat-option *ngIf="isLoadingPlayers" disabled>
+                    <div style="display: flex; align-items: center;">
+                        <mat-spinner diameter="20"></mat-spinner>
+                        <span style="margin-left: 10px;">Buscando jugadores...</span>
+                    </div>
+                </mat-option>
+
+                <mat-option *ngIf="(filteredPlayers | async)?.length === 0 && !isLoadingPlayers" disabled>
+                    No se encontraron jugadores
+                </mat-option>
+            </mat-autocomplete>
+            <mat-hint>Máximo 4 jugadores</mat-hint>
+        </mat-form-field>
 
         <div class="players-grid">
             <ng-container *ngFor="let player of players">
@@ -91,8 +144,8 @@
         'disabled-badge': !playersEditable,
         'clickable': playersEditable
       }" (click)="playersEditable && confirmPlayerStatusChange(player)">
-    {{ getStatusLabel(player.status) }}
-</span>
+                        {{ getStatusLabel(player.status) }}
+                    </span>
                 </div>
             </ng-container>
             <ng-container *ngIf="players.length === 0">
@@ -101,19 +154,6 @@
         </div>
     </div>
 
-    <!-- Payment Details -->
-    <div class="card gray-card">
-        <h4><mat-icon>payment</mat-icon>Detalles de pago</h4>
-        <div class="payment-grid">
-            <div><strong>Método de Pago:</strong> {{ data.details.pay_method == 'single_payment' ? 'Pago Único' : 'Pago
-                Dividido' }}</div>
-            <div><strong>Comisión:</strong> ${{ data.details.commission }}</div>
-            <div><strong>Tarifa de Cancha:</strong> ${{ data.details.total_court }}</div>
-            <div><strong>Total:</strong>
-                <span class="total-amount">${{ data.details.total }}</span>
-            </div>
-        </div>
-    </div>
 
     <!-- Observations -->
     <div class="card blue-card">
