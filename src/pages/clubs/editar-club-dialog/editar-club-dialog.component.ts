@@ -55,35 +55,32 @@ export class EditarClubDialogComponent {
   }
 
   guardar() {
-  try {
-    if (this.logoFile) {
+    try {
       const formData = new FormData();
+
       Object.entries(this.club).forEach(([key, value]) => {
         if (key !== 'logo' && value !== undefined && value !== null) {
           formData.append(key, String(value));
         }
       });
 
-      formData.append('logo', this.logoFile);
-
-      console.log("🚀 Enviando con archivo (FormData):");
-      for (const pair of formData.entries()) {
-        console.log(pair[0] + ':', pair[1]);
+      if (this.logoFile) {
+        formData.append('logo', this.logoFile);
+        console.log("🚀 Enviando con logo (FormData):", formData);
+      } else {
+        console.log("🚀 Enviando sin logo (objeto normal):", this.club);
       }
 
-      this.dialogRef.close(formData);
-    } else {
-      // ⚠️ No mandamos logo si no se seleccionó un nuevo archivo
-      const { logo, ...clubSinLogo } = this.club;
+      this.dialogRef.close(this.logoFile ? formData : this.club);
 
-      console.log("🚀 Enviando sin archivo (Objeto Club):", clubSinLogo);
-
-      this.dialogRef.close(clubSinLogo);
+    } catch (error) {
+      console.error("Error en guardar():", error);
     }
-  } catch (error) {
-    console.error("Error en guardar():", error);
   }
-}
+
+  cancelar() {
+    this.dialogRef.close(false);
+  }
 
 
 }

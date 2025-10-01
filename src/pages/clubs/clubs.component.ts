@@ -222,7 +222,6 @@ export class ClubsComponent implements OnInit {
   }
 
   guardarClubEditado(clubOrForm: Club | FormData) {
-    // Permitir validación tanto para objeto Club como para FormData
     let values: any = {};
     if (clubOrForm instanceof FormData) {
       clubOrForm.forEach((value, key) => {
@@ -232,7 +231,6 @@ export class ClubsComponent implements OnInit {
     } else {
       values = { ...clubOrForm };
 
-      // 🚫 Si logo viene como string (URL o base64), lo quitamos
       if (typeof values.logo === 'string') {
         delete values.logo;
       }
@@ -240,7 +238,6 @@ export class ClubsComponent implements OnInit {
       console.log("📦 Datos recibidos (Objeto Club):", values);
     }
 
-    // Validación de campos obligatorios
     if (!values.name || !values.email || !values.phone || !values.rfc || !values.address || !values.type) {
       console.error("❌ Falta un campo obligatorio:", values);
       this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', {
@@ -250,7 +247,6 @@ export class ClubsComponent implements OnInit {
       return;
     }
 
-    // Si es FormData, enviar como tal
     if (clubOrForm instanceof FormData) {
       console.log("🚀 Enviando FormData al backend:", values);
       this.clubsService.updateClub(values.id, clubOrForm).subscribe({

@@ -116,7 +116,7 @@ export class EditarCanchaDialogComponent {
             console.log(pair[0], ':', pair[1]);
         }
 
-        this.dialogRef.close(formData); // <-- Devuelve FormData al componente padre
+        this.dialogRef.close(formData); 
     }
 
 

@@ -71,9 +71,21 @@ export class ClubsService extends ApiBaseService {
         return this.post('/create/club', data);
     }
 
+    // updateClub(id: number, data: Partial<Club> | FormData): Observable<any> {
+    //     return this.put(`/update/club/${id}`, data);
+    // }
+
+
     updateClub(id: number, data: Partial<Club> | FormData): Observable<any> {
-        return this.put(`/update/club/${id}`, data);
-    }
+       
+    
+        if (data instanceof FormData) {
+          data.append('_method', 'PUT');
+          return this.post(`/update/club/${id}`, data);
+        } else {
+          return this.put(`/update/club/${id}`, data);
+        }
+      }
 
     deleteClub(id: number): Observable<any> {
         return this.delete(`/delete/club/${id}`);
