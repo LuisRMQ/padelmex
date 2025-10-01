@@ -48,7 +48,16 @@ export class CourtService extends ApiBaseService {
   }
 
   updateCourt(id: number, data: Partial<Court> | FormData): Observable<any> {
-    return this.put(`/court/update/${id}`, data);
+    console.log('=== SERVICE UPDATE COURT DEBUG ===');
+    console.log('Court ID:', id);
+    console.log('Data type:', data instanceof FormData ? 'FormData' : 'Object');
+
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+      return this.post(`/court/update/${id}`, data);
+    } else {
+      return this.put(`/court/update/${id}`, data);
+    }
   }
 
   deleteCourt(id: number, club_id: number): Observable<any> {

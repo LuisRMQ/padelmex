@@ -42,13 +42,13 @@ export class EditarUsuarioDialogComponent {
     private usersService: UsersService,
     private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<EditarUsuarioDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { userId: number } 
+    @Inject(MAT_DIALOG_DATA) public data: { userId: number }
   ) {
     this.userForm = this.fb.group({
       name: ['', Validators.required],
       lastname: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: [''], 
+      password: [''],
       gender: ['', Validators.required],
       phone: ['', Validators.required],
       area_code: ['', Validators.required],
@@ -129,38 +129,47 @@ export class EditarUsuarioDialogComponent {
     this.dialogRef.close();
   }
 
-  guardarUsuario() {
+guardarUsuario() {
   if (!this.userForm.valid) {
-    this.snackBar.open('⚠️ Completa todos los campos obligatorios', 'Cerrar', {
-      duration: 4000,
-      panelClass: ['snackbar-warning']
-    });
+    console.log('Formulario inválido', this.userForm.errors);
     return;
   }
 
   const formData = new FormData();
-
   const userValue = this.userForm.value;
-  formData.append('name', userValue.name);
-  formData.append('lastname', userValue.lastname);
-  formData.append('email', userValue.email);
-  formData.append('gender', userValue.gender);
-  formData.append('phone', userValue.phone);
-  formData.append('area_code', userValue.area_code);
-  formData.append('club_id', userValue.club_id.toString());
-  formData.append('rol_id', userValue.rol_id.toString());
-  formData.append('category_id', userValue.category_id.toString());
 
+  // Campos que siempre agregamos si tienen valor
+  const fields = [
+    'name', 'lastname', 'email', 'gender', 'phone', 
+    'area_code', 'club_id', 'rol_id', 'category_id'
+  ];
+
+  fields.forEach(field => {
+    if (userValue[field] !== null && userValue[field] !== undefined) {
+      formData.append(field, userValue[field].toString());
+    }
+  });
+
+  // Password opcional
   if (userValue.password) {
     formData.append('password', userValue.password);
   }
 
-  if (userValue.profile_photo) {
+  // Solo agregamos la imagen si es un File
+  if (userValue.profile_photo instanceof File) {
     formData.append('profile_photo', userValue.profile_photo);
+    console.log('Added profile_photo file');
+  } else {
+    console.log('No profile_photo provided, skipping field');
   }
 
+  // Debug FormData
+  console.log('=== FORM DATA CONTENTS ===');
+  formData.forEach((value, key) => console.log(key + ':', value));
+
   this.usersService.updateUserById(this.data.userId, formData).subscribe({
-    next: () => {
+    next: (res) => {
+      console.log('✅ SUCCESS - Full response:', res);
       this.snackBar.open('✅ Usuario actualizado correctamente', 'Cerrar', {
         duration: 4000,
         panelClass: ['snackbar-success']
@@ -168,7 +177,7 @@ export class EditarUsuarioDialogComponent {
       this.dialogRef.close(true);
     },
     error: (err) => {
-      console.error('Error al actualizar usuario:', err);
+      console.error('❌ ERROR - Full error:', err);
       this.snackBar.open('❌ Error al actualizar usuario', 'Cerrar', {
         duration: 4000,
         panelClass: ['snackbar-error']
@@ -176,5 +185,7 @@ export class EditarUsuarioDialogComponent {
     }
   });
 }
+
+
 
 }

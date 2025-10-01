@@ -151,10 +151,21 @@ export class UsersService extends ApiBaseService {
     //     }
     // }
 
-    updateUserById(id: number, data: any) {
-        // Siempre usar PUT
-        return this.put(`/user/update/${id}`, data);
-    }
+   // En tu users.service.ts - REEMPLAZA el método updateUserById
+updateUserById(id: number, data: any): Observable<any> {
+  console.log('=== SERVICE UPDATE DEBUG ===');
+  console.log('User ID:', id);
+  console.log('Data type:', data instanceof FormData ? 'FormData' : 'Object');
+  
+  // Para FormData, necesitas usar POST y agregar _method=PUT
+  if (data instanceof FormData) {
+    data.append('_method', 'PUT'); // Esto le dice a Laravel que use PUT
+    return this.post(`/user/update/${id}`, data);
+  } else {
+    // Para datos normales, usa PUT directamente
+    return this.put(`/user/update/${id}`, data);
+  }
+}
 
 
     deleteUser(id: number): Observable<any> {

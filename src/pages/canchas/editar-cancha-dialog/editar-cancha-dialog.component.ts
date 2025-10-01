@@ -127,8 +127,9 @@ export class EditarCanchaDialogComponent {
 
 
     removePhoto() {
-
-    }
+  this.selectedFile = null;
+  this.courtForm.patchValue({ photo: '' });
+}
 
 
     onCancel() {

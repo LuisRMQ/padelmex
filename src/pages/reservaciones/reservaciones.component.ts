@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { ReservationService, Reservation, ReservationsResponse } from '../../app/services/reservation.service';
 import { MatIconModule } from '@angular/material/icon';
 import { ReservacionesDetailsDialogComponent } from './reservaciones-details-dialog/reservaciones-details-dialog.component';
+import { ViewEncapsulation } from '@angular/core';
 
 
 
@@ -26,12 +27,13 @@ import { ReservacionesDetailsDialogComponent } from './reservaciones-details-dia
     MatSortModule,
     MatFormFieldModule,
     MatInputModule,
-    MatIconModule
+    MatIconModule,
+    
   ]
 })
 export class ReservacionesComponent implements OnInit {
 
-  displayedColumns: string[] = ['user', 'court', 'club', 'date', 'start_time', 'end_time', 'status', 'acciones'];
+displayedColumns: string[] = ['user', 'court', 'club', 'date', 'start_time', 'status', 'acciones'];
   dataSource = new MatTableDataSource<Reservation>();
   loading = false;
   error = '';
