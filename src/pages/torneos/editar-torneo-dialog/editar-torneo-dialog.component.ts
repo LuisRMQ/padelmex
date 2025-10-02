@@ -1,8 +1,9 @@
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, Inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TournamentService, Tournament, Category } from '../../../app/services/torneos.service';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,7 +11,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
-import { Component, Inject, OnInit } from '@angular/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-editar-torneo-dialog',
@@ -27,49 +29,67 @@ import { Component, Inject, OnInit } from '@angular/core';
     MatCardModule,
     MatSelectModule,
     MatOptionModule,
-    MatDialogModule
+    MatDatepickerModule,
+    MatNativeDateModule
   ]
 })
 export class EditarTorneoDialogComponent implements OnInit {
 
   form!: FormGroup;
-  logoPreview: string | ArrayBuffer | null = null;
-  categoriasDisponibles: Category[] = [];
-
+  logoPreview: string = '../../assets/images/placeholder.png';
   logoFile: File | null = null;
+
+  categoriasDisponibles: Category[] = [];
+  premiosDisponibles: string[] = ['Trofeo', 'Medallas', 'Premios en efectivo'];
+  clubsDisponibles: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private tournamentService: TournamentService,
     private dialogRef: MatDialogRef<EditarTorneoDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { torneoId: number }
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
       name: ['', Validators.required],
       description: [''],
+      club_id: [null, Validators.required],
       start_date: ['', Validators.required],
       end_date: ['', Validators.required],
       registration_deadline: ['', Validators.required],
-      registration_fee: [0, Validators.required],
-      categories: [[]],
-      max_participants: [2, Validators.required],
-      club_id: [1],
-      prizes: [''],
+      registration_fee: [0],
+      prizes: [],
       rules: [''],
-      photo: [null]
+      photo: [null],
+      categories: this.fb.array([])
     });
 
+    this.cargarCategorias();
+    this.cargarClubs();
+    this.cargarTorneo(this.data.torneoId);
+  }
+
+  get categories(): FormArray {
+    return this.form.get('categories') as FormArray;
+  }
+
+  getCategoryFormGroup(control: AbstractControl): FormGroup {
+    return control as FormGroup;
+  }
+
+  cargarCategorias() {
     this.tournamentService.getCategories().subscribe({
-      next: (res: any) => {
-        this.categoriasDisponibles = res.data;
-        console.log('Categorías cargadas:', this.categoriasDisponibles);
-      },
+      next: (res: any) => this.categoriasDisponibles = res.data,
       error: (err) => console.error('Error al cargar categorías', err)
     });
+  }
 
-    this.cargarTorneo(this.data.torneoId);
+  cargarClubs() {
+    this.tournamentService.getClubs().subscribe({
+      next: (res: any) => this.clubsDisponibles = res.data,
+      error: (err) => console.error('Error al cargar clubs', err)
+    });
   }
 
   cargarTorneo(id: number) {
@@ -77,105 +97,94 @@ export class EditarTorneoDialogComponent implements OnInit {
       this.form.patchValue({
         name: torneo.name,
         description: torneo.description,
-        start_date: torneo.start_date,
-        end_date: torneo.end_date,
-        registration_deadline: torneo.registration_deadline,
+        club_id: torneo.club_id,
+        start_date: new Date(torneo.start_date),
+        end_date: new Date(torneo.end_date),
+        registration_deadline: new Date(torneo.registration_deadline),
         registration_fee: torneo.registration_fee,
-        max_participants: torneo.max_participants,
-        prizes: torneo.prizes?.join(', '),
-        rules: torneo.rules,
-        photo: torneo.photo,
-        categories: torneo.categories ?? []
+        prizes: torneo.prizes ?? [],
+        rules: torneo.rules
       });
 
-      if (torneo.photo) {
-        const img = new Image();
-        img.src = torneo.photo;
-        img.onload = () => this.logoPreview = torneo.photo ?? 'assets/default-torneo.jpg';
-        img.onerror = () => this.logoPreview = 'assets/default-torneo.jpg';
-      } else {
-        this.logoPreview = 'assets/default-torneo.jpg';
-      }
+      this.logoPreview = torneo.photo ?? '../../assets/images/placeholder.png';
+
+      // Categorías
+      this.categories.clear();
+      (torneo.categories || []).forEach(cat => {
+        this.categories.push(this.fb.group({
+          id: [cat.id],
+          category: [cat.category],
+          max_participants: [cat.max_participants ?? '']
+        }));
+      });
     });
   }
 
-  onFileSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      this.form.patchValue({ photo: file });
-      const reader = new FileReader();
-      reader.onload = e => this.logoPreview = reader.result;
-      reader.readAsDataURL(file);
-    }
+  onCategorySelected(selected: Category[]) {
+    this.categories.clear();
+    selected.forEach(cat => {
+      this.categories.push(this.fb.group({
+        id: [cat.id],
+        category: [cat.category],
+        max_participants: ['']
+      }));
+    });
   }
 
   guardar() {
-  if (this.form.invalid) return;
+    if (this.form.invalid) return;
 
-  const formData = new FormData();
+    const rawData = this.form.value;
+    const formData = new FormData();
 
-  formData.append('name', this.form.value.name ?? '');
-  formData.append('description', this.form.value.description ?? '');
-  formData.append('start_date', this.form.value.start_date ?? '');
-  formData.append('end_date', this.form.value.end_date ?? '');
-  formData.append('registration_deadline', this.form.value.registration_deadline ?? '');
-  formData.append('registration_fee', (this.form.value.registration_fee ?? 0).toString());
-  formData.append('max_participants', (this.form.value.max_participants ?? 2).toString());
-  formData.append('club_id', (this.form.value.club_id ?? 1).toString());
-  formData.append('rules', this.form.value.rules ?? '');
+    const formatDate = (date: any): string => {
+      if (!date) return '';
+      const d = new Date(date);
+      const month = ('0' + (d.getMonth() + 1)).slice(-2);
+      const day = ('0' + d.getDate()).slice(-2);
+      return `${d.getFullYear()}-${month}-${day}`;
+    };
 
-  if (this.form.value.prizes) {
-    this.form.value.prizes.split(',').map((p: string) => p.trim()).forEach((p: string, i: number) => {
-      if (p) formData.append(`prizes[${i}]`, p);
+    formData.append('name', rawData.name);
+    formData.append('description', rawData.description || '');
+    formData.append('club_id', rawData.club_id.toString());
+    formData.append('start_date', formatDate(rawData.start_date));
+    formData.append('end_date', formatDate(rawData.end_date));
+    formData.append('registration_deadline', formatDate(rawData.registration_deadline));
+    formData.append('registration_fee', rawData.registration_fee?.toString() ?? '0');
+    formData.append('rules', rawData.rules || '');
+
+    if (this.logoFile) formData.append('photo', this.logoFile);
+
+    if (Array.isArray(rawData.prizes)) {
+      rawData.prizes.forEach((p: string, i: number) => formData.append(`prizes[${i}]`, p));
+    }
+
+    this.categories.controls.forEach((catCtrl, i) => {
+      const cat = catCtrl.value;
+      formData.append(`categories[${i}][id]`, cat.id.toString());
+      formData.append(`categories[${i}][max_participants]`, (cat.max_participants ?? '').toString());
+    });
+
+    this.tournamentService.updateTournament(this.data.torneoId, formData).subscribe({
+      next: () => this.dialogRef.close(true),
+      error: err => console.error('Error al actualizar torneo:', err)
     });
   }
 
-  (this.form.value.categories || []).forEach((cat: any, i: number) => {
-    if (cat != null) {
-      const categoryId = typeof cat === 'object' ? cat.torneoId ?? cat.id : cat;
-      if (categoryId != null) {
-        formData.append(`categories[${i}][id]`, categoryId.toString());
-      }
-    }
-  });
+  onCancel() { this.dialogRef.close(false); }
 
-  // Foto
-  if (this.logoFile instanceof File) {
-    formData.append('photo', this.logoFile);
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.logoFile = file;
+    const reader = new FileReader();
+    reader.onload = e => this.logoPreview = e.target?.result as string;
+    reader.readAsDataURL(file);
   }
 
-  console.log('📦 FormData final:', [...formData.entries()]);
-
-  this.tournamentService.updateTournament(this.data.torneoId, formData)
-  .subscribe({
-    next: (res) => {
-      console.log('✅ Torneo actualizado', res);
-      this.dialogRef.close(true);
-    },
-    error: (err) => {
-      console.error('❌ Error al actualizar', err);
-    }
-  });
-}
-
-
-
-
-
-
-
-removePhoto(){}
-
-
-
-
-
-
-
-
-
-  onCancel() {
-    this.dialogRef.close();
+  removePhoto(): void {
+    this.logoPreview = '../../assets/images/placeholder.png';
+    this.logoFile = null;
   }
 }

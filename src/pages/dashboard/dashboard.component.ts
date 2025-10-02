@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatDivider } from "@angular/material/divider";
+import { TournamentService } from '../../app/services/torneos.service';
+import { EstadisticasService } from '../../app/services/estadisticas.service';
 
 import {
   Chart,
@@ -38,18 +40,60 @@ Chart.register(
   standalone: true,
   imports: [BaseChartDirective, CommonModule, MatDivider],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.css'],
+  providers: [DatePipe]
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
 
+  torneos: any[] = [];
+  jugadoresActivos: any[] = [];
+
+  constructor(
+    private tournamentService: TournamentService,
+    private datePipe: DatePipe,
+    private stats: EstadisticasService,
+
+  ) { }
+
+  ngOnInit() {
+    this.cargarTorneos();
+    this.cargarJugadoresActivos(1);
+
+  }
+
+  cargarTorneos() {
+    this.tournamentService.getTournaments().subscribe({
+      next: (res: any) => {
+        const apiTorneos = res.data?.data || [];
+        this.torneos = apiTorneos.map((t: any) => ({
+          nombre: t.name,
+          fecha: this.datePipe.transform(t.start_date, 'dd/MM/yyyy'),
+          participantes: t.current_participants,
+          lugares: t.max_participants
+        }));
+      },
+      error: (err) => console.error('Error al obtener torneos:', err)
+    });
+  }
+
+
+  cargarJugadoresActivos(club_id: number) {
+    this.stats.getUsersWithMostReservationByClub(1).subscribe({
+      next: (res) => {
+        this.jugadoresActivos = res.map(player => ({
+          nombre: player.fullname,
+          rentas: player.total_reservations
+        }));
+      },
+      error: (err) => console.error('Error cargando jugadores activos:', err)
+    });
+  }
 
   public chartOptions: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'bottom',
-      }
+      legend: { position: 'bottom' }
     }
   };
 
@@ -85,39 +129,20 @@ export class DashboardComponent {
     plugins: {
       legend: {
         display: true,
-        position: 'top', // <-- Valor permitido
-        labels: {
-          color: '#666',
-          font: { size: 16 }
-        }
+        position: 'top',
+        labels: { color: '#666', font: { size: 16 } }
       }
     },
     scales: {
-      x: {
-        grid: { color: '#eee' },
-        ticks: { color: '#666', font: { size: 14 } }
-      },
-      y: {
-        grid: { color: '#eee' },
-        ticks: { color: '#666', font: { size: 14 } }
-      }
+      x: { grid: { color: '#eee' }, ticks: { color: '#666', font: { size: 14 } } },
+      y: { grid: { color: '#eee' }, ticks: { color: '#666', font: { size: 14 } } }
     }
   };
 
-  jugadoresActivos = [
-    { nombre: 'Luis Ramírez', rentas: 50, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Eric Ramírez', rentas: 45, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Ana Gómez', rentas: 40, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Carlos López', rentas: 36, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Nuevo Jugador', rentas: 34, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Jugador Adicional 1', rentas: 32, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Jugador Adicional 2', rentas: 25, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Jugador Adicional 3', rentas: 22, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Jugador Adicional 4', rentas: 21, imagen: '../../assets/images/iconuser.png' },
-    { nombre: 'Jugador Adicional 5', rentas: 15, imagen: '../../assets/images/iconuser.png' }
-  ];
+  // === Jugadores activos ===
 
 
+  // === Ranking ===
   ranking = [
     { posicion: 1, nombre: 'Luis Ramírez', movimiento: '+1', tipo: 'positive' },
     { posicion: 2, nombre: 'Eric Romario', movimiento: '+1', tipo: 'positive' },
@@ -129,11 +154,5 @@ export class DashboardComponent {
     { posicion: 8, nombre: 'Jugador Adicional 2', movimiento: '+0', tipo: 'neutral' },
     { posicion: 9, nombre: 'Jugador Extra 2', movimiento: '+0', tipo: 'neutral' },
     { posicion: 10, nombre: 'Jugador Nuevo 2', movimiento: '+0', tipo: 'neutral' }
-  ];
-
-  torneos = [
-    { nombre: 'Torneo Verano 2025', fecha: '2025-07-15', participantes: 20, lugares: 10 },
-    { nombre: 'Copa Invierno 2025', fecha: '2025-12-10', participantes: 32, lugares: 8 },
-    { nombre: 'Open Primavera 2026', fecha: '2026-04-05', participantes: 16, lugares: 12 }
   ];
 }

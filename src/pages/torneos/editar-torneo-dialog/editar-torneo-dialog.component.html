@@ -36,21 +36,27 @@
         <!-- Fecha inicio -->
         <mat-form-field appearance="fill" class="modern-field">
           <mat-label>Fecha inicio</mat-label>
-          <input matInput type="date" formControlName="start_date">
+          <input matInput [matDatepicker]="pickerInicio" formControlName="start_date">
+          <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+          <mat-datepicker #pickerInicio></mat-datepicker>
           <mat-icon matPrefix>today</mat-icon>
         </mat-form-field>
 
         <!-- Fecha fin -->
         <mat-form-field appearance="fill" class="modern-field">
           <mat-label>Fecha fin</mat-label>
-          <input matInput type="date" formControlName="end_date">
+          <input matInput [matDatepicker]="pickerFin" formControlName="end_date">
+          <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+          <mat-datepicker #pickerFin></mat-datepicker>
           <mat-icon matPrefix>event</mat-icon>
         </mat-form-field>
 
-        <!-- Fecha límite de inscripción -->
+        <!-- Límite de inscripción -->
         <mat-form-field appearance="fill" class="modern-field">
           <mat-label>Fecha límite de inscripción</mat-label>
-          <input matInput type="date" formControlName="registration_deadline">
+          <input matInput [matDatepicker]="pickerRegistro" formControlName="registration_deadline">
+          <mat-datepicker-toggle matSuffix [for]="pickerRegistro"></mat-datepicker-toggle>
+          <mat-datepicker #pickerRegistro></mat-datepicker>
           <mat-icon matPrefix>schedule</mat-icon>
         </mat-form-field>
 
@@ -62,22 +68,19 @@
         </mat-form-field>
 
         <!-- Categorías -->
-        <mat-form-field appearance="fill" class="modern-field full-width">
-          <mat-label>Categorías</mat-label>
-          <mat-select formControlName="categories" multiple>
-            <mat-option *ngFor="let cat of categoriasDisponibles" [value]="cat">
-              {{ cat.category }}
-            </mat-option>
-          </mat-select>
-          <mat-icon matPrefix>category</mat-icon>
-        </mat-form-field>
+      <mat-form-field appearance="fill" class="modern-field full-width">
+  <mat-label>Categorías</mat-label>
+  <mat-select multiple (selectionChange)="onCategorySelected($event.value)">
+    <mat-option *ngFor="let cat of categoriasDisponibles" [value]="cat">
+      {{ cat.category }}
+    </mat-option>
+  </mat-select>
+  <mat-icon matPrefix>category</mat-icon>
+</mat-form-field>
 
-        <!-- Máx. participantes -->
-        <mat-form-field appearance="fill" class="modern-field">
-          <mat-label>Máx. participantes</mat-label>
-          <input matInput type="number" min="2" formControlName="max_participants">
-          <mat-icon matPrefix>groups</mat-icon>
-        </mat-form-field>
+
+
+       
 
         <!-- Premios -->
         <mat-form-field appearance="fill" class="modern-field full-width">

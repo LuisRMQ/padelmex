@@ -9,9 +9,15 @@ export interface CourtStatistic {
   total_reservations: number;
 }
 
+
+
 export interface UserStatistic {
   user_id: number;
-  user_name: string;
+  fullname: string;
+  rol_id: number;
+  rol: string;
+  club_id: number;
+  club: string;
   total_reservations: number;
 }
 
@@ -33,8 +39,8 @@ export class EstadisticasService extends ApiBaseService {
     return this.get<CourtStatistic>(`/courtWithLessReservationsByClub/${clubId}`);
   }
 
-  getUsersWithMostReservationByClub(): Observable<UserStatistic[]> {
-    return this.get<UserStatistic[]>(`/usersWithMostReservationByClub`);
+  getUsersWithMostReservationByClub(club_id: number): Observable<UserStatistic[]> {
+    return this.get<UserStatistic[]>(`/usersWithMostReservationByClub?club_id=${club_id}`);
   }
 
   getUserWithMostReservationByClub(): Observable<UserStatistic> {

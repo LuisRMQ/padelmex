@@ -37,6 +37,7 @@ export interface TournamentFilters {
 export interface Category {
   id: number;
   category: string;
+   max_participants?: number | string;
 }
 
 export interface Club {
