@@ -12,6 +12,7 @@ import { BracketModalComponent } from '../torneos/brackets-torneo-dialog/bracket
 import { RegistrarTorneoDialogComponent } from '../torneos/registrar-torneo-dialog/registrar-torneo-dialog.component';
 import { EditarTorneoDialogComponent } from '../torneos/editar-torneo-dialog/editar-torneo-dialog.component';
 import { InicioTorneoDialogComponent } from '../torneos/inicio-torneo-dialog/inicio-torneo.dialog.component';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 
 @Component({
@@ -38,7 +39,9 @@ export class TorneosComponent implements OnInit {
     private tournamentService: TournamentService,
     private dialog: MatDialog,
     private changeDetectorRef: ChangeDetectorRef,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+      private snackBar: MatSnackBar
+
   ) { }
 
   ngOnInit() {
@@ -123,27 +126,21 @@ export class TorneosComponent implements OnInit {
     });
   }
 
-  abrirModalRegistrarTorneo() {
-    const dialogRef = this.dialog.open(RegistrarTorneoDialogComponent, {
-      width: '800px',
-      maxWidth: '50vw',
-      height: 'auto',
-      maxHeight: '70vh',
-      panelClass: 'custom-dialog'
-    });
+abrirModalRegistrarTorneo() {
+  const dialogRef = this.dialog.open(RegistrarTorneoDialogComponent, {
+    width: '800px',
+    maxWidth: '50vw',
+    height: 'auto',
+    maxHeight: '70vh',
+    panelClass: 'custom-dialog'
+  });
 
-    dialogRef.afterClosed().subscribe((nuevoTorneo) => {
-      if (nuevoTorneo) {
-        this.torneos.unshift({
-          ...nuevoTorneo,
-          id: this.torneos.length + 1,
-          estado: 'activo',
-          current_participants: 0,
-          prizes: ['$0 MXN']
-        });
-      }
-    });
-  }
+  dialogRef.afterClosed().subscribe((resultado) => {
+    if (resultado) {
+      this.cargarTorneos(); 
+    }
+  });
+}
 
 verDetalles(torneo: Tournament) {
   this.dialog.open(InicioTorneoDialogComponent, {
@@ -174,16 +171,24 @@ verDetalles(torneo: Tournament) {
     });
   }
 
+eliminarTorneo(torneo: Tournament) {
+  const snack = this.snackBar.open(
+    `¿Eliminar el torneo "${torneo.name}"?`,
+    'Confirmar',
+    { duration: 5000 } 
+  );
 
-  eliminarTorneo(torneo: Tournament) {
-  if (!confirm(`¿Estás seguro de eliminar el torneo "${torneo.name}"?`)) return;
-
-  this.tournamentService.deleteTournament(torneo.id).subscribe({
-    next: () => {
-      this.torneos = this.torneos.filter(t => t.id !== torneo.id);
-      console.log(`Torneo ${torneo.name} eliminado`);
-    },
-    error: (err) => console.error('Error al eliminar torneo:', err)
+  snack.onAction().subscribe(() => {
+    this.tournamentService.deleteTournament(torneo.id).subscribe({
+      next: () => {
+        this.torneos = this.torneos.filter(t => t.id !== torneo.id);
+        this.snackBar.open(`Torneo "${torneo.name}" eliminado`, '', { duration: 3000 });
+      },
+      error: (err) => {
+        console.error('Error al eliminar torneo:', err);
+        this.snackBar.open(`Error eliminando el torneo`, '', { duration: 3000 });
+      }
+    });
   });
 }
 

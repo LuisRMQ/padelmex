@@ -165,7 +165,7 @@ export class EditarTorneoDialogComponent implements OnInit {
 
 
 
-
+removePhoto(){}
 
 
 

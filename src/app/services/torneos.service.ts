@@ -39,6 +39,22 @@ export interface Category {
   category: string;
 }
 
+export interface Club {
+    id: number;
+    name: string;
+    address: string;
+    rfc: string;
+    type: string;
+    phone: string;
+    email: string;
+    web_site: string;
+    city_id: number;
+    logo: string;
+    status: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -77,4 +93,8 @@ updateTournament(id: number, data: any): Observable<any> {
   deleteTournament(id: number): Observable<any> {
     return this.delete(`/tournament/delete/${id}`);
   }
+
+    getClubs(): Observable<Club[]> {
+          return this.get<Club[]>('/clubs');
+      }
 }
