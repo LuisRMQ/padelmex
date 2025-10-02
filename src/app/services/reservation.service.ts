@@ -153,4 +153,9 @@ export class ReservationService extends ApiBaseService {
             headers: { 'Content-Type': 'application/json' }
         });
     }
+
+    //ELIMINAR JUGADOR DE RESERVA
+    removePlayerFromReservation(playerId: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/reservationPlayer/delete/${playerId}`);
+    }
 }

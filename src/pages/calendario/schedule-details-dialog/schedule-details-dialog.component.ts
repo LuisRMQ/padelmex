@@ -12,14 +12,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { User, UsersService } from '../../../app/services/users.service';
-import { catchError, debounceTime, distinctUntilChanged, map, Observable, of, startWith, switchMap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, Observable, of, switchMap } from 'rxjs';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatIconButton } from '@angular/material/button';
 
 @Component({
   selector: 'app-schedule-details-dialog',
   templateUrl: './schedule-details-dialog.component.html',
   styleUrls: ['./schedule-details-dialog.component.css'],
-  imports: [FormsModule, CommonModule, MatIconModule, MatDivider, MatInputModule, MatDatepickerModule, MatSelectModule, ReactiveFormsModule, MatAutocompleteModule, MatProgressSpinnerModule],
+  imports: [FormsModule, CommonModule, MatIconModule, MatDivider, MatInputModule, MatDatepickerModule, MatSelectModule, ReactiveFormsModule, MatAutocompleteModule, MatProgressSpinnerModule, MatIconButton],
 })
 export class ScheduleDetailsDialogComponent {
   isEditing = false; // controla si está en modo edición
@@ -186,6 +187,7 @@ export class ScheduleDetailsDialogComponent {
       });
       return;
     }
+    console.log('Jugadores actuales:', this.players.length);
     // Construye el objeto con la estructura requerida
     const newPlayer = {
       id: null, // o el id que corresponda si lo tienes
@@ -246,5 +248,21 @@ export class ScheduleDetailsDialogComponent {
   onImageError(event: Event) {
     const imgElement = event.target as HTMLImageElement;
     imgElement.src = this.defaultAvatar;
+  }
+
+  removePlayer(player: any) {
+    console.log('Eliminando jugador:', player);
+    const index = this.players.indexOf(player);
+    if (index !== -1) {
+      this.players.splice(index, 1);
+    }
+    this.reservationService.removePlayerFromReservation(player.id).subscribe({
+      next: () => {
+        this.snackBar.open('Jugador eliminado exitosamente.', 'Cerrar', { duration: 3000 });
+      },
+      error: (err) => {
+        console.error('Error al eliminar jugador:', err);
+      }
+    });
   }
 }

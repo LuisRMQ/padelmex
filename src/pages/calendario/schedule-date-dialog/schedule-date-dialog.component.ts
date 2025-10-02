@@ -73,7 +73,7 @@ export class ScheduleDateDialogComponent implements OnInit {
   minReservationTime = 60;
 
   categories: Category[] = [];
-  defaultAvatar = '../../../assets/images/iconuser.png'; 
+  defaultAvatar = '../../../assets/images/iconuser.png';
 
   constructor(
     public dialogRef: MatDialogRef<ScheduleDateDialogComponent>,
@@ -240,11 +240,27 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.reservationForm.valid) return;
+    const mainPlayer = this.userControl.value;
+
+    if (!mainPlayer || typeof mainPlayer !== 'object' || !mainPlayer.id) {
+      this.snackBar.open('Selecciona el jugador principal antes de continuar.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
+      return;
+    }
+
+    const playersPayload = [
+      {
+        user_id: mainPlayer.id,
+        player_number: 1
+      },
+      ...this.selectedPlayers.map((p, index) => ({
+        user_id: p.id,
+        player_number: index + 2
+      }))
+    ];
 
     console.log('Jugadores antes de enviar:', this.selectedPlayers);
-
     const payload = {
-      user_id: this.reservationForm.value.user_id,  
+      user_id: this.reservationForm.value.user_id,
       court_id: this.reservationForm.value.court_id,
       reservation_type_id: this.reservationForm.value.reservation_type_id,
       date: this.formatDateForApi(this.selectedDate),
@@ -254,10 +270,7 @@ export class ScheduleDateDialogComponent implements OnInit {
       observations: this.reservationForm.value.observations,
       type: this.reservationForm.value.type,
       category: this.reservationForm.value.category,
-      players: this.selectedPlayers.map((p, index) => ({
-        user_id: p.id,
-        player_number: index + 2  
-      }))
+      players: playersPayload
     };
 
     console.log('Payload final que cierra modal:', payload);

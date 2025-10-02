@@ -146,6 +146,9 @@
       }" (click)="playersEditable && confirmPlayerStatusChange(player)">
                         {{ getStatusLabel(player.status) }}
                     </span>
+                    <button mat-icon-button color="warn" *ngIf="playersEditable && player.player_number !== 1" (click)="removePlayer(player)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
                 </div>
             </ng-container>
             <ng-container *ngIf="players.length === 0">

@@ -793,4 +793,18 @@ export class CalendarioComponent implements OnInit {
       }
     });
   }
+
+  // hasPendingAndPaidPlayers(reservation: CalendarReservation): { hasPending: boolean, hasPaid: boolean } {
+  //   const players = reservation.originalData?.reservation_players || [];
+  //   let hasPending = false;
+  //   let hasPaid = false;
+
+  //   for (const player of players) {
+  //     if (player.status === 'pending') hasPending = true;
+  //     if (player.status === 'paid') hasPaid = true;
+  //     if (hasPending && hasPaid) break;
+  //   }
+
+  //   return { hasPending, hasPaid };
+  // }
 }
