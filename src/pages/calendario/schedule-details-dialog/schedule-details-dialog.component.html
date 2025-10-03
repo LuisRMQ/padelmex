@@ -134,7 +134,7 @@
                 <div class="player-card">
                     <img [src]="player.user?.profile_photo || 'assets/default-user.png'"
                         alt="{{ player.user?.name }} {{ player.user?.lastname }}" (error)="onImgError($event)" />
-                    <p class="player-name">{{ player.user?.name?.slice(0,6) }}</p>
+                    <p class="player-name">{{ player.user?.name }} {{ player.user?.lastname }}</p>
                     <p class="player-amount">${{ player.part_amount }}</p>
 
                     <!-- Badge solo clicable si editable -->

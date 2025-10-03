@@ -15,7 +15,9 @@ import { AuthService, User } from '../../app/services/auth.service';
 import { HorariosService, HorarioClub } from '../../app/services/horarios-clubes.service';
 import { CourtService, Court } from '../../app/services/court.service';
 
-import { EditarConfiguracionClubDialogComponent } from '../configuracion/editar-configuracion-club-dialog/editar-configuracion-club-dialog.component'; 
+import { EditarConfiguracionClubDialogComponent } from '../configuracion/editar-configuracion-club-dialog/editar-configuracion-club-dialog.component';
+import { MatDividerModule } from "@angular/material/divider"; 
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-configuracion',
@@ -30,8 +32,10 @@ import { EditarConfiguracionClubDialogComponent } from '../configuracion/editar-
     MatInputModule,
     MatIconModule,
     MatButtonModule,
-    MatCardModule
-  ]
+    MatCardModule,
+    MatDividerModule,
+    MatMenuModule
+]
 })
 export class ConfiguracionComponent implements OnInit {
   dataSource!: MatTableDataSource<Integrante>;
@@ -163,4 +167,11 @@ export class ConfiguracionComponent implements OnInit {
   editarCancha(cancha: any) {
     console.log('Editar cancha', cancha);
   }
+
+  getHorarioByDay(day: string): any {
+  if (!this.horarios || !Array.isArray(this.horarios)) {
+    return null;
+  }
+  return this.horarios.find(horario => horario.day === day);
+}
 }

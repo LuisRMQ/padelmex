@@ -1,84 +1,359 @@
 <div class="configuracion-container">
 
-  <h2 class="titulo-configuracion">CONFIGURACIÓN DEL CLUB</h2>
+  <div class="header">
+    <h2>Configuración del Club</h2>
+  </div>
 
   <!-- Datos del Club -->
-  <mat-card class="card-club">
-    <mat-card-header>
-      <mat-icon>domain</mat-icon>
-      <mat-card-title>Datos del Club</mat-card-title>
-      <button mat-icon-button color="primary" (click)="editarClub()">
+  <mat-card class="club-card">
+    <mat-card-header class="card-header">
+      <div class="header-content">
+        <mat-icon class="header-icon">sports_soccer</mat-icon>
+        <mat-card-title class="card-title">Datos del Club</mat-card-title>
+      </div>
+      <button mat-icon-button color="primary" class="edit-btn" (click)="editarClub()" matTooltip="Editar club">
         <mat-icon>edit</mat-icon>
       </button>
     </mat-card-header>
 
-    <mat-card-content class="card-club-content">
-      <!-- Logo primero -->
-      <div class="club-logo">
-        <img [src]="club.logo" alt="Logo del club" (error)="onImageError($event)">
-      </div>
+    <mat-card-content class="card-content">
+      <div class="club-grid">
+        <!-- Logo Section -->
+        <div class="logo-section">
+          <div class="logo-container">
+            <img [src]="club.logo" alt="Logo del club" class="club-logo" (error)="onImageError($event)">
+          </div>
+        </div>
 
-      <!-- Datos después -->
-      <div class="club-info">
-        <p><strong>Nombre:</strong> {{ club.name }}</p>
-        <p><strong>Dirección:</strong> {{ club.address }}</p>
-        <p><strong>Teléfono:</strong> {{ club.phone }}</p>
-        <p><strong>Email:</strong> {{ club.email }}</p>
+        <!-- Info Section -->
+        <div class="info-section">
+          <div class="info-grid">
+            <div class="info-item">
+              <mat-icon class="info-icon">badge</mat-icon>
+              <div class="info-content">
+                <label>Nombre</label>
+                <span class="info-value">{{ club.name }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <mat-icon class="info-icon">location_on</mat-icon>
+              <div class="info-content">
+                <label>Dirección</label>
+                <span class="info-value">{{ club.address }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <mat-icon class="info-icon">phone</mat-icon>
+              <div class="info-content">
+                <label>Teléfono</label>
+                <span class="info-value">{{ club.phone }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <mat-icon class="info-icon">email</mat-icon>
+              <div class="info-content">
+                <label>Email</label>
+                <span class="info-value">{{ club.email }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </mat-card-content>
   </mat-card>
 
 
 
-  <!-- Horarios -->
-  <h3 class="subtitulo">Horarios</h3>
-  <div class="cards-grid">
-    <mat-card *ngFor="let horario of horarios" class="card-horario">
-      <mat-card-header>
-        <mat-icon>schedule</mat-icon>
-        <mat-card-title>{{ horario.day }}</mat-card-title>
-        <button mat-icon-button color="primary" (click)="editarHorario(horario)">
-          <mat-icon>edit</mat-icon>
-        </button>
-      </mat-card-header>
-      <mat-card-content>
-        <p><strong>Inicio:</strong> {{ horario.start_time }}</p>
-        <p><strong>Fin:</strong> {{ horario.end_time }}</p>
-        <p><strong>Estado:</strong>
-          <span [ngClass]="{'activo': horario.status, 'inactivo': !horario.status}">
-            {{ horario.status ? 'Activo' : 'Inactivo' }}
-          </span>
-        </p>
-      </mat-card-content>
-    </mat-card>
-  </div>
+  <mat-card class="schedule-card">
+    <mat-card-header class="schedule-header">
+      <div class="header-title">
+        <mat-icon class="header-icon">schedule</mat-icon>
+        <mat-card-title>Horarios del Club</mat-card-title>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content class="schedule-content">
+      <div class="schedule-grid">
+        <!-- Lunes -->
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Lunes')"
+          [class.inactive]="getHorarioByDay('Lunes') && !getHorarioByDay('Lunes').status">
+          <div class="day-header">
+            <span class="day-name">Lunes</span>
+            <mat-icon class="day-icon">event</mat-icon>
+          </div>
+          <div class="day-schedule">
+            <ng-container *ngIf="getHorarioByDay('Lunes'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Lunes').start_time }} - {{ getHorarioByDay('Lunes').end_time
+                }}</div>
+              <div class="status-badge" [class.active]="getHorarioByDay('Lunes').status"
+                [class.inactive]="!getHorarioByDay('Lunes').status">
+                {{ getHorarioByDay('Lunes').status ? 'Activo' : 'Inactivo' }}
+              </div>
+            </ng-container>
+            <ng-template #noSchedule>
+              <span class="no-schedule-text">Sin horario asignado</span>
+            </ng-template>
+          </div>
+          <button *ngIf="getHorarioByDay('Lunes')" mat-icon-button class="day-edit-btn"
+            (click)="editarHorario(getHorarioByDay('Lunes'))" matTooltip="Editar horario">
+          </button>
+        </div>
+
+        <!-- Martes -->
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Martes')"
+          [class.inactive]="getHorarioByDay('Martes') && !getHorarioByDay('Martes').status">
+          <div class="day-header">
+            <span class="day-name">Martes</span>
+            <mat-icon class="day-icon">event</mat-icon>
+          </div>
+          <div class="day-schedule">
+            <ng-container *ngIf="getHorarioByDay('Martes'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Martes').start_time }} - {{ getHorarioByDay('Martes').end_time
+                }}</div>
+              <div class="status-badge" [class.active]="getHorarioByDay('Martes').status"
+                [class.inactive]="!getHorarioByDay('Martes').status">
+                {{ getHorarioByDay('Martes').status ? 'Activo' : 'Inactivo' }}
+              </div>
+            </ng-container>
+          </div>
+          <button *ngIf="getHorarioByDay('Martes')" mat-icon-button class="day-edit-btn"
+            (click)="editarHorario(getHorarioByDay('Martes'))" matTooltip="Editar horario">
+          </button>
+        </div>
+
+        <!-- Miércoles -->
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Miércoles')"
+          [class.inactive]="getHorarioByDay('Miércoles') && !getHorarioByDay('Miércoles').status">
+          <div class="day-header">
+            <span class="day-name">Miércoles</span>
+            <mat-icon class="day-icon">event</mat-icon>
+          </div>
+          <div class="day-schedule">
+            <ng-container *ngIf="getHorarioByDay('Miércoles'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Miércoles').start_time }} - {{
+                getHorarioByDay('Miércoles').end_time }}</div>
+              <div class="status-badge" [class.active]="getHorarioByDay('Miércoles').status"
+                [class.inactive]="!getHorarioByDay('Miércoles').status">
+                {{ getHorarioByDay('Miércoles').status ? 'Activo' : 'Inactivo' }}
+              </div>
+            </ng-container>
+          </div>
+          <button *ngIf="getHorarioByDay('Miércoles')" mat-icon-button class="day-edit-btn"
+            (click)="editarHorario(getHorarioByDay('Miércoles'))" matTooltip="Editar horario">
+          </button>
+        </div>
+
+        <!-- Jueves -->
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Jueves')"
+          [class.inactive]="getHorarioByDay('Jueves') && !getHorarioByDay('Jueves').status">
+          <div class="day-header">
+            <span class="day-name">Jueves</span>
+            <mat-icon class="day-icon">event</mat-icon>
+          </div>
+          <div class="day-schedule">
+            <ng-container *ngIf="getHorarioByDay('Jueves'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Jueves').start_time }} - {{ getHorarioByDay('Jueves').end_time
+                }}</div>
+              <div class="status-badge" [class.active]="getHorarioByDay('Jueves').status"
+                [class.inactive]="!getHorarioByDay('Jueves').status">
+                {{ getHorarioByDay('Jueves').status ? 'Activo' : 'Inactivo' }}
+              </div>
+            </ng-container>
+          </div>
+          <button *ngIf="getHorarioByDay('Jueves')" mat-icon-button class="day-edit-btn"
+            (click)="editarHorario(getHorarioByDay('Jueves'))" matTooltip="Editar horario">
+          </button>
+        </div>
+
+        <!-- Viernes -->
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Viernes')"
+          [class.inactive]="getHorarioByDay('Viernes') && !getHorarioByDay('Viernes').status">
+          <div class="day-header">
+            <span class="day-name">Viernes</span>
+            <mat-icon class="day-icon">event</mat-icon>
+          </div>
+          <div class="day-schedule">
+            <ng-container *ngIf="getHorarioByDay('Viernes'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Viernes').start_time }} - {{
+                getHorarioByDay('Viernes').end_time }}</div>
+              <div class="status-badge" [class.active]="getHorarioByDay('Viernes').status"
+                [class.inactive]="!getHorarioByDay('Viernes').status">
+                {{ getHorarioByDay('Viernes').status ? 'Activo' : 'Inactivo' }}
+              </div>
+            </ng-container>
+          </div>
+          <button *ngIf="getHorarioByDay('Viernes')" mat-icon-button class="day-edit-btn"
+            (click)="editarHorario(getHorarioByDay('Viernes'))" matTooltip="Editar horario">
+          </button>
+        </div>
+
+        <!-- Sábado -->
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Sábado')"
+          [class.inactive]="getHorarioByDay('Sábado') && !getHorarioByDay('Sábado').status">
+          <div class="day-header">
+            <span class="day-name">Sábado</span>
+            <mat-icon class="day-icon">weekend</mat-icon>
+          </div>
+          <div class="day-schedule">
+            <ng-container *ngIf="getHorarioByDay('Sábado'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Sábado').start_time }} - {{ getHorarioByDay('Sábado').end_time
+                }}</div>
+              <div class="status-badge" [class.active]="getHorarioByDay('Sábado').status"
+                [class.inactive]="!getHorarioByDay('Sábado').status">
+                {{ getHorarioByDay('Sábado').status ? 'Activo' : 'Inactivo' }}
+              </div>
+            </ng-container>
+          </div>
+          <button *ngIf="getHorarioByDay('Sábado')" mat-icon-button class="day-edit-btn"
+            (click)="editarHorario(getHorarioByDay('Sábado'))" matTooltip="Editar horario">
+          </button>
+        </div>
+
+        <!-- Domingo -->
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Domingo')"
+          [class.inactive]="getHorarioByDay('Domingo') && !getHorarioByDay('Domingo').status">
+          <div class="day-header">
+            <span class="day-name">Domingo</span>
+            <mat-icon class="day-icon">weekend</mat-icon>
+          </div>
+          <div class="day-schedule">
+            <ng-container *ngIf="getHorarioByDay('Domingo'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Domingo').start_time }} - {{
+                getHorarioByDay('Domingo').end_time }}</div>
+              <div class="status-badge" [class.active]="getHorarioByDay('Domingo').status"
+                [class.inactive]="!getHorarioByDay('Domingo').status">
+                {{ getHorarioByDay('Domingo').status ? 'Activo' : 'Inactivo' }}
+              </div>
+            </ng-container>
+          </div>
+          <button *ngIf="getHorarioByDay('Domingo')" mat-icon-button class="day-edit-btn"
+            (click)="editarHorario(getHorarioByDay('Domingo'))" matTooltip="Editar horario">
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
 
   <!-- Canchas -->
-  <h3 class="subtitulo">Canchas</h3>
-  <div class="cards-grid-cancha">
-    <mat-card *ngFor="let cancha of canchas" class="card-cancha">
-      <!-- Foto grande arriba -->
-      <div class="cancha-photo">
-        <img [src]="cancha.photo" alt="Foto de la cancha" (error)="onImageError($event)">
+  <!-- Canchas -->
+  <mat-card class="courts-section">
+    <mat-card-header class="section-header">
+      <div class="header-content">
+        <mat-icon class="header-icon">sports_soccer</mat-icon>
+        <mat-card-title>Canchas del Club</mat-card-title>
+        <span class="courts-count">{{ canchas.length }} canchas</span>
+      </div>
+      <button mat-raised-button color="primary" class="add-btn">
+        <mat-icon>add</mat-icon>
+        Agregar Cancha
+      </button>
+    </mat-card-header>
+
+    <mat-card-content class="courts-content">
+      <div class="courts-grid">
+        <mat-card *ngFor="let cancha of canchas" class="court-card" [class.unavailable]="!cancha.availability">
+          <!-- Header con nombre y estado -->
+          <div class="card-header">
+            <div class="court-title">
+              <h3 class="court-name">{{ cancha.name }}</h3>
+              <div class="court-badges">
+                <span class="type-badge">{{ cancha.type }}</span>
+                <span class="status-badge" [class.available]="cancha.availability"
+                  [class.unavailable]="!cancha.availability">
+                  {{ cancha.availability ? 'Disponible' : 'No Disponible' }}
+                </span>
+              </div>
+            </div>
+            <button mat-icon-button class="menu-btn" [matMenuTriggerFor]="menu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="editarCancha(cancha)">
+                <mat-icon>edit</mat-icon>
+                <span>Editar</span>
+              </button>
+              <button mat-menu-item>
+                <mat-icon>{{ cancha.availability ? 'toggle_off' : 'toggle_on' }}</mat-icon>
+                <span>{{ cancha.availability ? 'Deshabilitar' : 'Habilitar' }}</span>
+              </button>
+              <mat-divider></mat-divider>
+              <button mat-menu-item class="delete-btn">
+                <mat-icon color="warn">delete</mat-icon>
+                <span>Eliminar</span>
+              </button>
+            </mat-menu>
+          </div>
+
+          <!-- Imagen de la cancha -->
+          <div class="court-image-container">
+            <img [src]="cancha.photo" alt="Foto de {{ cancha.name }}" class="court-image"
+              (error)="onImageError($event)">
+            <div class="image-overlay">
+              <button mat-icon-button class="view-btn">
+                <mat-icon>zoom_in</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Información de la cancha -->
+          <mat-card-content class="court-info">
+            <div class="info-grid">
+              <div class="info-item" *ngIf="cancha.sponsor">
+                <mat-icon class="info-icon">business_center</mat-icon>
+                <div class="info-content">
+                  <label>Patrocinador</label>
+                  <span class="info-value">{{ cancha.sponsor }}</span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon class="info-icon">category</mat-icon>
+                <div class="info-content">
+                  <label>Tipo de Superficie</label>
+                  <span class="info-value">{{ cancha.type }}</span>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <mat-icon class="info-icon">info</mat-icon>
+                <div class="info-content">
+                  <label>Estado</label>
+                  <span class="info-value" [class.available]="cancha.availability"
+                    [class.unavailable]="!cancha.availability">
+                    {{ cancha.availability ? 'Operativa' : 'En Mantenimiento' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+
+          <!-- Acciones -->
+          <mat-card-actions class="card-actions">
+            <button mat-stroked-button color="primary" class="action-btn">
+              <mat-icon>visibility</mat-icon>
+              Ver Detalles
+            </button>
+            <button mat-raised-button color="primary" class="action-btn" (click)="editarCancha(cancha)">
+              <mat-icon>edit</mat-icon>
+              Editar
+            </button>
+          </mat-card-actions>
+        </mat-card>
       </div>
 
-      <!-- Info debajo -->
-      <mat-card-content>
-        <h4 class="cancha-name">{{ cancha.name }}</h4>
-        <p><strong>Tipo:</strong> {{ cancha.type }}</p>
-        <p><strong>Habilitada:</strong> {{ cancha.availability }}</p>
-        <p *ngIf="cancha.sponsor"><strong>Patrocinador:</strong> {{ cancha.sponsor }}</p>
-      </mat-card-content>
-
-      <!-- Botón editar -->
-      <mat-card-actions>
-        <button mat-raised-button color="primary" (click)="editarCancha(cancha)">
-          Editar
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </div>
+      <!-- Estado vacío -->
+      <div *ngIf="canchas.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">sports_soccer</mat-icon>
+        <h3>No hay canchas registradas</h3>
+        <p>Comienza agregando la primera cancha de tu club</p>
+      
+      </div>
+    </mat-card-content>
+  </mat-card>
 
 
 </div>

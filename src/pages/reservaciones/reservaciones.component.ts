@@ -9,10 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { ReservationService, Reservation, ReservationsResponse } from '../../app/services/reservation.service';
 import { MatIconModule } from '@angular/material/icon';
 import { ReservacionesDetailsDialogComponent } from './reservaciones-details-dialog/reservaciones-details-dialog.component';
-import { ViewEncapsulation } from '@angular/core';
-
-
-
+import { MatIconButton } from '@angular/material/button';
 
 @Component({
   selector: 'app-reservaciones',
@@ -28,7 +25,7 @@ import { ViewEncapsulation } from '@angular/core';
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
-    
+    MatIconButton
   ]
 })
 export class ReservacionesComponent implements OnInit {
