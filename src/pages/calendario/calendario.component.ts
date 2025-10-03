@@ -787,11 +787,12 @@ export class CalendarioComponent implements OnInit {
       panelClass: 'custom-modal-panel',
 
     });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log("Dialog closed with result:", result);
-      }
-    });
+   dialogRef.afterClosed().subscribe((updated: boolean) => {
+  if (updated) {
+    // Aquí recargas la lista de reservaciones
+    this.loadAllReservations();
+  }
+});
   }
 
   // hasPendingAndPaidPlayers(reservation: CalendarReservation): { hasPending: boolean, hasPaid: boolean } {

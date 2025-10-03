@@ -20,11 +20,23 @@ import { MatIconButton } from '@angular/material/button';
   selector: 'app-schedule-details-dialog',
   templateUrl: './schedule-details-dialog.component.html',
   styleUrls: ['./schedule-details-dialog.component.css'],
-  imports: [FormsModule, CommonModule, MatIconModule, MatDivider, MatInputModule, MatDatepickerModule, MatSelectModule, ReactiveFormsModule, MatAutocompleteModule, MatProgressSpinnerModule, MatIconButton],
+  imports: [
+    FormsModule,
+    CommonModule,
+    MatIconModule,
+    MatDivider,
+    MatInputModule,
+    MatDatepickerModule,
+    MatSelectModule,
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatProgressSpinnerModule,
+    MatIconButton
+  ],
 })
 export class ScheduleDetailsDialogComponent {
-  isEditing = false; // controla si está en modo edición
-  editedData: any;   // copia editable de los datos originales
+  isEditing = false;
+  editedData: any;
   initialStatus: string = "";
   players: any[] = [];
   playerSearchControl = new FormControl('');
@@ -33,19 +45,21 @@ export class ScheduleDetailsDialogComponent {
   defaultAvatar = '../../../assets/images/iconuser.png';
   newPlayer: any = null;
 
+  playersEditable = false;
+
   statusLabels: { [key: string]: string } = {
     pending: 'Pendiente',
     confirmed: 'Confirmada',
     cancelled: 'Cancelada',
     paid: 'Pagado'
   };
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private reservationService: ReservationService,
     private dialogRef: MatDialogRef<ScheduleDetailsDialogComponent>,
     private snackBar: MatSnackBar,
     private usersService: UsersService
-
   ) {
     console.log('Dialog data:', data);
     this.editedData = { ...data.details };
@@ -60,18 +74,12 @@ export class ScheduleDetailsDialogComponent {
     );
   }
 
-  playersEditable = false; // por defecto no editable
-
-  togglePlayersEdit() {
-    this.playersEditable = !this.playersEditable;
-  }
-
-  getStatusLabel(status: string): string {
-    return this.statusLabels[status] || status;
-  }
-
   ngOnInit(): void {
     this.initialStatus = this.data.details.status;
+    this.loadPlayers();
+  }
+
+  private loadPlayers(): void {
     if (this.data.details.user_id && this.data.details.id) {
       this.reservationService.getReservationDetailsByUser(
         this.data.details.user_id,
@@ -87,7 +95,14 @@ export class ScheduleDetailsDialogComponent {
         }
       });
     }
+  }
 
+  togglePlayersEdit() {
+    this.playersEditable = !this.playersEditable;
+  }
+
+  getStatusLabel(status: string): string {
+    return this.statusLabels[status] || status;
   }
 
   formatDateString(dateString: string | undefined | null): string {
@@ -112,6 +127,8 @@ export class ScheduleDetailsDialogComponent {
       observations: this.editedData.observations,
     }).subscribe({
       next: (res) => {
+              this.closeDialog(true);
+
         console.log('Reserva actualizada:', res);
         this.data.details = { ...this.editedData };
         this.isEditing = false;
@@ -124,6 +141,8 @@ export class ScheduleDetailsDialogComponent {
     if (this.initialStatus !== this.editedData.status) {
       this.reservationService.changeReservationStatus(this.data.id, this.editedData.status).subscribe({
         next: (res) => {
+              this.closeDialog(true);
+
           console.log('Status actualizado:', res);
           this.data.details.status = this.editedData.status;
           this.initialStatus = this.editedData.status;
@@ -135,9 +154,9 @@ export class ScheduleDetailsDialogComponent {
     }
   }
 
-  closeDialog() {
-    this.dialogRef.close();
-  }
+  closeDialog(updated: boolean = false) {
+  this.dialogRef.close(updated);
+}
 
   onImgError(event: Event) {
     const imgElement = event.target as HTMLImageElement;
@@ -146,10 +165,8 @@ export class ScheduleDetailsDialogComponent {
 
   private formatTime(time: string): string {
     if (!time) return '';
-    // Si viene en HH:mm -> agregar ":00"
     return time.length === 5 ? `${time}:00` : time;
   }
-
 
   confirmPlayerStatusChange(player: any) {
     const newStatus = 'paid';
@@ -187,10 +204,9 @@ export class ScheduleDetailsDialogComponent {
       });
       return;
     }
-    console.log('Jugadores actuales:', this.players.length);
-    // Construye el objeto con la estructura requerida
+
     const newPlayer = {
-      id: null, // o el id que corresponda si lo tienes
+      id: null,
       reservation_id: this.data.id,
       user_id: user.id,
       part_amount: null,
@@ -205,23 +221,31 @@ export class ScheduleDetailsDialogComponent {
     };
 
     this.addPlayerToReservation(newPlayer);
-
-    this.players.push(newPlayer);
     this.playerSearchControl.setValue('');
-    console.log('Jugadores actuales:', this.players);
   }
 
-  addPlayerToReservation(player: any) {
-    this.reservationService.addPlayerToReservation(this.data.id, player).subscribe({
-      next: (res) => {
-        this.snackBar.open('Jugador agregado exitosamente.', 'Cerrar', { duration: 3000 });
-        console.log('Jugador agregado a la reserva:', res);
-      },
-      error: (err) => {
-        console.error('Error al agregar jugador:', err);
+addPlayerToReservation(player: any) {
+  this.reservationService.addPlayerToReservation(this.data.id, player).subscribe({
+    next: (res) => {
+      this.snackBar.open('Jugador agregado exitosamente.', 'Cerrar', { duration: 3000 });
+      console.log('Jugador agregado a la reserva:', res);
+
+      player.id = res.id;
+
+      if (!this.players.some(p => p.user_id === player.user_id)) {
+        this.players.push(player);
       }
-    });
-  }
+
+      setTimeout(() => {
+        this.loadPlayers();
+      }, 100); 
+    },
+    error: (err) => {
+      console.error('Error al agregar jugador:', err);
+    }
+  });
+}
+
 
   private searchPlayers(searchTerm: string): Observable<User[]> {
     if (searchTerm.length < 2) return of([]);
@@ -250,19 +274,22 @@ export class ScheduleDetailsDialogComponent {
     imgElement.src = this.defaultAvatar;
   }
 
-  removePlayer(player: any) {
-    console.log('Eliminando jugador:', player);
-    const index = this.players.indexOf(player);
-    if (index !== -1) {
-      this.players.splice(index, 1);
+ removePlayer(player: any) {
+  console.log('Eliminando jugador:', player);
+  this.reservationService.removePlayerFromReservation(player.id).subscribe({
+    next: () => {
+      this.snackBar.open('Jugador eliminado exitosamente.', 'Cerrar', { duration: 3000 });
+
+      this.players = this.players.filter(p => p.user_id !== player.user_id);
+
+      setTimeout(() => {
+        this.loadPlayers();
+      }, 100);
+    },
+    error: (err) => {
+      console.error('Error al eliminar jugador:', err);
     }
-    this.reservationService.removePlayerFromReservation(player.id).subscribe({
-      next: () => {
-        this.snackBar.open('Jugador eliminado exitosamente.', 'Cerrar', { duration: 3000 });
-      },
-      error: (err) => {
-        console.error('Error al eliminar jugador:', err);
-      }
-    });
-  }
+  });
+}
+
 }

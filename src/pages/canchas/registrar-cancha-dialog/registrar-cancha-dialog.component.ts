@@ -26,7 +26,7 @@ import { MatDividerModule } from '@angular/material/divider';
     MatExpansionModule,
     MatDialogModule,
     MatSelectModule,
-    ReactiveFormsModule, 
+    ReactiveFormsModule,
     CommonModule,
     MatCardModule
   ],
@@ -53,7 +53,7 @@ export class RegistrarCanchaDialogComponent implements OnInit {
       club_id: ['', Validators.required],
       type: ['', Validators.required],
       availability: ['1', Validators.required],
-      price_hour: [0, [Validators.required, Validators.min(0)]], 
+      price_hour: [0, [Validators.required, Validators.min(0)]],
 
       photo: ['']
     });
@@ -93,45 +93,56 @@ export class RegistrarCanchaDialogComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.courtForm.valid) {
-      this.loading = true;
-
-      const formData = new FormData();
-
-      Object.keys(this.courtForm.value).forEach(key => {
-        if (key !== 'photo') {
-          formData.append(key, this.courtForm.value[key]);
-        }
-      });
-
-      if (this.selectedFile) {
-        formData.append('photo', this.selectedFile);
-      }
-
-      this.courtService.createCourt(formData).subscribe({
-        next: (response) => {
-          this.loading = false;
-          this.dialogRef.close(response);
-          
-          console.log('Cancha creada:', response);
-        },
-        error: (error) => {
-          this.loading = false;
-          console.error('Error creating court:', error);
-          alert('Error al crear la cancha: ' + (error.error?.msg || error.message));
-        }
-      });
-    } else {
+    if (this.courtForm.invalid) {
       Object.keys(this.courtForm.controls).forEach(key => {
         this.courtForm.get(key)?.markAsTouched();
       });
+
+      this.snackBar.open('⚠️ Por favor completa todos los campos requeridos', 'Cerrar', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['snackbar-warning']
+      });
+      return;
     }
+
+    this.loading = true;
+    const formData = new FormData();
+
+    Object.keys(this.courtForm.value).forEach(key => {
+      if (key !== 'photo') {
+        formData.append(key, this.courtForm.value[key]);
+      }
+    });
+
+    if (this.selectedFile) {
+      formData.append('photo', this.selectedFile);
+    }
+
+    this.courtService.createCourt(formData).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.dialogRef.close(response);
+        console.log('Cancha creada:', response);
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Error creating court:', error);
+        this.snackBar.open('❌ Error al crear la cancha', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+      }
+    });
   }
+
 
   onCancel() {
     this.dialogRef.close(false);
   }
-   removePhoto(): void {
+  removePhoto(): void {
     this.logoPreview = '../../assets/images/placeholder.png';
   }
 }

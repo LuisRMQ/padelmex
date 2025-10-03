@@ -13,6 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-editar-torneo-dialog',
@@ -47,6 +48,8 @@ export class EditarTorneoDialogComponent implements OnInit {
     private fb: FormBuilder,
     private tournamentService: TournamentService,
     private dialogRef: MatDialogRef<EditarTorneoDialogComponent>,
+    private snackBar: MatSnackBar,
+
     @Inject(MAT_DIALOG_DATA) public data: { torneoId: number }
   ) {}
 
@@ -59,13 +62,13 @@ export class EditarTorneoDialogComponent implements OnInit {
       end_date: ['', Validators.required],
       registration_deadline: ['', Validators.required],
       registration_fee: [0],
-      prizes: [],
+      // prizes: [],
       rules: [''],
       photo: [null],
-      categories: this.fb.array([])
+      // categories: this.fb.array([])
     });
 
-    this.cargarCategorias();
+    // this.cargarCategorias();
     this.cargarClubs();
     this.cargarTorneo(this.data.torneoId);
   }
@@ -78,12 +81,12 @@ export class EditarTorneoDialogComponent implements OnInit {
     return control as FormGroup;
   }
 
-  cargarCategorias() {
-    this.tournamentService.getCategories().subscribe({
-      next: (res: any) => this.categoriasDisponibles = res.data,
-      error: (err) => console.error('Error al cargar categorías', err)
-    });
-  }
+  // cargarCategorias() {
+  //   this.tournamentService.getCategories().subscribe({
+  //     next: (res: any) => this.categoriasDisponibles = res.data,
+  //     error: (err) => console.error('Error al cargar categorías', err)
+  //   });
+  // }
 
   cargarClubs() {
     this.tournamentService.getClubs().subscribe({
@@ -102,21 +105,14 @@ export class EditarTorneoDialogComponent implements OnInit {
         end_date: new Date(torneo.end_date),
         registration_deadline: new Date(torneo.registration_deadline),
         registration_fee: torneo.registration_fee,
-        prizes: torneo.prizes ?? [],
+        // prizes: torneo.prizes ?? [],
         rules: torneo.rules
       });
 
       this.logoPreview = torneo.photo ?? '../../assets/images/placeholder.png';
 
-      // Categorías
-      this.categories.clear();
-      (torneo.categories || []).forEach(cat => {
-        this.categories.push(this.fb.group({
-          id: [cat.id],
-          category: [cat.category],
-          max_participants: [cat.max_participants ?? '']
-        }));
-      });
+    
+      
     });
   }
 
@@ -152,24 +148,38 @@ export class EditarTorneoDialogComponent implements OnInit {
     formData.append('end_date', formatDate(rawData.end_date));
     formData.append('registration_deadline', formatDate(rawData.registration_deadline));
     formData.append('registration_fee', rawData.registration_fee?.toString() ?? '0');
-    formData.append('rules', rawData.rules || '');
 
     if (this.logoFile) formData.append('photo', this.logoFile);
 
-    if (Array.isArray(rawData.prizes)) {
-      rawData.prizes.forEach((p: string, i: number) => formData.append(`prizes[${i}]`, p));
-    }
+    // if (Array.isArray(rawData.prizes)) {
+    //   rawData.prizes.forEach((p: string, i: number) => formData.append(`prizes[${i}]`, p));
+    // }
 
-    this.categories.controls.forEach((catCtrl, i) => {
-      const cat = catCtrl.value;
-      formData.append(`categories[${i}][id]`, cat.id.toString());
-      formData.append(`categories[${i}][max_participants]`, (cat.max_participants ?? '').toString());
-    });
+    // this.categories.controls.forEach((catCtrl, i) => {
+    //   const cat = catCtrl.value;
+    //   formData.append(`categories[${i}][id]`, cat.id.toString());
+    //   formData.append(`categories[${i}][max_participants]`, (cat.max_participants ?? '').toString());
+    // });
+console.log('=== DEBUG UPDATE TOURNAMENT ===');
+  formData.forEach((v, k) => console.log(k, v));
+    this.tournamentService.updateTournamentById(this.data.torneoId, formData).subscribe({
+  next: () => {
+    this.dialogRef.close(true);
+  },
+  error: (err) => {
+    console.error('Error al actualizar torneo:', err);
 
-    this.tournamentService.updateTournament(this.data.torneoId, formData).subscribe({
-      next: () => this.dialogRef.close(true),
-      error: err => console.error('Error al actualizar torneo:', err)
+    // Si el backend manda JSON con "message"
+    const backendMsg = err.error?.message || 'Error desconocido';
+    alert('Error al actualizar: ' + backendMsg);
+
+    // También puedes mostrar snackbar
+    this.snackBar.open(`❌ ${backendMsg}`, 'Cerrar', {
+      duration: 5000,
+      panelClass: ['snackbar-error']
     });
+  }
+});
   }
 
   onCancel() { this.dialogRef.close(false); }

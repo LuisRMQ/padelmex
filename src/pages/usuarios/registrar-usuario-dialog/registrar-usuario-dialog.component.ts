@@ -94,45 +94,54 @@ export class RegistrarUsuarioDialogComponent {
 
 
   guardarUsuario() {
-    if (this.userForm.valid) {
-      const formData = new FormData();
-
-      Object.keys(this.userForm.value).forEach(key => {
-        const value = this.userForm.value[key];
-        if (value !== null) {
-          formData.append(key, value);
-        }
+    if (this.userForm.invalid) {
+      Object.keys(this.userForm.controls).forEach(key => {
+        this.userForm.get(key)?.markAsTouched();
       });
 
-      this.usersService.createUser(formData).subscribe({
-        next: (res) => {
-          this.snackBar.open('✅ Usuario registrado correctamente', 'Cerrar', {
-            duration: 4000,
-            panelClass: ['snackbar-success']
-          });
-          this.userForm.reset();
-          this.logoPreview = '../../assets/images/placeholder.png';
-        },
-        error: (err) => {
-          console.error('Error al crear usuario:', err);
-          this.snackBar.open('❌ Error al registrar usuario', 'Cerrar', {
-            duration: 4000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    } else {
       this.snackBar.open('⚠️ Completa todos los campos obligatorios', 'Cerrar', {
         duration: 4000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
         panelClass: ['snackbar-warning']
       });
+      return;
     }
+
+    const formData = new FormData();
+    Object.keys(this.userForm.value).forEach(key => {
+      const value = this.userForm.value[key];
+      if (value !== null) {
+        formData.append(key, value);
+      }
+    });
+
+    this.usersService.createUser(formData).subscribe({
+      next: (res) => {
+        this.snackBar.open('✅ Usuario registrado correctamente', 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['snackbar-success']
+        });
+        this.userForm.reset();
+        this.logoPreview = '../../assets/images/placeholder.png';
+      },
+      error: (err) => {
+        console.error('Error al crear usuario:', err);
+        this.snackBar.open('❌ Error al registrar usuario', 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
   }
 
   togglePasswordVisibility(): void {
     this.hidePassword = !this.hidePassword;
 
-    // Cambiar el tipo de input según la visibilidad
     const passwordField = document.querySelector('input[formControlName="password"]') as HTMLInputElement;
     if (passwordField) {
       passwordField.type = this.hidePassword ? 'password' : 'text';

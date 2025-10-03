@@ -37,23 +37,23 @@ export interface TournamentFilters {
 export interface Category {
   id: number;
   category: string;
-   max_participants?: number | string;
+  max_participants?: number | string;
 }
 
 export interface Club {
-    id: number;
-    name: string;
-    address: string;
-    rfc: string;
-    type: string;
-    phone: string;
-    email: string;
-    web_site: string;
-    city_id: number;
-    logo: string;
-    status: boolean;
-    created_at: string;
-    updated_at: string;
+  id: number;
+  name: string;
+  address: string;
+  rfc: string;
+  type: string;
+  phone: string;
+  email: string;
+  web_site: string;
+  city_id: number;
+  logo: string;
+  status: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 @Injectable({
@@ -83,9 +83,23 @@ export class TournamentService extends ApiBaseService {
     return this.get<Category[]>('/categories');
   }
 
-updateTournament(id: number, data: any): Observable<any> {
+  updateTournament(id: number, data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/tournament/update/${id}?_method=PUT`, data);
   }
+
+
+
+  updateTournamentById(id: number, data: any): Observable<any> {
+
+
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+      return this.post(`/tournament/update/${id}`, data);
+    } else {
+      return this.put(`/tournament/update/${id}`, data);
+    }
+  }
+
 
   updateTournamentStatus(id: number, status: Tournament['status']): Observable<any> {
     return this.put(`/tournament/updateStatus/${id}`, { status });
@@ -95,7 +109,7 @@ updateTournament(id: number, data: any): Observable<any> {
     return this.delete(`/tournament/delete/${id}`);
   }
 
-    getClubs(): Observable<Club[]> {
-          return this.get<Club[]>('/clubs');
-      }
+  getClubs(): Observable<Club[]> {
+    return this.get<Club[]>('/clubs');
+  }
 }

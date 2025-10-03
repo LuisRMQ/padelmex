@@ -151,21 +151,16 @@ export class UsersService extends ApiBaseService {
     //     }
     // }
 
-   // En tu users.service.ts - REEMPLAZA el método updateUserById
-updateUserById(id: number, data: any): Observable<any> {
-  console.log('=== SERVICE UPDATE DEBUG ===');
-  console.log('User ID:', id);
-  console.log('Data type:', data instanceof FormData ? 'FormData' : 'Object');
-  
-  // Para FormData, necesitas usar POST y agregar _method=PUT
-  if (data instanceof FormData) {
-    data.append('_method', 'PUT'); // Esto le dice a Laravel que use PUT
-    return this.post(`/user/update/${id}`, data);
-  } else {
-    // Para datos normales, usa PUT directamente
-    return this.put(`/user/update/${id}`, data);
-  }
-}
+    updateUserById(id: number, data: any): Observable<any> {
+
+
+        if (data instanceof FormData) {
+            data.append('_method', 'PUT');
+            return this.post(`/user/update/${id}`, data);
+        } else {
+            return this.put(`/user/update/${id}`, data);
+        }
+    }
 
 
     deleteUser(id: number): Observable<any> {
@@ -182,10 +177,10 @@ updateUserById(id: number, data: any): Observable<any> {
         return this.delete(`/user/disabled/${id}`);
     }
 
-   getUserReservations(user_id: number): Observable<Reservation[]> {
+    getUserReservations(user_id: number): Observable<Reservation[]> {
         return this.get<ReservationsResponse>(`/reservations?user_id=${user_id}`).pipe(
-            map(res => res.data) 
+            map(res => res.data)
         );
     }
-    
+
 }
