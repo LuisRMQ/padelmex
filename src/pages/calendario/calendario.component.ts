@@ -206,6 +206,7 @@ export class CalendarioComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        window.location.reload();
         this.snackBar.open('Configuración guardada correctamente.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] });
       }
     });
