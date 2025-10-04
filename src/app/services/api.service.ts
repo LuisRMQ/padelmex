@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
 export class ApiBaseService {
-  protected apiUrl = 'http://137.184.178.6/api';
+
+    protected apiUrl = environment.apiUrl;
+
+  // protected apiUrl = 'http://137.184.178.6/api';
 
   constructor(protected http: HttpClient) { }
 
