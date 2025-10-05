@@ -6,17 +6,13 @@
 
   <!-- Datos del Club -->
   <mat-card class="club-card">
-    <mat-card-header class="card-header">
-      <div class="header-content">
-        <mat-icon class="header-icon">sports_soccer</mat-icon>
-        <mat-card-title class="card-title">Datos del Club</mat-card-title>
-      </div>
-      <button mat-icon-button color="primary" class="edit-btn" (click)="editarClub()" matTooltip="Editar club">
-        <mat-icon>edit</mat-icon>
-      </button>
-    </mat-card-header>
 
     <mat-card-content class="card-content">
+      <div style="display: flex; justify-content: flex-end;">
+        <button mat-icon-button color="primary" class="edit-btn" (click)="abrirEditarClubDialog(club)" matTooltip="Editar club">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
       <div class="club-grid">
         <!-- Logo Section -->
         <div class="logo-section">
@@ -68,12 +64,9 @@
 
 
   <mat-card class="schedule-card">
-    <mat-card-header class="schedule-header">
-      <div class="header-title">
-        <mat-icon class="header-icon">schedule</mat-icon>
-        <mat-card-title>Horarios del Club</mat-card-title>
-      </div>
-    </mat-card-header>
+    <div class="clubs-lista-header" style="padding: 16px 24px 1px;">
+      <span>Lista de Horarios</span>
+    </div>
 
     <mat-card-content class="schedule-content">
       <div class="schedule-grid">
@@ -237,123 +230,71 @@
     </mat-card-content>
   </mat-card>
 
+  <div class="clubs-lista" *ngIf="canchas.length > 0">
+    <div class="clubs-lista-header">
+      <span>Lista de Canchas</span>
+    </div>
+    <table class="clubs-table">
+      <thead>
+        <tr>
+          <th>FOTO</th>
+          <th>NOMBRE</th>
+          <th>PATROCINADOR</th>
+          <th>TIPO</th>
+          <th>ESTADO</th>
+          <th>COSTO RENTA</th>
+          <!-- <th>ACCIONES</th> -->
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let court of canchas">
+          <td>
+            <img class="club-avatar" [src]="court.photo || 'assets/img/no-image.png'" alt="foto cancha">
 
-  <!-- Canchas -->
-  <!-- Canchas -->
-  <mat-card class="courts-section">
-    <mat-card-header class="section-header">
-      <div class="header-content">
-        <mat-icon class="header-icon">sports_soccer</mat-icon>
-        <mat-card-title>Canchas del Club</mat-card-title>
-        <span class="courts-count">{{ canchas.length }} canchas</span>
-      </div>
-      <button mat-raised-button color="primary" class="add-btn">
-        <mat-icon>add</mat-icon>
-        Agregar Cancha
-      </button>
-    </mat-card-header>
-
-    <mat-card-content class="courts-content">
-      <div class="courts-grid">
-        <mat-card *ngFor="let cancha of canchas" class="court-card" [class.unavailable]="!cancha.availability">
-          <!-- Header con nombre y estado -->
-          <div class="card-header">
-            <div class="court-title">
-              <h3 class="court-name">{{ cancha.name }}</h3>
-              <div class="court-badges">
-                <span class="type-badge">{{ cancha.type }}</span>
-                <span class="status-badge" [class.available]="cancha.availability"
-                  [class.unavailable]="!cancha.availability">
-                  {{ cancha.availability ? 'Disponible' : 'No Disponible' }}
-                </span>
-              </div>
-            </div>
-            <button mat-icon-button class="menu-btn" [matMenuTriggerFor]="menu">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="editarCancha(cancha)">
-                <mat-icon>edit</mat-icon>
-                <span>Editar</span>
-              </button>
-              <button mat-menu-item>
-                <mat-icon>{{ cancha.availability ? 'toggle_off' : 'toggle_on' }}</mat-icon>
-                <span>{{ cancha.availability ? 'Deshabilitar' : 'Habilitar' }}</span>
-              </button>
-              <mat-divider></mat-divider>
-              <button mat-menu-item class="delete-btn">
-                <mat-icon color="warn">delete</mat-icon>
-                <span>Eliminar</span>
-              </button>
-            </mat-menu>
-          </div>
-
-          <!-- Imagen de la cancha -->
-          <div class="court-image-container">
-            <img [src]="cancha.photo" alt="Foto de {{ cancha.name }}" class="court-image"
-              (error)="onImageError($event)">
-            <div class="image-overlay">
-              <button mat-icon-button class="view-btn">
-                <mat-icon>zoom_in</mat-icon>
-              </button>
-            </div>
-          </div>
-
-          <!-- Información de la cancha -->
-          <mat-card-content class="court-info">
-            <div class="info-grid">
-              <div class="info-item" *ngIf="cancha.sponsor">
-                <mat-icon class="info-icon">business_center</mat-icon>
-                <div class="info-content">
-                  <label>Patrocinador</label>
-                  <span class="info-value">{{ cancha.sponsor }}</span>
-                </div>
-              </div>
-
-              <div class="info-item">
-                <mat-icon class="info-icon">category</mat-icon>
-                <div class="info-content">
-                  <label>Tipo de Superficie</label>
-                  <span class="info-value">{{ cancha.type }}</span>
-                </div>
-              </div>
-
-              <div class="info-item">
-                <mat-icon class="info-icon">info</mat-icon>
-                <div class="info-content">
-                  <label>Estado</label>
-                  <span class="info-value" [class.available]="cancha.availability"
-                    [class.unavailable]="!cancha.availability">
-                    {{ cancha.availability ? 'Operativa' : 'En Mantenimiento' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </mat-card-content>
-
-          <!-- Acciones -->
-          <mat-card-actions class="card-actions">
-            <button mat-stroked-button color="primary" class="action-btn">
-              <mat-icon>visibility</mat-icon>
-              Ver Detalles
-            </button>
-            <button mat-raised-button color="primary" class="action-btn" (click)="editarCancha(cancha)">
+          </td>
+          <td>{{ court.name }}</td>
+          <td>{{ court.sponsor || 'Sin patrocinador' }}</td>
+          <td>{{ court.type }}</td>
+          <td>
+            <span class="badge-categoria" [ngClass]="court.availability ? 'true' : 'false'">
+              {{ court.availability ? 'Disponible' : 'No disponible' }}
+            </span>
+          </td>
+          <td>{{ court.price_hour }}</td>
+          <td>
+            <!-- <button mat-icon-button (click)="abrirEditarCanchaDialog(court)">
               <mat-icon>edit</mat-icon>
-              Editar
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      </div>
+            </button> -->
+            <!-- <button mat-icon-button color="primary" (click)="abrirModalRegistrarHorario(court)">
+              <mat-icon>more_time</mat-icon>
+            </button> -->
+            <!-- <button mat-icon-button (click)="abrirModalHorarios(court)">
+              <mat-icon>info</mat-icon>
+            </button> -->
+            <!-- <button mat-icon-button color="warn" (click)="confirmarEliminarCancha(court)">
+              <mat-icon>delete</mat-icon>
+            </button> -->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-      <!-- Estado vacío -->
-      <div *ngIf="canchas.length === 0" class="empty-state">
-        <mat-icon class="empty-icon">sports_soccer</mat-icon>
-        <h3>No hay canchas registradas</h3>
-        <p>Comienza agregando la primera cancha de tu club</p>
-      
-      </div>
-    </mat-card-content>
-  </mat-card>
+  <!-- Sin canchas -->
+  <div *ngIf="canchas.length === 0" class="no-canchas">
+    No hay canchas registradas para este club.
+  </div>
+
+  <!-- Paginación -->
+  <!-- <div class="pagination-container" *ngIf="lastPage > 1">
+    <button mat-button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+      &laquo; Anterior
+    </button>
+    <span>Página {{ currentPage }} de {{ lastPage }}</span>
+    <button mat-button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === lastPage">
+      Siguiente &raquo;
+    </button>
+  </div> -->
 
 
 </div>
