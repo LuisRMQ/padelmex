@@ -9,7 +9,8 @@
 
     <mat-card-content class="card-content">
       <div style="display: flex; justify-content: flex-end;">
-        <button mat-icon-button color="primary" class="edit-btn" (click)="abrirEditarClubDialog(club)" matTooltip="Editar club">
+        <button mat-icon-button color="primary" class="edit-btn" (click)="abrirEditarClubDialog(club)"
+          matTooltip="Editar club">
           <mat-icon>edit</mat-icon>
         </button>
       </div>
@@ -64,8 +65,13 @@
 
 
   <mat-card class="schedule-card">
-    <div class="clubs-lista-header" style="padding: 16px 24px 1px;">
+    <div class="clubs-lista-header"
+      style="padding: 16px 24px 1px; width: 100%; justify-content: space-between; display: flex;">
       <span>Lista de Horarios</span>
+      <button mat-icon-button color="primary" class="edit-btn" (click)="abrirModalRegistrarHorario(club)"
+        matTooltip="Editar club">
+        <mat-icon>edit</mat-icon>
+      </button>
     </div>
 
     <mat-card-content class="schedule-content">
@@ -90,9 +96,6 @@
               <span class="no-schedule-text">Sin horario asignado</span>
             </ng-template>
           </div>
-          <button *ngIf="getHorarioByDay('Lunes')" mat-icon-button class="day-edit-btn"
-            (click)="editarHorario(getHorarioByDay('Lunes'))" matTooltip="Editar horario">
-          </button>
         </div>
 
         <!-- Martes -->
@@ -112,31 +115,25 @@
               </div>
             </ng-container>
           </div>
-          <button *ngIf="getHorarioByDay('Martes')" mat-icon-button class="day-edit-btn"
-            (click)="editarHorario(getHorarioByDay('Martes'))" matTooltip="Editar horario">
-          </button>
         </div>
 
         <!-- Miércoles -->
-        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Miércoles')"
-          [class.inactive]="getHorarioByDay('Miércoles') && !getHorarioByDay('Miércoles').status">
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Miercoles')"
+          [class.inactive]="getHorarioByDay('Miercoles') && !getHorarioByDay('Miercoles').status">
           <div class="day-header">
             <span class="day-name">Miércoles</span>
             <mat-icon class="day-icon">event</mat-icon>
           </div>
           <div class="day-schedule">
-            <ng-container *ngIf="getHorarioByDay('Miércoles'); else noSchedule">
-              <div class="time-range">{{ getHorarioByDay('Miércoles').start_time }} - {{
-                getHorarioByDay('Miércoles').end_time }}</div>
-              <div class="status-badge" [class.active]="getHorarioByDay('Miércoles').status"
-                [class.inactive]="!getHorarioByDay('Miércoles').status">
-                {{ getHorarioByDay('Miércoles').status ? 'Activo' : 'Inactivo' }}
+            <ng-container *ngIf="getHorarioByDay('Miercoles'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Miercoles').start_time }} - {{
+                getHorarioByDay('Miercoles').end_time }}</div>
+              <div class="status-badge" [class.active]="getHorarioByDay('Miercoles').status"
+                [class.inactive]="!getHorarioByDay('Miercoles').status">
+                {{ getHorarioByDay('Miercoles').status ? 'Activo' : 'Inactivo' }}
               </div>
             </ng-container>
           </div>
-          <button *ngIf="getHorarioByDay('Miércoles')" mat-icon-button class="day-edit-btn"
-            (click)="editarHorario(getHorarioByDay('Miércoles'))" matTooltip="Editar horario">
-          </button>
         </div>
 
         <!-- Jueves -->
@@ -156,9 +153,6 @@
               </div>
             </ng-container>
           </div>
-          <button *ngIf="getHorarioByDay('Jueves')" mat-icon-button class="day-edit-btn"
-            (click)="editarHorario(getHorarioByDay('Jueves'))" matTooltip="Editar horario">
-          </button>
         </div>
 
         <!-- Viernes -->
@@ -178,31 +172,25 @@
               </div>
             </ng-container>
           </div>
-          <button *ngIf="getHorarioByDay('Viernes')" mat-icon-button class="day-edit-btn"
-            (click)="editarHorario(getHorarioByDay('Viernes'))" matTooltip="Editar horario">
-          </button>
         </div>
 
         <!-- Sábado -->
-        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Sábado')"
-          [class.inactive]="getHorarioByDay('Sábado') && !getHorarioByDay('Sábado').status">
+        <div class="schedule-day" [class.no-schedule]="!getHorarioByDay('Sabado')"
+          [class.inactive]="getHorarioByDay('Sabado') && !getHorarioByDay('Sabado').status">
           <div class="day-header">
             <span class="day-name">Sábado</span>
             <mat-icon class="day-icon">weekend</mat-icon>
           </div>
           <div class="day-schedule">
-            <ng-container *ngIf="getHorarioByDay('Sábado'); else noSchedule">
-              <div class="time-range">{{ getHorarioByDay('Sábado').start_time }} - {{ getHorarioByDay('Sábado').end_time
+            <ng-container *ngIf="getHorarioByDay('Sabado'); else noSchedule">
+              <div class="time-range">{{ getHorarioByDay('Sabado').start_time }} - {{ getHorarioByDay('Sabado').end_time
                 }}</div>
-              <div class="status-badge" [class.active]="getHorarioByDay('Sábado').status"
-                [class.inactive]="!getHorarioByDay('Sábado').status">
-                {{ getHorarioByDay('Sábado').status ? 'Activo' : 'Inactivo' }}
+              <div class="status-badge" [class.active]="getHorarioByDay('Sabado').status"
+                [class.inactive]="!getHorarioByDay('Sabado').status">
+                {{ getHorarioByDay('Sabado').status ? 'Activo' : 'Inactivo' }}
               </div>
             </ng-container>
           </div>
-          <button *ngIf="getHorarioByDay('Sábado')" mat-icon-button class="day-edit-btn"
-            (click)="editarHorario(getHorarioByDay('Sábado'))" matTooltip="Editar horario">
-          </button>
         </div>
 
         <!-- Domingo -->
@@ -222,17 +210,18 @@
               </div>
             </ng-container>
           </div>
-          <button *ngIf="getHorarioByDay('Domingo')" mat-icon-button class="day-edit-btn"
-            (click)="editarHorario(getHorarioByDay('Domingo'))" matTooltip="Editar horario">
-          </button>
         </div>
       </div>
     </mat-card-content>
   </mat-card>
 
   <div class="clubs-lista" *ngIf="canchas.length > 0">
-    <div class="clubs-lista-header">
+    <div class="clubs-lista-header" style="display: flex; justify-content: space-between; align-items: center;">
       <span>Lista de Canchas</span>
+      <button mat-icon-button color="primary" class="edit-btn" (click)="abrirModalRegistrarCancha()"
+        matTooltip="Agregar cancha">
+        <mat-icon>add</mat-icon>
+      </button>
     </div>
     <table class="clubs-table">
       <thead>
@@ -243,7 +232,7 @@
           <th>TIPO</th>
           <th>ESTADO</th>
           <th>COSTO RENTA</th>
-          <!-- <th>ACCIONES</th> -->
+          <th>ACCIONES</th>
         </tr>
       </thead>
       <tbody>
@@ -262,39 +251,32 @@
           </td>
           <td>{{ court.price_hour }}</td>
           <td>
-            <!-- <button mat-icon-button (click)="abrirEditarCanchaDialog(court)">
+            <button mat-icon-button (click)="abrirEditarCanchaDialog(court)">
               <mat-icon>edit</mat-icon>
-            </button> -->
-            <!-- <button mat-icon-button color="primary" (click)="abrirModalRegistrarHorario(court)">
-              <mat-icon>more_time</mat-icon>
-            </button> -->
-            <!-- <button mat-icon-button (click)="abrirModalHorarios(court)">
-              <mat-icon>info</mat-icon>
-            </button> -->
-            <!-- <button mat-icon-button color="warn" (click)="confirmarEliminarCancha(court)">
+            </button>
+            <button mat-icon-button color="warn" (click)="confirmarEliminarCancha(court)">
               <mat-icon>delete</mat-icon>
-            </button> -->
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- Sin canchas -->
+    <div *ngIf="canchas.length === 0" class="no-canchas">
+      No hay canchas registradas para este club.
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination-container" *ngIf="lastPage > 1">
+      <button mat-button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+        &laquo; Anterior
+      </button>
+      <span>Página {{ currentPage }} de {{ lastPage }}</span>
+      <button mat-button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === lastPage">
+        Siguiente &raquo;
+      </button>
+    </div>
   </div>
-
-  <!-- Sin canchas -->
-  <div *ngIf="canchas.length === 0" class="no-canchas">
-    No hay canchas registradas para este club.
-  </div>
-
-  <!-- Paginación -->
-  <!-- <div class="pagination-container" *ngIf="lastPage > 1">
-    <button mat-button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
-      &laquo; Anterior
-    </button>
-    <span>Página {{ currentPage }} de {{ lastPage }}</span>
-    <button mat-button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === lastPage">
-      Siguiente &raquo;
-    </button>
-  </div> -->
-
 
 </div>

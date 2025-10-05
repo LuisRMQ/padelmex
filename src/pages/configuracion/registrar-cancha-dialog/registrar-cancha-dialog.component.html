@@ -1,0 +1,118 @@
+<div class="modern-container">
+  <mat-card [formGroup]="courtForm" class="modern-card">
+    
+    <!-- Header -->
+    <mat-card-header class="modern-header">
+      <div class="header-content">
+        <div class="icon-container">
+          <mat-icon class="header-icon">sports_tennis</mat-icon>
+        </div>
+        <div>
+          <mat-card-title class="modern-title">Registrar Cancha</mat-card-title>
+          <mat-card-subtitle class="modern-subtitle">Complete la información de la cancha</mat-card-subtitle>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <!-- Contenido -->
+    <mat-card-content class="modern-content">
+
+      <div class="form-grid">
+        <!-- Nombre -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Nombre de la Cancha</mat-label>
+          <input matInput placeholder="Ej: Cancha Central" formControlName="name">
+          <mat-error *ngIf="courtForm.get('name')?.hasError('required')">Nombre es requerido</mat-error>
+          <mat-icon matPrefix>sports_tennis</mat-icon>
+        </mat-form-field>
+
+        <!-- Patrocinador -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Patrocinador</mat-label>
+          <input matInput placeholder="Ej: Nike" formControlName="sponsor">
+          <mat-error *ngIf="courtForm.get('sponsor')?.hasError('required')">Patrocinador es requerido</mat-error>
+          <mat-icon matPrefix>badge</mat-icon>
+        </mat-form-field>
+
+        <!-- Club -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Club</mat-label>
+          <input matInput [value]="clubName" disabled>
+          <mat-error *ngIf="courtForm.get('club_id')?.hasError('required')">Club es requerido</mat-error>
+          <mat-icon matPrefix>business</mat-icon>
+        </mat-form-field>
+
+        <!-- Tipo -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="Privado">Privado</mat-option>
+            <mat-option value="Público">Público</mat-option>
+            <mat-option value="Cubierto">Cubierto</mat-option>
+            <mat-option value="Descubierto">Descubierto</mat-option>
+          </mat-select>
+          <mat-error *ngIf="courtForm.get('type')?.hasError('required')">Tipo es requerido</mat-error>
+          <mat-icon matPrefix>category</mat-icon>
+        </mat-form-field>
+
+        <!-- Estado -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="availability">
+            <mat-option value="1">Disponible</mat-option>
+            <mat-option value="0">No disponible</mat-option>
+          </mat-select>
+          <mat-error *ngIf="courtForm.get('availability')?.hasError('required')">Estado es requerido</mat-error>
+          <mat-icon matPrefix>flag</mat-icon>
+        </mat-form-field>
+
+        <!-- Precio por hora -->
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Precio por hora</mat-label>
+          <input matInput type="number" min="0" step="0.01" formControlName="price_hour" placeholder="0.00">
+          <mat-error *ngIf="courtForm.get('price_hour')?.hasError('required')">Precio es requerido</mat-error>
+          <mat-error *ngIf="courtForm.get('price_hour')?.hasError('min')">Debe ser ≥ 0</mat-error>
+          <mat-icon matPrefix>attach_money</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Foto de cancha -->
+      <div class="photo-section">
+        <div class="upload-area" (click)="fileInput.click()">
+          <input type="file" hidden #fileInput (change)="onFileSelected($event)" accept="image/*">
+          <div class="upload-content">
+            <mat-icon class="upload-icon">cloud_upload</mat-icon>
+            <p>Haga clic para subir foto</p>
+            <span class="upload-hint">Formatos: JPG, PNG (Máx. 5MB)</span>
+          </div>
+        </div>
+
+        <div class="preview-container">
+          <div class="preview-card" [class.has-image]="logoPreview">
+            <ng-container *ngIf="logoPreview; else noFoto">
+              <img [src]="logoPreview" alt="Vista previa" class="preview-image">
+              <button mat-icon-button class="remove-btn" (click)="removePhoto()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </ng-container>
+            <ng-template #noFoto>
+              <div class="no-image">
+                <mat-icon>photo</mat-icon>
+                <span>Sin foto</span>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+    </mat-card-content>
+
+    <!-- Acciones -->
+    <mat-card-actions class="modern-actions">
+      <button mat-button class="cancel-btn" (click)="onCancel()">Cancelar</button>
+      <button mat-raised-button class="save-btn" (click)="onSubmit()">
+        <mat-icon>save</mat-icon> Guardar Cancha
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

@@ -12,6 +12,7 @@ import { EstadisticasComponent } from '../pages/estadisticas/estadisticas.compon
 import { ConfiguracionComponent } from '../pages/configuracion/configuracion.component';
 import { TorneosComponent } from '../pages/torneos/torneos.component';
 import { ConfigCategoriasRolesComponent } from '../pages/setup/setup.component';
+import { PruebasSocketComponent } from '../pages/pruebas-socket/pruebas-socket.component';
 
 import { AuthGuard } from '../../src/app/services/auth.guard';
 import { NoAuthGuard } from '../../src/app/services/unauth.guard';
@@ -39,6 +40,7 @@ export const routes: Routes = [
       { path: 'configuracion', component: ConfiguracionComponent },
       { path: 'torneos', component: TorneosComponent },
       { path: 'configadmin', component: ConfigCategoriasRolesComponent },
+      { path: 'pruebasocket', component: PruebasSocketComponent },
 
       
 

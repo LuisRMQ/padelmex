@@ -13,13 +13,16 @@ import { IntegrantesService, Integrante } from '../../app/services/integrantes.s
 import { ClubsService, Club } from '../../app/services/clubs.service';
 import { AuthService, User } from '../../app/services/auth.service';
 import { HorariosService, HorarioClub } from '../../app/services/horarios-clubes.service';
-import { CourtService, Court } from '../../app/services/court.service';
+import { CourtService, Court, CourtsResponse } from '../../app/services/court.service';
 
-import { EditarConfiguracionClubDialogComponent } from '../configuracion/editar-configuracion-club-dialog/editar-configuracion-club-dialog.component';
 import { MatDividerModule } from "@angular/material/divider";
 import { MatMenuModule } from '@angular/material/menu';
 import { EditarClubDialogComponent } from '../clubs/editar-club-dialog/editar-club-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { RegistrarHorarioDialogComponent } from '../clubs/registrar-horario-dialog/registrar-horario-dialog.component';
+import { EditarCanchaDialogComponent } from '../canchas/editar-cancha-dialog/editar-cancha-dialog.component';
+import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
+import { RegistrarCanchaDialogComponent } from './registrar-cancha-dialog/registrar-cancha-dialog.component';
 
 @Component({
   selector: 'app-configuracion',
@@ -51,6 +54,9 @@ export class ConfiguracionComponent implements OnInit {
   editandoClubId: number | null = null;
   logoFile: File | null = null;
 
+  currentPage = 1;
+  lastPage = 1;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
 
@@ -79,7 +85,7 @@ export class ConfiguracionComponent implements OnInit {
       this.clubId = user.club_id;
       this.cargarClub(this.clubId);
       this.cargarHorarios();
-      this.cargarCanchas();
+      this.loadCourts();
     } else {
       console.warn('No se encontró user o club_id');
     }
@@ -101,16 +107,6 @@ export class ConfiguracionComponent implements OnInit {
         console.log('Horarios cargados:', this.horarios);
       },
       error: (err) => console.error('Error al cargar horarios:', err)
-    });
-  }
-
-  cargarCanchas(): void {
-    this.courtService.getCourtsByClub(this.clubId, 10).subscribe({
-      next: (res) => {
-        this.canchas = res.data;
-        console.log('Canchas cargadas:', this.canchas);
-      },
-      error: (err) => console.error('Error al cargar canchas:', err)
     });
   }
 
@@ -231,5 +227,160 @@ export class ConfiguracionComponent implements OnInit {
       return null;
     }
     return this.horarios.find(horario => horario.day === day);
+  }
+
+  abrirModalRegistrarHorario(club: Club) {
+    this.horariosService.getHorariosByClub(club.id).subscribe({
+      next: (horarios) => {
+        const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
+          maxWidth: '80vw',
+          maxHeight: '80vh',
+          data: {
+            clubId: club.id,
+            name: club.name,
+            horarios
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result) {
+            this.snackBar.open('✅ Horario registrado exitosamente', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-success'],
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom'
+            });
+            this.cargarHorarios();
+          }
+          else {
+            this.cargarHorarios();
+          }
+        });
+      },
+      error: (err) => {
+        console.error('❌ Error al obtener horarios del club', err);
+        this.snackBar.open('Error al cargar los horarios', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
+  abrirEditarCanchaDialog(court: Court) {
+    const dialogRef = this.dialog.open(EditarCanchaDialogComponent, {
+      width: '800px',
+      maxWidth: '50vw',
+      height: 'auto',
+      maxHeight: '70vh',
+      panelClass: 'custom-dialog',
+      data: { court }
+    });
+
+    dialogRef.afterClosed().subscribe((formData: FormData) => {
+      if (formData) {
+        this.courtService.updateCourt(court.id, formData).subscribe({
+          next: () => {
+            this.snackBar.open('✅ Cancha actualizada correctamente', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            });
+            this.loadCourts();
+          },
+          error: (err) => {
+            console.error('Error al actualizar cancha:', err);
+            this.snackBar.open('❌ Error al actualizar la cancha', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+      }
+    });
+  }
+
+  loadCourts(page: number = 1) {
+    this.canchas = [];
+
+    this.courtService.getCourtsByClub(this.clubId, 5, page).subscribe({
+      next: (response: CourtsResponse) => {
+        this.canchas = response.data;
+        this.currentPage = response.current_page;
+        this.lastPage = response.last_page;
+        // this.loading = false;
+      },
+      error: (error) => {
+        // this.error = 'Error al cargar las canchas';
+        // this.loading = false;
+        console.error(error);
+      }
+    });
+  }
+
+  confirmarEliminarCancha(court: Court) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '700px',
+      data: {
+        title: '¿Eliminar cancha?',
+        message: `¿Estás seguro que deseas eliminar la cancha "${court.name}"?`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.courtService.deleteCourt(court.id, court.club_id).subscribe({
+          next: () => {
+            this.snackBar.open('Cancha eliminada correctamente', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-success']
+            });
+            this.canchas = this.canchas.filter(c => c.id !== court.id);
+          },
+          error: () => {
+            this.snackBar.open('Error al eliminar la cancha', 'Cerrar', {
+              duration: 3000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+      }
+    });
+  }
+
+  goToPage(page: number) {
+    const lista = document.querySelector('.clubs-lista');
+    const scrollY = lista ? lista.scrollTop : window.scrollY;
+
+    this.loadCourts(page);
+
+    setTimeout(() => {
+      if (lista) {
+        lista.scrollTop = scrollY;
+      } else {
+        window.scrollTo({ top: scrollY });
+      }
+    }, 0);
+  }
+
+  abrirModalRegistrarCancha() {
+    const dialogRef = this.dialog.open(RegistrarCanchaDialogComponent, {
+      width: '800px',
+      maxWidth: '50vw',
+      maxHeight: '70vh',
+      panelClass: 'custom-dialog',
+      data: { club_id: this.clubId, club_name: this.club?.name || '' }
+    });
+
+    dialogRef.afterClosed().subscribe(async result => {
+      console.log('Dialog result:', result);
+      if (result) {
+        this.snackBar.open('Cancha registrada exitosamente', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-success'],
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom'
+        });
+
+        await this.loadCourts();
+        this.abrirModalRegistrarHorario(result.club);
+      }
+    });
   }
 }

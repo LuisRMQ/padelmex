@@ -34,8 +34,6 @@ export class CustomSidenavComponent implements OnInit {
     { label: 'Torneos', icon: 'star', route: '/torneos' },
     { label: 'Configuracion', icon: 'settings', route: '/configadmin' },
 
-    
-
   ];
 
   private USER_MENU: MenuItem[] = [
@@ -43,6 +41,7 @@ export class CustomSidenavComponent implements OnInit {
     { label: 'Integrantes', icon: 'sports_handball', route: '/integrantes' },
     { label: 'Reservaciones Club', icon: 'event', route: '/reservaciones' },
     { label: 'Configuracion', icon: 'settings', route: '/configuracion' },
+    { label: 'Socket Test', icon: 'wifi', route: '/pruebasocket' }
 
   ];
 
