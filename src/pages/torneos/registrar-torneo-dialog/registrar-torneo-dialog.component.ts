@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray,AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, AbstractControl } from '@angular/forms';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,7 +14,8 @@ import { UsersService, User } from '../../../app/services/users.service';
 import { TournamentService } from '../../../app/services/torneos.service';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import { FormsModule ,ReactiveFormsModule} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 export interface Participante {
   id: number;
@@ -40,7 +41,8 @@ export interface Participante {
     DragDropModule,
     MatDatepickerModule,
     MatNativeDateModule,
-  ReactiveFormsModule,   // <
+    ReactiveFormsModule,
+    MatCheckboxModule
   ]
 })
 export class RegistrarTorneoDialogComponent implements OnInit {
@@ -72,14 +74,18 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       rules: [''],
       photo: [null],
       tournament_call: [null],
-      categories: this.fb.array([]) 
+      categories: this.fb.array([]),
+      time_play: ['', Validators.required],
+      courts: this.fb.array([], Validators.required)
     });
   }
-
+  courtsDisponibles: any[] = [];
   ngOnInit(): void {
     this.cargarUsuarios();
     this.cargarCategorias();
     this.cargarClubs();
+    // this.cargarCanchas(); 
+
   }
 
   get categories(): FormArray {
@@ -94,6 +100,13 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     });
   }
 
+  cargarCanchas(clubId: number) {
+    this.tournamentService.getCourtsByClub(clubId).subscribe({
+      next: (res: any) => this.courtsDisponibles = res.data,
+      error: (err) => console.error('Error al cargar canchas', err)
+    });
+  }
+
   cargarCategorias() {
     this.tournamentService.getCategories().subscribe({
       next: (res: any) => (this.categoriasDisponibles = res.data),
@@ -103,18 +116,42 @@ export class RegistrarTorneoDialogComponent implements OnInit {
 
   cargarClubs() {
     this.tournamentService.getClubs().subscribe({
-      next: (res: any) => (this.clubsDisponibles = res.data),
+      next: (res: any) => this.clubsDisponibles = res.data,
       error: (err) => console.error('Error al cargar clubs', err)
     });
+
+    // Suscribirse a cambios de club_id
+    this.form.get('club_id')?.valueChanges.subscribe(clubId => {
+      if (clubId) {
+        this.courts.clear(); // limpiar selección previa
+        this.cargarCanchas(clubId);
+      }
+    });
   }
- getCategoryName(catCtrl: FormGroup): string {
-  const id = catCtrl.get('id')?.value;
-  return this.categoriasDisponibles.find(c => c.id === id)?.category || '';
+  getCategoryName(catCtrl: FormGroup): string {
+    const id = catCtrl.get('id')?.value;
+    return this.categoriasDisponibles.find(c => c.id === id)?.category || '';
+  }
+
+
+  get courts(): FormArray {
+    return this.form.get('courts') as FormArray;
+  }
+
+onCourtChange(event: any, courtId: number) {
+  if (event.checked) {
+    this.courts.push(this.fb.control({id: courtId}));
+  } else {
+    const index = this.courts.controls.findIndex(x => x.value.id === courtId);
+    if (index >= 0) this.courts.removeAt(index);
+  }
 }
 
-getCategoryFormGroup(control: AbstractControl): FormGroup {
-  return control as FormGroup;
-}
+  
+
+  getCategoryFormGroup(control: AbstractControl): FormGroup {
+    return control as FormGroup;
+  }
   onCategorySelected(selected: any[]) {
     this.categories.clear();
     selected.forEach(cat => {
@@ -151,6 +188,12 @@ getCategoryFormGroup(control: AbstractControl): FormGroup {
     formData.append('registration_deadline', formatDate(rawData.registration_deadline));
     formData.append('registration_fee', rawData.registration_fee?.toString() ?? '0');
     formData.append('rules', rawData.rules || '');
+    let timePlay = rawData.time_play;
+    if (timePlay && /^\d{2}:\d{2}$/.test(timePlay)) {
+      timePlay += ':00';
+    }
+
+    formData.append('time_play', timePlay);
 
     if (this.logoFile) formData.append('photo', this.logoFile);
 
@@ -165,6 +208,17 @@ getCategoryFormGroup(control: AbstractControl): FormGroup {
       });
     }
 
+    if (this.courts.length > 0) {
+    this.courts.controls.forEach((ctrl, i) => {
+      formData.append(`courts[${i}][id]`, ctrl.value.id.toString());
+    });
+  }
+
+    console.log('RAW FORM VALUES:', rawData);
+    console.log('FormData entries:');
+    for (const pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
     this.tournamentService.createTournament(formData).subscribe({
       next: (res) => this.dialogRef.close(true),
       error: (err) => {

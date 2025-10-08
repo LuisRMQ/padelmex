@@ -54,6 +54,7 @@ export class RegistrarCanchaDialogComponent implements OnInit {
       type: ['', Validators.required],
       availability: ['1', Validators.required],
       price_hour: [0, [Validators.required, Validators.min(0)]],
+      commission: [0, [Validators.required, Validators.min(0)]],
 
       photo: ['']
     });

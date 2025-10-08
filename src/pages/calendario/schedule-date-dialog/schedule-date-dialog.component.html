@@ -118,6 +118,16 @@
             </mat-select>
           </mat-form-field>
 
+
+          <!-- <mat-form-field class="modal-field" appearance="outline">
+            <mat-label>Categoria</mat-label>
+            <mat-select formControlName="category" required>
+              <mat-option *ngFor="let category of categories" [value]="category.id">
+                {{category.category}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field> -->
+
           <!-- Observaciones -->
           <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
             <mat-label>Observaciones</mat-label>
@@ -181,68 +191,73 @@
               (error)="onImageError($event)">
             <div class="player-info">
               <span class="player-name">{{ player.name }} {{ player.lastname }}</span>
-              <span class="player-phone">
-                {{ player.phone ? player.phone : 'Por asignar' }}
-              </span>
+              <span class="player-phone">{{ player.phone ? player.phone : 'Por asignar' }}</span>
             </div>
+
+            <!-- Checkbox "Paid by owner" -->
+            <mat-checkbox [checked]="player.paid_by_owner || false" (change)="setPaidByOwner(i, $event.checked)">
+              Pagado por dueño
+            </mat-checkbox>
+
             <button mat-icon-button color="warn" (click)="removePlayer(i)">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
         </div>
-        <button mat-button matStepperPrevious>Anterior</button>
+           <button mat-button matStepperPrevious>Anterior</button>
         <button mat-button type="button" matStepperNext [disabled]="selectedPlayers.length === 0">Siguiente</button>
-      </mat-step>
+</mat-step>
 
-      <!-- Paso 2: Confirmación -->
-      <mat-step>
-        <ng-template matStepLabel>Confirmar</ng-template>
+        <!-- Paso 2: Confirmación -->
+        <mat-step>
+          <ng-template matStepLabel>Confirmar</ng-template>
 
-        <div class="confirmation-details">
-          <h3>Resumen de la reservación</h3>
+          <div class="confirmation-details">
+            <h3>Resumen de la reservación</h3>
 
-          <div class="detail-row">
-            <strong>Fecha:</strong> {{ selectedDate | date:'fullDate':'':'es-MX' }}
+            <div class="detail-row">
+              <strong>Fecha:</strong> {{ selectedDate | date:'fullDate':'':'es-MX' }}
+            </div>
+            <div class="detail-row">
+              <strong>Hora:</strong> {{ reservationForm.value.start_time }} - {{ reservationForm.value.end_time }}
+            </div>
+            <div class="detail-row">
+              <strong>Cancha:</strong> {{ data.courtName || reservationForm.value.court_id }}
+            </div>
+            <div class="detail-row" *ngIf="selectedUser">
+              <strong>Usuario:</strong> {{ selectedUser.name }} {{ selectedUser.lastname }}
+              <span *ngIf="selectedUser.email">({{ selectedUser.email }})</span>
+            </div>
+            <div class="detail-row" *ngIf="selectedPlayers.length > 0">
+              <strong>Jugadores:</strong>
+              <ul>
+                <li *ngFor="let player of selectedPlayers">
+                  {{ player.name }} {{ player.lastname }}
+                  <span *ngIf="player.email">({{ player.email }})</span>
+                </li>
+              </ul>
+            </div>
+            <div class="detail-row">
+              <strong>Tipo de Reserva:</strong>
+              {{ reservationForm.value.reservation_type_id == 1 ? 'Torneo' : (reservationForm.value.reservation_type_id
+              ==
+              2 ? 'Juego' : 'Clase') }}
+            </div>
+            <div class="detail-row">
+              <strong>Método de Pago:</strong> {{ getMetodoPagoLabel(reservationForm.value.pay_method) }}
+            </div>
+            <div class="detail-row" *ngIf="reservationForm.value.observations">
+              <strong>Observaciones:</strong> {{ reservationForm.value.observations }}
+            </div>
           </div>
-          <div class="detail-row">
-            <strong>Hora:</strong> {{ reservationForm.value.start_time }} - {{ reservationForm.value.end_time }}
-          </div>
-          <div class="detail-row">
-            <strong>Cancha:</strong> {{ data.courtName || reservationForm.value.court_id }}
-          </div>
-          <div class="detail-row" *ngIf="selectedUser">
-            <strong>Usuario:</strong> {{ selectedUser.name }} {{ selectedUser.lastname }}
-            <span *ngIf="selectedUser.email">({{ selectedUser.email }})</span>
-          </div>
-          <div class="detail-row" *ngIf="selectedPlayers.length > 0">
-            <strong>Jugadores:</strong>
-            <ul>
-              <li *ngFor="let player of selectedPlayers">
-                {{ player.name }} {{ player.lastname }}
-                <span *ngIf="player.email">({{ player.email }})</span>
-              </li>
-            </ul>
-          </div>
-          <div class="detail-row">
-            <strong>Tipo de Reserva:</strong>
-            {{ reservationForm.value.reservation_type_id == 1 ? 'Torneo' : (reservationForm.value.reservation_type_id ==
-            2 ? 'Juego' : 'Clase') }}
-          </div>
-          <div class="detail-row">
-            <strong>Método de Pago:</strong> {{ getMetodoPagoLabel(reservationForm.value.pay_method) }}
-          </div>
-          <div class="detail-row" *ngIf="reservationForm.value.observations">
-            <strong>Observaciones:</strong> {{ reservationForm.value.observations }}
-          </div>
-        </div>
 
-        <div class="modal-actions">
-          <button mat-button matStepperPrevious>Anterior</button>
-          <button mat-raised-button color="primary" type="submit" [disabled]="!reservationForm.valid">
-            Confirmar y Reservar
-          </button>
-        </div>
-      </mat-step>
+          <div class="modal-actions">
+            <button mat-button matStepperPrevious>Anterior</button>
+            <button mat-raised-button color="primary" type="submit" [disabled]="!reservationForm.valid">
+              Confirmar y Reservar
+            </button>
+          </div>
+        </mat-step>
     </mat-horizontal-stepper>
   </form>
 </div>

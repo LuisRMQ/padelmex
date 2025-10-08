@@ -42,6 +42,16 @@
           <mat-icon matPrefix>location_city</mat-icon>
         </mat-form-field>
 
+<div formArrayName="courts" class="modern-field full-width">
+  <label>Canchas disponibles</label>
+  <div *ngFor="let court of courtsDisponibles; let i = index">
+    <mat-checkbox [value]="court.id" (change)="onCourtChange($event, court.id)">
+      {{ court.name }}
+    </mat-checkbox>
+  </div>
+</div>
+
+
         <!-- Fecha inicio -->
         <mat-form-field appearance="fill" class="modern-field">
           <mat-label>Fecha inicio</mat-label>
@@ -68,6 +78,13 @@
           <mat-datepicker #pickerRegistro></mat-datepicker>
           <mat-icon matPrefix>schedule</mat-icon>
         </mat-form-field>
+
+
+   <mat-form-field appearance="fill" class="modern-field">
+  <mat-label>Hora de juego</mat-label>
+  <input matInput type="time" formControlName="time_play">
+  <mat-icon matSuffix>schedule</mat-icon>
+</mat-form-field>
 
         <!-- Costo -->
         <mat-form-field appearance="fill" class="modern-field">

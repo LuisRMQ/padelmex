@@ -49,6 +49,36 @@
             </td>
         </ng-container>
 
+          <ng-container matColumnDef="price_hour">
+            <th mat-header-cell *matHeaderCellDef>Precio Hora</th>
+            <td mat-cell *matCellDef="let horario; let i = index">
+                <ng-container *ngIf="editIndex === i; else viewEnd">
+                    <mat-form-field appearance="outline" style="width: 100px;">
+                        <input matInput type="time" [(ngModel)]="editHorario.price_hour">
+                    </mat-form-field>
+                </ng-container>
+                <ng-template #viewEnd>
+                    {{ horario.price_hour }}
+                </ng-template>
+            </td>
+        </ng-container>
+
+          <ng-container matColumnDef="shift_name">
+            <th mat-header-cell *matHeaderCellDef>Turno</th>
+            <td mat-cell *matCellDef="let horario; let i = index">
+                <ng-container *ngIf="editIndex === i; else viewEnd">
+                    <mat-form-field appearance="outline" style="width: 100px;">
+                        <input matInput type="time" [(ngModel)]="editHorario.shift_name">
+                    </mat-form-field>
+                </ng-container>
+                <ng-template #viewEnd>
+                    {{ horario.shift_name }}
+                </ng-template>
+            </td>
+        </ng-container>
+
+        
+
         <!-- Acciones -->
         <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef>Acciones</th>
@@ -69,8 +99,8 @@
             </td>
         </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="['day', 'start_time', 'end_time', 'acciones']"></tr>
-    <tr mat-row *matRowDef="let row; columns: ['day', 'start_time', 'end_time', 'acciones']"></tr>
+    <tr mat-header-row *matHeaderRowDef="['day', 'start_time', 'end_time','price_hour','shift_name', 'acciones']"></tr>
+    <tr mat-row *matRowDef="let row; columns: ['day', 'start_time', 'end_time','price_hour','shift_name', 'acciones']"></tr>
     </table>
 </mat-dialog-content>
 

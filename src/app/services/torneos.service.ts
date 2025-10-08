@@ -56,6 +56,25 @@ export interface Club {
   updated_at: string;
 }
 
+export interface Court {
+  id: number;
+  name: string;
+  sponsor: string;
+  type: string;
+  club_id: number;
+  availability: number;
+  photo: string;
+  price_hour?: number;
+  commission: number;
+}
+export interface CourtsResponse {
+  current_page: number;
+  data: Court[];
+  per_page: number;
+  total: number;
+  last_page: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -112,4 +131,12 @@ export class TournamentService extends ApiBaseService {
   getClubs(): Observable<Club[]> {
     return this.get<Club[]>('/clubs');
   }
+
+    getCourtsByClub(clubId: number, limit: number = 5, page: number = 1): Observable<CourtsResponse> {
+      let params = new HttpParams()
+        .append('club_id', clubId.toString())
+        .append('limit', limit.toString())
+        .append('page', page.toString());
+      return this.get<CourtsResponse>('/courts', params);
+    }
 }

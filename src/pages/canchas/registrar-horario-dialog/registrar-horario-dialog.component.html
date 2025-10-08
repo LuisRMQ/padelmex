@@ -5,7 +5,7 @@
       <mat-icon>schedule</mat-icon>
     </div>
     <div>
-      <h2>Horarios de {{data.courtName}}</h2>
+      <h2>Horarios de {{ data.courtName }}</h2>
       <p>Configura el horario semanal de tu cancha</p>
     </div>
     <button mat-icon-button mat-dialog-close>
@@ -28,17 +28,19 @@
     <div class="day-row" *ngFor="let day of days">
       <div style="display: flex; align-items: center; justify-content: space-between; width: 40%;">
         <mat-checkbox [(ngModel)]="day.enabled">{{ day.name }}</mat-checkbox>
+
         <div *ngIf="day.hasSchedule; else noHorario" style="justify-content: flex-end;">
           <div class="badge" *ngFor="let s of day.schedules">
             {{ s.start }} - {{ s.end }}
           </div>
         </div>
+
         <ng-template #noHorario>
-          <div class="badge badge-rojo">
-            Sin horario definido
-          </div>
+          <div class="badge badge-rojo">Sin horario definido</div>
         </ng-template>
       </div>
+
+      <!-- Campos dinámicos solo si el día está habilitado -->
       <div class="time-selectors" *ngIf="day.enabled">
         <span>De:</span>
         <mat-form-field appearance="outline" class="time-field">
@@ -53,13 +55,28 @@
             <mat-option *ngFor="let h of hours" [value]="h">{{ h }}</mat-option>
           </mat-select>
         </mat-form-field>
+
+        <!-- NUEVOS CAMPOS -->
+        <mat-form-field appearance="outline" class="time-field">
+          <mat-label>Turno</mat-label>
+          <mat-select [(ngModel)]="day.shift_name">
+            <mat-option value="morning">Mañana</mat-option>
+            <mat-option value="afternoon">Tarde</mat-option>
+            <mat-option value="evening">Noche</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="time-field">
+          <mat-label>Precio por hora</mat-label>
+          <input matInput type="number" [(ngModel)]="day.price_hour" placeholder="Ej: 200">
+        </mat-form-field>
       </div>
     </div>
   </div>
 
   <!-- Actions -->
   <div class="modal-actions">
-    <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-raised-button color="primary" (click)="guardarHorario()">Save</button>
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-raised-button color="primary" (click)="guardarHorario()">Guardar</button>
   </div>
 </div>

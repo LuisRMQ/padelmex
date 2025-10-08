@@ -12,6 +12,7 @@ export interface Court {
   availability: number;
   photo: string;
   price_hour?: number;
+  commission: number;
 }
 
 export interface Club {

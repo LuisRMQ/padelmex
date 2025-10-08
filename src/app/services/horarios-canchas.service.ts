@@ -12,6 +12,8 @@ export interface HorarioCancha {
     end_time: string;
     status: boolean;
     clubId: number;
+    price_hour?: number;
+    commission: number;
 }
 
 @Injectable({

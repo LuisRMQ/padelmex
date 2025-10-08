@@ -19,6 +19,7 @@ export interface User {
     category?: string;
     rol_id?: number;
     category_id?: number;
+    paid_by_owner?: boolean
     created_at?: string;
     updated_at?: string;
 }
@@ -87,6 +88,10 @@ export interface ReservationsResponse {
 export interface Club {
     id: number;
     name: string;
+}
+
+export interface SelectedPlayer extends User {
+  paid_by_owner: boolean;
 }
 
 @Injectable({

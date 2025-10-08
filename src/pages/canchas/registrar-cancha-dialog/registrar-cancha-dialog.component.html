@@ -1,6 +1,6 @@
 <div class="modern-container">
   <mat-card [formGroup]="courtForm" class="modern-card">
-    
+
     <!-- Header -->
     <mat-card-header class="modern-header">
       <div class="header-content">
@@ -76,7 +76,20 @@
           <mat-error *ngIf="courtForm.get('price_hour')?.hasError('min')">Debe ser ≥ 0</mat-error>
           <mat-icon matPrefix>attach_money</mat-icon>
         </mat-form-field>
+
+
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Comisión</mat-label>
+          <input matInput type="number" min="0" step="0.01" formControlName="commission" placeholder="0.00">
+          <mat-error *ngIf="courtForm.get('commission')?.hasError('required')">comisión es requerido</mat-error>
+          <mat-error *ngIf="courtForm.get('commission')?.hasError('min')">Debe ser ≥ 0</mat-error>
+          <mat-icon matPrefix>attach_money</mat-icon>
+        </mat-form-field>
+
       </div>
+
+
+
 
       <!-- Foto de cancha -->
       <div class="photo-section">
