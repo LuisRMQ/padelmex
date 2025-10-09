@@ -10,10 +10,9 @@
   <div class="torneo-item" *ngFor="let torneo of torneos">
     <mat-card class="torneo-card">
       <!-- Badge de estado -->
-      <div class="card-badge" 
-           [class.activo]="torneo.status === 'open' || torneo.status === 'in_progress'" 
-           [class.finalizado]="torneo.status === 'completed' || torneo.status === 'closed' || torneo.status === 'cancelled'"
-           [class.borrador]="torneo.status === 'draft'">
+      <div class="card-badge" [class.activo]="torneo.status === 'open' || torneo.status === 'in_progress'"
+        [class.finalizado]="torneo.status === 'completed' || torneo.status === 'closed' || torneo.status === 'cancelled'"
+        [class.borrador]="torneo.status === 'draft'">
         {{ getEstadoTorneo(torneo.status) }}
       </div>
 
@@ -38,28 +37,28 @@
             <mat-icon>groups</mat-icon>
             <span>{{ torneo.current_participants || 0 }}/{{ torneo.max_participants }} participantes</span>
           </div>
-          
+
           <div class="info-item">
             <mat-icon>event_available</mat-icon>
             <span>Inscripción hasta: {{ torneo.registration_deadline | date:'dd MMM yyyy' }}</span>
           </div>
-          
+
           <div class="info-item">
             <mat-icon>payments</mat-icon>
             <span>Cuota: {{ torneo.registration_fee | currency:'MXN':'symbol-narrow' }}</span>
           </div>
-          
+
           <div class="info-item" *ngIf="torneo.prizes">
             <mat-icon>emoji_events</mat-icon>
             <span>{{ torneo.prizes.length ? torneo.prizes.join(', ') : 'Sin premio' }}</span>
           </div>
-          
+
           <div class="info-item" *ngIf="torneo.club_name">
             <mat-icon>location_on</mat-icon>
             <span>{{ torneo.club_name }}</span>
           </div>
         </div>
-        
+
         <div class="torneo-rules" *ngIf="torneo.rules">
           <h4>Reglas:</h4>
           <p>{{ torneo.rules }}</p>
@@ -67,14 +66,20 @@
       </mat-card-content>
 
       <mat-card-actions>
-        <button mat-button color="primary" (click)="$event.stopPropagation(); verDetalles(torneo)">
-          <mat-icon>visibility</mat-icon> Ver
+        <!-- <button mat-icon-button (click)="$event.stopPropagation(); verDetalles(torneo)">
+          <mat-icon>user</mat-icon>
+        </button> -->
+        <button mat-icon-button color="danger" (click)="$event.stopPropagation(); verParticipantes(torneo)">
+          <mat-icon>sports_handball</mat-icon>
         </button>
-        <button mat-button color="accent" (click)="$event.stopPropagation(); editarTorneo(torneo)">
-          <mat-icon>edit</mat-icon> Editar
+        <button mat-icon-button color="primary" (click)="$event.stopPropagation(); verDetalles(torneo)">
+          <mat-icon>visibility</mat-icon>
         </button>
-         <button mat-button color="danger" (click)="$event.stopPropagation(); eliminarTorneo(torneo)">
-          <mat-icon>delete</mat-icon> Eliminar
+        <button mat-icon-button color="accent" (click)="$event.stopPropagation(); editarTorneo(torneo)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="danger" (click)="$event.stopPropagation(); eliminarTorneo(torneo)">
+          <mat-icon>delete</mat-icon>
         </button>
       </mat-card-actions>
     </mat-card>

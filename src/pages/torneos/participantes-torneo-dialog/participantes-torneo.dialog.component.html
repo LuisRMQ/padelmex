@@ -1,0 +1,85 @@
+<div style="flex-direction: row;">
+    <h2 mat-dialog-title class="titulo-modal">Participantes del Torneo</h2>
+
+</div>
+
+<div class="row-fields">
+    <mat-form-field class="modal-field" appearance="outline">
+        <mat-label>Agregar Jugadores</mat-label>
+        <input type="text" matInput [formControl]="playerSearchControl" [matAutocomplete]="autoPlayers"
+            placeholder="Busca jugadores para agregar">
+        <mat-autocomplete #autoPlayers="matAutocomplete" [displayWith]="displayFn"
+            (optionSelected)="addPlayer($event.option.value)">
+            <mat-option *ngFor="let user of filteredPlayers | async" [value]="user">
+                <div class="player-option">
+                    <img [src]="user.profile_photo || defaultAvatar" class="player-photo" alt="Foto"
+                        (error)="onImageError($event)">
+                    <div class="player-info">
+                        <span class="player-name">{{ user.name }} {{ user.lastname }}</span>
+                        <span class="player-email" *ngIf="user.email">{{ user.email }}</span>
+                        <span class="player-phone" *ngIf="user.phone">{{ user.phone }}</span>
+                    </div>
+                </div>
+            </mat-option>
+
+            <mat-option *ngIf="isLoadingPlayers" disabled>
+                <div style="display: flex; align-items: center;">
+                    <mat-spinner diameter="20"></mat-spinner>
+                    <span style="margin-left: 10px;">Buscando jugadores...</span>
+                </div>
+            </mat-option>
+
+            <mat-option
+                *ngIf="(filteredPlayers | async)?.length === 0 && !isLoadingPlayers && hasValidSearchTermPlayers()"
+                disabled>
+                No se encontraron jugadores
+            </mat-option>
+        </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="modal-field">
+        <mat-label>Categoría</mat-label>
+        <mat-select [(value)]="selectedCategory" (selectionChange)="onCategoryChange($event.value)">
+            <mat-option *ngFor="let category of categories" [value]="category">
+                {{ category.name }} (Máx: {{ category.max_participants }})
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
+
+
+<mat-dialog-content class="contenido-modal">
+    <div *ngIf="loading" class="loading">⏳ Cargando participantes...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div *ngIf="!loading && participantes?.length" class="lista-participantes">
+        <div *ngFor="let participante of participantes" class="participante-card">
+            <div class="avatar">
+                <img *ngIf="participante.profile_photo; else defaultAvatar" [src]="participante.profile_photo"
+                    alt="{{ participante.name }}" />
+                <ng-template #defaultAvatar>
+                    <mat-icon>person</mat-icon>
+                </ng-template>
+            </div>
+            <div class="info">
+                <span class="nombre">{{ participante.name }} {{ participante.lastname }}</span>
+                <span class="email">{{ participante.email }}</span>
+                <span class="rol">Rol: {{ participante.rol }}</span>
+            </div>
+            <div style="width: 100%;"></div>
+            <button mat-icon-button color="warn" (click)="removePlayer(participante)">
+                <mat-icon>delete</mat-icon>
+            </button>
+        </div>
+
+
+    </div>
+
+    <div *ngIf="!loading && participantes?.length === 0" class="sin-participantes">
+        No hay participantes registrados.
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="acciones-modal">
+    <button mat-stroked-button color="warn" mat-dialog-close>Cerrar</button>
+</mat-dialog-actions>

@@ -102,6 +102,10 @@ export class TournamentService extends ApiBaseService {
     return this.get<Category[]>('/categories');
   }
 
+  getCategoriesByTournamentId(tournamentId: number): Observable<Category[]> {
+    return this.get<Category[]>(`/tournament/categories/${tournamentId}`);
+  }
+
   updateTournament(id: number, data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/tournament/update/${id}?_method=PUT`, data);
   }
@@ -132,6 +136,9 @@ export class TournamentService extends ApiBaseService {
     return this.get<Club[]>('/clubs');
   }
 
+  addUsertoTournament(data: any): Observable<any> {
+    return this.post('/coupleTournament/create', data);
+  }
   getCourtsByClub(clubId: number, limit: number = 5, page: number = 1): Observable<CourtsResponse> {
     let params = new HttpParams()
       .append('club_id', clubId.toString())

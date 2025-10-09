@@ -290,16 +290,21 @@ mat-card-actions button {
 }
 
 mat-card-actions button:nth-child(1) {
-  background: linear-gradient(135deg, #3498db, #2980b9) !important;
+  background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
   color: white !important;
 }
 
 mat-card-actions button:nth-child(2) {
-  background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+  background: linear-gradient(135deg, #3498db, #2980b9) !important;
   color: white !important;
 }
 
 mat-card-actions button:nth-child(3) {
+  background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+  color: white !important;
+}
+
+mat-card-actions button:nth-child(4) {
   background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
   color: white !important;
 }

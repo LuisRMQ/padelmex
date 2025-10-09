@@ -13,6 +13,7 @@ import { RegistrarTorneoDialogComponent } from '../torneos/registrar-torneo-dial
 import { EditarTorneoDialogComponent } from '../torneos/editar-torneo-dialog/editar-torneo-dialog.component';
 import { InicioTorneoDialogComponent } from '../torneos/inicio-torneo-dialog/inicio-torneo.dialog.component';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ParticipantesTorneoDialogComponent } from './participantes-torneo-dialog/participantes-torneo.dialog.component';
 
 
 @Component({
@@ -40,7 +41,7 @@ export class TorneosComponent implements OnInit {
     private dialog: MatDialog,
     private changeDetectorRef: ChangeDetectorRef,
     private datePipe: DatePipe,
-      private snackBar: MatSnackBar
+    private snackBar: MatSnackBar
 
   ) { }
 
@@ -126,21 +127,21 @@ export class TorneosComponent implements OnInit {
     });
   }
 
-abrirModalRegistrarTorneo() {
-  const dialogRef = this.dialog.open(RegistrarTorneoDialogComponent, {
-    width: '800px',
-    maxWidth: '50vw',
-    height: 'auto',
-    maxHeight: '70vh',
-    panelClass: 'custom-dialog'
-  });
+  abrirModalRegistrarTorneo() {
+    const dialogRef = this.dialog.open(RegistrarTorneoDialogComponent, {
+      width: '800px',
+      maxWidth: '50vw',
+      height: 'auto',
+      maxHeight: '70vh',
+      panelClass: 'custom-dialog'
+    });
 
-  dialogRef.afterClosed().subscribe((resultado) => {
-    if (resultado) {
-      this.cargarTorneos(); 
-    }
-  });
-}
+    dialogRef.afterClosed().subscribe((resultado) => {
+      if (resultado) {
+        this.cargarTorneos();
+      }
+    });
+  }
 
 verDetalles(torneo: Tournament) {
   this.dialog.open(InicioTorneoDialogComponent, {
@@ -171,29 +172,53 @@ verDetalles(torneo: Tournament) {
     });
   }
 
-eliminarTorneo(torneo: Tournament) {
-  const snack = this.snackBar.open(
-    `¿Eliminar el torneo "${torneo.name}"?`,
-    'Confirmar',
-    { duration: 5000 } 
-  );
+  eliminarTorneo(torneo: Tournament) {
+    const snack = this.snackBar.open(
+      `¿Eliminar el torneo "${torneo.name}"?`,
+      'Confirmar',
+      { duration: 5000 }
+    );
 
-  snack.onAction().subscribe(() => {
-    this.tournamentService.deleteTournament(torneo.id).subscribe({
-      next: () => {
-        this.torneos = this.torneos.filter(t => t.id !== torneo.id);
-        this.snackBar.open(`Torneo "${torneo.name}" eliminado`, '', { duration: 3000 });
-      },
-      error: (err) => {
-        console.error('Error al eliminar torneo:', err);
-        this.snackBar.open(`Error eliminando el torneo`, '', { duration: 3000 });
-      }
+    snack.onAction().subscribe(() => {
+      this.tournamentService.deleteTournament(torneo.id).subscribe({
+        next: () => {
+          this.torneos = this.torneos.filter(t => t.id !== torneo.id);
+          this.snackBar.open(`Torneo "${torneo.name}" eliminado`, '', { duration: 3000 });
+        },
+        error: (err) => {
+          console.error('Error al eliminar torneo:', err);
+          this.snackBar.open(`Error eliminando el torneo`, '', { duration: 3000 });
+        }
+      });
     });
-  });
-}
+  }
 
   onImageError(event: Event) {
     const target = event.target as HTMLImageElement;
     target.src = '../../assets/images/placeholder.png';
+  }
+
+  verParticipantes(torneo: Tournament) {
+    this.tournamentService.getCategoriesByTournamentId(torneo.id).subscribe({
+      next: (response: any[]) => {
+        const categories = response.map(cat => ({
+          id: cat.category.id,
+          name: cat.category.category,
+          max_participants: cat.max_participants
+        }));
+
+        this.dialog.open(ParticipantesTorneoDialogComponent, {
+          width: '90vw',
+          maxWidth: '1000px',
+          height: 'auto',
+          maxHeight: '80vh',
+          data: { torneoId: torneo.id, categories },
+          panelClass: 'custom-dialog'
+        });
+      },
+      error: (err) => {
+        console.error('Error obteniendo categorías:', err);
+      }
+    });
   }
 }
