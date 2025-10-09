@@ -19,7 +19,7 @@ export interface User {
     category?: string;
     rol_id?: number;
     category_id?: number;
-    paid_by_owner?: boolean
+    paid_by_owner?: boolean;
     created_at?: string;
     updated_at?: string;
 }

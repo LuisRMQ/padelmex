@@ -267,11 +267,27 @@ export class ScheduleDateDialogComponent implements OnInit {
   console.log('Jugador principal:', mainPlayer);
   console.log('Jugadores adicionales seleccionados:', this.selectedPlayers);
 
-  const playersPayload = this.selectedPlayers.map((p, index) => ({
+  // const playersPayload = [
+  //   {
+  //     user_id: mainPlayer.id,
+  //     player_number: 1,
+  //     paid_by_owner: false
+  //   },
+  //   ...this.selectedPlayers.map((p, index) => ({
+  //     user_id: p.id,
+  //     player_number: index + 2,
+  //     paid_by_owner: p.paid_by_owner || false
+  //   }))
+  // ];
+
+
+     const playersPayload = this.selectedPlayers.map((p, index) => ({
     user_id: p.id,
-    player_number: index + 1, 
+    player_number: index + 2,
     paid_by_owner: p.paid_by_owner || false
   }));
+
+
   
 
   console.log('---DEBUG: playersPayload que se enviará---');
