@@ -42,14 +42,14 @@
           <mat-icon matPrefix>location_city</mat-icon>
         </mat-form-field>
 
-<div formArrayName="courts" class="modern-field full-width">
-  <label>Canchas disponibles</label>
-  <div *ngFor="let court of courtsDisponibles; let i = index">
-    <mat-checkbox [value]="court.id" (change)="onCourtChange($event, court.id)">
-      {{ court.name }}
-    </mat-checkbox>
-  </div>
-</div>
+        <div formArrayName="courts" class="modern-field full-width">
+          <label>Canchas disponibles</label>
+          <div *ngFor="let court of courtsDisponibles; let i = index">
+            <mat-checkbox [value]="court.id" (change)="onCourtChange($event, court.id)">
+              {{ court.name }}
+            </mat-checkbox>
+          </div>
+        </div>
 
 
         <!-- Fecha inicio -->
@@ -80,11 +80,11 @@
         </mat-form-field>
 
 
-   <mat-form-field appearance="fill" class="modern-field">
-  <mat-label>Hora de juego</mat-label>
-  <input matInput type="time" formControlName="time_play">
-  <mat-icon matSuffix>schedule</mat-icon>
-</mat-form-field>
+        <mat-form-field appearance="fill" class="modern-field">
+          <mat-label>Hora de juego</mat-label>
+          <input matInput type="time" formControlName="time_play">
+          <mat-icon matSuffix>schedule</mat-icon>
+        </mat-form-field>
 
         <!-- Costo -->
         <mat-form-field appearance="fill" class="modern-field">
@@ -139,6 +139,14 @@
           <textarea matInput formControlName="rules"></textarea>
           <mat-icon matPrefix>rule</mat-icon>
         </mat-form-field>
+
+        <mat-form-field appearance="fill" class="modern-field full-width">
+          <mat-label>Categoria Extra</mat-label>
+          <input matInput type="number" min="1" formControlName="cat_extra" placeholder="Máx. participantes">
+          <mat-icon matPrefix>groups</mat-icon>
+        </mat-form-field>
+
+
       </div>
 
       <!-- Logo -->

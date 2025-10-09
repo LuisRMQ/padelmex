@@ -76,7 +76,8 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       tournament_call: [null],
       categories: this.fb.array([]),
       time_play: ['', Validators.required],
-      courts: this.fb.array([], Validators.required)
+      courts: this.fb.array([], Validators.required),
+      cat_extra: [200, [Validators.required, Validators.min(1)]]
     });
   }
   courtsDisponibles: any[] = [];
@@ -188,6 +189,7 @@ onCourtChange(event: any, courtId: number) {
     formData.append('registration_deadline', formatDate(rawData.registration_deadline));
     formData.append('registration_fee', rawData.registration_fee?.toString() ?? '0');
     formData.append('rules', rawData.rules || '');
+    formData.append('cat_extra', rawData.cat_extra?.toString() ?? '200');
     let timePlay = rawData.time_play;
     if (timePlay && /^\d{2}:\d{2}$/.test(timePlay)) {
       timePlay += ':00';
@@ -219,6 +221,7 @@ onCourtChange(event: any, courtId: number) {
     for (const pair of formData.entries()) {
       console.log(pair[0], pair[1]);
     }
+
     this.tournamentService.createTournament(formData).subscribe({
       next: (res) => this.dialogRef.close(true),
       error: (err) => {
