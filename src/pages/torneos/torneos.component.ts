@@ -145,7 +145,7 @@ abrirModalRegistrarTorneo() {
 verDetalles(torneo: Tournament) {
   this.dialog.open(InicioTorneoDialogComponent, {
     width: '90vw',      
-    maxWidth: '1000px',  
+    maxWidth: '90vw',  
     height: 'auto',      
     maxHeight: '80vh',   
     data: { torneoId: torneo.id },

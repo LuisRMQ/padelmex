@@ -132,11 +132,17 @@ export class TournamentService extends ApiBaseService {
     return this.get<Club[]>('/clubs');
   }
 
-    getCourtsByClub(clubId: number, limit: number = 5, page: number = 1): Observable<CourtsResponse> {
-      let params = new HttpParams()
-        .append('club_id', clubId.toString())
-        .append('limit', limit.toString())
-        .append('page', page.toString());
-      return this.get<CourtsResponse>('/courts', params);
-    }
+  getCourtsByClub(clubId: number, limit: number = 5, page: number = 1): Observable<CourtsResponse> {
+    let params = new HttpParams()
+      .append('club_id', clubId.toString())
+      .append('limit', limit.toString())
+      .append('page', page.toString());
+    return this.get<CourtsResponse>('/courts', params);
+  }
+
+
+  getBracketsByTournament(tournamentId: number): Observable<any> {
+    const params = new HttpParams().set('tournament_id', tournamentId.toString());
+    return this.get<any>('/tournament/bracket', params);
+  }
 }

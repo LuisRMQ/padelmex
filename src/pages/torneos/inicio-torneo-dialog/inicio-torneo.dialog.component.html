@@ -1,36 +1,33 @@
-<h2 mat-dialog-title class="titulo-modal">Participantes del Torneo</h2>
+<h2>Bracket del Torneo</h2>
 
-<mat-dialog-content class="contenido-modal">
-    <div *ngIf="loading" class="loading">⏳ Cargando participantes...</div>
-    <div *ngIf="error" class="error">{{ error }}</div>
+<div *ngIf="loading">⏳ Cargando bracket...</div>
+<div *ngIf="error" class="error">{{ error }}</div>
 
-    <div *ngIf="!loading && participantes?.length" class="lista-participantes">
-        <div *ngFor="let participante of participantes" class="participante-card">
-            <div class="avatar">
-                <img *ngIf="participante.profile_photo; else defaultAvatar" [src]="participante.profile_photo"
-                    alt="{{ participante.name }}" />
-                <ng-template #defaultAvatar>
-                    <mat-icon>person</mat-icon>
-                </ng-template>
-            </div>
-            <div class="info">
-                <span class="nombre">{{ participante.name }} {{ participante.lastname }}</span>
-                <span class="email">{{ participante.email }}</span>
-                <span class="rol">Rol: {{ participante.rol }}</span>
-            </div>
-        </div>
+<div *ngIf="!loading && bracket.length">
 
+<mat-form-field appearance="fill">
+  <mat-label>Seleccionar categoría</mat-label>
+  <mat-select [(value)]="selectedCategory" (selectionChange)="filtrarCategoria()">
+    <mat-option *ngFor="let cat of categories" [value]="cat.category_name">
+      {{ cat.category_name }} (Nivel {{ cat.level }})
+    </mat-option>
+  </mat-select>
+</mat-form-field>
 
+  <div *ngFor="let cat of filteredBracket">
+    <h3>{{ cat.category_name }} (Nivel {{ cat.level }})</h3>
+    
+    <!-- <div *ngFor="let group of cat.groups">
+      <h4>{{ group.group_name }}</h4>
+      <ul>
+        <li *ngFor="let game of group.games">
+          {{ game.couple_1?.name || '---' }} vs {{ game.couple_2?.name || '---' }}
+          <span *ngIf="game.winner_id">✅ Ganador: {{ game.winner_id }}</span>
+        </li>
+      </ul>
     </div>
+  </div> -->
 
-    <div *ngIf="!loading && participantes?.length === 0" class="sin-participantes">
-        No hay participantes registrados.
-    </div>
-</mat-dialog-content>
+</div>
 
-<mat-dialog-actions align="end" class="acciones-modal">
-    <button mat-stroked-button color="warn" mat-dialog-close>Cancelar</button>
-    <button mat-raised-button color="primary" (click)="generarBracket()">
-        Generar Bracket
-    </button>
-</mat-dialog-actions>
+<div #bracketContainer class="bracket-container" style="border:1px solid #ccc; height:1000px; margin-top:10px;"></div>
