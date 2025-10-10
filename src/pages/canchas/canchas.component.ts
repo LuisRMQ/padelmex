@@ -20,6 +20,9 @@ import { HorariosServiceCancha } from '../../app/services/horarios-canchas.servi
 import { InfoCanchaDialogComponent } from './info-cancha-dialog/info-cancha-dialog.component';
 import { EditarCanchaDialogComponent } from './editar-cancha-dialog/editar-cancha-dialog.component';
 
+import { RegistrarCanchaCerradaDialogComponent } from './registrar-diacerrado-dialog/registrar-diacerrado-dialog.component';
+
+
 @Component({
   selector: 'app-canchas',
   templateUrl: './canchas.component.html',
@@ -123,7 +126,7 @@ export class CanchasComponent implements OnInit {
     this.loadCourts(page);
   }
 
-     
+
   abrirModalRegistrarCancha() {
     const dialogRef = this.dialog.open(RegistrarCanchaDialogComponent, {
       width: '800px',
@@ -191,6 +194,23 @@ export class CanchasComponent implements OnInit {
   }
 
 
+
+
+  addDiaCerrado(court: any): void {
+    const dialogRef = this.dialog.open(RegistrarCanchaCerradaDialogComponent, {
+      width: '800px',
+      maxWidth: '50vw',
+      maxHeight: '70vh',
+      panelClass: 'custom-dialog',
+      data: { courtId: court.id }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Día cerrado registrado:', result);
+      }
+    });
+  }
 
 
   cancelarEdicion(court: Court) {
@@ -299,19 +319,19 @@ export class CanchasComponent implements OnInit {
     });
   }
 
-get totalCanchas(): number {
-  return this.courts.length;
-}
+  get totalCanchas(): number {
+    return this.courts.length;
+  }
 
-get totalCanchasPublicas(): number {
-  return this.courts.filter(c => c.type === 'Público').length;
-}
+  get totalCanchasPublicas(): number {
+    return this.courts.filter(c => c.type === 'Público').length;
+  }
 
-get totalCanchasPrivadas(): number {
-  return this.courts.filter(c => c.type === 'Privado').length;
-}
+  get totalCanchasPrivadas(): number {
+    return this.courts.filter(c => c.type === 'Privado').length;
+  }
 
 
-onImgError(){}
+  onImgError() { }
 
 }

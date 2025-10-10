@@ -28,6 +28,16 @@ export interface CourtsResponse {
   last_page: number;
 }
 
+
+export interface CourtClosedDay {
+  id: number;
+  court_id: number;
+  date: string;
+  reason?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -64,4 +74,37 @@ export class CourtService extends ApiBaseService {
   deleteCourt(id: number, club_id: number): Observable<any> {
     return this.delete(`/court/delete/${id}`, { body: { club_id } });
   }
+
+
+
+  // === COURT CLOSED DAYS ===
+  getCourtClosedDays(): Observable<CourtClosedDay[]> {
+    return this.get<any>('/courtClosedDays').pipe(map(response => response.data));
+  }
+
+  getCourtClosedDayById(id: number): Observable<CourtClosedDay> {
+    return this.get<any>(`/courtClosedDays/${id}`).pipe(map(response => response.data));
+  }
+
+  // Filtra por cancha desde el front
+  getCourtClosedDaysByCourt(courtId: number): Observable<CourtClosedDay[]> {
+  const params = new HttpParams().set('court_id', courtId.toString());
+  return this.get<any>('/courtClosedDays', params).pipe(
+    map(response => response.data)
+  );
+}
+
+  createCourtClosedDay(data: Partial<CourtClosedDay>): Observable<any> {
+    return this.post('/courtClosedDays/create', data);
+  }
+
+  updateCourtClosedDay(id: number, data: Partial<CourtClosedDay>): Observable<any> {
+    return this.put(`/courtClosedDays/update/${id}`, data);
+  }
+
+  deleteCourtClosedDay(id: number): Observable<any> {
+    return this.delete(`/courtClosedDays/delete/${id}`);
+  }
+
+
 }
