@@ -1,0 +1,118 @@
+.modern-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.modern-card {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  overflow: hidden;
+  background: white;
+}
+
+.modern-header {
+  background: #336699;
+  color: white;
+  padding: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.modern-content {
+  padding: 24px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.modern-field {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.modern-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+}
+
+.cancel-btn {
+  color: #666;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #336699 0%, #2a5d7e 100%);
+  color: white;
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .modern-content {
+    padding: 16px;
+  }
+
+  .modern-actions {
+    flex-direction: column;
+  }
+
+  .modern-actions button {
+    width: 100%;
+  }
+}
+
+.player-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.player-photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #336699;
+}
+.vs-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pareja {
+  flex: 1;
+  min-width: 150px;
+}
+
+.vs-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #336699;
+  text-align: center;
+  flex-shrink: 0;
+}

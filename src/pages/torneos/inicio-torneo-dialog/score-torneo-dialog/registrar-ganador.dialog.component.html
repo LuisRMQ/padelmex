@@ -1,0 +1,68 @@
+<div class="modern-container">
+  <div class="modern-card">
+
+    <h2 mat-dialog-title class="modern-header">Registrar Ganador</h2>
+
+    <mat-dialog-content class="modern-content">
+
+      <!-- Parejas VS -->
+      <div class="section vs-section">
+        <!-- Pareja 1 -->
+        <div class="pareja">
+          <h3 class="section-title">Pareja 1</h3>
+          <div *ngFor="let j of data.partido.jugador1" class="player-item">
+            <img *ngIf="j.photo" [src]="j.photo" alt="{{ j.name }}" class="player-photo">
+            <span>{{ j.name }}</span>
+          </div>
+          <mat-radio-group [(ngModel)]="ganadorSeleccionado" class="modern-field">
+            <mat-radio-button value="jugador1">Seleccionar Ganador</mat-radio-button>
+          </mat-radio-group>
+        </div>
+
+        <!-- VS -->
+        <div class="vs-text">VS</div>
+
+        <!-- Pareja 2 -->
+        <div class="pareja">
+          <h3 class="section-title">Pareja 2</h3>
+          <div *ngFor="let j of data.partido.jugador2" class="player-item">
+            <img *ngIf="j.photo" [src]="j.photo" alt="{{ j.name }}" class="player-photo">
+            <span>{{ j.name }}</span>
+          </div>
+          <mat-radio-group [(ngModel)]="ganadorSeleccionado" class="modern-field">
+            <mat-radio-button value="jugador2">Seleccionar Ganador</mat-radio-button>
+          </mat-radio-group>
+        </div>
+      </div>
+
+      <!-- Score -->
+      <div class="section">
+        <h4 class="section-title">Score</h4>
+        <div class="form-grid">
+          <div>
+            <label>Set 1:</label>
+            <input type="number" min="0" class="modern-field">
+            <input type="number" min="0" class="modern-field">
+          </div>
+          <div>
+            <label>Set 2:</label>
+            <input type="number" min="0" class="modern-field">
+            <input type="number" min="0" class="modern-field">
+          </div>
+          <div>
+            <label>Set 3 (opcional):</label>
+            <input type="number" min="0" class="modern-field">
+            <input type="number" min="0" class="modern-field">
+          </div>
+        </div>
+      </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="modern-actions">
+      <button mat-button class="cancel-btn" (click)="cancelar()">Cancelar</button>
+      <button mat-raised-button class="save-btn" color="primary" (click)="confirmar()">Confirmar</button>
+    </mat-dialog-actions>
+
+  </div>
+</div>

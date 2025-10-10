@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TournamentService } from '../../../app/services/torneos.service';
-import { User } from '../../../app/services/users.service';
 import * as d3 from 'd3';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -11,9 +10,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { RegistrarGanadorDialogComponent } from './score-torneo-dialog/registrar-ganador.dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 export interface Partido {
-  jugador1?: any[]; // array de jugadores de la pareja
+  jugador1?: any[]; 
   jugador2?: any[];
   ganador?: any | null;
   x?: number;
@@ -52,16 +53,25 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   error: string | null = null;
 
   private svg: any;
+  private gContainer: any; // contenedor para drag
   private matchWidth = 200;
   private matchHeight = 80;
   private spacingX = 150;
   private verticalSpacing = 40;
   private logoSize = 30;
 
+  // Variables drag
+  private startX = 0;
+  private startY = 0;
+  private translateX = 0;
+  private translateY = 0;
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { torneoId: number },
     private dialogRef: MatDialogRef<InicioTorneoDialogComponent>,
-    private tournamentService: TournamentService
+    private tournamentService: TournamentService,
+    private dialog: MatDialog 
+
   ) {}
 
   ngOnInit(): void {
@@ -79,7 +89,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         this.bracket = res.data?.bracket || [];
         this.categories = this.bracket;
         this.selectedCategory = this.categories[0]?.category_name || null; 
-
         this.selectedCategory = this.categories[0] || null;
         this.filtrarCategoria();
         this.loading = false;
@@ -92,13 +101,47 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     });
   }
 
- filtrarCategoria() {
-  if (this.selectedCategory) {
-    this.filteredBracket = this.bracket.filter(
-      b => b.category_name === this.selectedCategory
-    );
-    setTimeout(() => this.drawBracket(), 0);
+  filtrarCategoria() {
+    if (this.selectedCategory) {
+      this.filteredBracket = this.bracket.filter(
+        b => b.category_name === this.selectedCategory
+      );
+      setTimeout(() => this.drawBracket(), 0);
+    }
   }
+
+
+
+  abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
+  const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
+    width: '700px',
+    data: { partido, roundIndex, matchIndex }
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.marcarGanador(result, roundIndex, matchIndex);
+    }
+  });
+}
+
+
+marcarGanador(ganador: any, roundIndex: number, matchIndex: number) {
+  const ronda = this.filteredBracket[0]?.groups || this.filteredBracket[0]?.elimination?.octavos; // depende de tu estructura
+
+  // Por simplicidad, si estás usando bracketData, podrías manejarlo así:
+  const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
+
+  if (bracketData[roundIndex] && bracketData[roundIndex][matchIndex]) {
+    bracketData[roundIndex][matchIndex].ganador = ganador;
+    console.log('Ganador registrado:', ganador);
+
+    // Aquí podrías actualizar el siguiente partido automáticamente,
+    // o hacer otra llamada al backend para guardar el resultado.
+  }
+
+  // Redibujar el bracket si quieres reflejar el cambio visualmente
+  this.drawBracket();
 }
 
   cerrar() {
@@ -123,6 +166,25 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     this.svg.attr('width', width).attr('height', height);
     this.svg.selectAll('*').remove();
 
+    // Crear grupo contenedor para drag
+    this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
+
+    // -----------------------------
+    // DIBUJAR LOS TITULOS DE LAS FASES
+    const phases = ['Fase de Grupos', 'Octavos de Final', 'Cuartos de Final', 'Semifinal', 'Final'];
+    phases.forEach((phase, i) => {
+      const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
+      this.gContainer.append('text')
+        .text(phase)
+        .attr('x', x)
+        .attr('y', 20)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#000')
+        .attr('font-weight', 'bold')
+        .attr('font-size', '20px');
+    });
+    // -----------------------------
+
     this.calculatePositions(bracketData, height);
 
     bracketData.forEach((ronda, roundIndex) => {
@@ -133,6 +195,21 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         }
       });
     });
+
+    // -----------------------------
+    // Drag & Pan
+    this.svg.call(
+      d3.drag()
+        .on('start', (event: any) => {
+          this.startX = event.x - this.translateX;
+          this.startY = event.y - this.translateY;
+        })
+        .on('drag', (event: any) => {
+          this.translateX = event.x - this.startX;
+          this.translateY = event.y - this.startY;
+          this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
+        })
+    );
   }
 
   private mapToPartidos(category: any): Partido[][] {
@@ -186,115 +263,77 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     });
   }
 
-private drawMatch(partido: Partido, roundIndex: number, matchIndex: number) {
-  const matchHeight = this.matchHeight; 
-  const x = partido.x!;
-  const y = partido.y!;
-  const g = this.svg.append('g').attr('transform', `translate(${x}, ${y})`);
+  private drawMatch(partido: Partido, roundIndex: number, matchIndex: number) {
+    const matchHeight = this.matchHeight; 
+    const x = partido.x!;
+    const y = partido.y!;
+    const g = this.gContainer.append('g').attr('transform', `translate(${x}, ${y})`);
 
-  // Cuadro pareja 1 (arriba)
-  g.append('rect')
-    .attr('x', 0)
-    .attr('y', 0)
-    .attr('width', this.matchWidth)
-    .attr('height', matchHeight / 2 - 2)
-    .attr('fill', '#90caf9') // color pareja 1
-    .attr('stroke', '#1e7e34')
-    .attr('stroke-width', 2)
-    .attr('rx', 5)
-    .attr('ry', 5);
+    // Pareja 1
+    g.append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', this.matchWidth)
+      .attr('height', matchHeight / 2 - 2)
+      .attr('fill', '#90caf9')
+      .attr('stroke', '#1e7e34')
+      .attr('stroke-width', 2)
+      .attr('rx', 5)
+      .attr('ry', 5);
 
-  // Cuadro pareja 2 (abajo)
-  g.append('rect')
-    .attr('x', 0)
-    .attr('y', matchHeight / 2 + 2)
-    .attr('width', this.matchWidth)
-    .attr('height', matchHeight / 2 - 2)
-    .attr('fill', '#f48fb1') // color pareja 2
-    .attr('stroke', '#1e7e34')
-    .attr('stroke-width', 2)
-    .attr('rx', 5)
-    .attr('ry', 5);
+    // Pareja 2
+    g.append('rect')
+      .attr('x', 0)
+      .attr('y', matchHeight / 2 + 2)
+      .attr('width', this.matchWidth)
+      .attr('height', matchHeight / 2 - 2)
+      .attr('fill', '#f48fb1')
+      .attr('stroke', '#1e7e34')
+      .attr('stroke-width', 2)
+      .attr('rx', 5)
+      .attr('ry', 5);
 
-  // Texto de grupo
-  if (roundIndex === 0 && partido.groupName) {
-    g.append('text')
-      .text(partido.groupName)
-      .attr('x', this.matchWidth / 2)
-      .attr('y', -10)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#000')
-      .attr('font-weight', 'bold')
-      .attr('font-size', '14px');
-  }
-
-  // Mostrar nombres de las parejas
-  if (partido.jugador1) {
-    const nombres1 = partido.jugador1.map(j => j.name).join(' / ');
-    g.append('text')
-      .text(nombres1)
-      .attr('x', 10)
-      .attr('y', matchHeight / 4)
-      .attr('dy', '0.35em')
-      .attr('fill', '#000')
-      .attr('font-weight', 'bold')
-      .attr('font-size', '14px');
-  }
-
-  if (partido.jugador2) {
-    const nombres2 = partido.jugador2.map(j => j.name).join(' / ');
-    g.append('text')
-      .text(nombres2)
-      .attr('x', 10)
-      .attr('y', (3 * matchHeight) / 4)
-      .attr('dy', '0.35em')
-      .attr('fill', '#000')
-      .attr('font-weight', 'bold')
-      .attr('font-size', '14px');
-  }
-
-  partido.height = matchHeight;
-}
-
-private drawPlayer(group: any, jugadores: any[], yOffset: number, matchHeight: number, partido: Partido, roundIndex: number, matchIndex: number) {
-  const gap = (matchHeight / 2) / jugadores.length; 
-  jugadores.forEach((jugador, index) => {
-    const y = yOffset + index * gap;
-
-    if (jugador.photo) {
-      group.append('image')
-        .attr('xlink:href', jugador.photo)
-        .attr('x', 5)
-        .attr('y', y + 5)
-        .attr('width', this.logoSize)
-        .attr('height', this.logoSize);
+    // Texto de grupo
+    if (roundIndex === 0 && partido.groupName) {
+      g.append('text')
+        .text(partido.groupName)
+        .attr('x', this.matchWidth / 2)
+        .attr('y', -10)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#000')
+        .attr('font-weight', 'bold')
+        .attr('font-size', '14px');
     }
 
-    group.append('text')
-      .text(jugador.name)
-      .attr('x', this.logoSize + 10)
-      .attr('y', y + this.logoSize / 2)
-      .attr('dy', '0.35em')
-      .attr('fill', 'black')
-      .attr('font-weight', 'bold')
-      .attr('font-size', '12px');
-  });
-}
-
-  private marcarGanador(jugador: any, roundIndex: number, matchIndex: number) {
-    const bracketData = this.mapToPartidos(this.selectedCategory);
-    const partido = bracketData[roundIndex][matchIndex];
-    partido.ganador = jugador;
-
-    const nextRound = bracketData[roundIndex + 1];
-    if (nextRound) {
-      const nextMatchIndex = Math.floor(matchIndex / 2);
-      const nextMatch = nextRound[nextMatchIndex];
-      if (!nextMatch.jugador1) nextMatch.jugador1 = [jugador];
-      else nextMatch.jugador2 = [jugador];
+    // Nombres parejas
+    if (partido.jugador1) {
+      const nombres1 = partido.jugador1.map(j => j.name).join(' / ');
+      g.append('text')
+        .text(nombres1)
+        .attr('x', 10)
+        .attr('y', matchHeight / 4)
+        .attr('dy', '0.35em')
+        .attr('fill', '#000')
+        .attr('font-weight', 'bold')
+        .attr('font-size', '14px');
     }
 
-    this.drawBracket();
+    if (partido.jugador2) {
+      const nombres2 = partido.jugador2.map(j => j.name).join(' / ');
+      g.append('text')
+        .text(nombres2)
+        .attr('x', 10)
+        .attr('y', (3 * matchHeight) / 4)
+        .attr('dy', '0.35em')
+        .attr('fill', '#000')
+        .attr('font-weight', 'bold')
+        .attr('font-size', '14px');
+    }
+
+    partido.height = matchHeight;
+
+    g.style('cursor', 'pointer')
+    .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex))
   }
 
   private drawConnections(partido: Partido, roundIndex: number, matchIndex: number, bracketData: Partido[][]) {
@@ -307,17 +346,17 @@ private drawPlayer(group: any, jugadores: any[], yOffset: number, matchHeight: n
     const nextX = nextPartido.x!;
     const nextY = nextPartido.y! + (nextPartido.height! / 2);
 
-    this.svg.append('line')
+    this.gContainer.append('line')
       .attr('x1', currentX).attr('y1', currentY)
       .attr('x2', currentX + (this.spacingX / 2)).attr('y2', currentY)
       .attr('stroke', '#1e7e34').attr('stroke-width', 2);
 
-    this.svg.append('line')
+    this.gContainer.append('line')
       .attr('x1', currentX + (this.spacingX / 2)).attr('y1', currentY)
       .attr('x2', currentX + (this.spacingX / 2)).attr('y2', nextY)
       .attr('stroke', '#1e7e34').attr('stroke-width', 2);
 
-    this.svg.append('line')
+    this.gContainer.append('line')
       .attr('x1', currentX + (this.spacingX / 2)).attr('y1', nextY)
       .attr('x2', nextX).attr('y2', nextY)
       .attr('stroke', '#1e7e34').attr('stroke-width', 2);
