@@ -331,6 +331,7 @@ export class CalendarioComponent implements OnInit {
     const endTime24 = `${pad(endHour)}:${pad(endMin)}`;
 
     // Abrir modal de reservación
+    console.log(court);
     const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
       data: {
         user: '',
@@ -338,7 +339,7 @@ export class CalendarioComponent implements OnInit {
         endTime: endTime24,
         courtId: court.id,
         date: this.selectedDate,
-        courtName: court.name
+        courtName: court.name,
       },
       width: '600px',
       maxWidth: '95vw',
@@ -351,8 +352,6 @@ export class CalendarioComponent implements OnInit {
       if (!result) return; // Canceló el modal
       console.log('Resultado del modal:', result);
 
-      // **Usamos directamente el payload que envía el modal**
-      // Para pruebas puedes usar los jugadores fijos dentro del modal
       const payload = result;
 
       console.log("Payload final que se enviará al backend:", payload);

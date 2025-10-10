@@ -127,7 +127,7 @@ export class ScheduleDetailsDialogComponent {
       observations: this.editedData.observations,
     }).subscribe({
       next: (res) => {
-              this.closeDialog(true);
+        this.closeDialog(true);
 
         console.log('Reserva actualizada:', res);
         this.data.details = { ...this.editedData };
@@ -141,7 +141,7 @@ export class ScheduleDetailsDialogComponent {
     if (this.initialStatus !== this.editedData.status) {
       this.reservationService.changeReservationStatus(this.data.id, this.editedData.status).subscribe({
         next: (res) => {
-              this.closeDialog(true);
+          this.closeDialog(true);
 
           console.log('Status actualizado:', res);
           this.data.details.status = this.editedData.status;
@@ -155,8 +155,8 @@ export class ScheduleDetailsDialogComponent {
   }
 
   closeDialog(updated: boolean = false) {
-  this.dialogRef.close(updated);
-}
+    this.dialogRef.close(updated);
+  }
 
   onImgError(event: Event) {
     const imgElement = event.target as HTMLImageElement;
@@ -224,27 +224,27 @@ export class ScheduleDetailsDialogComponent {
     this.playerSearchControl.setValue('');
   }
 
-addPlayerToReservation(player: any) {
-  this.reservationService.addPlayerToReservation(this.data.id, player).subscribe({
-    next: (res) => {
-      this.snackBar.open('Jugador agregado exitosamente.', 'Cerrar', { duration: 3000 });
-      console.log('Jugador agregado a la reserva:', res);
+  addPlayerToReservation(player: any) {
+    this.reservationService.addPlayerToReservation(this.data.id, player).subscribe({
+      next: (res) => {
+        this.snackBar.open('Jugador agregado exitosamente.', 'Cerrar', { duration: 3000 });
+        console.log('Jugador agregado a la reserva:', res);
 
-      player.id = res.id;
+        player.id = res.id;
 
-      if (!this.players.some(p => p.user_id === player.user_id)) {
-        this.players.push(player);
+        if (!this.players.some(p => p.user_id === player.user_id)) {
+          this.players.push(player);
+        }
+
+        setTimeout(() => {
+          this.loadPlayers();
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Error al agregar jugador:', err);
       }
-
-      setTimeout(() => {
-        this.loadPlayers();
-      }, 100); 
-    },
-    error: (err) => {
-      console.error('Error al agregar jugador:', err);
-    }
-  });
-}
+    });
+  }
 
 
   private searchPlayers(searchTerm: string): Observable<User[]> {
@@ -274,22 +274,37 @@ addPlayerToReservation(player: any) {
     imgElement.src = this.defaultAvatar;
   }
 
- removePlayer(player: any) {
-  console.log('Eliminando jugador:', player);
-  this.reservationService.removePlayerFromReservation(player.id).subscribe({
-    next: () => {
-      this.snackBar.open('Jugador eliminado exitosamente.', 'Cerrar', { duration: 3000 });
+  removePlayer(player: any) {
+    console.log('Eliminando jugador:', player);
+    this.reservationService.removePlayerFromReservation(player.id).subscribe({
+      next: () => {
+        this.snackBar.open('Jugador eliminado exitosamente.', 'Cerrar', { duration: 3000 });
 
-      this.players = this.players.filter(p => p.user_id !== player.user_id);
+        this.players = this.players.filter(p => p.user_id !== player.user_id);
 
-      setTimeout(() => {
-        this.loadPlayers();
-      }, 100);
-    },
-    error: (err) => {
-      console.error('Error al eliminar jugador:', err);
-    }
-  });
-}
+        setTimeout(() => {
+          this.loadPlayers();
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Error al eliminar jugador:', err);
+      }
+    });
+  }
+
+  onPlayerStatusChange(player: any) {
+
+    this.reservationService.updatePlayerStatusPayment(player.id, player.status)
+      .subscribe({
+        next: (res) => {
+          console.log('Status actualizado a paid:', res);
+          player.status = player.status;
+        },
+        error: (err) => console.error('Error cambiando status:', err)
+      });
+
+    // Aquí puedes guardar el cambio, actualizar en backend, etc.
+    console.log('Nuevo status:', player.status);
+  }
 
 }

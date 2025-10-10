@@ -12,14 +12,14 @@
 
   <div class="dialog-content">
     <div class="configuration-sections">
-      
+
       <!-- Sección Club y Rol -->
       <div class="config-section">
         <div class="section-header">
           <mat-icon class="section-icon">business</mat-icon>
           <h3>Configuración General</h3>
         </div>
-        
+
         <div class="form-row">
           <!-- Seleccionar Club -->
           <mat-form-field appearance="outline" class="form-field">
@@ -50,7 +50,7 @@
           <mat-icon class="section-icon">access_time</mat-icon>
           <h3>Límites de Tiempo</h3>
         </div>
-        
+
         <div class="limits-grid">
           <!-- Límite para cancelar -->
           <div class="limit-card">
@@ -62,9 +62,12 @@
               </div>
             </div>
             <mat-form-field appearance="outline" class="number-field">
-              <input matInput type="number" min="0" [(ngModel)]="cancellation_policy" 
-                     placeholder="0">
-              <span matSuffix class="suffix">horas</span>
+              <mat-label>Límite para cancelar</mat-label>
+              <mat-select [(ngModel)]="cancellation_policy">
+                <mat-option *ngFor="let n of cancellationOptions" [value]="n">
+                  {{ n }} horas
+                </mat-option>
+              </mat-select>
             </mat-form-field>
           </div>
 
@@ -78,9 +81,12 @@
               </div>
             </div>
             <mat-form-field appearance="outline" class="number-field">
-              <input matInput type="number" min="0" [(ngModel)]="advance_reservation_limit" 
-                     placeholder="0">
-              <span matSuffix class="suffix">horas</span>
+              <mat-label>Límite para reservar</mat-label>
+              <mat-select [(ngModel)]="advance_reservation_limit">
+                <mat-option *ngFor="let n of advanceReservationOptions" [value]="n">
+                  {{ n }} horas
+                </mat-option>
+              </mat-select>
             </mat-form-field>
           </div>
         </div>
@@ -92,7 +98,7 @@
           <mat-icon class="section-icon">numbers</mat-icon>
           <h3>Límites de Cantidad</h3>
         </div>
-        
+
         <div class="quantity-card">
           <div class="quantity-header">
             <mat-icon class="quantity-icon">person</mat-icon>
@@ -102,9 +108,12 @@
             </div>
           </div>
           <mat-form-field appearance="outline" class="quantity-field">
-            <input matInput type="number" min="1" [(ngModel)]="activate_reservation" 
-                   placeholder="1">
-            <span matSuffix class="suffix">reservaciones</span>
+            <mat-label>Reservaciones por usuario</mat-label>
+            <mat-select [(ngModel)]="activate_reservation">
+              <mat-option *ngFor="let n of activateReservationOptions" [value]="n">
+                {{ n }} reservaciones
+              </mat-option>
+            </mat-select>
           </mat-form-field>
         </div>
       </div>

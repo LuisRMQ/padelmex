@@ -1,33 +1,90 @@
-<h2>Bracket del Torneo</h2>
-
-<div *ngIf="loading">⏳ Cargando bracket...</div>
-<div *ngIf="error" class="error">{{ error }}</div>
-
-<div *ngIf="!loading && bracket.length">
-
-<mat-form-field appearance="fill">
-  <mat-label>Seleccionar categoría</mat-label>
-  <mat-select [(value)]="selectedCategory" (selectionChange)="filtrarCategoria()">
-    <mat-option *ngFor="let cat of categories" [value]="cat.category_name">
-      {{ cat.category_name }} (Nivel {{ cat.level }})
-    </mat-option>
-  </mat-select>
-</mat-form-field>
-
-  <div *ngFor="let cat of filteredBracket">
-    <h3>{{ cat.category_name }} (Nivel {{ cat.level }})</h3>
-    
-    <!-- <div *ngFor="let group of cat.groups">
-      <h4>{{ group.group_name }}</h4>
-      <ul>
-        <li *ngFor="let game of group.games">
-          {{ game.couple_1?.name || '---' }} vs {{ game.couple_2?.name || '---' }}
-          <span *ngIf="game.winner_id">✅ Ganador: {{ game.winner_id }}</span>
-        </li>
-      </ul>
+<!-- Header / toolbar -->
+<mat-toolbar class="bracket-toolbar" color="primary" role="banner">
+  <div class="toolbar-left">
+    <div class="logo-container">
+      <mat-icon class="tournament-icon">trophy</mat-icon>
     </div>
-  </div> -->
+    <div class="title-section">
+      <h1 class="titulo-modal">Bracket del Torneo</h1>
+    </div>
+  </div>
 
-</div>
+  <div class="toolbar-right">
+    <button mat-icon-button class="close-btn" aria-label="Cerrar" (click)="cerrar()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>
 
-<div #bracketContainer class="bracket-container" style="border:1px solid #ccc; height:1000px; margin-top:10px;"></div>
+<mat-dialog-content class="contenido-modal">
+
+  <!-- Controls Section -->
+  <div class="controls-section">
+    <div class="controls-left">
+      <mat-form-field appearance="outline" class="category-select">
+        <mat-label>Seleccionar Categoría</mat-label>
+        <mat-select [(value)]="selectedCategory" (selectionChange)="filtrarCategoria()">
+          <mat-option *ngFor="let cat of categories" [value]="cat.category_name">
+            <div class="category-option">
+              <span class="category-name">{{ cat.category_name }}</span>
+              <span class="category-level">Nivel {{ cat.level }}</span>
+            </div>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="controls-right">
+      <div class="status-area">
+        <ng-container *ngIf="loading">
+          <div class="loading-indicator">
+            <mat-spinner diameter="32"></mat-spinner>
+            <span class="status-text">Cargando datos del bracket...</span>
+          </div>
+        </ng-container>
+
+        <div *ngIf="error" class="error-message">
+          <mat-icon class="error-icon">warning</mat-icon>
+          <div class="error-content">
+            <span class="error-title">Unable to load bracket</span>
+            <span class="error-desc">{{ error }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categories Grid -->
+  <div class="categories-grid" *ngIf="!loading && filteredBracket?.length">
+    <div *ngFor="let cat of filteredBracket" class="category-card" 
+         [class.active]="selectedCategory === cat.category_name">
+      <div class="card-content">
+        <div class="card-main">
+          <div class="category-badge">
+            <span class="level-badge">Nvl {{ cat.level }}</span>
+          </div>
+          <div class="category-info">
+            <h3 class="category-title">{{ cat.category_name }}</h3>
+            <p class="category-stats">{{ cat.groups?.length || 0 }} grupos • {{ 20 }} partidos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bracket Visualization -->
+  <div class="bracket-section">
+    <div class="bracket-header">
+      <h3>Visualización del Bracket</h3>
+    </div>
+    
+    <div class="bracket-area">
+      <div #bracketContainer class="bracket-container" aria-label="Visualización del bracket del torneo" role="img"></div>
+    </div>
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-stroked-button (click)="cerrar()" class="action-btn">Cerrar</button>
+</mat-dialog-actions>

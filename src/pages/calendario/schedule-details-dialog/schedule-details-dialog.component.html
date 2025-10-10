@@ -137,18 +137,31 @@
                     <p class="player-name">{{ player.user?.name }} {{ player.user?.lastname }}</p>
                     <p class="player-amount">${{ player.part_amount }}</p>
 
-                    <!-- Badge solo clicable si editable -->
-                    <span class="status-badge" [ngClass]="{
-        'paid-badge': player.status === 'paid', 
-        'pending-badge': player.status === 'pending',
-        'disabled-badge': !playersEditable,
-        'clickable': playersEditable
-      }" (click)="playersEditable && confirmPlayerStatusChange(player)">
-                        {{ getStatusLabel(player.status) }}
-                    </span>
-                <button mat-icon-button color="warn" *ngIf="playersEditable" (click)="removePlayer(player)">
-                    <mat-icon>delete</mat-icon>
-                </button>
+                    <!-- Status selector -->
+                    <ng-container *ngIf="playersEditable; else statusBadge">
+                        <mat-form-field appearance="outline" class="status-dropdown">
+                            <mat-label>Estatus</mat-label>
+                            <mat-select [(ngModel)]="player.status" (selectionChange)="onPlayerStatusChange(player)">
+                                <mat-option value="paid">Pagado</mat-option>
+                                <mat-option value="pending">Pendiente</mat-option>
+                                <mat-option value="cancelled">Cancelado</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </ng-container>
+                    <ng-template #statusBadge>
+                        <span class="status-badge" [ngClass]="{
+                            'paid-badge': player.status === 'paid', 
+                            'pending-badge': player.status === 'pending',
+                            'disabled-badge': !playersEditable,
+                            'clickable': playersEditable
+                            }">
+                            {{ getStatusLabel(player.status) }}
+                        </span>
+                    </ng-template>
+
+                    <button mat-icon-button color="warn" *ngIf="playersEditable" (click)="removePlayer(player)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
                 </div>
             </ng-container>
             <ng-container *ngIf="players.length === 0">

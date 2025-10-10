@@ -251,69 +251,56 @@ export class ScheduleDateDialogComponent implements OnInit {
   }
 
   onSubmit(): void {
-  if (!this.reservationForm.valid) return;
-  const mainPlayer = this.userControl.value;
+    if (!this.reservationForm.valid) return;
+    const mainPlayer = this.userControl.value;
 
-  if (!mainPlayer || typeof mainPlayer !== 'object' || !mainPlayer.id) {
-    this.snackBar.open(
-      'Selecciona el jugador principal antes de continuar.',
-      'Cerrar',
-      { duration: 3000, panelClass: ['snackbar-error'] }
-    );
-    return;
+    if (!mainPlayer || typeof mainPlayer !== 'object' || !mainPlayer.id) {
+      this.snackBar.open(
+        'Selecciona el jugador principal antes de continuar.',
+        'Cerrar',
+        { duration: 3000, panelClass: ['snackbar-error'] }
+      );
+      return;
+    }
+
+    console.log('---DEBUG: Antes de armar playersPayload---');
+    console.log('Jugador principal:', mainPlayer);
+    console.log('Jugadores adicionales seleccionados:', this.selectedPlayers);
+
+
+    const playersPayload = this.selectedPlayers.map((p, index) => ({
+      user_id: p.id,
+      player_number: index + 2,
+      paid_by_owner: p.paid_by_owner || false
+    }));
+
+
+
+
+    console.log('---DEBUG: playersPayload que se enviará---');
+    playersPayload.forEach((p, i) => {
+      console.log(`Jugador ${i + 1}:`, p);
+    });
+
+    const payload = {
+      user_id: this.reservationForm.value.user_id,
+      court_id: this.reservationForm.value.court_id,
+      reservation_type_id: this.reservationForm.value.reservation_type_id,
+      date: this.formatDateForApi(this.selectedDate),
+      start_time: this.formatTimeForApi(this.reservationForm.value.start_time),
+      end_time: this.formatTimeForApi(this.reservationForm.value.end_time),
+      pay_method: this.reservationForm.value.pay_method,
+      observations: this.reservationForm.value.observations,
+      type: this.reservationForm.value.type,
+      category: this.reservationForm.value.category,
+      players: playersPayload
+    };
+
+    console.log('---DEBUG: payload final que se enviará al backend---');
+    console.log(payload);
+
+    this.dialogRef.close(payload);
   }
-
-  console.log('---DEBUG: Antes de armar playersPayload---');
-  console.log('Jugador principal:', mainPlayer);
-  console.log('Jugadores adicionales seleccionados:', this.selectedPlayers);
-
-  // const playersPayload = [
-  //   {
-  //     user_id: mainPlayer.id,
-  //     player_number: 1,
-  //     paid_by_owner: false
-  //   },
-  //   ...this.selectedPlayers.map((p, index) => ({
-  //     user_id: p.id,
-  //     player_number: index + 2,
-  //     paid_by_owner: p.paid_by_owner || false
-  //   }))
-  // ];
-
-
-     const playersPayload = this.selectedPlayers.map((p, index) => ({
-    user_id: p.id,
-    player_number: index + 2,
-    paid_by_owner: p.paid_by_owner || false
-  }));
-
-
-  
-
-  console.log('---DEBUG: playersPayload que se enviará---');
-  playersPayload.forEach((p, i) => {
-    console.log(`Jugador ${i + 1}:`, p);
-  });
-
-  const payload = {
-    user_id: this.reservationForm.value.user_id,
-    court_id: this.reservationForm.value.court_id,
-    reservation_type_id: this.reservationForm.value.reservation_type_id,
-    date: this.formatDateForApi(this.selectedDate),
-    start_time: this.formatTimeForApi(this.reservationForm.value.start_time),
-    end_time: this.formatTimeForApi(this.reservationForm.value.end_time),
-    pay_method: this.reservationForm.value.pay_method,
-    observations: this.reservationForm.value.observations,
-    type: this.reservationForm.value.type,
-    category: this.reservationForm.value.category,
-    players: playersPayload
-  };
-
-  console.log('---DEBUG: payload final que se enviará al backend---');
-  console.log(payload);
-
-  this.dialogRef.close(payload);
-}
 
 
 

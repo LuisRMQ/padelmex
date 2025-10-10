@@ -8,6 +8,9 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { MatToolbarModule } from "@angular/material/toolbar";
+import { MatIconModule } from "@angular/material/icon";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 export interface Partido {
   jugador1?: any[]; // array de jugadores de la pareja
@@ -29,8 +32,11 @@ export interface Partido {
     MatDialogModule,
     MatButtonModule,
     MatFormFieldModule,
-    MatSelectModule
-  ]
+    MatSelectModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatProgressSpinnerModule
+]
 })
 export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 

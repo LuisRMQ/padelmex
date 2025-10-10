@@ -38,6 +38,9 @@ export class SettingsDialogComponent {
   club_id!: number;
   rol_id!: number;
   editable = false;
+  cancellationOptions = [0, 1, 2, 3, 4, 5, 6, 12, 24, 48];
+  advanceReservationOptions = [0, 1, 2, 3, 4, 5, 6, 12, 24, 48];
+  activateReservationOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   clubs: Club[] = [];
   roles: Rol[] = [];
