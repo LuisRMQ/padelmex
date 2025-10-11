@@ -67,7 +67,13 @@ export class ClubsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.clubsService.getClubs().subscribe({
+   this.viewclubs()
+  }
+
+
+
+  viewclubs(){
+     this.clubsService.getClubs().subscribe({
       next: (res: any) => {
         this.clubs = res.data;
         this.clubesFiltrados = this.clubs;
@@ -126,7 +132,7 @@ export class ClubsComponent implements OnInit {
       panelClass: 'custom-dialog'
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe(async result => {
       if (result) {
         this.clubesFiltrados = this.clubs;
         this.snackBar.open('✅ Club registrado exitosamente', 'Cerrar', {
@@ -136,14 +142,8 @@ export class ClubsComponent implements OnInit {
           verticalPosition: 'bottom'
         });
 
-        this.clubsService.getClubs().subscribe({
-          next: (res: any) => {
-            this.clubs = res.data;
-          },
-          error: (err) => {
-            console.error('Error al recargar clubs', err);
-          }
-        });
+        await this.viewclubs();
+
       }
     });
   }
