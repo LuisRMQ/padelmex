@@ -20,6 +20,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService, Category } from '../../../app/services/config.service';
 
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import PrivateChannel from 'pusher-js/types/src/core/channels/private_channel';
 
 
 export interface DialogData {
@@ -30,6 +31,8 @@ export interface DialogData {
   date: string | Date;
   clubId?: number;
   courtName?: string;
+  price_hour?: number;
+
 }
 
 @Component({
@@ -101,7 +104,7 @@ export class ScheduleDateDialogComponent implements OnInit {
       pay_method: ['single_payment', Validators.required],
       observations: [''],
       type: ['private', Validators.required],
-      category: ['', Validators.required]
+      category: ['', Validators.required],
     });
 
     this.filteredUsers = this.userControl.valueChanges.pipe(
@@ -358,4 +361,22 @@ export class ScheduleDateDialogComponent implements OnInit {
     const value = this.playersControl.value;
     return typeof value === 'string' && value.length >= 2;
   }
+
+  getTotalAPagar(): number {
+  const start = this.reservationForm.value.start_time;
+  const end = this.reservationForm.value.end_time;
+  const price = this.data.price_hour || 0;
+
+  if (!start || !end || !price) return 0;
+
+  // Asume formato 'HH:mm'
+  const [startH, startM] = start.split(':').map(Number);
+  const [endH, endM] = end.split(':').map(Number);
+
+  const startMinutes = startH * 60 + startM;
+  const endMinutes = endH * 60 + endM;
+  const durationHours = (endMinutes - startMinutes) / 60;
+
+  return Math.max(0, durationHours * price);
+}
 }

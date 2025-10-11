@@ -180,3 +180,18 @@
   font-size: 0.85rem;
   color: #666;
 }
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0;
+  font-size: 1.2em;
+  font-weight: 500;
+}
+.total-label {
+  color: #333;
+}
+.total-amount {
+  color: #1976d2;
+}

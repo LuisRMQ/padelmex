@@ -276,7 +276,8 @@ export class CanchasComponent implements OnInit {
       next: (horarios) => {
         const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
           maxWidth: '80vw',
-          maxHeight: '80vh',
+          maxHeight: '90vh',
+          height:'90vh',
           data: { courtId: court.id, horarios, clubId: court.club_id, courtName: court.name },
         });
 

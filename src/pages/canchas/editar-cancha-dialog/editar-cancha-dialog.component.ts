@@ -116,7 +116,7 @@ export class EditarCanchaDialogComponent {
             console.log(pair[0], ':', pair[1]);
         }
 
-        this.dialogRef.close(formData); 
+        this.dialogRef.close(formData);
     }
 
 
@@ -127,9 +127,9 @@ export class EditarCanchaDialogComponent {
 
 
     removePhoto() {
-  this.selectedFile = null;
-  this.courtForm.patchValue({ photo: '' });
-}
+        this.selectedFile = null;
+        this.courtForm.patchValue({ photo: '' });
+    }
 
 
     onCancel() {
