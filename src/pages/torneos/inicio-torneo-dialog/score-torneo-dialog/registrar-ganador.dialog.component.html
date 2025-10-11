@@ -1,50 +1,139 @@
 <div class="modern-card">
-  <h2 mat-dialog-title class="modern-header">Registrar Ganador</h2>
+  <div class="card-header">
+    <h2 class="modern-title">Registrar Ganador</h2>
+    <div class="tournament-badge">Partido</div>
+  </div>
 
   <mat-dialog-content class="modern-content">
-    <!-- Parejas VS -->
-    <div class="section vs-section">
-      <!-- Pareja 1 -->
-      <div class="pareja">
-        <h3 class="section-title">Pareja 1</h3>
-        <div *ngFor="let j of data.partido.jugador1" class="player-item">
-          <img *ngIf="j.photo" [src]="j.photo" alt="{{ j.name }}" class="player-photo">
-          <span>{{ j.name }}</span>
+    <!-- VS Section - Rediseñada -->
+    <div class="versus-section">
+      <div class="team-card team-1">
+        <div class="team-header">
+          <h3 class="team-name">Pareja 1</h3>
+          <div class="team-score" *ngIf="totalScore1 !== undefined">{{ totalScore1 }}</div>
+        </div>
+        <div class="players-list">
+          <div *ngFor="let j of data.partido.jugador1" class="player-card">
+            <div class="player-avatar">
+              <img *ngIf="j.photo" [src]="j.photo" alt="{{ j.name }}" class="player-photo">
+              <div *ngIf="!j.photo" class="avatar-placeholder">
+                {{ j.name.charAt(0) }}
+              </div>
+            </div>
+            <span class="player-name">{{ j.name }}</span>
+          </div>
         </div>
       </div>
 
-      <div class="vs-text">VS</div>
+      <div class="vs-container">
+        <div class="vs-circle">
+          <span class="vs-text">VS</span>
+        </div>
+      </div>
 
-      <!-- Pareja 2 -->
-      <div class="pareja">
-        <h3 class="section-title">Pareja 2</h3>
-        <div *ngFor="let j of data.partido.jugador2" class="player-item">
-          <img *ngIf="j.photo" [src]="j.photo" alt="{{ j.name }}" class="player-photo">
-          <span>{{ j.name }}</span>
+      <div class="team-card team-2">
+        <div class="team-header">
+          <h3 class="team-name">Pareja 2</h3>
+          <div class="team-score" *ngIf="totalScore2 !== undefined">{{ totalScore2 }}</div>
+        </div>
+        <div class="players-list">
+          <div *ngFor="let j of data.partido.jugador2" class="player-card">
+            <div class="player-avatar">
+              <img *ngIf="j.photo" [src]="j.photo" alt="{{ j.name }}" class="player-photo">
+              <div *ngIf="!j.photo" class="avatar-placeholder">
+                {{ j.name.charAt(0) }}
+              </div>
+            </div>
+            <span class="player-name">{{ j.name }}</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Scores -->
-    <div class="section">
-      <h4 class="section-title">Scores</h4>
-      <div class="form-grid">
-        <div>
-          <label>Set 1:</label>
-          <input type="number" min="0" class="modern-field" [(ngModel)]="score1_set1" placeholder="Pareja 1">
-          <input type="number" min="0" class="modern-field" [(ngModel)]="score2_set1" placeholder="Pareja 2">
+    <!-- Sets Section -->
+    <div class="sets-container">
+      <!-- Set 1 -->
+      <div class="set-card" [class.completed]="score1_set1 && score2_set1">
+        <div class="set-header">
+          <h4 class="set-title">Set 1</h4>
+          <div class="set-status" *ngIf="score1_set1 && score2_set1">
+            <span class="status-badge">Completado</span>
+          </div>
         </div>
-        <div>
-          <label>Set 2:</label>
-          <input type="number" min="0" class="modern-field" [(ngModel)]="score1_set2" placeholder="Pareja 1">
-          <input type="number" min="0" class="modern-field" [(ngModel)]="score2_set2" placeholder="Pareja 2">
+        <div class="set-controls">
+          <div class="score-input-group">
+            <label>Pareja 1</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score1_set1" 
+                   class="score-input" [class.has-value]="score1_set1">
+          </div>
+          <div class="score-separator">:</div>
+          <div class="score-input-group">
+            <label>Pareja 2</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score2_set1" 
+                   class="score-input" [class.has-value]="score2_set1">
+          </div>
+        </div>
+        <button mat-raised-button class="set-save-btn" 
+                (click)="guardarSet(1)" 
+                [disabled]="!score1_set1 || !score2_set1">
+          <span>Guardar Set 1</span>
+          <mat-icon>check_circle</mat-icon>
+        </button>
+      </div>
+
+      <!-- Set 2 -->
+      <div class="set-card" [class.completed]="score1_set2 && score2_set2">
+        <div class="set-header">
+          <h4 class="set-title">Set 2</h4>
+          <div class="set-status" *ngIf="score1_set2 && score2_set2">
+            <span class="status-badge">Completado</span>
+          </div>
+        </div>
+        <div class="set-controls">
+          <div class="score-input-group">
+            <label>Pareja 1</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score1_set2" 
+                   class="score-input" [class.has-value]="score1_set2">
+          </div>
+          <div class="score-separator">:</div>
+          <div class="score-input-group">
+            <label>Pareja 2</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score2_set2" 
+                   class="score-input" [class.has-value]="score2_set2">
+          </div>
+        </div>
+        <button mat-raised-button class="set-save-btn" 
+                (click)="guardarSet(2)" 
+                [disabled]="!score1_set2 || !score2_set2">
+          <span>Guardar Set 2</span>
+          <mat-icon>check_circle</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-section" *ngIf="completedSets > 0">
+      <div class="progress-info">
+        <span class="progress-text">{{ completedSets }}/2 sets completados</span>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="(completedSets / 2) * 100"></div>
         </div>
       </div>
     </div>
+
   </mat-dialog-content>
 
   <mat-dialog-actions class="modern-actions">
-    <button mat-button class="cancel-btn" (click)="cancelar()">Cancelar</button>
-    <button mat-raised-button class="save-btn" color="primary" (click)="confirmar()">Confirmar</button>
+    <button mat-button class="cancel-btn" (click)="cancelar()">
+      <mat-icon>close</mat-icon>
+      Cancelar
+    </button>
+    <button mat-raised-button class="save-btn" 
+            color="primary" 
+            (click)="confirmar()"
+            [disabled]="completedSets < 2">
+      <mat-icon>sports_score</mat-icon>
+      Confirmar Resultado Final
+    </button>
   </mat-dialog-actions>
 </div>
