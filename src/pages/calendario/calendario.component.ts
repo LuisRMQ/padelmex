@@ -339,6 +339,8 @@ export class CalendarioComponent implements OnInit {
         endTime: endTime24,
         courtId: court.id,
         date: this.selectedDate,
+        clubId: this.selectedClubId, 
+
         courtName: court.name,
       },
       width: '600px',

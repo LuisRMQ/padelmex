@@ -7,12 +7,22 @@
 
         <div class="modal-grid">
           <!-- Total a pagar -->
-          <div class="total-row">
-            <span class="total-label">Total a pagar:</span>
-            <span class="total-amount">
-              {{ getTotalAPagar() | currency:'MXN':'symbol':'1.2-2':'es-MX' }}
-            </span>
-          </div>
+          <div class="total-breakdown">
+  <div class="breakdown-row">
+    <span>Horas rentadas:</span>
+    <strong>{{ getTotalHoras() | currency:'MXN':'symbol':'1.2-2':'es-MX' }}</strong>
+  </div>
+
+  <div class="breakdown-row">
+    <span>Comisión de la cancha:</span>
+    <strong>{{ getComisionCancha() | currency:'MXN':'symbol':'1.2-2':'es-MX' }}</strong>
+  </div>
+
+  <div class="breakdown-row total">
+    <span>Total a pagar:</span>
+    <strong>{{ getTotalAPagar() | currency:'MXN':'symbol':'1.2-2':'es-MX' }}</strong>
+  </div>
+</div>
 
           <!-- Fecha -->
           <mat-form-field class="modal-field" appearance="outline">

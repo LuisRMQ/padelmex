@@ -18,10 +18,9 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService, Category } from '../../../app/services/config.service';
-
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import PrivateChannel from 'pusher-js/types/src/core/channels/private_channel';
-
+import { HorariosServiceCancha, HorarioCancha } from '../../../app/services/horarios-canchas.service';
+import { CourtService } from '../../../app/services/court.service';
 
 export interface DialogData {
   user: string;
@@ -32,7 +31,7 @@ export interface DialogData {
   clubId?: number;
   courtName?: string;
   price_hour?: number;
-
+  commission?: number;
 }
 
 @Component({
@@ -82,16 +81,20 @@ export class ScheduleDateDialogComponent implements OnInit {
   categories: Category[] = [];
   defaultAvatar = '../../../assets/images/iconuser.png';
 
+  horariosCancha: HorarioCancha[] = [];
+  precioPorHoraActual = 0;
+
   constructor(
     public dialogRef: MatDialogRef<ScheduleDateDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private fb: FormBuilder,
     private usersService: UsersService,
     private snackBar: MatSnackBar,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private horariosService: HorariosServiceCancha,
+    private courtService: CourtService
   ) {
     this.selectedDate = this.convertToDate(data.date);
-
     const defaultEndTime = this.getDefaultEndTime(data.startTime, this.minReservationTime);
 
     this.reservationForm = this.fb.group({
@@ -129,25 +132,91 @@ export class ScheduleDateDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.generarHoras();
-    this.configService.getCategories().subscribe(categories => {
-      this.categories = categories;
+  this.generarHoras();
+
+  // Cargar categorías
+  this.configService.getCategories().subscribe(categories => this.categories = categories);
+
+  // 🔹 Cargar horarios por cancha y día
+  const dayName = this.getNombreDia(this.selectedDate);
+  this.horariosService.getHorariosByCourt(this.data.clubId!, this.data.courtId).subscribe({
+    next: (horarios) => {
+      this.horariosCancha = horarios.filter(h => h.day === dayName);
+
+      // 🔹 Cargar comisión desde CourtService
+     this.courtService.getCourtsByClub(this.data.clubId!).subscribe({
+  next: (res) => {
+    const court = res.data.find(c => c.id === this.data.courtId);
+    if (court) {
+      // Convertimos a number aquí
+      this.data.commission = typeof court.commission === 'string' ? parseFloat(court.commission) : court.commission;
+      this.data.price_hour = court.price_hour; // si quieres también precio
+      console.log(`Comisión de la cancha ${court.name}:`, this.data.commission);
+          console.log(`Precio por hora:`, this.data.price_hour);
+    }
+  },
+  error: (err) => console.error(err)
+});
+
+    },
+    error: (err) => console.error('Error al cargar horarios:', err)
+  });
+
+  // Validar duración mínima
+  this.reservationForm.get('end_time')?.valueChanges.subscribe(endTime => {
+    const startTime = this.reservationForm.get('start_time')?.value;
+    if (startTime && endTime) {
+      const duration = this.getMinutesDiff(startTime, endTime);
+      if (duration < this.minReservationTime) {
+        this.snackBar.open(
+          `La duración mínima de la reservación es de ${this.minReservationTime / 60} hora(s).`,
+          'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] }
+        );
+        this.reservationForm.get('end_time')?.setValue('');
+      }
+    }
+  });
+
+  // Recalcular total al cambiar hora
+  this.reservationForm.get('start_time')?.valueChanges.subscribe(() => this.getTotalAPagar());
+  this.reservationForm.get('end_time')?.valueChanges.subscribe(() => this.getTotalAPagar());
+}
+
+  // ------------------- MÉTODOS DE DESGLOSE -------------------
+  getTotalHoras(): number {
+    const start = this.reservationForm.value.start_time;
+    const end = this.reservationForm.value.end_time;
+    if (!start || !end) return 0;
+
+    const horario = this.horariosCancha.find(h => {
+      const startH = h.start_time.slice(0, 5);
+      const endH = h.end_time.slice(0, 5);
+      return start >= startH && end <= endH;
     });
 
-    this.reservationForm.get('end_time')?.valueChanges.subscribe(endTime => {
-      const startTime = this.reservationForm.get('start_time')?.value;
-      if (startTime && endTime) {
-        const duration = this.getMinutesDiff(startTime, endTime);
-        if (duration < this.minReservationTime) {
-          this.snackBar.open(
-            `La duración mínima de la reservación es de ${this.minReservationTime / 60} hora(s).`,
-            'Cerrar',
-            { duration: 3000, panelClass: ['snackbar-error'] }
-          );
-          this.reservationForm.get('end_time')?.setValue('');
-        }
-      }
-    });
+    const price = horario ? parseFloat(String(horario.price_hour ?? '0')) : 0;
+    this.precioPorHoraActual = price;
+
+    const [startH, startM] = start.split(':').map(Number);
+    const [endH, endM] = end.split(':').map(Number);
+    const durationHours = (endH * 60 + endM - (startH * 60 + startM)) / 60;
+
+    return Math.max(0, durationHours * price);
+  }
+
+  getComisionCancha(): number {
+    console.log(this.data.commission )
+    return parseFloat(String(this.data.commission ?? '0'));
+  }
+
+  getTotalAPagar(): number {
+    return this.getTotalHoras() + this.getComisionCancha();
+  }
+  // ------------------------------------------------------------
+
+  getNombreDia(fecha: Date): string {
+    const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    return dias[fecha.getDay()];
   }
 
   getMinutesDiff(start: string, end: string): number {
@@ -164,7 +233,7 @@ export class ScheduleDateDialogComponent implements OnInit {
       map(users => {
         this.isLoadingUsers = false;
         return users.filter(u =>
-        (`${u.name} ${u.lastname}`.toLowerCase().includes(normalizedTerm) ||
+          (`${u.name} ${u.lastname}`.toLowerCase().includes(normalizedTerm) ||
           (u.email && u.email.toLowerCase().includes(normalizedTerm)))
         );
       }),
@@ -180,7 +249,6 @@ export class ScheduleDateDialogComponent implements OnInit {
       map(users => {
         this.isLoadingPlayers = false;
         const ownerId = this.reservationForm.value.user_id;
-        // Filtrado insensible a mayúsculas/minúsculas y excluye el dueño
         return users.filter(u =>
           u.id !== ownerId &&
           (
@@ -189,18 +257,13 @@ export class ScheduleDateDialogComponent implements OnInit {
           )
         );
       }),
-      catchError(() => {
-        this.isLoadingPlayers = false;
-        return of([]);
-      })
+      catchError(() => { this.isLoadingPlayers = false; return of([]); })
     );
   }
 
   displayFn(user: User): string {
     return user && user.name ? `${user.name} ${user.lastname}` : '';
   }
-
-
 
   onImageError(event: Event) {
     const imgElement = event.target as HTMLImageElement;
@@ -209,9 +272,7 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   onUserSelected(user: User): void {
     this.selectedUser = user;
-    // Backend necesita user_id, pero User tiene id
     this.reservationForm.patchValue({ user_id: user.id });
-    console.log('Usuario dueño seleccionado:', user);
   }
 
   getDefaultEndTime(start: string, minMinutes: number): string {
@@ -224,66 +285,32 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   addPlayer(user: User): void {
     if (this.selectedPlayers.length >= 3) {
-      this.snackBar.open('No puedes agregar más de 3 jugadores adicionales.', 'Cerrar', {
-        duration: 2500,
-        panelClass: ['snackbar-error']
-      });
+      this.snackBar.open('No puedes agregar más de 3 jugadores adicionales.', 'Cerrar', { duration: 2500, panelClass: ['snackbar-error'] });
       this.playersControl.setValue('');
       return;
     }
-
-    // Evitamos duplicados por id
-    if (!this.selectedPlayers.find(p => p.id === user.id)) {
-      this.selectedPlayers = [...this.selectedPlayers, user]; // Cambio de referencia
-      console.log('Lista de jugadores actuales:', this.selectedPlayers);
-    }
+    if (!this.selectedPlayers.find(p => p.id === user.id)) this.selectedPlayers = [...this.selectedPlayers, user];
     this.playersControl.setValue('');
   }
 
-
   setPaidByOwner(index: number, checked: boolean) {
-    this.selectedPlayers[index] = {
-      ...this.selectedPlayers[index],
-      paid_by_owner: checked
-    };
+    this.selectedPlayers[index] = { ...this.selectedPlayers[index], paid_by_owner: checked };
   }
 
-  removePlayer(index: number): void {
-    this.selectedPlayers.splice(index, 1);
-    console.log('Jugador eliminado, lista actual:', this.selectedPlayers);
-  }
+  removePlayer(index: number): void { this.selectedPlayers.splice(index, 1); }
 
   onSubmit(): void {
     if (!this.reservationForm.valid) return;
     const mainPlayer = this.userControl.value;
-
     if (!mainPlayer || typeof mainPlayer !== 'object' || !mainPlayer.id) {
-      this.snackBar.open(
-        'Selecciona el jugador principal antes de continuar.',
-        'Cerrar',
-        { duration: 3000, panelClass: ['snackbar-error'] }
-      );
+      this.snackBar.open('Selecciona el jugador principal antes de continuar.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
       return;
     }
-
-    console.log('---DEBUG: Antes de armar playersPayload---');
-    console.log('Jugador principal:', mainPlayer);
-    console.log('Jugadores adicionales seleccionados:', this.selectedPlayers);
-
-
     const playersPayload = this.selectedPlayers.map((p, index) => ({
       user_id: p.id,
       player_number: index + 2,
       paid_by_owner: p.paid_by_owner || false
     }));
-
-
-
-
-    console.log('---DEBUG: playersPayload que se enviará---');
-    playersPayload.forEach((p, i) => {
-      console.log(`Jugador ${i + 1}:`, p);
-    });
 
     const payload = {
       user_id: this.reservationForm.value.user_id,
@@ -298,14 +325,8 @@ export class ScheduleDateDialogComponent implements OnInit {
       category: this.reservationForm.value.category,
       players: playersPayload
     };
-
-    console.log('---DEBUG: payload final que se enviará al backend---');
-    console.log(payload);
-
     this.dialogRef.close(payload);
   }
-
-
 
   private convertToDate(dateValue: string | Date): Date {
     if (dateValue instanceof Date) return dateValue;
@@ -338,14 +359,10 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   onDateChange(event: any): void {
     const selectedDate = event.value;
-    if (selectedDate) {
-      this.reservationForm.patchValue({ date: this.formatDateForApi(selectedDate) });
-    }
+    if (selectedDate) this.reservationForm.patchValue({ date: this.formatDateForApi(selectedDate) });
   }
 
-  onCancel(): void {
-    this.dialogRef.close();
-  }
+  onCancel(): void { this.dialogRef.close(); }
 
   getMetodoPagoLabel(value: string): string {
     const found = this.metodosPago.find(m => m.value === value);
@@ -361,22 +378,4 @@ export class ScheduleDateDialogComponent implements OnInit {
     const value = this.playersControl.value;
     return typeof value === 'string' && value.length >= 2;
   }
-
-  getTotalAPagar(): number {
-  const start = this.reservationForm.value.start_time;
-  const end = this.reservationForm.value.end_time;
-  const price = this.data.price_hour || 0;
-
-  if (!start || !end || !price) return 0;
-
-  // Asume formato 'HH:mm'
-  const [startH, startM] = start.split(':').map(Number);
-  const [endH, endM] = end.split(':').map(Number);
-
-  const startMinutes = startH * 60 + startM;
-  const endMinutes = endH * 60 + endM;
-  const durationHours = (endMinutes - startMinutes) / 60;
-
-  return Math.max(0, durationHours * price);
-}
 }

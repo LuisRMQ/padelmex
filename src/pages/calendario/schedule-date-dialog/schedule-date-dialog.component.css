@@ -195,3 +195,23 @@
 .total-amount {
   color: #1976d2;
 }
+
+
+.total-breakdown {
+  margin: 15px 0;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px 0;
+}
+
+.breakdown-row.total {
+  font-weight: bold;
+  border-top: 1px solid #ccc;
+  padding-top: 8px;
+}
