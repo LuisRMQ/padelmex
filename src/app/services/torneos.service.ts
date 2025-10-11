@@ -152,4 +152,9 @@ export class TournamentService extends ApiBaseService {
     const params = new HttpParams().set('tournament_id', tournamentId.toString());
     return this.get<any>('/tournament/bracket', params);
   }
+
+
+  storeSet(data: { game_id: number, set_number: number, score_1: number, score_2: number }): Observable<any> {
+  return this.post('/set/store', data);
+}
 }

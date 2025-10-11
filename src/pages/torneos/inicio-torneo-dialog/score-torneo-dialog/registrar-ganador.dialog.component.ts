@@ -9,8 +9,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
-import { MatRadioModule } from '@angular/material/radio';  
-import { FormsModule } from '@angular/forms'; 
+import { MatRadioModule } from '@angular/material/radio';
+import { FormsModule } from '@angular/forms';
+import { TournamentService } from '../../../../app/services/torneos.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 
 @Component({
     selector: 'app-registrar-ganador-dialog',
@@ -30,20 +33,73 @@ import { FormsModule } from '@angular/forms';
     ],
 })
 export class RegistrarGanadorDialogComponent {
+    loading = false;
+    error: string | null = null;
 
-    ganadorSeleccionado: 'jugador1' | 'jugador2' | null = null;
+    // Scores por set
+    score1_set1 = 0;
+    score2_set1 = 0;
+    score1_set2 = 0;
+    score2_set2 = 0;
 
     constructor(
-        @Inject(MAT_DIALOG_DATA) public data: { partido: Partido, roundIndex: number, matchIndex: number },
-        private dialogRef: MatDialogRef<RegistrarGanadorDialogComponent>
+        @Inject(MAT_DIALOG_DATA) public data: { partido: Partido },
+        private dialogRef: MatDialogRef<RegistrarGanadorDialogComponent>,
+        private tournamentService: TournamentService,
+        private snackBar: MatSnackBar  
+
     ) { }
 
     confirmar() {
-        if (this.ganadorSeleccionado) {
-            const ganador = this.data.partido[this.ganadorSeleccionado];
-            this.dialogRef.close(ganador);
+        const gameId = this.data.partido.id;
+        if (!gameId) {
+            this.error = 'No se pudo identificar el partido';
+            return;
         }
+
+        const set1 = { score_1: this.score1_set1, score_2: this.score2_set1 };
+        const ganador = set1.score_1 > set1.score_2 ? 'jugador1' : 'jugador2';
+
+        this.loading = true;
+
+        this.tournamentService.storeSet({
+            game_id: gameId,
+            set_number: 1,
+            score_1: set1.score_1,
+            score_2: set1.score_2
+        }).subscribe({
+            next: () => {
+                const set2 = { score_1: this.score1_set2, score_2: this.score2_set2 };
+                this.tournamentService.storeSet({
+                    game_id: gameId,
+                    set_number: 2,
+                    score_1: set2.score_1,
+                    score_2: set2.score_2
+                }).subscribe({
+                    next: () => {
+                        this.loading = false;
+                        this.snackBar.open('Score ingresado correctamente', 'Cerrar', {
+                            duration: 3000,
+                            horizontalPosition: 'center',
+                            verticalPosition: 'top',
+                        });
+                        this.dialogRef.close(this.data.partido[ganador]);
+                    },
+                    error: (err) => {
+                        console.error(err);
+                        this.loading = false;
+                        this.error = 'Error guardando el segundo set';
+                    }
+                });
+            },
+            error: (err) => {
+                console.error(err);
+                this.loading = false;
+                this.error = 'Error guardando el primer set';
+            }
+        });
     }
+
 
     cancelar() {
         this.dialogRef.close();

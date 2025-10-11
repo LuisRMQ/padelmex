@@ -144,6 +144,9 @@ export class TorneosComponent implements OnInit {
   }
 
 verDetalles(torneo: Tournament) {
+  console.log(torneo)
+    console.log(torneo.id)
+
   this.dialog.open(InicioTorneoDialogComponent, {
     width: '90vw',      
     maxWidth: '90vw',  
@@ -199,14 +202,16 @@ verDetalles(torneo: Tournament) {
   }
 
   verParticipantes(torneo: Tournament) {
+        
     this.tournamentService.getCategoriesByTournamentId(torneo.id).subscribe({
       next: (response: any[]) => {
+        console.log(response)
         const categories = response.map(cat => ({
           id: cat.category.id,
           name: cat.category.category,
           max_participants: cat.max_participants
         }));
-
+        console.log(categories)
         this.dialog.open(ParticipantesTorneoDialogComponent, {
           width: '90vw',
           maxWidth: '1000px',
