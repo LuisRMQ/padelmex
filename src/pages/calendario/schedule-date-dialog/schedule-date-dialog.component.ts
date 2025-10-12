@@ -299,34 +299,54 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   removePlayer(index: number): void { this.selectedPlayers.splice(index, 1); }
 
-  onSubmit(): void {
-    if (!this.reservationForm.valid) return;
-    const mainPlayer = this.userControl.value;
-    if (!mainPlayer || typeof mainPlayer !== 'object' || !mainPlayer.id) {
-      this.snackBar.open('Selecciona el jugador principal antes de continuar.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
-      return;
-    }
-    const playersPayload = this.selectedPlayers.map((p, index) => ({
+ onSubmit(): void {
+  if (!this.reservationForm.valid) return;
+
+  const mainPlayer = this.userControl.value;
+  if (!mainPlayer || typeof mainPlayer !== 'object' || !mainPlayer.id) {
+    this.snackBar.open('Selecciona el jugador principal antes de continuar.', 'Cerrar', {
+      duration: 3000,
+      panelClass: ['snackbar-error']
+    });
+    return;
+  }
+
+  // 🔹 Datos base
+  const payload: any = {
+    user_id: this.reservationForm.value.user_id,
+    court_id: this.reservationForm.value.court_id,
+    reservation_type_id: this.reservationForm.value.reservation_type_id,
+    date: this.formatDateForApi(this.selectedDate),
+    start_time: this.formatTimeForApi(this.reservationForm.value.start_time),
+    end_time: this.formatTimeForApi(this.reservationForm.value.end_time),
+    pay_method: this.reservationForm.value.pay_method,
+    observations: this.reservationForm.value.observations,
+    type: this.reservationForm.value.type,
+    category: this.reservationForm.value.category,
+    players: [
+      {
+        user_id: this.reservationForm.value.user_id,
+        player_number: 1,
+        paid_by_owner: true
+      }
+    ] // 👈 Jugador principal siempre incluido
+  };
+
+  // 🟢 Si el pago es dividido, agregamos los jugadores adicionales
+  if (this.reservationForm.value.pay_method === 'split_payment') {
+    const additionalPlayers = this.selectedPlayers.map((p, index) => ({
       user_id: p.id,
       player_number: index + 2,
       paid_by_owner: p.paid_by_owner || false
     }));
-
-    const payload = {
-      user_id: this.reservationForm.value.user_id,
-      court_id: this.reservationForm.value.court_id,
-      reservation_type_id: this.reservationForm.value.reservation_type_id,
-      date: this.formatDateForApi(this.selectedDate),
-      start_time: this.formatTimeForApi(this.reservationForm.value.start_time),
-      end_time: this.formatTimeForApi(this.reservationForm.value.end_time),
-      pay_method: this.reservationForm.value.pay_method,
-      observations: this.reservationForm.value.observations,
-      type: this.reservationForm.value.type,
-      category: this.reservationForm.value.category,
-      players: playersPayload
-    };
-    this.dialogRef.close(payload);
+    payload.players.push(...additionalPlayers);
   }
+
+  console.log('📦 Enviando payload:', payload);
+  this.dialogRef.close(payload);
+}
+
+
 
   private convertToDate(dateValue: string | Date): Date {
     if (dateValue instanceof Date) return dateValue;

@@ -1,0 +1,431 @@
+<!-- Contenedor principal -->
+<div class="secure-payment-container"
+     [class.loading]="isLoading"
+     [class.fraud-detected]="fraudDetected">
+
+  <!-- Indicador de carga con verificaciones de seguridad -->
+  <div *ngIf="isLoading" class="security-loading">
+    <div class="security-spinner"></div>
+    <p>Verificando seguridad...</p>
+    <div class="security-checks">
+      <div class="check-item">
+        <span class="check-icon">🔒</span>
+        <span>Verificando conexión HTTPS</span>
+      </div>
+      <div class="check-item">
+        <span class="check-icon">🛡️</span>
+        <span>Validando contexto seguro</span>
+      </div>
+      <div class="check-item">
+        <span class="check-icon">🔍</span>
+        <span>Detectando fraude</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerta de fraude detectado -->
+  <div *ngIf="fraudDetected" class="fraud-alert">
+    <div class="fraud-icon">⚠️</div>
+    <h3>Acceso Restringido</h3>
+    <p>Se ha detectado actividad sospechosa. Por su seguridad, este pago ha sido bloqueado.</p>
+    <button class="btn-close" (click)="cancelPayment()">Cerrar</button>
+  </div>
+
+
+  <!-- Formulario de pago seguro -->
+  <div *ngIf="!isLoading && !fraudDetected && securityChecksComplete" class="payment-container">
+
+    <!-- Header con información del pago -->
+    <div class="payment-header">
+      <div class="back-button" (click)="cancelPayment()">
+        <span class="icon">←</span>
+      </div>
+      <div class="payment-title">
+        <h2>Confirmar Pago</h2>
+        <div class="payment-amount">{{ paymentData.amount | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <div class="payment-description">{{ paymentData.description }}</div>
+      </div>
+      <div class="security-indicator">
+        <span class="security-icon">🔒</span>
+      </div>
+    </div>
+
+    <!-- Vista de éxito -->
+    <div *ngIf="paymentData.status === 'success'" class="success-view">
+      <div class="success-icon">✅</div>
+      <h3>¡Pago Exitoso!</h3>
+      <div class="success-amount">{{ paymentData.amount | currency:'MXN':'symbol':'1.2-2' }}</div>
+      <p class="success-message">Tu pago ha sido procesado correctamente</p>
+      <div class="success-actions">
+        <button class="btn-continue" (click)="cancelPayment()">Continuar</button>
+      </div>
+    </div>
+
+    <!-- Vista de pendiente -->
+    <div *ngIf="paymentData.status === 'pending'" class="pending-view">
+      <div class="pending-icon">⏳</div>
+      <h3>Pago en Proceso</h3>
+      <div class="pending-amount">{{ paymentData.amount | currency:'MXN':'symbol':'1.2-2' }}</div>
+      <p class="pending-message">Tu pago está siendo procesado. Te notificaremos cuando esté completo.</p>
+      <div class="pending-actions">
+        <button class="btn-continue" (click)="cancelPayment()">Entendido</button>
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div *ngIf="!paymentData.status" class="payment-content">
+
+      <!-- Sección de tarjetas guardadas -->
+      <div *ngIf="currentView === 'cards'" class="cards-section">
+        <div class="section-header">
+          <h3>Método de Pago</h3>
+        </div>
+
+        <!-- Loading tarjetas -->
+        <div *ngIf="loadingCards" class="loading-cards">
+          <div class="spinner"></div>
+          <span>Cargando métodos de pago...</span>
+        </div>
+
+        <!-- Lista de tarjetas guardadas -->
+        <div *ngIf="!loadingCards && savedCards.length > 0" class="saved-cards">
+          <div *ngFor="let card of savedCards"
+               class="card-item"
+               [class.selected]="selectedCard?.id === card.id"
+               (click)="selectSavedCard(card)">
+            <div class="card-info">
+              <div class="card-brand">
+                <span class="brand-icon">💳</span>
+                <span class="brand-name">{{ card.brand.toUpperCase() }}</span>
+              </div>
+              <div class="card-number">•••• •••• •••• {{ card.cardNumber }}</div>
+              <div class="card-details">
+                <span class="holder-name">{{ card.holderName }}</span>
+                <span class="expiry">{{ card.alias }}</span>
+              </div>
+            </div>
+            <div class="card-select">
+              <div class="radio-button" [class.checked]="selectedCard?.id === card.id">
+                <span *ngIf="selectedCard?.id === card.id">✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Opción para agregar nueva tarjeta -->
+        <div class="add-new-card" (click)="showNewCardForm()">
+          <div class="add-card-icon">+</div>
+          <div class="add-card-text">
+            <div class="title">Agregar nueva tarjeta</div>
+            <div class="subtitle">Visa, Mastercard, American Express</div>
+          </div>
+        </div>
+
+        <!-- CVV para tarjeta seleccionada -->
+        <div *ngIf="selectedCard" class="cvv-section">
+          <div class="form-group">
+            <label for="cvv">Código de Seguridad (CVV)</label>
+            <input
+              type="tel"
+              id="cvv"
+              name="cvv"
+              class="form-input"
+              [(ngModel)]="cardForm.cvv"
+              (input)="sanitizeCVV($event)"
+              (keypress)="onNumberInput($event)"
+              placeholder="123"
+              maxlength="4"
+              pattern="[0-9]{3,4}"
+              inputmode="numeric"
+              autocomplete="off"
+              required>
+          </div>
+        </div>
+
+        <!-- Botón de pago para tarjeta guardada -->
+        <div *ngIf="selectedCard" class="payment-actions">
+          <button
+            type="button"
+            class="btn-pay"
+            [disabled]="isProcessing || !cardForm.cvv"
+            (click)="processPaymentSimple()">
+            <span *ngIf="!isProcessing">
+              Pagar {{ paymentData.amount | currency:'MXN':'symbol':'1.2-2' }}
+            </span>
+            <span *ngIf="isProcessing" class="processing">
+              <div class="spinner"></div>
+              Procesando...
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Formulario de nueva tarjeta -->
+      <div *ngIf="currentView === 'newCard'" class="new-card-section">
+        <div class="section-header">
+          <button type="button" class="back-btn" (click)="showSavedCards()">← Volver</button>
+          <h3>Nueva Tarjeta</h3>
+        </div>
+
+        <form class="card-form" (ngSubmit)="processSecurePayment()" #paymentForm="ngForm" novalidate>
+
+          <!-- Número de tarjeta -->
+          <div class="form-group">
+            <label>Número de Tarjeta</label>
+            <input
+              type="text"
+              name="cardNumber"
+              class="form-input"
+              [(ngModel)]="cardForm.number"
+              (input)="formatCardNumber($event)"
+              placeholder="4111111111111111"
+              maxlength="19"
+              pattern="[0-9\s]*"
+              inputmode="numeric"
+              autocomplete="cc-number"
+              required>
+          </div>
+
+          <!-- Nombre del titular -->
+          <div class="form-group">
+            <label>Nombre del Titular</label>
+            <input
+              type="text"
+              name="holderName"
+              class="form-input"
+              [(ngModel)]="cardForm.holderName"
+              placeholder="Como aparece en la tarjeta"
+              required>
+          </div>
+
+          <!-- Fecha de expiración y CVV -->
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label>Mes / Año</label>
+              <div class="expiry-row">
+                <select name="expiryMonth" class="form-select" [(ngModel)]="cardForm.expiryMonth" required>
+                  <option value="">MM</option>
+                  <option *ngFor="let month of [1,2,3,4,5,6,7,8,9,10,11,12]"
+                          [value]="month.toString().padStart(2, '0')">
+                    {{ month.toString().padStart(2, '0') }}
+                  </option>
+                </select>
+                <select name="expiryYear" class="form-select" [(ngModel)]="cardForm.expiryYear" required>
+                  <option value="">AAAA</option>
+                  <option *ngFor="let year of getYearOptions()" [value]="year">
+                    {{ year }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group flex-1">
+              <label>CVV</label>
+              <input
+                type="tel"
+                name="cvv"
+                class="form-input"
+                [(ngModel)]="cardForm.cvv"
+                (input)="sanitizeCVV($event)"
+                (keypress)="onNumberInput($event)"
+                placeholder="123"
+                maxlength="4"
+                pattern="[0-9]{3,4}"
+                inputmode="numeric"
+                autocomplete="off"
+                required>
+            </div>
+          </div>
+
+          <!-- Opción para guardar tarjeta -->
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                name="saveCard"
+                [(ngModel)]="cardForm.saveCard">
+              <span class="checkmark"></span>
+              Guardar esta tarjeta para futuros pagos
+            </label>
+          </div>
+
+          <!-- Errores de validación -->
+          <div *ngIf="validationErrors.length > 0" class="validation-errors">
+            <div *ngFor="let error of validationErrors" class="error-item">
+              {{ error }}
+            </div>
+          </div>
+
+          <!-- Botón de pago -->
+          <div class="payment-actions">
+            <button
+              type="button"
+              class="btn-pay"
+              [disabled]="isProcessing || !paymentForm.valid"
+              (click)="processPaymentSimple()">
+              <span *ngIf="!isProcessing">
+                Pagar {{ paymentData.amount | currency:'MXN':'symbol':'1.2-2' }}
+              </span>
+              <span *ngIf="isProcessing" class="processing">
+                <div class="spinner"></div>
+                Procesando...
+              </span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Footer de seguridad -->
+    <div class="security-footer">
+      <div class="security-info">
+        <div class="security-item">
+          <span class="icon">🔒</span>
+          <span>Conexión segura SSL</span>
+        </div>
+        <div class="security-item">
+          <span class="icon">🛡️</span>
+          <span>Procesado por OpenPay</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Debug Toggle Button (Fixed Position) -->
+  <button class="debug-floating-btn" (click)="toggleDebugPanel()" [title]="showDebugPanel ? 'Cerrar Debug' : 'Abrir Debug OpenPay'">
+    {{ showDebugPanel ? '✕' : '🐛' }}
+  </button>
+
+  <!-- Cuadro de Debug Flotante -->
+  <div class="debug-panel" [class.show]="showDebugPanel">
+    <div class="debug-header">
+      <h4>🔍 Debug OpenPay</h4>
+      <button class="debug-toggle" (click)="toggleDebugPanel()">
+        {{ showDebugPanel ? '✕' : '🐛' }}
+      </button>
+    </div>
+
+    <div class="debug-content" *ngIf="showDebugPanel">
+      <!-- Datos que se van a enviar -->
+      <div class="debug-section">
+        <h5>📤 Request Data</h5>
+        <pre>{{ debugInfo.requestData | json }}</pre>
+      </div>
+
+      <!-- Respuesta de OpenPay -->
+      <div class="debug-section" *ngIf="debugInfo.response">
+        <h5>📥 OpenPay Response</h5>
+        <pre>{{ debugInfo.response | json }}</pre>
+      </div>
+
+      <!-- Errores -->
+      <div class="debug-section" *ngIf="debugInfo.errors && debugInfo.errors.length > 0">
+        <h5>❌ Validation Errors</h5>
+        <ul>
+          <li *ngFor="let error of debugInfo.errors">{{ error }}</li>
+        </ul>
+      </div>
+
+      <!-- Log de eventos -->
+      <div class="debug-section">
+        <h5>📋 Event Log</h5>
+        <div class="debug-log">
+          <div *ngFor="let log of debugInfo.eventLog" class="log-entry">
+            <span class="log-time">{{ log.time }}</span>
+            <span class="log-message">{{ log.message }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log de Tarjetas Guardadas -->
+      <div class="debug-section">
+        <h5>💳 Saved Cards Debug</h5>
+        <div class="debug-cards">
+          <p><strong>Loading Cards:</strong> {{ loadingCards }}</p>
+          <p><strong>Total Cards:</strong> {{ savedCards.length }}</p>
+          <p><strong>Auth Token:</strong> {{ authToken ? authToken.substring(0, 20) + '...' : 'No token' }}</p>
+          <p><strong>Selected Card:</strong> {{ selectedCard?.id || 'None' }}</p>
+          <h6>Card List:</h6>
+          <pre>{{ savedCards | json }}</pre>
+          <h6>Console Logs:</h6>
+          <div class="debug-log" style="max-height: 200px; overflow-y: auto;">
+            <div *ngFor="let log of cardDebugLogs" class="log-entry">
+              <span class="log-time">{{ log.time }}</span>
+              <span class="log-level" [class.error]="log.level === 'error'"
+                    [class.warn]="log.level === 'warn'"
+                    [class.info]="log.level === 'info'">
+                [{{ log.level }}]
+              </span>
+              <span class="log-message">{{ log.message }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log de Peticiones API OpenPay -->
+      <div class="debug-section">
+        <h5>🌐 API Requests to OpenPay</h5>
+        <div class="api-debug">
+          <p><strong>Total Requests:</strong> {{ apiDebugLogs.length }}</p>
+          <div class="debug-log" style="max-height: 400px; overflow-y: auto;">
+            <div *ngFor="let apiLog of apiDebugLogs; let i = index" class="api-log-entry">
+              <div class="api-log-header" (click)="toggleApiLogExpand(i)">
+                <span class="log-time">{{ apiLog.time }}</span>
+                <span class="api-method" [class]="(apiLog.method || 'unknown').toLowerCase()">{{ apiLog.method }}</span>
+                <span class="api-url">{{ apiLog.url }}</span>
+                <span class="api-status"
+                      [class.success]="apiLog.status && apiLog.status >= 200 && apiLog.status < 300"
+                      [class.error]="apiLog.status && apiLog.status >= 400"
+                      [class.pending]="!apiLog.status">
+                  {{ apiLog.status || 'PENDING' }}
+                </span>
+                <span class="expand-icon">{{ apiLog.expanded ? '▼' : '▶' }}</span>
+              </div>
+
+              <div class="api-log-details" *ngIf="apiLog.expanded">
+                <div class="api-section" *ngIf="apiLog.headers">
+                  <h6>📋 Headers</h6>
+                  <pre>{{ apiLog.headers | json }}</pre>
+                </div>
+
+                <div class="api-section" *ngIf="apiLog.body">
+                  <h6>📤 Request Body</h6>
+                  <pre>{{ apiLog.body | json }}</pre>
+                </div>
+
+                <div class="api-section" *ngIf="apiLog.response">
+                  <h6>📥 Response</h6>
+                  <pre>{{ apiLog.response | json }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clear logs button -->
+          <div class="debug-actions" style="margin-top: 10px;">
+            <button class="debug-btn small" (click)="clearApiLogs()">
+              🗑️ Clear API Logs
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de test -->
+      <div class="debug-section">
+        <h5>🧪 Debug Tests</h5>
+        <div class="debug-buttons">
+          <button class="debug-btn" (click)="testBackendConnection()">
+            Test Backend Connection
+          </button>
+          <button class="debug-btn" (click)="testOpenPayJS()">
+            Test OpenPay.js
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

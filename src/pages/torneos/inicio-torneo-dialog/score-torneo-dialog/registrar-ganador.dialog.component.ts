@@ -41,7 +41,8 @@ export class RegistrarGanadorDialogComponent {
     score2_set1: number | null = null;
     score1_set2: number | null = null;
     score2_set2: number | null = null;
-
+    score1_set3: number | null = null;
+    score2_set3: number | null = null;
     // Nuevas propiedades para el diseño mejorado
     completedSets = 0;
     totalScore1: number | null = null;
@@ -56,27 +57,22 @@ export class RegistrarGanadorDialogComponent {
 
     // Método para calcular sets completados y puntuación total
     private calcularProgreso(): void {
-        let setsCompletados = 0;
-        
-        if (this.score1_set1 !== null && this.score2_set1 !== null) {
-            setsCompletados++;
-        }
-        
-        if (this.score1_set2 !== null && this.score2_set2 !== null) {
-            setsCompletados++;
-        }
-        
-        this.completedSets = setsCompletados;
-        
-        // Calcular puntuación total si ambos sets están completos
-        if (this.completedSets === 2) {
-            this.totalScore1 = (this.score1_set1 || 0) + (this.score1_set2 || 0);
-            this.totalScore2 = (this.score2_set1 || 0) + (this.score2_set2 || 0);
-        } else {
-            this.totalScore1 = null;
-            this.totalScore2 = null;
-        }
-    }
+  let setsCompletados = 0;
+
+  if (this.score1_set1 !== null && this.score2_set1 !== null) setsCompletados++;
+  if (this.score1_set2 !== null && this.score2_set2 !== null) setsCompletados++;
+  if (this.score1_set3 !== null && this.score2_set3 !== null) setsCompletados++;
+
+  this.completedSets = setsCompletados;
+
+  if (this.completedSets === 3) {
+    this.totalScore1 = (this.score1_set1 || 0) + (this.score1_set2 || 0) + (this.score1_set3 || 0);
+    this.totalScore2 = (this.score2_set1 || 0) + (this.score2_set2 || 0) + (this.score2_set3 || 0);
+  } else {
+    this.totalScore1 = null;
+    this.totalScore2 = null;
+  }
+}
 
     // Método modificado para guardar sets individuales
     guardarSet(setNumber: number) {
@@ -221,4 +217,11 @@ export class RegistrarGanadorDialogComponent {
     get canConfirm(): boolean {
         return this.completedSets === 2;
     }
+
+
+    
+  onImgError(event: Event) {
+    (event.target as HTMLImageElement).src = '../../../assets/images/iconuser.png';
+  }
+
 }

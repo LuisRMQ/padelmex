@@ -1,0 +1,140 @@
+<div class="payment-container">
+  <!-- Header -->
+  <div class="payment-header">
+    <mat-icon class="security-icon">security</mat-icon>
+    <h2>Pago Seguro</h2>
+    <p class="powered-by">Powered by OpenPay</p>
+  </div>
+
+  <!-- Payment Info -->
+  <div class="payment-info" *ngIf="paymentData">
+    <div class="amount-display">
+      <span class="currency">$</span>
+      <span class="amount">{{ paymentData.amount | number:'1.2-2' }}</span>
+      <span class="currency-code">MXN</span>
+    </div>
+    <p class="description">{{ paymentData.description }}</p>
+  </div>
+
+  <!-- Payment Form -->
+  <mat-card class="payment-card">
+    <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()" class="payment-form">
+
+      <!-- Card Number -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Número de Tarjeta</mat-label>
+        <input
+          matInput
+          formControlName="cardNumber"
+          placeholder="1234 5678 9012 3456"
+          maxlength="23"
+          (input)="onCardNumberInput($event)"
+          (keypress)="onNumberInput($event)"
+          autocomplete="cc-number">
+        <mat-icon matSuffix>credit_card</mat-icon>
+        <mat-error *ngIf="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched">
+          {{ getFieldErrorMessage('Número de tarjeta') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Card Holder Name -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nombre del Titular</mat-label>
+        <input
+          matInput
+          formControlName="holderName"
+          placeholder="Como aparece en la tarjeta"
+          autocomplete="cc-name">
+        <mat-icon matSuffix>person</mat-icon>
+        <mat-error *ngIf="paymentForm.get('holderName')?.invalid && paymentForm.get('holderName')?.touched">
+          {{ getFieldErrorMessage('Nombre') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Expiration Date and CVV -->
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Mes</mat-label>
+          <input
+            matInput
+            formControlName="expirationMonth"
+            placeholder="MM"
+            maxlength="2"
+            (keypress)="onNumberInput($event)"
+            autocomplete="cc-exp-month">
+          <mat-error *ngIf="paymentForm.get('expirationMonth')?.invalid && paymentForm.get('expirationMonth')?.touched">
+            Mes inválido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="half-width">
+          <mat-label>Año</mat-label>
+          <input
+            matInput
+            formControlName="expirationYear"
+            placeholder="AA"
+            maxlength="2"
+            (keypress)="onNumberInput($event)"
+            autocomplete="cc-exp-year">
+          <mat-error *ngIf="paymentForm.get('expirationYear')?.invalid && paymentForm.get('expirationYear')?.touched">
+            Año inválido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>CVV</mat-label>
+        <input
+          matInput
+          formControlName="cvv"
+          placeholder="123"
+          maxlength="4"
+          type="password"
+          (keypress)="onNumberInput($event)"
+          autocomplete="cc-csc">
+        <mat-icon matSuffix>lock</mat-icon>
+        <mat-error *ngIf="paymentForm.get('cvv')?.invalid && paymentForm.get('cvv')?.touched">
+          {{ getFieldErrorMessage('CVV') }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Submit Button -->
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        class="pay-button"
+        [disabled]="isProcessing || !paymentForm.valid">
+        <span *ngIf="!isProcessing">
+          <mat-icon>payment</mat-icon>
+          Pagar ${{ paymentData?.amount | number:'1.2-2' }}
+        </span>
+        <span *ngIf="isProcessing" class="processing">
+          <mat-spinner diameter="20"></mat-spinner>
+          Procesando...
+        </span>
+      </button>
+
+    </form>
+  </mat-card>
+
+  <!-- Security Notice -->
+  <div class="security-notice">
+    <mat-icon>shield</mat-icon>
+    <p>Tu información está protegida con encriptación SSL de 256 bits</p>
+  </div>
+
+  <!-- Payment Status -->
+  <div class="payment-status" *ngIf="paymentStatus !== 'idle'">
+    <div class="status-indicator" [ngClass]="paymentStatus">
+      <mat-icon *ngIf="paymentStatus === 'processing'">autorenew</mat-icon>
+      <mat-icon *ngIf="paymentStatus === 'completed'">check_circle</mat-icon>
+      <mat-icon *ngIf="paymentStatus === 'failed'">error</mat-icon>
+    </div>
+    <p>
+      <span *ngIf="paymentStatus === 'processing'">Procesando tu pago...</span>
+      <span *ngIf="paymentStatus === 'completed'">¡Pago exitoso!</span>
+      <span *ngIf="paymentStatus === 'failed'">Error en el pago</span>
+    </p>
+  </div>
+</div>

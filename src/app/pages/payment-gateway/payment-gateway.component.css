@@ -1,0 +1,304 @@
+/* Mobile-first design para iframe */
+.payment-container {
+  max-width: 390px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Roboto', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Header */
+.payment-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 24px;
+  padding-top: 20px;
+}
+
+.security-icon {
+  font-size: 32px;
+  height: 32px;
+  width: 32px;
+  margin-bottom: 8px;
+  color: #4CAF50;
+}
+
+.payment-header h2 {
+  margin: 8px 0 4px 0;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.powered-by {
+  font-size: 12px;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* Payment Info */
+.payment-info {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.amount-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.currency {
+  font-size: 18px;
+  font-weight: 500;
+  color: #666;
+  margin-right: 4px;
+}
+
+.amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2196F3;
+}
+
+.currency-code {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  margin-left: 8px;
+}
+
+.description {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Payment Card */
+.payment-card {
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: white;
+}
+
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.half-width {
+  flex: 1;
+}
+
+/* Material Form Fields */
+::ng-deep .mat-mdc-form-field {
+  --mdc-filled-text-field-container-shape: 8px;
+  --mdc-outlined-text-field-container-shape: 8px;
+}
+
+::ng-deep .mat-mdc-form-field-outline {
+  color: rgba(0, 0, 0, 0.12);
+}
+
+::ng-deep .mat-mdc-form-field:not(.mat-form-field-invalid) .mat-mdc-form-field-outline-thick {
+  color: #2196F3;
+}
+
+::ng-deep .mat-mdc-form-field.mat-focused .mdc-floating-label {
+  color: #2196F3;
+}
+
+/* Pay Button */
+.pay-button {
+  height: 56px;
+  border-radius: 28px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 8px;
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pay-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+}
+
+.pay-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.processing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+::ng-deep .pay-button .mat-spinner circle {
+  stroke: white;
+}
+
+/* Security Notice */
+.security-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.security-notice mat-icon {
+  color: #4CAF50;
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+.security-notice p {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+/* Payment Status */
+.payment-status {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 280px;
+}
+
+.status-indicator {
+  margin-bottom: 16px;
+}
+
+.status-indicator mat-icon {
+  font-size: 48px;
+  height: 48px;
+  width: 48px;
+}
+
+.status-indicator.processing mat-icon {
+  color: #FF9800;
+  animation: spin 1s linear infinite;
+}
+
+.status-indicator.completed mat-icon {
+  color: #4CAF50;
+}
+
+.status-indicator.failed mat-icon {
+  color: #F44336;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.payment-status p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Error Styles */
+::ng-deep .error-snackbar {
+  background-color: #F44336;
+  color: white;
+}
+
+::ng-deep .success-snackbar {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Input Focus Styles */
+::ng-deep .mat-mdc-form-field.mat-focused .mat-mdc-form-field-outline-thick {
+  color: #2196F3;
+  opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 360px) {
+  .payment-container {
+    padding: 12px;
+  }
+
+  .payment-card {
+    padding: 20px;
+  }
+
+  .amount {
+    font-size: 28px;
+  }
+}
+
+@media (max-height: 640px) {
+  .payment-header {
+    padding-top: 10px;
+    margin-bottom: 16px;
+  }
+
+  .payment-info {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .payment-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  }
+
+  .payment-info {
+    background: rgba(45, 45, 45, 0.95);
+    color: white;
+  }
+
+  .description {
+    color: #ccc;
+  }
+
+  .currency, .currency-code {
+    color: #aaa;
+  }
+}
