@@ -85,7 +85,6 @@ export class ReservationService extends ApiBaseService {
     }
 
     createReservation(reservationData: any): Observable<any> {
-        console.log("Enviando payload:", JSON.stringify(reservationData, null, 2));
         return this.http.post(`${this.apiUrl}/reservation/create`, reservationData, {
             headers: {
                 'Content-Type': 'application/json'

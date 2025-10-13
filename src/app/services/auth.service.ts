@@ -40,7 +40,6 @@ export class AuthService {
     return this.api.get<User>(`/user/${userId}`, { headers }).pipe(
       tap((user: User) => {
         localStorage.setItem('userData', JSON.stringify(user));
-        console.log(user)
         this.currentUserSubject.next(user);
       }),
       catchError((error) => throwError(() => error))

@@ -127,24 +127,18 @@ export class CanchasComponent implements OnInit {
   }
 
 
-  abrirModalRegistrarCancha() {
+  abrirModalRegistrarCancha(selectedClubId: number | null, courts: Court[]) {
     const dialogRef = this.dialog.open(RegistrarCanchaDialogComponent, {
       width: '800px',
       maxWidth: '50vw',
       maxHeight: '70vh',
-      panelClass: 'custom-dialog'
+      panelClass: 'custom-dialog',
+      data: { selectedClubId, courts }
     });
 
     dialogRef.afterClosed().subscribe(async result => {
       console.log('Dialog result:', result);
       if (result) {
-        this.snackBar.open('Cancha registrada exitosamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success'],
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom'
-        });
-
         await this.loadCourts();
         this.abrirModalRegistrarHorario(result.club);
       }

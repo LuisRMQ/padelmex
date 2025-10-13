@@ -17,12 +17,12 @@ import { CourtService, Court, CourtsResponse } from '../../app/services/court.se
 
 import { MatDividerModule } from "@angular/material/divider";
 import { MatMenuModule } from '@angular/material/menu';
-import { EditarClubDialogComponent } from '../clubs/editar-club-dialog/editar-club-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RegistrarHorarioDialogComponent } from '../clubs/registrar-horario-dialog/registrar-horario-dialog.component';
 import { EditarCanchaDialogComponent } from '../canchas/editar-cancha-dialog/editar-cancha-dialog.component';
 import { ConfirmDialogComponent } from '../../app/commonComponents/confirmDialog.component';
 import { RegistrarCanchaDialogComponent } from './registrar-cancha-dialog/registrar-cancha-dialog.component';
+import { RegistrarClubDialogComponent } from '../clubs/registrar-club-dialog/registrar-club-dialog.component';
 
 @Component({
   selector: 'app-configuracion',
@@ -47,6 +47,7 @@ export class ConfiguracionComponent implements OnInit {
   selectedUsuario: Integrante | null = null;
 
   club: any;
+  clubs: Club[] = [];
   horarios: HorarioClub[] = [];
   canchas: Court[] = [];
 
@@ -98,6 +99,13 @@ export class ConfiguracionComponent implements OnInit {
       },
       error: (err) => console.error('Error al obtener club:', err)
     });
+
+    this.clubsService.getClubs().subscribe({
+      next: (res) => {
+        this.clubs = res;
+      },
+      error: (err) => console.error('Error al obtener clubes:', err)
+    });
   }
 
   cargarHorarios(): void {
@@ -139,79 +147,19 @@ export class ConfiguracionComponent implements OnInit {
     target.src = '../../../assets/images/logoclub.jpg';
   }
 
-  abrirEditarClubDialog(club: Club) {
-    const dialogRef = this.dialog.open(EditarClubDialogComponent, {
+  abrirEditarClubDialog(clubs: Club[], club: Club | null = null) {
+    const dialogRef = this.dialog.open(RegistrarClubDialogComponent, {
       minWidth: '60vw',
       minHeight: '80vh',
       maxHeight: '80vh',
-      data: { club }
+      data: { club, clubs }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.guardarClubEditado(result);
+        this.editandoClubId = null;
+        this.cargarClub(this.clubId);
       }
     });
-  }
-
-  guardarClubEditado(clubOrForm: Club | FormData) {
-    let values: any = {};
-    if (clubOrForm instanceof FormData) {
-      clubOrForm.forEach((value, key) => {
-        values[key] = value;
-      });
-    } else {
-      values = { ...clubOrForm };
-
-      if (typeof values.logo === 'string') {
-        delete values.logo;
-      }
-    }
-
-    if (!values.name || !values.email || !values.phone || !values.rfc || !values.address || !values.type) {
-      this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['snackbar-error']
-      });
-      return;
-    }
-
-    if (clubOrForm instanceof FormData) {
-      this.clubsService.updateClub(values.id, clubOrForm).subscribe({
-        next: (res) => {
-          this.cargarClub(this.clubId);
-          this.editandoClubId = null;
-          this.logoFile = null;
-          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-success']
-          });
-        },
-        error: (err) => {
-          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    } else {
-      this.clubsService.updateClub(values.id, values).subscribe({
-        next: (res) => {
-          this.editandoClubId = null;
-          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-success']
-          });
-          this.cargarClub(this.clubId);
-        },
-        error: (err) => {
-          console.error("🔥 Error al actualizar (Objeto Club):", err);
-          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    }
   }
 
   editarHorario(horario: HorarioClub) {

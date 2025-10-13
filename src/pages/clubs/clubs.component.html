@@ -1,7 +1,7 @@
 <div class="header" style="display: flex; align-items: center; justify-content: space-between;">
 
   <h1 style="flex-grow: 1; margin: 0;">Clubes</h1>
-  <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarClub()">
+  <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarClub(clubs, null)">
     <mat-icon>add</mat-icon> REGISTRAR CLUB
   </button>
 </div>
@@ -81,7 +81,7 @@
             : 'Inactivo' }}</span>
         </td>
         <td class="acciones-cell">
-          <button mat-icon-button aria-label="Editar club" (click)="abrirEditarClubDialog(club)">
+          <button mat-icon-button aria-label="Editar club" (click)="abrirModalRegistrarClub(clubs, club)">
             <mat-icon>edit</mat-icon>
           </button>
           <button mat-icon-button color="primary" (click)="abrirModalRegistrarHorario(club)">
@@ -101,45 +101,3 @@
     </tbody>
   </table>
 </div>
-
-
-<!-- <div class="clubs-cards-container">
-  <mat-card *ngFor="let club of clubesFiltrados" class="club-card" appearance="outlined">
-    <mat-card-header>
-      <div class="card-header-row">
-        <div>
-          <mat-card-title class="club-name">{{ club.name }}</mat-card-title>
-          <mat-card-subtitle class="club-email">{{ club.email }}</mat-card-subtitle>
-        </div>
-        <button mat-icon-button class="edit-btn" aria-label="Editar club" (click)="abrirEditarClubDialog(club)">
-          <mat-icon>edit</mat-icon>
-        </button>
-      </div>
-    </mat-card-header>
-    <img mat-card-image [src]="club.logo ? club.logo : 'assets/logos/azteca.png'" alt="Logo de {{ club.name }}"
-      (error)="onImageError($event)"> <mat-card-content>
-      <p class="direccion-truncada"><strong>Dirección:</strong> <span class="direccion-text">{{ club.address }}</span>
-      </p>
-      <p><strong>Teléfono:</strong> {{ club.phone }}</p>
-      <p><strong>Estatus:</strong> {{ club.status ? 'Activo' : 'Inactivo' }}</p>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-icon-button color="accent" (click)="abrirModalRegistrarHorario(club)">
-        <mat-icon>more_time</mat-icon>
-      </button>
-      <button mat-icon-button (click)="abrirModalHorarios(club)">
-        <mat-icon>info</mat-icon>
-      </button>
-      <button mat-icon-button color="primary" (click)="abrirModalInfoClub(club)">
-        <mat-icon>visibility</mat-icon>
-      </button>
-      <button mat-icon-button color="warn" (click)="confirmarEliminarClub(club)">
-        <mat-icon>delete</mat-icon>
-      </button>
-      <button mat-icon-button color="warn" (click)="abrirModalComodidades(club)">
-        <mat-icon>monitor</mat-icon>
-      </button>
-
-    </mat-card-actions>
-  </mat-card>
-</div> -->

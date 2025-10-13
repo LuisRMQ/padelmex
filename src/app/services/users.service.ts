@@ -91,7 +91,7 @@ export interface Club {
 }
 
 export interface SelectedPlayer extends User {
-  paid_by_owner: boolean;
+    paid_by_owner: boolean;
 }
 
 @Injectable({
@@ -117,8 +117,6 @@ export class UsersService extends ApiBaseService {
             .set('name', searchTerm || '')
             .set('lastname', '')
             .set('club_id', club_id ? club_id.toString() : '');
-
-        console.log('Search params:', params.toString());
 
         return this.get<UsersResponse>('/users', params).pipe(
             map(response => response.data)
@@ -146,15 +144,6 @@ export class UsersService extends ApiBaseService {
                 map(res => res.data)
             );
     }
-
-    // updateUserById(id: number, data: any) {
-    //     const isFormData = data instanceof FormData;
-    //     if (isFormData) {
-    //         return this.post(`/user/update/${id}`, data);
-    //     } else {
-    //         return this.put(`/user/update/${id}`, data);
-    //     }
-    // }
 
     updateUserById(id: number, data: any): Observable<any> {
 

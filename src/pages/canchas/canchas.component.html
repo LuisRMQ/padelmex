@@ -1,7 +1,7 @@
 <!-- Header -->
 <div class="header">
   <h1>Canchas</h1>
-  <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarCancha()">
+  <button mat-raised-button color="primary" class="btn-registrar" (click)="abrirModalRegistrarCancha(selectedClubId, courts)">
     <mat-icon>add</mat-icon> REGISTRAR CANCHA
   </button>
 </div>
@@ -37,11 +37,6 @@
     <div class="resumen-label">Canchas Privadas</div>
     <div class="resumen-value">{{ totalCanchasPrivadas }}</div>
   </div>
-  <!-- <div class="resumen-card">
-    <div class="resumen-icon victorias"><mat-icon>military_tech</mat-icon></div>
-    <div class="resumen-label">Mas Reservada</div>
-    <div class="resumen-value">{{ totalCanchasPrivadas }}</div>
-  </div> -->
 </div>
 
 <!-- Loading -->

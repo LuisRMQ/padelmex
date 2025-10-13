@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ClubsService } from '../../../app/services/clubs.service';
@@ -45,18 +45,32 @@ export class RegistrarClubDialogComponent {
   ];
   ciudades: string[] = [];
 
+  fieldLabels: { [key: string]: string } = {
+    name: 'Nombre del club',
+    email: 'Correo electrónico',
+    phone: 'Teléfono',
+    rfc: 'RFC',
+    web_site: 'Sitio web',
+    state: 'Estado',
+    city: 'Ciudad',
+    address: 'Dirección',
+    type: 'Tipo',
+    status: 'Estatus'
+  };
+
 
 
   constructor(
     private fb: FormBuilder,
     private clubsService: ClubsService,
     private snackBar: MatSnackBar,
-    private dialogRef: MatDialogRef<RegistrarClubDialogComponent>
+    private dialogRef: MatDialogRef<RegistrarClubDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.clubForm = this.fb.group({
-      name: ['', Validators.required],
+      name: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
       rfc: ['', Validators.required],
       web_site: [''],
       state: ['', Validators.required],
@@ -65,6 +79,15 @@ export class RegistrarClubDialogComponent {
       type: ['', Validators.required],
       status: [true]
     });
+  }
+
+  ngOnInit() {
+    if (this.data.club) {
+      this.clubForm.patchValue(this.data.club);
+      this.logoPreview = this.data.club.logo || this.logoPreview;
+      this.onStateChange(this.data.club.state);
+      this.clubForm.get('city')?.setValue(this.data.club.city);
+    }
   }
 
   onStateChange(stateNombre: string) {
@@ -93,10 +116,12 @@ export class RegistrarClubDialogComponent {
 
   guardarClub() {
     if (this.clubForm.invalid) {
-      this.snackBar.open('⚠️ Por favor completa todos los campos requeridos', 'Cerrar', {
-        duration: 3000,
-        horizontalPosition: 'center',
+      const firstError = this.getFirstFormError();
+      this.snackBar.open(firstError || 'Por favor, completa todos los campos requeridos', 'Cerrar', {
+        panelClass: ['snackbar-error'],
+        horizontalPosition: 'right',
         verticalPosition: 'top',
+        duration: 3000
       });
       return;
     }
@@ -113,18 +138,46 @@ export class RegistrarClubDialogComponent {
       formData.append('logo', this.logoFile);
     }
 
+    if (this.data.club) {
+      this.clubsService.updateClub(this.data.club.id, formData).subscribe({
+        next: (res) => {
+          this.dialogRef.close(true);
+          this.snackBar.open('Club actualizado con éxito', 'Cerrar', {
+            panelClass: ['snackbar-success'],
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 3000
+          });
+        },
+        error: (err) => {
+          console.error(err);
+          this.snackBar.open('Error al actualizar el club. Intenta nuevamente.', 'Cerrar', {
+            panelClass: ['snackbar-error'],
+            horizontalPosition: 'right',
+            verticalPosition: 'top',
+            duration: 3000
+          });
+        }
+      });
+      return;
+    }
+
+    if (!this.validateClub(this.clubForm.value)) {
+      return;
+    }
+
     this.clubsService.createClub(formData).subscribe({
       next: (res) => {
         this.dialogRef.close(true);
-        console.log('Club creado:', res);
 
       },
       error: (err) => {
         console.error(err);
-        this.snackBar.open('❌ Error al registrar club', 'Cerrar', {
-          duration: 3000,
-          horizontalPosition: 'center',
+        this.snackBar.open('Error al crear el club. Intenta nuevamente.', 'Cerrar', {
+          panelClass: ['snackbar-error'],
+          horizontalPosition: 'right',
           verticalPosition: 'top',
+          duration: 3000
         });
       }
     });
@@ -136,5 +189,52 @@ export class RegistrarClubDialogComponent {
 
   removePhoto(): void {
     this.logoPreview = '../../assets/images/placeholder.png';
+  }
+
+  validateClub(formData: any) {
+    for (const club of this.data.clubs) {
+      if (club.email === formData.email) {
+        this.snackBar.open('Ya existe un club con este correo electrónico', 'Cerrar', {
+          panelClass: ['snackbar-error'],
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          duration: 3000
+        });
+        return false;
+      }
+      if (club.rfc === formData.rfc) {
+        this.snackBar.open('Ya existe un club con este RFC', 'Cerrar', {
+          panelClass: ['snackbar-error'],
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          duration: 3000
+        });
+        return false;
+      }
+      if (club.name === formData.name) {
+        this.snackBar.open('Ya existe un club con este nombre', 'Cerrar', {
+          panelClass: ['snackbar-error'],
+          horizontalPosition: 'right',
+          verticalPosition: 'top',
+          duration: 3000
+        });
+        return false;
+      }
+    }
+    return true;
+  }
+
+  getFirstFormError(): string | null {
+    for (const key in this.clubForm.controls) {
+      const control = this.clubForm.get(key);
+      const label = this.fieldLabels[key] || key;
+      if (control && control.invalid) {
+        if (control.errors?.['required']) return `El campo "${label}" es obligatorio`;
+        if (control.errors?.['minlength']) return `El campo "${label}" debe tener al menos ${control.errors['minlength'].requiredLength} caracteres`;
+        if (control.errors?.['email']) return `El campo "${label}" tiene un formato de correo inválido`;
+        if (control.errors?.['pattern']) return `El campo "${label}" tiene un formato inválido`;
+      }
+    }
+    return null;
   }
 }

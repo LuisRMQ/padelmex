@@ -61,7 +61,6 @@ export class ScheduleDetailsDialogComponent {
     private snackBar: MatSnackBar,
     private usersService: UsersService
   ) {
-    console.log('Dialog data:', data);
     this.editedData = { ...data.details };
     this.filteredPlayers = this.playerSearchControl.valueChanges.pipe(
       debounceTime(300),
@@ -86,9 +85,7 @@ export class ScheduleDetailsDialogComponent {
         this.data.details.id
       ).subscribe({
         next: (res: any) => {
-          console.log('Reserva completa:', res);
           this.players = res.reservation_players || [];
-          console.log('Jugadores cargados:', this.players);
         },
         error: (err) => {
           console.error('Error cargando jugadores:', err);
@@ -128,8 +125,6 @@ export class ScheduleDetailsDialogComponent {
     }).subscribe({
       next: (res) => {
         this.closeDialog(true);
-
-        console.log('Reserva actualizada:', res);
         this.data.details = { ...this.editedData };
         this.isEditing = false;
       },
@@ -142,8 +137,6 @@ export class ScheduleDetailsDialogComponent {
       this.reservationService.changeReservationStatus(this.data.id, this.editedData.status).subscribe({
         next: (res) => {
           this.closeDialog(true);
-
-          console.log('Status actualizado:', res);
           this.data.details.status = this.editedData.status;
           this.initialStatus = this.editedData.status;
         },
@@ -185,7 +178,6 @@ export class ScheduleDetailsDialogComponent {
       this.reservationService.updatePlayerStatusPayment(player.id, newStatus)
         .subscribe({
           next: (res) => {
-            console.log('Status actualizado a paid:', res);
             player.status = newStatus;
           },
           error: (err) => console.error('Error cambiando status:', err)
@@ -228,8 +220,6 @@ export class ScheduleDetailsDialogComponent {
     this.reservationService.addPlayerToReservation(this.data.id, player).subscribe({
       next: (res) => {
         this.snackBar.open('Jugador agregado exitosamente.', 'Cerrar', { duration: 3000 });
-        console.log('Jugador agregado a la reserva:', res);
-
         player.id = res.id;
 
         if (!this.players.some(p => p.user_id === player.user_id)) {
@@ -275,7 +265,6 @@ export class ScheduleDetailsDialogComponent {
   }
 
   removePlayer(player: any) {
-    console.log('Eliminando jugador:', player);
     this.reservationService.removePlayerFromReservation(player.id).subscribe({
       next: () => {
         this.snackBar.open('Jugador eliminado exitosamente.', 'Cerrar', { duration: 3000 });
@@ -297,14 +286,10 @@ export class ScheduleDetailsDialogComponent {
     this.reservationService.updatePlayerStatusPayment(player.id, player.status)
       .subscribe({
         next: (res) => {
-          console.log('Status actualizado a paid:', res);
           player.status = player.status;
         },
         error: (err) => console.error('Error cambiando status:', err)
       });
-
-    // Aquí puedes guardar el cambio, actualizar en backend, etc.
-    console.log('Nuevo status:', player.status);
   }
 
 }

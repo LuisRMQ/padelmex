@@ -7,9 +7,11 @@
           <mat-icon class="header-icon">business</mat-icon>
         </div>
         <div>
-          <mat-card-title class="modern-title">Registrar Nuevo Club</mat-card-title>
+          <mat-card-title class="modern-title">
+            {{ data.club ? 'Editar Club' : 'Registrar Nuevo Club' }}
+          </mat-card-title>
           <mat-card-subtitle class="modern-subtitle">
-            Complete la información para registrar un nuevo club
+            {{ data.club ? 'Actualiza la información del club seleccionado' : 'Complete la información para registrar un nuevo club' }}
           </mat-card-subtitle>
         </div>
       </div>

@@ -151,8 +151,6 @@ export class ScheduleDateDialogComponent implements OnInit {
       // Convertimos a number aquí
       this.data.commission = typeof court.commission === 'string' ? parseFloat(court.commission) : court.commission;
       this.data.price_hour = court.price_hour; // si quieres también precio
-      console.log(`Comisión de la cancha ${court.name}:`, this.data.commission);
-          console.log(`Precio por hora:`, this.data.price_hour);
     }
   },
   error: (err) => console.error(err)
@@ -205,7 +203,6 @@ export class ScheduleDateDialogComponent implements OnInit {
   }
 
   getComisionCancha(): number {
-    console.log(this.data.commission )
     return parseFloat(String(this.data.commission ?? '0'));
   }
 
@@ -341,8 +338,6 @@ export class ScheduleDateDialogComponent implements OnInit {
     }));
     payload.players.push(...additionalPlayers);
   }
-
-  console.log('📦 Enviando payload:', payload);
   this.dialogRef.close(payload);
 }
 

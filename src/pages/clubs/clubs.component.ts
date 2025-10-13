@@ -17,7 +17,6 @@ import { RegistrarHorarioDialogComponent } from './registrar-horario-dialog/regi
 import { HorariosDialogComponent } from './info-horarios-club-dialog/info-horarios-club-dialog.component';
 import { MatCardModule } from '@angular/material/card';
 import { InformacionClubDialogComponent } from './informacion-club-dialog/informacion-club-dialog.component';
-import { EditarClubDialogComponent } from './editar-club-dialog/editar-club-dialog.component';
 import { ClubAmenitiesModalComponent } from './registrar-comodidad-dialog/registrar-comodidad-dialog.component';
 import { ClubCloseDialogComponent } from './close-club-dialog/close-club-dialog.component';
 import { MatTableModule } from '@angular/material/table';
@@ -123,8 +122,9 @@ export class ClubsComponent implements OnInit {
     this.clubesFiltrados = this.clubs;
   }
 
-  abrirModalRegistrarClub() {
+  abrirModalRegistrarClub(clubs: Club[], club: Club | null = null) {
     const dialogRef = this.dialog.open(RegistrarClubDialogComponent, {
+      data: { clubs, club },
       width: '800px',
       maxWidth: '50vw',
       height: '80vh',
@@ -135,13 +135,6 @@ export class ClubsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(async result => {
       if (result) {
         this.clubesFiltrados = this.clubs;
-        this.snackBar.open('✅ Club registrado exitosamente', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-success'],
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom'
-        });
-
         await this.viewclubs();
 
       }
@@ -190,106 +183,7 @@ export class ClubsComponent implements OnInit {
       maxWidth: '80vw',
       data: { club }
     });
-
-    // dialogRef.afterClosed().subscribe(result => {
-    //   if (result) {
-    //     this.snackBar.open('✅ Información del club actualizada', 'Cerrar', {
-    //       duration: 3000,
-    //       panelClass: ['snackbar-success'],
-    //       horizontalPosition: 'center',
-    //       verticalPosition: 'bottom'
-    //     });
-    //   }
-    // });
   }
-
-  abrirEditarClubDialog(club: Club) {
-    const dialogRef = this.dialog.open(EditarClubDialogComponent, {
-      //width: '800px',
-      //maxWidth: '50vw',
-      //height: '80vh',
-      //maxHeight: '95vh',
-      minWidth: '60vw',
-      minHeight: '80vh',
-      maxHeight: '80vh',
-      data: { club }
-    });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.guardarClubEditado(result);
-      }
-    });
-  }
-
-  guardarClubEditado(clubOrForm: Club | FormData) {
-    let values: any = {};
-    if (clubOrForm instanceof FormData) {
-      clubOrForm.forEach((value, key) => {
-        values[key] = value;
-      });
-      console.log("📦 Datos recibidos (FormData):", values);
-    } else {
-      values = { ...clubOrForm };
-
-      if (typeof values.logo === 'string') {
-        delete values.logo;
-      }
-
-      console.log("📦 Datos recibidos (Objeto Club):", values);
-    }
-
-    if (!values.name || !values.email || !values.phone || !values.rfc || !values.address || !values.type) {
-      console.error("❌ Falta un campo obligatorio:", values);
-      this.snackBar.open('Completa todos los campos obligatorios', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['snackbar-error']
-      });
-      return;
-    }
-
-    if (clubOrForm instanceof FormData) {
-      console.log("🚀 Enviando FormData al backend:", values);
-      this.clubsService.updateClub(values.id, clubOrForm).subscribe({
-        next: (res) => {
-          console.log("✅ Respuesta del backend:", res);
-          this.editandoClubId = null;
-          this.logoFile = null;
-          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-success']
-          });
-        },
-        error: (err) => {
-          console.error("🔥 Error al actualizar (FormData):", err);
-          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    } else {
-      console.log("🚀 Enviando objeto normal al backend:", values);
-      this.clubsService.updateClub(values.id, values).subscribe({
-        next: (res) => {
-          console.log("✅ Respuesta del backend:", res);
-          this.editandoClubId = null;
-          this.snackBar.open('Club actualizado correctamente', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-success']
-          });
-        },
-        error: (err) => {
-          console.error("🔥 Error al actualizar (Objeto Club):", err);
-          this.snackBar.open('Error al actualizar el club', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    }
-  }
-
-
 
   onLogoSelected(event: Event, club: Club) {
     const file = (event.target as HTMLInputElement).files?.[0];

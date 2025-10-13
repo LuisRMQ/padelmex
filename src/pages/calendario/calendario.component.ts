@@ -145,12 +145,6 @@ export class CalendarioComponent implements OnInit {
     if (this.selectedClubId) {
       this.loadCourts();
       this.loadReservationConfiguration();
-      console.log('Club cambiado, ID:', this.selectedClubId);
-      console.log('Configuración de reservas:', {
-        advance_reservation_limit: this.advance_reservation_limit,
-        cancellation_policy: this.cancellation_policy,
-        activate_reservation: this.activate_reservation
-      });
     } else {
       this.courts = [];
       this.selectedCourtId = null;
@@ -331,7 +325,6 @@ export class CalendarioComponent implements OnInit {
     const endTime24 = `${pad(endHour)}:${pad(endMin)}`;
 
     // Abrir modal de reservación
-    console.log(court);
     const dialogRef = this.dialog.open(ScheduleDateDialogComponent, {
       data: {
         user: '',
@@ -352,15 +345,11 @@ export class CalendarioComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (!result) return; // Canceló el modal
-      console.log('Resultado del modal:', result);
 
       const payload = result;
 
-      console.log("Payload final que se enviará al backend:", payload);
-
       this.reservationService.createReservation(payload).subscribe({
         next: (response) => {
-          console.log('✅ Reservación creada:', response);
 
           // Mapeo para mostrar en calendario
           const newRes: CalendarReservation = {
@@ -571,7 +560,6 @@ export class CalendarioComponent implements OnInit {
       next: (response) => {
         if (response && Array.isArray(response.data)) {
           this.allReservations = response.data;
-          console.log('Total reservaciones cargadas:', this.allReservations.length);
           this.applyFilters();
         } else {
           this.allReservations = [];
@@ -623,7 +611,6 @@ export class CalendarioComponent implements OnInit {
       res.date === selectedDateStr
     );
 
-    console.log('Reservaciones filtradas:', filteredReservations.length);
     this.reservations = this.mapApiReservationsToCalendar(filteredReservations);
   }
 
@@ -777,7 +764,6 @@ export class CalendarioComponent implements OnInit {
   }
 
   async onReservationClick(res: any) {
-    console.log('Clicked reservation', res);
     await this.showReservationDetails(res);
 
     const dialogRef = this.dialog.open(ScheduleDetailsDialogComponent, {
