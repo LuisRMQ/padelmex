@@ -1,1 +1,79 @@
-<p>pruebas-socket works!</p>
+<div class="container">
+  <!-- Estado de conexión -->
+  <div class="connection-status" [class.connected]="isConnected" [class.disconnected]="!isConnected">
+    <span class="status-dot"></span>
+    {{ isConnected ? '✅ Conectado al WebSocket' : '❌ Desconectado del WebSocket' }}
+  </div>
+
+  <!-- Panel de canchas -->
+  <div class="section">
+    <h3>🏟️ Canchas Creadas en Tiempo Real</h3>
+    
+    <!-- Validar que courts exista y tenga length -->
+    <div *ngIf="!courts || courts.length === 0" class="empty-state">
+      <p>No hay canchas creadas aún...</p>
+      <p class="small-text">Cuando crees una cancha en Laravel, aparecerá aquí automáticamente.</p>
+    </div>
+
+    <!-- Validar que courts exista antes de iterar -->
+    <div *ngIf="courts && courts.length > 0">
+      <div *ngFor="let court of courts" class="court-card">
+        <div class="court-header">
+          <h4>{{ court?.name || 'Nombre no disponible' }}</h4>
+          <span *ngIf="court?.status" [class]="getStatusClass(court.status)">
+            {{ court.status }}
+          </span>
+        </div>
+        
+        <div class="court-body">
+          <p class="court-description">{{ court?.description || 'Sin descripción' }}</p>
+          
+          <div class="court-details">
+            <div class="detail">
+              <strong>Precio:</strong>
+              <span class="price">${{ court?.price || '0' }}</span>
+            </div>
+            
+            <div class="detail">
+              <strong>Creado:</strong>
+              <span class="timestamp">{{ formatDate(court?.created_at) }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="court-footer">
+          <small>ID: {{ court?.id || 'N/A' }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log de eventos -->
+  <div class="section">
+    <h3>📝 Log de Eventos</h3>
+    
+    <div class="event-controls">
+      <button (click)="sendTestMessage()" [disabled]="!isConnected" class="btn btn-primary">
+        Enviar Mensaje de Prueba
+      </button>
+      
+      <button (click)="simulateCourtCreation()" class="btn btn-secondary">
+        Simular Cancha
+      </button>
+    </div>
+
+    <div class="event-logs">
+      <!-- Validar que messages exista y tenga length -->
+      <div *ngIf="!messages || messages.length === 0" class="empty-state">
+        <p>No hay eventos aún...</p>
+      </div>
+
+      <!-- Validar que messages exista antes de iterar -->
+      <div *ngIf="messages && messages.length > 0">
+        <div *ngFor="let message of messages" class="log-entry">
+          {{ message }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
