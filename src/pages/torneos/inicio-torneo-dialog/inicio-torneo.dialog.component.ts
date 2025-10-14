@@ -89,6 +89,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.bracket = res.data?.data?.bracket || [];
         this.categories = this.bracket;
+        console.log(this.categories)
         this.selectedCategory = this.categories[0] || null;
         this.filtrarCategoria();
         this.loading = false;
@@ -218,21 +219,18 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   const rounds: Partido[][] = [];
 
   // Ronda inicial: cada grupo
-  const groupRound: Partido[] = [];
-  category.groups.forEach((group: any) => {
-    group.games.forEach((game: any) => {
-      const couple1 = group.ranking.find((c: any) => c.couple_id === game.couple_1);
-      const couple2 = group.ranking.find((c: any) => c.couple_id === game.couple_2);
-
-      groupRound.push({
-        jugador1: couple1 ? couple1.players : [{ name: 'Por asignar', photo: '', id: 0 }],
-        jugador2: couple2 ? couple2.players : [{ name: 'Por asignar', photo: '', id: 0 }],
-        ganador: null,
-        groupName: group.group_name,
-        id: game.game_id
-      });
+ const groupRound: Partido[] = [];
+category.groups.forEach((group: any) => {
+  group.ranking.forEach((ranking: any) => {
+    groupRound.push({
+      jugador1: ranking.players?.[0] ? [ranking.players[0]] : [{ name: 'Por asignar', photo: '', id: 0 }],
+      jugador2: ranking.players?.[1] ? [ranking.players[1]] : [{ name: 'Por asignar', photo: '', id: 0 }],
+      ganador: null,
+      groupName: group.group_name,
+      id: ranking.couple_id
     });
   });
+});
 
   if (groupRound.length) rounds.push(groupRound);
 
