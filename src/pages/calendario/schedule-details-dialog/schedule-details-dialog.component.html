@@ -170,35 +170,185 @@
         </div>
     </div>
 
+<div class="card blue-card">
+    <h4><mat-icon>sports_score</mat-icon> Resultado del Partido</h4>
 
-    <!-- Observations -->
-    <div class="card blue-card">
-        <h4><mat-icon>sticky_note_2</mat-icon> Observaciones</h4>
+    <!-- Selección de Parejas -->
+    <div class="pairs-section" *ngIf="players.length >= 4">
+        <h5><mat-icon>groups</mat-icon> Formar Parejas</h5>
 
-        <ng-container *ngIf="!isEditing; else editObs">
-            <input class="observation-input" type="text" [value]="data.details.observations" readonly />
-        </ng-container>
+        <!-- Jugadores disponibles -->
+        <div class="players-container">
+            <div class="players-pool">
+                <h6>Jugadores Disponibles</h6>
+                <div cdkDropList #playersList="cdkDropList" [cdkDropListData]="availablePlayers"
+                    [cdkDropListConnectedTo]="[team1List, team2List]" class="players-list"
+                    (cdkDropListDropped)="drop($event)">
+                    <div class="player-carda" *ngFor="let player of availablePlayers" cdkDrag>
+                        <img [src]="player.user.profile_photo || defaultAvatar" [alt]="player.user.name"
+                            (error)="onImageError($event)" class="player-avatar">
+                        <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
+                    </div>
+                </div>
+            </div>
 
-        <ng-template #editObs>
-            <textarea [(ngModel)]="editedData.observations"></textarea>
-        </ng-template>
-    </div>
+            <!-- Equipo 1 -->
+            <div class="team-container">
+                <h6>Pareja 1</h6>
+                <div cdkDropList #team1List="cdkDropList" [cdkDropListData]="team1"
+                    [cdkDropListConnectedTo]="[playersList, team2List]" class="team-players"
+                    (cdkDropListDropped)="drop($event)">
+                    <div class="player-card team-player" *ngFor="let player of team1" cdkDrag>
+                        <img [src]="player.user.profile_photo || defaultAvatar" [alt]="player.user.name"
+                            (error)="onImageError($event)" class="player-avatar">
+                        <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
+                        <button mat-icon-button (click)="removeFromTeam(player, 1)" class="remove-btn">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </div>
+                    <div class="empty-slot" *ngIf="team1.length === 0">
+                        Arrastra 2 jugadores aquí
+                    </div>
+                </div>
+            </div>
 
-    <!-- Footer -->
-    <div class="footer">
-        <small>Created: {{ data.details.created_at }}</small>
-        <small>Last Updated: {{ data.details.updated_at }}</small>
-    </div>
+            <!-- Equipo 2 -->
+            <div class="team-container">
+                <h6>Pareja 2</h6>
+                <div cdkDropList #team2List="cdkDropList" [cdkDropListData]="team2"
+                    [cdkDropListConnectedTo]="[playersList, team1List]" class="team-players"
+                    (cdkDropListDropped)="drop($event)">
+                    <div class="player-card team-player" *ngFor="let player of team2" cdkDrag>
+                        <img [src]="player.user.profile_photo || defaultAvatar" [alt]="player.user.name"
+                            (error)="onImageError($event)" class="player-avatar">
+                        <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
+                        <button mat-icon-button (click)="removeFromTeam(player, 2)" class="remove-btn">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </div>
+                    <div class="empty-slot" *ngIf="team2.length === 0">
+                        Arrastra 2 jugadores aquí
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Actions -->
-    <div class="actions">
-        <button class="btn btn-close" (click)="closeDialog()">Cerrar</button>
-
-        <button *ngIf="!isEditing" class="btn btn-edit" (click)="toggleEdit()">Editar Reservación</button>
-
-        <div *ngIf="isEditing">
-            <button class="btn btn-cancel" (click)="toggleEdit()">Cancelar</button>
-            <button class="btn btn-save" (click)="saveChanges()">Guardar</button>
+        <!-- Botones de acción para parejas -->
+        <div class="pairs-actions">
+            <button mat-raised-button color="primary" (click)="assignPairs()"
+                [disabled]="team1.length !== 2 || team2.length !== 2">
+                Confirmar Parejas
+            </button>
+            <button mat-stroked-button color="warn" (click)="clearPairs()">
+                Limpiar Parejas
+            </button>
         </div>
     </div>
+
+    <!-- Mensaje si no hay suficientes jugadores -->
+    <div class="warning-message" *ngIf="players.length < 4">
+        <mat-icon>warning</mat-icon>
+        Se necesitan al menos 4 jugadores para formar parejas
+    </div>
+
+    <!-- Cuadrícula de sets -->
+    <div class="sets-grid" *ngIf="pairsConfirmed">
+        <div class="sets-header">
+            <div class="header-cell">Equipo</div>
+            <div class="header-cell">Set 1</div>
+            <div class="header-cell">Set 2</div>
+            <div class="header-cell">Set 3</div>
+        </div>
+
+        <!-- Equipo 1 -->
+        <div class="sets-row">
+            <div class="team-name-cell">
+                <span>Pareja 1</span>
+                <div class="team-players-names">
+                    <small *ngFor="let player of team1">
+                        {{ player.user.name }} {{ player.user.lastname }}
+                    </small>
+                </div>
+            </div>
+            <div class="set-input-cell">
+                <input type="number" min="0" max="50" [(ngModel)]="score1_set1" />
+            </div>
+            <div class="set-input-cell">
+                <input type="number" min="0" max="50" [(ngModel)]="score1_set2" />
+            </div>
+            <div class="set-input-cell">
+                <input type="number" min="0" max="50" [(ngModel)]="score1_set3" />
+            </div>
+        </div>
+
+        <!-- Equipo 2 -->
+        <div class="sets-row">
+            <div class="team-name-cell">
+                <span>Pareja 2</span>
+                <div class="team-players-names">
+                    <small *ngFor="let player of team2">
+                        {{ player.user.name }} {{ player.user.lastname }}
+                    </small>
+                </div>
+            </div>
+            <div class="set-input-cell">
+                <input type="number" min="0" max="50" [(ngModel)]="score2_set1" />
+            </div>
+            <div class="set-input-cell">
+                <input type="number" min="0" max="50" [(ngModel)]="score2_set2" />
+            </div>
+            <div class="set-input-cell">
+                <input type="number" min="0" max="50" [(ngModel)]="score2_set3" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="set-buttons" *ngIf="pairsConfirmed">
+        <button mat-raised-button color="primary" (click)="guardarSet(1)" [disabled]="!score1_set1 || !score2_set1">
+            Guardar Set 1
+        </button>
+        <button mat-raised-button color="primary" (click)="guardarSet(2)" [disabled]="!score1_set2 || !score2_set2">
+            Guardar Set 2
+        </button>
+        <button mat-raised-button color="primary" (click)="guardarSet(3)" [disabled]="!score1_set3 || !score2_set3">
+            Guardar Set 3
+        </button>
+    </div>
 </div>
+
+
+
+
+
+        <!-- Observations -->
+        <div class="card green-card">
+            <h4><mat-icon>sticky_note_2</mat-icon> Observaciones</h4>
+
+            <ng-container *ngIf="!isEditing; else editObs">
+                <input class="observation-input" type="text" [value]="data.details.observations" readonly />
+            </ng-container>
+
+            <ng-template #editObs>
+                <textarea [(ngModel)]="editedData.observations"></textarea>
+            </ng-template>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <small>Created: {{ data.details.created_at }}</small>
+            <small>Last Updated: {{ data.details.updated_at }}</small>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button class="btn btn-close" (click)="closeDialog()">Cerrar</button>
+
+            <button *ngIf="!isEditing" class="btn btn-edit" (click)="toggleEdit()">Editar Reservación</button>
+
+            <div *ngIf="isEditing">
+                <button class="btn btn-cancel" (click)="toggleEdit()">Cancelar</button>
+                <button class="btn btn-save" (click)="saveChanges()">Guardar</button>
+            </div>
+        </div>
+    </div>

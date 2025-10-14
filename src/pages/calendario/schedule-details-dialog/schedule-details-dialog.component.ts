@@ -15,6 +15,9 @@ import { User, UsersService } from '../../../app/services/users.service';
 import { catchError, debounceTime, distinctUntilChanged, map, Observable, of, switchMap } from 'rxjs';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconButton } from '@angular/material/button';
+import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
+
+
 
 @Component({
   selector: 'app-schedule-details-dialog',
@@ -31,7 +34,8 @@ import { MatIconButton } from '@angular/material/button';
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatProgressSpinnerModule,
-    MatIconButton
+    MatIconButton,
+    DragDropModule
   ],
 })
 export class ScheduleDetailsDialogComponent {
@@ -46,6 +50,26 @@ export class ScheduleDetailsDialogComponent {
   newPlayer: any = null;
 
   playersEditable = false;
+
+
+
+
+  // Nuevas propiedades para el manejo de parejas
+  availablePlayers: any[] = [];
+  pairsConfirmed = false;
+
+
+
+  team1: any[] = [];
+  team2: any[] = [];
+  score1_set1 = 0;
+  score1_set2 = 0;
+  score1_set3 = 0;
+  score2_set1 = 0;
+  score2_set2 = 0;
+  score2_set3 = 0;
+  pairs: any[][] = [];
+
 
   statusLabels: { [key: string]: string } = {
     pending: 'Pendiente',
@@ -77,6 +101,16 @@ export class ScheduleDetailsDialogComponent {
     this.initialStatus = this.data.details.status;
     this.loadPlayers();
   }
+  // guardarSet(numSet: number) {
+  //   this.snackBar.open(`Set ${numSet} guardado ✅`, 'Cerrar', {
+  //     duration: 3000,
+  //   });
+  // }
+
+
+
+
+
 
   private loadPlayers(): void {
     if (this.data.details.user_id && this.data.details.id) {
@@ -86,6 +120,10 @@ export class ScheduleDetailsDialogComponent {
       ).subscribe({
         next: (res: any) => {
           this.players = res.reservation_players || [];
+
+          // dividir automáticamente en dos equipos (2 y 2)
+          this.team1 = this.players.slice(0, 2);
+          this.team2 = this.players.slice(2, 4);
         },
         error: (err) => {
           console.error('Error cargando jugadores:', err);
@@ -291,5 +329,128 @@ export class ScheduleDetailsDialogComponent {
         error: (err) => console.error('Error cambiando status:', err)
       });
   }
+
+
+//--------------------------------- SECTION DETAIL BRACKET ---------------------------
+
+  drop(event: CdkDragDrop<any[]>) {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    } else {
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+
+      this.validateTeamSizes();
+    }
+
+    this.updateAvailablePlayers();
+  }
+
+  private validateTeamSizes() {
+    if (this.team1.length > 2) {
+      const extraPlayer = this.team1.pop();
+      this.availablePlayers.push(extraPlayer);
+    }
+
+    if (this.team2.length > 2) {
+      const extraPlayer = this.team2.pop();
+      this.availablePlayers.push(extraPlayer);
+    }
+  }
+
+  private updateAvailablePlayers() {
+    this.availablePlayers = this.players.filter(player =>
+      !this.team1.includes(player) && !this.team2.includes(player)
+    );
+  }
+
+  removeFromTeam(player: any, teamNumber: number) {
+    if (teamNumber === 1) {
+      this.team1 = this.team1.filter(p => p !== player);
+    } else {
+      this.team2 = this.team2.filter(p => p !== player);
+    }
+    this.availablePlayers.push(player);
+    this.pairsConfirmed = false;
+  }
+
+  assignPairs() {
+    if (this.team1.length === 2 && this.team2.length === 2) {
+      this.pairsConfirmed = true;
+      this.snackBar.open('Parejas confirmadas correctamente ✅', 'Cerrar', {
+        duration: 3000,
+      });
+
+      this.savePairsToBackend();
+    } else {
+      this.snackBar.open('Cada pareja debe tener exactamente 2 jugadores', 'Cerrar', {
+        duration: 3000,
+      });
+    }
+  }
+
+  clearPairs() {
+    this.team1 = [];
+    this.team2 = [];
+    this.availablePlayers = [...this.players];
+    this.pairsConfirmed = false;
+    this.resetScores();
+  }
+
+  private resetScores() {
+    this.score1_set1 = 0;
+    this.score1_set2 = 0;
+    this.score1_set3 = 0;
+    this.score2_set1 = 0;
+    this.score2_set2 = 0;
+    this.score2_set3 = 0;
+  }
+
+  private savePairsToBackend() {
+    const pairsData = {
+      reservation_id: this.data.id,
+      team1: this.team1.map(p => p.user_id),
+      team2: this.team2.map(p => p.user_id)
+    };
+
+    console.log('Parejas a guardar:', pairsData);
+  }
+
+  guardarSet(numSet: number) {
+    const score1 = this.getScoreBySet(1, numSet);
+    const score2 = this.getScoreBySet(2, numSet);
+
+    const setData = {
+      setNumber: numSet,
+      team1Score: score1,
+      team2Score: score2,
+      team1Players: this.team1.map(p => p.user_id),
+      team2Players: this.team2.map(p => p.user_id)
+    };
+
+    this.snackBar.open(`Set ${numSet} guardado ✅`, 'Cerrar', {
+      duration: 3000,
+    });
+
+    console.log('Datos del set:', setData);
+  }
+
+  private getScoreBySet(teamNumber: number, setNumber: number): number {
+    const scoreMap: { [key: string]: number } = {
+      '1_1': this.score1_set1,
+      '1_2': this.score1_set2,
+      '1_3': this.score1_set3,
+      '2_1': this.score2_set1,
+      '2_2': this.score2_set2,
+      '2_3': this.score2_set3
+    };
+
+    return scoreMap[`${teamNumber}_${setNumber}`] || 0;
+  }
+
 
 }
