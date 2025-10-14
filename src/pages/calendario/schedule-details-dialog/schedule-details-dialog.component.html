@@ -170,64 +170,138 @@
         </div>
     </div>
 
-<div class="card blue-card">
-    <h4><mat-icon>sports_score</mat-icon> Resultado del Partido</h4>
+<div class="match-result-card">
+    <!-- Header -->
+    <div class="card-header">
+        <div class="header-icon">
+            <mat-icon>sports_tennis</mat-icon>
+        </div>
+        <div class="header-content">
+            <h3>Resultado del Partido</h3>
+            <p>Organiza las parejas y registra los sets</p>
+        </div>
+    </div>
 
     <!-- Selección de Parejas -->
     <div class="pairs-section" *ngIf="players.length >= 4">
-        <h5><mat-icon>groups</mat-icon> Formar Parejas</h5>
+        <div class="section-header">
+            <mat-icon>groups</mat-icon>
+            <h4>Formar Parejas</h4>
+        </div>
 
-        <!-- Jugadores disponibles -->
-        <div class="players-container">
-            <div class="players-pool">
-                <h6>Jugadores Disponibles</h6>
-                <div cdkDropList #playersList="cdkDropList" [cdkDropListData]="availablePlayers"
-                    [cdkDropListConnectedTo]="[team1List, team2List]" class="players-list"
-                    (cdkDropListDropped)="drop($event)">
-                    <div class="player-carda" *ngFor="let player of availablePlayers" cdkDrag>
-                        <img [src]="player.user.profile_photo || defaultAvatar" [alt]="player.user.name"
-                            (error)="onImageError($event)" class="player-avatar">
-                        <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
+        <!-- Contenedor principal de jugadores -->
+        <div class="players-drag-container">
+            <!-- Jugadores disponibles -->
+            <div class="players-pool-container">
+                <div class="pool-header">
+                    <h5>Jugadores Disponibles</h5>
+                    <span class="player-count">{{availablePlayers.length}} jugadores</span>
+                </div>
+                <div cdkDropList #playersList="cdkDropList" 
+                     [cdkDropListData]="availablePlayers"
+                     [cdkDropListConnectedTo]="[team1List, team2List]" 
+                     class="players-pool"
+                     (cdkDropListDropped)="drop($event)">
+                    <div class="player-card-available" *ngFor="let player of availablePlayers" cdkDrag>
+                        <div class="player-avatar-container">
+                            <img [src]="player.user.profile_photo || defaultAvatar" 
+                                 [alt]="player.user.name"
+                                 (error)="onImageError($event)" 
+                                 class="player-avatar">
+                            <div class="drag-indicator">
+                                <mat-icon>drag_indicator</mat-icon>
+                            </div>
+                        </div>
+                        <div class="player-info">
+                            <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
+                            <span class="player-level" *ngIf="player.user.level">Nvl {{ player.user.level }}</span>
+                        </div>
+                    </div>
+                    <div class="empty-pool" *ngIf="availablePlayers.length === 0">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>Todos los jugadores asignados</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Equipo 1 -->
-            <div class="team-container">
-                <h6>Pareja 1</h6>
-                <div cdkDropList #team1List="cdkDropList" [cdkDropListData]="team1"
-                    [cdkDropListConnectedTo]="[playersList, team2List]" class="team-players"
-                    (cdkDropListDropped)="drop($event)">
-                    <div class="player-card team-player" *ngFor="let player of team1" cdkDrag>
-                        <img [src]="player.user.profile_photo || defaultAvatar" [alt]="player.user.name"
-                            (error)="onImageError($event)" class="player-avatar">
-                        <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
-                        <button mat-icon-button (click)="removeFromTeam(player, 1)" class="remove-btn">
-                            <mat-icon>close</mat-icon>
-                        </button>
+            <!-- Equipos -->
+            <div class="teams-container">
+                <!-- Equipo 1 -->
+                <div class="team-card">
+                    <div class="team-header team-1">
+                        <div class="team-info">
+                            <h5>Pareja 1</h5>
+                            <span class="team-count">{{team1.length}}/2</span>
+                        </div>
+                        <div class="team-color-indicator"></div>
                     </div>
-                    <div class="empty-slot" *ngIf="team1.length === 0">
-                        Arrastra 2 jugadores aquí
+                    <div cdkDropList #team1List="cdkDropList" 
+                         [cdkDropListData]="team1"
+                         [cdkDropListConnectedTo]="[playersList, team2List]" 
+                         class="team-players"
+                         (cdkDropListDropped)="drop($event)">
+                        <div class="team-player-card" *ngFor="let player of team1" cdkDrag>
+                            <div class="player-main">
+                                <img [src]="player.user.profile_photo || defaultAvatar" 
+                                     [alt]="player.user.name"
+                                     (error)="onImageError($event)" 
+                                     class="player-avatar">
+                                <div class="player-details">
+                                    <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
+                                    <span class="player-level" *ngIf="player.user.level">Nvl {{ player.user.level }}</span>
+                                </div>
+                            </div>
+                            <button mat-icon-button (click)="removeFromTeam(player, 1)" class="remove-btn">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </div>
+                        <div class="empty-team" *ngIf="team1.length === 0">
+                            <mat-icon>person_add</mat-icon>
+                            <span>Arrastra 2 jugadores</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Equipo 2 -->
-            <div class="team-container">
-                <h6>Pareja 2</h6>
-                <div cdkDropList #team2List="cdkDropList" [cdkDropListData]="team2"
-                    [cdkDropListConnectedTo]="[playersList, team1List]" class="team-players"
-                    (cdkDropListDropped)="drop($event)">
-                    <div class="player-card team-player" *ngFor="let player of team2" cdkDrag>
-                        <img [src]="player.user.profile_photo || defaultAvatar" [alt]="player.user.name"
-                            (error)="onImageError($event)" class="player-avatar">
-                        <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
-                        <button mat-icon-button (click)="removeFromTeam(player, 2)" class="remove-btn">
-                            <mat-icon>close</mat-icon>
-                        </button>
+                <!-- VS Separator -->
+                <div class="vs-separator">
+                    <div class="vs-circle">
+                        <span>VS</span>
                     </div>
-                    <div class="empty-slot" *ngIf="team2.length === 0">
-                        Arrastra 2 jugadores aquí
+                </div>
+
+                <!-- Equipo 2 -->
+                <div class="team-card">
+                    <div class="team-header team-2">
+                        <div class="team-info">
+                            <h5>Pareja 2</h5>
+                            <span class="team-count">{{team2.length}}/2</span>
+                        </div>
+                        <div class="team-color-indicator"></div>
+                    </div>
+                    <div cdkDropList #team2List="cdkDropList" 
+                         [cdkDropListData]="team2"
+                         [cdkDropListConnectedTo]="[playersList, team1List]" 
+                         class="team-players"
+                         (cdkDropListDropped)="drop($event)">
+                        <div class="team-player-card" *ngFor="let player of team2" cdkDrag>
+                            <div class="player-main">
+                                <img [src]="player.user.profile_photo || defaultAvatar" 
+                                     [alt]="player.user.name"
+                                     (error)="onImageError($event)" 
+                                     class="player-avatar">
+                                <div class="player-details">
+                                    <span class="player-name">{{ player.user.name }} {{ player.user.lastname }}</span>
+                                    <span class="player-level" *ngIf="player.user.level">Nvl {{ player.user.level }}</span>
+                                </div>
+                            </div>
+                            <button mat-icon-button (click)="removeFromTeam(player, 2)" class="remove-btn">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </div>
+                        <div class="empty-team" *ngIf="team2.length === 0">
+                            <mat-icon>person_add</mat-icon>
+                            <span>Arrastra 2 jugadores</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -236,84 +310,130 @@
         <!-- Botones de acción para parejas -->
         <div class="pairs-actions">
             <button mat-raised-button color="primary" (click)="assignPairs()"
-                [disabled]="team1.length !== 2 || team2.length !== 2">
+                    [disabled]="team1.length !== 2 || team2.length !== 2" class="confirm-btn">
+                <mat-icon>check_circle</mat-icon>
                 Confirmar Parejas
             </button>
-            <button mat-stroked-button color="warn" (click)="clearPairs()">
+            <button mat-stroked-button color="warn" (click)="clearPairs()" class="clear-btn">
+                <mat-icon>refresh</mat-icon>
                 Limpiar Parejas
             </button>
         </div>
     </div>
 
     <!-- Mensaje si no hay suficientes jugadores -->
-    <div class="warning-message" *ngIf="players.length < 4">
-        <mat-icon>warning</mat-icon>
-        Se necesitan al menos 4 jugadores para formar parejas
+    <div class="warning-card" *ngIf="players.length < 4">
+        <div class="warning-icon">
+            <mat-icon>warning</mat-icon>
+        </div>
+        <div class="warning-content">
+            <h5>Jugadores insuficientes</h5>
+            <p>Se necesitan al menos 4 jugadores para formar parejas</p>
+        </div>
     </div>
 
     <!-- Cuadrícula de sets -->
-    <div class="sets-grid" *ngIf="pairsConfirmed">
-        <div class="sets-header">
-            <div class="header-cell">Equipo</div>
-            <div class="header-cell">Set 1</div>
-            <div class="header-cell">Set 2</div>
-            <div class="header-cell">Set 3</div>
+    <div class="sets-section" *ngIf="pairsConfirmed">
+        <div class="section-header">
+            <mat-icon>scoreboard</mat-icon>
+            <h4>Marcador del Partido</h4>
         </div>
 
-        <!-- Equipo 1 -->
-        <div class="sets-row">
-            <div class="team-name-cell">
-                <span>Pareja 1</span>
-                <div class="team-players-names">
-                    <small *ngFor="let player of team1">
-                        {{ player.user.name }} {{ player.user.lastname }}
-                    </small>
+        <div class="sets-grid">
+            <!-- Header -->
+            <div class="sets-header">
+                <div class="header-team">Equipo</div>
+                <div class="header-set">
+                    <span>Set 1</span>
+                    <small>Primer set</small>
+                </div>
+                <div class="header-set">
+                    <span>Set 2</span>
+                    <small>Segundo set</small>
+                </div>
+                <div class="header-set">
+                    <span>Set 3</span>
+                    <small>Tie-break</small>
                 </div>
             </div>
-            <div class="set-input-cell">
-                <input type="number" min="0" max="50" [(ngModel)]="score1_set1" />
-            </div>
-            <div class="set-input-cell">
-                <input type="number" min="0" max="50" [(ngModel)]="score1_set2" />
-            </div>
-            <div class="set-input-cell">
-                <input type="number" min="0" max="50" [(ngModel)]="score1_set3" />
-            </div>
-        </div>
 
-        <!-- Equipo 2 -->
-        <div class="sets-row">
-            <div class="team-name-cell">
-                <span>Pareja 2</span>
-                <div class="team-players-names">
-                    <small *ngFor="let player of team2">
-                        {{ player.user.name }} {{ player.user.lastname }}
-                    </small>
+            <!-- Equipo 1 -->
+            <div class="sets-row team-1-row">
+                <div class="team-cell">
+                    <div class="team-display">
+                        <div class="team-color team-1-color"></div>
+                        <div class="team-info">
+                            <span class="team-name">Pareja 1</span>
+                            <div class="players-list">
+                                <small *ngFor="let player of team1">
+                                    {{ player.user.name }} {{ player.user.lastname }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="set-cell">
+                    <input type="number" min="0" max="50" [(ngModel)]="score1_set1" 
+                           placeholder="0" class="score-input" />
+                </div>
+                <div class="set-cell">
+                    <input type="number" min="0" max="50" [(ngModel)]="score1_set2" 
+                           placeholder="0" class="score-input" />
+                </div>
+                <div class="set-cell">
+                    <input type="number" min="0" max="50" [(ngModel)]="score1_set3" 
+                           placeholder="0" class="score-input" />
                 </div>
             </div>
-            <div class="set-input-cell">
-                <input type="number" min="0" max="50" [(ngModel)]="score2_set1" />
-            </div>
-            <div class="set-input-cell">
-                <input type="number" min="0" max="50" [(ngModel)]="score2_set2" />
-            </div>
-            <div class="set-input-cell">
-                <input type="number" min="0" max="50" [(ngModel)]="score2_set3" />
+
+            <!-- Equipo 2 -->
+            <div class="sets-row team-2-row">
+                <div class="team-cell">
+                    <div class="team-display">
+                        <div class="team-color team-2-color"></div>
+                        <div class="team-info">
+                            <span class="team-name">Pareja 2</span>
+                            <div class="players-list">
+                                <small *ngFor="let player of team2">
+                                    {{ player.user.name }} {{ player.user.lastname }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="set-cell">
+                    <input type="number" min="0" max="50" [(ngModel)]="score2_set1" 
+                           placeholder="0" class="score-input" />
+                </div>
+                <div class="set-cell">
+                    <input type="number" min="0" max="50" [(ngModel)]="score2_set2" 
+                           placeholder="0" class="score-input" />
+                </div>
+                <div class="set-cell">
+                    <input type="number" min="0" max="50" [(ngModel)]="score2_set3" 
+                           placeholder="0" class="score-input" />
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Botones de acción -->
-    <div class="set-buttons" *ngIf="pairsConfirmed">
-        <button mat-raised-button color="primary" (click)="guardarSet(1)" [disabled]="!score1_set1 || !score2_set1">
-            Guardar Set 1
-        </button>
-        <button mat-raised-button color="primary" (click)="guardarSet(2)" [disabled]="!score1_set2 || !score2_set2">
-            Guardar Set 2
-        </button>
-        <button mat-raised-button color="primary" (click)="guardarSet(3)" [disabled]="!score1_set3 || !score2_set3">
-            Guardar Set 3
-        </button>
+        <!-- Botones de acción -->
+        <div class="sets-actions">
+            <button mat-raised-button color="primary" (click)="guardarSet(1)" 
+                    [disabled]="!score1_set1 || !score2_set1" class="set-btn">
+                <mat-icon>save</mat-icon>
+                Guardar Set 1
+            </button>
+            <button mat-raised-button color="primary" (click)="guardarSet(2)" 
+                    [disabled]="!score1_set2 || !score2_set2" class="set-btn">
+                <mat-icon>save</mat-icon>
+                Guardar Set 2
+            </button>
+            <button mat-raised-button color="primary" (click)="guardarSet(3)" 
+                    [disabled]="!score1_set3 || !score2_set3" class="set-btn">
+                <mat-icon>save</mat-icon>
+                Guardar Set 3
+            </button>
+        </div>
     </div>
 </div>
 

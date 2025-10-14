@@ -16,6 +16,7 @@ import { catchError, debounceTime, distinctUntilChanged, map, Observable, of, sw
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconButton } from '@angular/material/button';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
+import { MatCardModule } from "@angular/material/card";
 
 
 
@@ -35,8 +36,9 @@ import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from 
     MatAutocompleteModule,
     MatProgressSpinnerModule,
     MatIconButton,
-    DragDropModule
-  ],
+    DragDropModule,
+    MatCardModule
+],
 })
 export class ScheduleDetailsDialogComponent {
   isEditing = false;
