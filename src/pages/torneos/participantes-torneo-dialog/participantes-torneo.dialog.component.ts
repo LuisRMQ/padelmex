@@ -16,6 +16,7 @@ import { Observable, forkJoin } from 'rxjs';
 import { startWith, map } from 'rxjs/operators';
 import { MatInputModule } from '@angular/material/input';
 import { TournamentService } from '../../../app/services/torneos.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface Partido {
   jugador1: User | null;
@@ -24,6 +25,10 @@ export interface Partido {
   x?: number;
   y?: number;
   height?: number;
+}
+
+export interface TournamentPlayer extends User {
+  partner?: User | null;
 }
 
 @Component({
@@ -49,7 +54,7 @@ export interface Partido {
 export class ParticipantesTorneoDialogComponent implements OnInit {
 
   playerSearchControl = new FormControl('');
-  selectedPlayers: User[] = [];
+  selectedPlayers: TournamentPlayer[] = [];
   filteredPlayers!: Observable<User[]>;
   isLoadingPlayers = false;
   error: string | null = null;
@@ -65,7 +70,8 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<ParticipantesTorneoDialogComponent>,
     private usersService: UsersService,
     private dialog: MatDialog,
-    private tournamentService: TournamentService
+    private tournamentService: TournamentService,
+    private snackBar: MatSnackBar,
   ) { }
 
   ngOnInit(): void {
@@ -159,22 +165,22 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     return user ? `${user.name} ${user.lastname}` : '';
   }
 
-  addPlayer(user: User): void {
-    if (!this.selectedCategory) {
-      this.error = 'Selecciona una categoría antes de agregar jugadores.';
-      return;
-    }
-    if (this.selectedPlayers.some(p => p.id === user.id)) return;
-    this.error = null;
-    this.selectedPlayers.push(user);
-    this.participantes.push(user);
-    this.tournamentService.addUsertoTournament({
-      user_id: user.id,
-      category_tournament_id: this.selectedCategory.id,
-      partner_id: null
-    }).subscribe();
-    this.playerSearchControl.setValue('');
-  }
+  // addPlayer(user: User): void {
+  //   if (!this.selectedCategory) {
+  //     this.error = 'Selecciona una categoría antes de agregar jugadores.';
+  //     return;
+  //   }
+  //   if (this.selectedPlayers.some(p => p.id === user.id)) return;
+  //   this.error = null;
+  //   this.selectedPlayers.push(user);
+  //   this.participantes.push(user);
+  //   this.tournamentService.addUsertoTournament({
+  //     user_id: user.id,
+  //     category_tournament_id: this.selectedCategory.id,
+  //     partner_id: null
+  //   }).subscribe();
+  //   this.playerSearchControl.setValue('');
+  // }
 
   onImageError(event: Event): void {
     (event.target as HTMLImageElement).src = this.defaultAvatar;
@@ -194,4 +200,68 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     this.participantes = this.participantes.filter(p => p.id !== user.id);
     //this.tournamentService.removeUserFromTournament(user.id, this.data.torneoId).subscribe();
   }
+
+
+
+  addPlayer(user: User): void {
+  if (!this.selectedCategory) {
+    this.error = 'Selecciona una categoría antes de agregar jugadores.';
+    return;
+  }
+  if (this.selectedPlayers.some(p => p.id === user.id)) return;
+  this.error = null;
+
+  // Agregamos propiedad partner vacía
+  this.selectedPlayers.push({ ...user, partner: null });
+  this.playerSearchControl.setValue('');
+}
+
+// Validar si la pareja ya está asignada a otro jugador
+isAlreadyPaired(p: TournamentPlayer, jugador: TournamentPlayer): boolean {
+  return this.selectedPlayers.some(j => j.partner?.id === p.id && j.id !== jugador.id);
+}
+
+// Confirmar parejas y enviar al servicio
+confirmPairs() {
+  for (const jugador of this.selectedPlayers) {
+    if (!jugador.partner) {
+      this.error = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
+      return;
+    }
+  }
+
+  // Crear parejas únicas
+  const addedPairs = new Set<number>();
+  this.selectedPlayers.forEach(j => {
+    const key = [j.id, j.partner!.id].sort().join('-');
+    if (!addedPairs.has(Number(key))) {
+      addedPairs.add(Number(key));
+
+      this.tournamentService.addUsertoTournament({
+        user_id: j.id,
+        category_tournament_id: this.selectedCategory!.id,
+        partner_id: j.partner!.id
+      }).subscribe({
+        next: (res) => {
+          console.log('✔️ Pareja agregada al torneo', res);
+          this.snackBar.open(`✔️ Pareja agregada: ${j.name} + ${j.partner!.name}`, 'Cerrar', {
+            duration: 4000,
+            panelClass: ['snackbar-success']
+          });
+        },
+        error: (err) => {
+          console.error('❌ Error agregando pareja:', err);
+          const msg = err?.error?.msg || 'Ocurrió un error al agregar la pareja.';
+          this.snackBar.open(`❌ ${msg}`, 'Cerrar', {
+            duration: 6000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    }
+  });
+
+  this.dialogRef.close(this.selectedPlayers);
+}
+
 }
