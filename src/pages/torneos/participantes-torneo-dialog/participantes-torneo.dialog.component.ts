@@ -12,7 +12,7 @@ import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { FormsModule, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { startWith, map } from 'rxjs/operators';
 import { MatInputModule } from '@angular/material/input';
 import { TournamentService } from '../../../app/services/torneos.service';
@@ -96,20 +96,46 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
   }
 
   cargarJugadores() {
-    // Simula o carga todos los jugadores posibles para el autocomplete
-    this.usersService.getUsers().subscribe({
-      next: (res: User[]) => {
-        this.allPlayers = res;
+    this.isLoadingPlayers = true;
+    this.allPlayers = [];
+
+    // Primero obtenemos la primera página
+    this.usersService.getUserss(1).subscribe({
+      next: (res) => {
+        this.allPlayers = [...res.data];
+        const totalPages = res.last_page;
+
+        if (totalPages > 1) {
+          // Creamos un array de observables para las páginas restantes
+          const observables = [];
+          for (let page = 2; page <= totalPages; page++) {
+            observables.push(this.usersService.getUserss(page));
+          }
+
+          forkJoin(observables).subscribe({
+            next: (results) => {
+              results.forEach(r => this.allPlayers.push(...r.data));
+              this.isLoadingPlayers = false;
+              console.log(`✅ Total de jugadores cargados: ${this.allPlayers.length}`);
+
+            },
+            error: (err) => {
+              console.error('Error al cargar páginas adicionales:', err);
+              this.isLoadingPlayers = false;
+            }
+          });
+        } else {
+          this.isLoadingPlayers = false;
+        }
       },
       error: (err) => {
         console.error('Error al cargar jugadores:', err);
-        this.allPlayers = [];
+        this.isLoadingPlayers = false;
       }
     });
   }
 
   private _filterPlayers(value: any): User[] {
-    // Si el valor es un objeto (por ejemplo, User), usa su nombre, si es string úsalo directo
     let filterValue = '';
     if (typeof value === 'string') {
       filterValue = value.toLowerCase();

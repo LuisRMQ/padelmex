@@ -279,7 +279,7 @@ export class ScheduleDetailsDialogComponent {
     if (searchTerm.length < 2) return of([]);
     this.isLoadingPlayers = true;
     const normalizedTerm = searchTerm.toLowerCase();
-    return this.usersService.searchUsers('', this.data.clubId).pipe(
+    return this.usersService.searchAllUsers('').pipe(
       map(users => {
         this.isLoadingPlayers = false;
         return users.filter(u =>

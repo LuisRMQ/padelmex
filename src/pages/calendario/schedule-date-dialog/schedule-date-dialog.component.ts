@@ -132,53 +132,53 @@ export class ScheduleDateDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-  this.generarHoras();
+    this.generarHoras();
 
-  // Cargar categorías
-  this.configService.getCategories().subscribe(categories => this.categories = categories);
+    // Cargar categorías
+    this.configService.getCategories().subscribe(categories => this.categories = categories);
 
-  // 🔹 Cargar horarios por cancha y día
-  const dayName = this.getNombreDia(this.selectedDate);
-  this.horariosService.getHorariosByCourt(this.data.clubId!, this.data.courtId).subscribe({
-    next: (horarios) => {
-      this.horariosCancha = horarios.filter(h => h.day === dayName);
+    // 🔹 Cargar horarios por cancha y día
+    const dayName = this.getNombreDia(this.selectedDate);
+    this.horariosService.getHorariosByCourt(this.data.clubId!, this.data.courtId).subscribe({
+      next: (horarios) => {
+        this.horariosCancha = horarios.filter(h => h.day === dayName);
 
-      // 🔹 Cargar comisión desde CourtService
-     this.courtService.getCourtsByClub(this.data.clubId!).subscribe({
-  next: (res) => {
-    const court = res.data.find(c => c.id === this.data.courtId);
-    if (court) {
-      // Convertimos a number aquí
-      this.data.commission = typeof court.commission === 'string' ? parseFloat(court.commission) : court.commission;
-      this.data.price_hour = court.price_hour; // si quieres también precio
-    }
-  },
-  error: (err) => console.error(err)
-});
+        // 🔹 Cargar comisión desde CourtService
+        this.courtService.getCourtsByClub(this.data.clubId!).subscribe({
+          next: (res) => {
+            const court = res.data.find(c => c.id === this.data.courtId);
+            if (court) {
+              // Convertimos a number aquí
+              this.data.commission = typeof court.commission === 'string' ? parseFloat(court.commission) : court.commission;
+              this.data.price_hour = court.price_hour; // si quieres también precio
+            }
+          },
+          error: (err) => console.error(err)
+        });
 
-    },
-    error: (err) => console.error('Error al cargar horarios:', err)
-  });
+      },
+      error: (err) => console.error('Error al cargar horarios:', err)
+    });
 
-  // Validar duración mínima
-  this.reservationForm.get('end_time')?.valueChanges.subscribe(endTime => {
-    const startTime = this.reservationForm.get('start_time')?.value;
-    if (startTime && endTime) {
-      const duration = this.getMinutesDiff(startTime, endTime);
-      if (duration < this.minReservationTime) {
-        this.snackBar.open(
-          `La duración mínima de la reservación es de ${this.minReservationTime / 60} hora(s).`,
-          'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] }
-        );
-        this.reservationForm.get('end_time')?.setValue('');
+    // Validar duración mínima
+    this.reservationForm.get('end_time')?.valueChanges.subscribe(endTime => {
+      const startTime = this.reservationForm.get('start_time')?.value;
+      if (startTime && endTime) {
+        const duration = this.getMinutesDiff(startTime, endTime);
+        if (duration < this.minReservationTime) {
+          this.snackBar.open(
+            `La duración mínima de la reservación es de ${this.minReservationTime / 60} hora(s).`,
+            'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] }
+          );
+          this.reservationForm.get('end_time')?.setValue('');
+        }
       }
-    }
-  });
+    });
 
-  // Recalcular total al cambiar hora
-  this.reservationForm.get('start_time')?.valueChanges.subscribe(() => this.getTotalAPagar());
-  this.reservationForm.get('end_time')?.valueChanges.subscribe(() => this.getTotalAPagar());
-}
+    // Recalcular total al cambiar hora
+    this.reservationForm.get('start_time')?.valueChanges.subscribe(() => this.getTotalAPagar());
+    this.reservationForm.get('end_time')?.valueChanges.subscribe(() => this.getTotalAPagar());
+  }
 
   // ------------------- MÉTODOS DE DESGLOSE -------------------
   getTotalHoras(): number {
@@ -222,11 +222,11 @@ export class ScheduleDateDialogComponent implements OnInit {
     return (eh * 60 + em) - (sh * 60 + sm);
   }
 
-  private searchUsers(searchTerm: string): Observable<User[]> {
+   private searchUsers(searchTerm: string): Observable<User[]> {
     if (searchTerm.length < 2) return of([]);
     this.isLoadingUsers = true;
     const normalizedTerm = searchTerm.toLowerCase();
-    return this.usersService.searchUsers('', this.data.clubId).pipe(
+    return this.usersService.searchAllUsers('').pipe(
       map(users => {
         this.isLoadingUsers = false;
         return users.filter(u =>
@@ -238,11 +238,11 @@ export class ScheduleDateDialogComponent implements OnInit {
     );
   }
 
-  private searchPlayers(searchTerm: string): Observable<User[]> {
+   private searchPlayers(searchTerm: string): Observable<User[]> {
     if (searchTerm.length < 2) return of([]);
     this.isLoadingPlayers = true;
     const normalizedTerm = searchTerm.toLowerCase();
-    return this.usersService.searchUsers('', this.data.clubId).pipe(
+    return this.usersService.searchAllUsers('').pipe(
       map(users => {
         this.isLoadingPlayers = false;
         const ownerId = this.reservationForm.value.user_id;
@@ -296,7 +296,7 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   removePlayer(index: number): void { this.selectedPlayers.splice(index, 1); }
 
- onSubmit(): void {
+  onSubmit(): void {
   if (!this.reservationForm.valid) return;
 
   const mainPlayer = this.userControl.value;
@@ -308,9 +308,11 @@ export class ScheduleDateDialogComponent implements OnInit {
     return;
   }
 
+  const ownerId = this.reservationForm.value.user_id;
+
   // 🔹 Datos base
   const payload: any = {
-    user_id: this.reservationForm.value.user_id,
+    user_id: ownerId,
     court_id: this.reservationForm.value.court_id,
     reservation_type_id: this.reservationForm.value.reservation_type_id,
     date: this.formatDateForApi(this.selectedDate),
@@ -320,27 +322,38 @@ export class ScheduleDateDialogComponent implements OnInit {
     observations: this.reservationForm.value.observations,
     type: this.reservationForm.value.type,
     category: this.reservationForm.value.category,
-    players: [
-      {
-        user_id: this.reservationForm.value.user_id,
-        player_number: 1,
-        paid_by_owner: true
-      }
-    ] // 👈 Jugador principal siempre incluido
+    players: []
   };
 
-  // 🟢 Si el pago es dividido, agregamos los jugadores adicionales
+  // 🔹 Agregamos el jugador que reserva solo si hay espacio
+  const maxPlayers = 3; // máximo permitido
+  let currentPlayersCount = 0;
+
   if (this.reservationForm.value.pay_method === 'split_payment') {
-    const additionalPlayers = this.selectedPlayers.map((p, index) => ({
-      user_id: p.id,
-      player_number: index + 2,
-      paid_by_owner: p.paid_by_owner || false
-    }));
+    const additionalPlayers = this.selectedPlayers
+      .filter(p => p.id !== ownerId)
+      .map((p, index) => ({
+        user_id: p.id,
+        player_number: index + 2,
+        paid_by_owner: p.paid_by_owner || false
+      }));
+
     payload.players.push(...additionalPlayers);
+    currentPlayersCount = payload.players.length;
   }
+
+  // Si aún hay espacio, agregamos al que reserva
+  if (currentPlayersCount < maxPlayers) {
+    payload.players.unshift({
+      user_id: ownerId,
+      player_number: 1,
+      paid_by_owner: true
+    });
+  }
+
+  console.log('JSON payload que se enviará:', JSON.stringify(payload, null, 2));
   this.dialogRef.close(payload);
 }
-
 
 
   private convertToDate(dateValue: string | Date): Date {

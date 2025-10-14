@@ -115,3 +115,16 @@
       </table>
     </div>
   </div>
+
+
+  <div class="pagination-container" *ngIf="lastPage > 1">
+  <button mat-button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+    &laquo; Anterior
+  </button>
+
+  <span>Página {{ currentPage }} de {{ lastPage }}</span>
+
+  <button mat-button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === lastPage">
+    Siguiente &raquo;
+  </button>
+</div>

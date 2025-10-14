@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiBaseService } from './api.service';
 import { map } from 'rxjs/operators';
 import { HttpParams } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 export interface User {
     id?: number;
@@ -105,6 +106,50 @@ export class UsersService extends ApiBaseService {
                 map(res => res.data)
             );
     }
+
+    getUserss(page: number = 1): Observable<{ data: User[], current_page: number, last_page: number }> {
+        return this.get<{ data: User[], current_page: number, last_page: number }>(`/users?page=${page}`);
+    }
+
+
+    searchAllUsers(searchTerm: string = '', club_id?: number): Observable<User[]> {
+        let params = new HttpParams()
+            .set('rol_id', '')
+            .set('category_id', '')
+            .set('name', searchTerm || '')
+            .set('lastname', '')
+            .set('club_id', club_id ? club_id.toString() : '');
+
+        return new Observable<User[]>(observer => {
+            this.get<UsersResponse>('/users', params).subscribe({
+                next: firstPage => {
+                    let allUsers = [...firstPage.data];
+                    const totalPages = firstPage.last_page;
+
+                    if (totalPages > 1) {
+                        const observables = [];
+                        for (let page = 2; page <= totalPages; page++) {
+                            observables.push(this.get<UsersResponse>(`/users?page=${page}`, params));
+                        }
+
+                        forkJoin(observables).subscribe({
+                            next: results => {
+                                results.forEach(r => allUsers.push(...r.data));
+                                observer.next(allUsers);
+                                observer.complete();
+                            },
+                            error: err => observer.error(err)
+                        });
+                    } else {
+                        observer.next(allUsers);
+                        observer.complete();
+                    }
+                },
+                error: err => observer.error(err)
+            });
+        });
+    }
+
 
     getClubs(): Observable<Club[]> {
         return this.get<any>('/clubs').pipe(map(response => response.data));
