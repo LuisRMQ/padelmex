@@ -124,7 +124,7 @@
 }
 
 .past-court-col {
-  background: #f0f0f0 !important;
+  background: #eec9c9 !important;
   opacity: 1 !important;
 }
 
@@ -522,24 +522,6 @@ mat-spinner {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-
-/* Asegurar que las reservaciones sean clickeables */
-/* 
-.status-confirmed {
-  background: linear-gradient(135deg, #e8f5e8, #a5d6a7);
-  color: #2e7d32;
-}
-
-.status-pending {
-  background: linear-gradient(135deg, #fff3e0, #ffcc80);
-  color: #f57c00;
-}
-
-.status-cancelled {
-  background: linear-gradient(135deg, #ffebee, #ef9a9a);
-  color: #d32f2f;
-} */
-
 /* Reservaciones según estatus */
 .reservation.status-confirmed {
   background: linear-gradient(135deg, #e8f5e8, #a5d6a7);
@@ -557,4 +539,97 @@ mat-spinner {
   background: linear-gradient(135deg, #ffebee, #ef9a9a);
   color: black; /* texto en blanco */
   border-color: #e57373;
+}
+
+/* En calendario.component.css */
+.court-hours-badge {
+  font-size: 0.7em;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
+
+.slot-outside-hours {
+  background-color: #dbdbdb !important;
+  cursor: not-allowed !important;
+}
+
+.slot-outside-hours:hover {
+  background-color: #9e9d9d !important;
+}
+
+.time-slot.slot-selectable {
+  background-color: rgba(25, 118, 210, 0.05);
+  cursor: pointer;
+}
+
+.time-slot.slot-selectable:hover {
+  background-color: rgba(25, 118, 210, 0.1);
+}
+
+.loading-court-hours {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.court-closed {
+  position: relative;
+  opacity: 0.7;
+}
+
+.court-closed-badge {
+  font-size: 0.7em;
+  background: #ffebee;
+  color: #c62828;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  font-weight: bold;
+}
+
+.court-closed-overlay {
+  position: absolute;
+  top: 40px; /* Ajusta según la altura de tu header */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 235, 238, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.closed-message {
+  background: #ff5252;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+}
+
+.slot-court-closed {
+  background-color: #ffebee !important;
+  cursor: not-allowed !important;
+}
+
+.slot-court-closed:hover {
+  background-color: #ffebee !important;
+}
+
+/* Asegurar que los slots no sean seleccionables cuando la cancha está cerrada */
+.court-closed .time-slot {
+  cursor: not-allowed !important;
+  background-color: #ffebee !important;
+}
+
+.court-closed .time-slot:hover {
+  background-color: #ffebee !important;
 }

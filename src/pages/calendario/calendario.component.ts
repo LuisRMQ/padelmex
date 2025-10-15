@@ -13,7 +13,7 @@ import { FormsModule } from "@angular/forms";
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from "@angular/material/select";
-import { Club, CourtService, CourtsResponse } from '../../app/services/court.service';
+import { Club, CourtClosedDay, CourtOperatingHours, CourtService, CourtsResponse } from '../../app/services/court.service';
 import { ReservationService, Reservation as ApiReservation, ReservationDetails } from '../../app/services/reservation.service';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconModule } from "@angular/material/icon";
@@ -22,6 +22,7 @@ import { ScheduleDetailsDialogComponent } from './schedule-details-dialog/schedu
 import { SettingsDialogComponent } from './settings-dialog/settings-dialog.component';
 import { ConfigService } from '../../app/services/config.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { forkJoin } from 'rxjs';
 
 interface Court { id: number; name: string; }
 interface CalendarReservation {
@@ -75,6 +76,9 @@ export class CalendarioComponent implements OnInit {
   allReservations: ApiReservation[] = [];
   isTooltipHovered = false;
   hasConfiguration = false;
+  courtOperatingHours: Map<number, CourtOperatingHours> = new Map();
+  loadingCourtHours: Set<number> = new Set();
+  courtClosedDays: Map<number, CourtClosedDay[]> = new Map();
 
   // Configuración de reservas
   advance_reservation_limit = 0;
@@ -122,6 +126,9 @@ export class CalendarioComponent implements OnInit {
   onDateChange(date: Date) {
     this.selectedDate = date;
     this.applyFilters(); // Aplicar filtros cuando cambia la fecha
+    if (this.selectedClubId && this.courts.length > 0) {
+      this.loadCourtOperatingHours();
+    }
   }
 
   setToYesterday() {
@@ -145,6 +152,7 @@ export class CalendarioComponent implements OnInit {
     if (this.selectedClubId) {
       this.loadCourts();
       this.loadReservationConfiguration();
+      this.loadCourtOperatingHours();
     } else {
       this.courts = [];
       this.selectedCourtId = null;
@@ -332,7 +340,7 @@ export class CalendarioComponent implements OnInit {
         endTime: endTime24,
         courtId: court.id,
         date: this.selectedDate,
-        clubId: this.selectedClubId, 
+        clubId: this.selectedClubId,
 
         courtName: court.name,
       },
@@ -463,19 +471,23 @@ export class CalendarioComponent implements OnInit {
   }
 
   // Determina si un slot específico es pasado
-  isPastSlot(slotMin: number): boolean {
+  isPastSlot(courtId: number, slotMin: number): boolean {
     const now = new Date();
     const selected = new Date(this.selectedDate);
     selected.setHours(0, 0, 0, 0);
+
     if (selected < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
       return true;
     }
+
     const isToday = now.toDateString() === selected.toDateString();
     if (isToday && slotMin < (now.getHours() * 60 + now.getMinutes())) {
       return true;
     }
+
     return false;
   }
+
 
   // Verifica si un slot está reservado para una cancha y minuto dados
   isSlotReserved(courtId: number, slotMin: number): boolean {
@@ -487,18 +499,26 @@ export class CalendarioComponent implements OnInit {
   }
 
   handleSlotClick(ev: MouseEvent, court: Court, slotMin: number) {
-    if (this.isPastSlot(slotMin) || this.isSlotReserved(court.id, slotMin)) {
+    if (this.isPastSlot(court.id, slotMin) ||
+      this.isSlotReserved(court.id, slotMin) ||
+      !this.isSlotInCourtHours(court.id, slotMin) ||
+      this.isCourtClosed(court.id)) { // ← Nueva validación
       return;
     }
 
-    // Encontrar el elemento court-col
     const targetElement = ev.currentTarget as HTMLElement;
     const courtColElement = targetElement.closest('.court-col') as HTMLElement;
 
     if (courtColElement) {
-      // Llamar al método principal con el slotMin
       this.handleSlotSelection(court, slotMin);
     }
+  }
+
+  isSlotSelectable(courtId: number, slotMin: number): boolean {
+    return !this.isPastSlot(courtId, slotMin) &&
+      !this.isSlotReserved(courtId, slotMin) &&
+      this.isSlotInCourtHours(courtId, slotMin) &&
+      !this.isCourtClosed(courtId); // ← Nueva validación
   }
 
   // ---- Carga de datos ----
@@ -612,6 +632,113 @@ export class CalendarioComponent implements OnInit {
     );
 
     this.reservations = this.mapApiReservationsToCalendar(filteredReservations);
+
+    // Cargar horarios específicos para cada cancha solo si hay club seleccionado
+    if (this.selectedClubId && this.courts.length > 0) {
+      this.loadCourtOperatingHours();
+    }
+  }
+
+  // Nuevo método para cargar horarios de cada cancha
+  private loadCourtOperatingHours() {
+    if (!this.selectedClubId) {
+      console.warn('No club selected, cannot load court data');
+      return;
+    }
+
+    this.courtOperatingHours.clear();
+    this.courtClosedDays.clear();
+
+    this.courts.forEach(court => {
+      this.loadingCourtHours.add(court.id);
+
+      // Cargar horarios y días cerrados en paralelo
+      forkJoin({
+        hours: this.courtService.getCourtOperatingHours(court.id, this.selectedClubId!, this.selectedDate),
+        closedDays: this.courtService.getCourtClosedDaysByCourt(court.id)
+      }).subscribe({
+        next: (result) => {
+          this.courtOperatingHours.set(court.id, result.hours);
+          this.courtClosedDays.set(court.id, result.closedDays);
+          this.loadingCourtHours.delete(court.id);
+        },
+        error: (error) => {
+          console.error(`Error cargando datos para cancha ${court.id}:`, error);
+          this.loadingCourtHours.delete(court.id);
+          // En caso de error, usar valores por defecto
+          this.courtOperatingHours.set(court.id, {
+            openingTime: '06:00',
+            closingTime: '23:00',
+            schedules: []
+          });
+          this.courtClosedDays.set(court.id, []);
+        }
+      });
+    });
+  }
+
+  isCourtClosed(courtId: number): boolean { // Asegurarse de que la hora sea medianoche
+    const closedDays = this.courtClosedDays.get(courtId);
+    if (!closedDays || closedDays.length === 0) {
+      return false;
+    }
+
+    const selectedDateStr = this.formatDateForApi(this.selectedDate);
+    console.log('Checking if court', courtId, 'is closed on', selectedDateStr);
+    console.log('Closed days:', closedDays);
+    return closedDays.some(closedDay => closedDay.day === selectedDateStr);
+  }
+
+  // En calendario.component.ts
+  getCourtHoursDisplay(courtId: number): string {
+    const hours = this.courtOperatingHours.get(courtId);
+    if (!hours || hours.schedules.length === 0) {
+      return '';
+    }
+    return `${hours.openingTime} - ${hours.closingTime}`;
+  }
+
+  hasCourtSpecificHours(courtId: number): boolean {
+    const hours = this.courtOperatingHours.get(courtId);
+    return !!(hours && hours.schedules.length > 0);
+  }
+
+  // Método para obtener horario específico de una cancha
+  getCourtOperatingHours(courtId: number): CourtOperatingHours | null {
+    return this.courtOperatingHours.get(courtId) || null;
+  }
+
+  // Método para verificar si un slot está dentro del horario de la cancha
+  isSlotInCourtHours(courtId: number, slotMin: number): boolean {
+    const hours = this.getCourtOperatingHours(courtId);
+    if (!hours || hours.schedules.length === 0) {
+      // Si no hay horario específico, usar horario por defecto
+      return slotMin >= this.dayStartMin && slotMin < this.dayEndMin;
+    }
+
+    const slotTime = this.minutesToTimeString(slotMin);
+    return slotTime >= hours.openingTime && slotTime <= hours.closingTime;
+  }
+
+  // Método auxiliar para convertir minutos a string de tiempo
+  private minutesToTimeString(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  }
+
+  getCourtTimes(courtId: number): { label: string; min: number }[] {
+    const hours = this.getCourtOperatingHours(courtId);
+    if (!hours || hours.schedules.length === 0) {
+      // Horario por defecto si no hay horario específico
+      return this.buildTimeScale(this.dayStartMin, this.dayEndMin, this.snapMinutes);
+    }
+
+    // Convertir horarios de apertura/cierre a minutos
+    const openingMin = this.timeStringToMinutes(hours.openingTime);
+    const closingMin = this.timeStringToMinutes(hours.closingTime);
+
+    return this.buildTimeScale(openingMin, closingMin, this.snapMinutes);
   }
 
   private mapApiReservationsToCalendar(apiReservations: ApiReservation[]): CalendarReservation[] {
@@ -775,25 +902,11 @@ export class CalendarioComponent implements OnInit {
       panelClass: 'custom-modal-panel',
 
     });
-   dialogRef.afterClosed().subscribe((updated: boolean) => {
-  if (updated) {
-    // Aquí recargas la lista de reservaciones
-    this.loadAllReservations();
+    dialogRef.afterClosed().subscribe((updated: boolean) => {
+      if (updated) {
+        this.loadAllReservations();
+      }
+    });
   }
-});
-  }
 
-  // hasPendingAndPaidPlayers(reservation: CalendarReservation): { hasPending: boolean, hasPaid: boolean } {
-  //   const players = reservation.originalData?.reservation_players || [];
-  //   let hasPending = false;
-  //   let hasPaid = false;
-
-  //   for (const player of players) {
-  //     if (player.status === 'pending') hasPending = true;
-  //     if (player.status === 'paid') hasPaid = true;
-  //     if (hasPending && hasPaid) break;
-  //   }
-
-  //   return { hasPending, hasPaid };
-  // }
 }

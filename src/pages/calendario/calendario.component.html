@@ -86,9 +86,9 @@
   <p>No hay canchas disponibles para este club</p>
 </div>
 
-<!-- Calendario principal -->
+<!-- En calendario.component.html - Modificar la sección del calendario -->
 <div class="board" *ngIf="!loading && !loadingReservations && courts.length > 0">
-  <!-- Columna de horas -->
+  <!-- Columna de horas (común para todas las canchas) -->
   <div class="time-gutter">
     <div class="gutter-header"></div>
     <div class="time-label" *ngFor="let t of times" [style.top.px]="minutesToPx(t.min - dayStartMin)">
@@ -99,42 +99,53 @@
   <div class="board-scroll" #boardScrollRef [style.height.px]="(dayEndMin - dayStartMin) * pxPerMin + 60">
     <div class="columns">
       <div class="court-col" *ngFor="let court of courts; let i = index" #courtColRef
-        [class.past-court-col]="isCourtColPast()">
+        [class.past-court-col]="isCourtColPast()" [class.court-closed]="isCourtClosed(court.id)">
 
         <div class="court-header">
           {{ court.name }}
           <span *ngIf="getCourtReservationCount(court.id) > 0" class="reservation-count">
             ({{ getCourtReservationCount(court.id) }})
           </span>
+          <!-- Indicador de horario específico -->
+          <span *ngIf="hasCourtSpecificHours(court.id)" class="court-hours-badge">
+            {{ getCourtHoursDisplay(court.id) }}
+          </span>
+          <!-- Indicador de cerrado -->
+          <span *ngIf="isCourtClosed(court.id)" class="court-closed-badge">
+            CERRADO
+          </span>
+          <mat-spinner *ngIf="loadingCourtHours.has(court.id)" diameter="20"></mat-spinner>
         </div>
 
         <div class="time-grid" [style.height.px]="(dayEndMin - dayStartMin) * pxPerMin">
           <div class="time-slot" *ngFor="let t of times; let ti = index"
-            [style.top.px]="minutesToPx(t.min - dayStartMin)" [class.past-slot]="isPastSlot(t.min)"
-            [class.slot-selectable]="!isPastSlot(t.min) && !isSlotReserved(court.id, t.min)"
-            (click)="handleSlotClick($event, court, t.min)">
+            [style.top.px]="minutesToPx(t.min - dayStartMin)" [class.past-slot]="isPastSlot(court.id, t.min)"
+            [class.slot-selectable]="isSlotSelectable(court.id, t.min)"
+            [class.slot-outside-hours]="!isSlotInCourtHours(court.id, t.min)"
+            [class.slot-court-closed]="isCourtClosed(court.id)" (click)="handleSlotClick($event, court, t.min)">
+          </div>
+        </div>
+
+        <div *ngIf="isCourtClosed(court.id)" class="court-closed-overlay">
+          <div class="closed-message">
+            <mat-icon>block</mat-icon>
+            <span>CANCHA CERRADA</span>
           </div>
         </div>
 
         <div class="reservations-layer">
           <div class="reservation" *ngFor="let res of reservations" [class.hidden]="res.courtId !== court.id"
             [ngStyle]="getReservationStyle(res)" [ngClass]="{
-       'status-confirmed': res.originalData?.status === 'confirmed',
-       'status-pending': res.originalData?.status === 'pending',
-       'status-cancelled': res.originalData?.status === 'cancelled'
-     }" cdkDrag (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
+              'status-confirmed': res.originalData?.status === 'confirmed',
+              'status-pending': res.originalData?.status === 'pending',
+              'status-cancelled': res.originalData?.status === 'cancelled'
+            }" cdkDrag (cdkDragStarted)="onDragStarted($event, res, $event.source.element.nativeElement)"
             (cdkDragEnded)="onDragEnded($event, res, $event.source.element.nativeElement)"
             (click)="onReservationClick(res)">
 
             <div class="res-title">
               {{ res.user }} • {{ formatTime(res.startMin) }}–{{ formatTime(res.endMin) }}
             </div>
-
-            <!-- Badge interno opcional -->
-            <!-- <div *ngIf="res.originalData?.status" class="res-status" [ngClass]="getStatusClass(res)">
-    {{ getStatusText(res) }}
-  </div> -->
-
           </div>
         </div>
       </div>
