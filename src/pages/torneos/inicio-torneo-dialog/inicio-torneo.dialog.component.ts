@@ -9,12 +9,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { MatIconModule } from "@angular/material/icon";
-import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RegistrarGanadorDialogComponent } from './score-torneo-dialog/registrar-ganador.dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 
 export interface Partido {
-  id?: number;
+  id?: number | null;
   jugador1?: any[];
   jugador2?: any[];
   ganador?: any | null;
@@ -22,8 +22,9 @@ export interface Partido {
   y?: number;
   height?: number;
   groupName: string;
-   couple1Id?: number | null;
+  couple1Id?: number | null;
   couple2Id?: number | null;
+  nextMatchIndex?: number | null;
 }
 
 @Component({
@@ -48,7 +49,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   bracket: any[] = [];
   filteredBracket: any[] = [];
-
   selectedCategory: any = null;
   categories: any[] = [];
 
@@ -56,14 +56,14 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   error: string | null = null;
 
   private svg: any;
-  private gContainer: any; // contenedor para drag
+  private gContainer: any;
+
   private matchWidth = 200;
   private matchHeight = 80;
   private spacingX = 150;
   private verticalSpacing = 40;
-  private logoSize = 30;
 
-  // Variables drag
+  // Variables para arrastrar el bracket (drag)
   private startX = 0;
   private startY = 0;
   private translateX = 0;
@@ -74,7 +74,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     private dialogRef: MatDialogRef<InicioTorneoDialogComponent>,
     private tournamentService: TournamentService,
     private dialog: MatDialog
-
   ) { }
 
   ngOnInit(): void {
@@ -91,7 +90,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.bracket = res.data?.data?.bracket || [];
         this.categories = this.bracket;
-        console.log(this.categories)
         this.selectedCategory = this.categories[0] || null;
         this.filtrarCategoria();
         this.loading = false;
@@ -113,11 +111,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     }
   }
 
-
-
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
-    console.log('Partido seleccionado:', partido); // <--- ver si tiene id
-
     const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
       width: '700px',
       data: { partido, roundIndex, matchIndex }
@@ -130,22 +124,13 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   marcarGanador(ganador: any, roundIndex: number, matchIndex: number) {
-    const ronda = this.filteredBracket[0]?.groups || this.filteredBracket[0]?.elimination?.octavos; // depende de tu estructura
-
-    // Por simplicidad, si estás usando bracketData, podrías manejarlo así:
     const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
 
     if (bracketData[roundIndex] && bracketData[roundIndex][matchIndex]) {
       bracketData[roundIndex][matchIndex].ganador = ganador;
-      console.log('Ganador registrado:', ganador);
-
-      // Aquí podrías actualizar el siguiente partido automáticamente,
-      // o hacer otra llamada al backend para guardar el resultado.
     }
 
-    // Redibujar el bracket si quieres reflejar el cambio visualmente
     this.drawBracket();
   }
 
@@ -153,7 +138,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     this.dialogRef.close();
   }
 
-  // ----------------- D3 -----------------
+  // ------------------ D3 DRAW ------------------
 
   private drawBracket() {
     if (!this.bracketContainer?.nativeElement || !this.filteredBracket.length) return;
@@ -171,12 +156,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     this.svg.attr('width', width).attr('height', height);
     this.svg.selectAll('*').remove();
 
-    // Crear grupo contenedor para drag
     this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
 
-    // -----------------------------
-    // DIBUJAR LOS TITULOS DE LAS FASES
-    const phases = ['Fase de Grupos', 'Octavos de Final', 'Cuartos de Final', 'Semifinal', 'Final'];
+    const phases: string[] = this.computePhaseLabels(bracketData);
     phases.forEach((phase, i) => {
       const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
       this.gContainer.append('text')
@@ -188,7 +170,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         .attr('font-weight', 'bold')
         .attr('font-size', '20px');
     });
-    // -----------------------------
 
     this.calculatePositions(bracketData, height);
 
@@ -201,8 +182,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       });
     });
 
-    // -----------------------------
-    // Drag & Pan
     this.svg.call(
       d3.drag()
         .on('start', (event: any) => {
@@ -217,55 +196,172 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     );
   }
 
+  // ------------------ MAPEO DE PARTIDOS MEJORADO ------------------
   private mapToPartidos(category: any): Partido[][] {
-  const rounds: Partido[][] = [];
+    const rounds: Partido[][] = [];
 
-  // Ronda inicial: cada grupo
-  const groupRound: Partido[] = [];
-  category.groups.forEach((group: any) => {
-    group.ranking.forEach((ranking: any) => {
-      groupRound.push({
-        jugador1: ranking.players?.[0] ? [ranking.players[0]] : [{ name: 'Por asignar', photo: '', id: 0 }],
-        jugador2: ranking.players?.[1] ? [ranking.players[1]] : [{ name: 'Por asignar', photo: '', id: 0 }],
-        ganador: null,
+    // 1) FASE DE GRUPOS
+    const groupRound: Partido[] = [];
+    const groupsData: any[] = [];
+    
+    category.groups.forEach((group: any) => {
+      const ranking = group.ranking || [];
+      const rankById: { [id: number]: any } = {};
+      ranking.forEach((r: any) => { rankById[r.couple_id] = r; });
+
+      const matches: Partido[] = [];
+      const seenPairs = new Set<string>();
+
+      (group.games || []).forEach((game: any) => {
+        const a = game.couple_1;
+        const b = game.couple_2;
+        if (a == null || b == null) return;
+        const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+        seenPairs.add(key);
+
+        matches.push({
+          jugador1: rankById[a]?.players || [{ name: 'Por asignar' }],
+          jugador2: rankById[b]?.players || [{ name: 'Por asignar' }],
+          ganador: null,
+          groupName: group.group_name,
+          id: game.game_id || null,
+          couple1Id: a || null,
+          couple2Id: b || null
+        });
+      });
+
+      for (let i = 0; i < ranking.length && matches.length < 4; i++) {
+        for (let j = i + 1; j < ranking.length && matches.length < 4; j++) {
+          const a = ranking[i].couple_id;
+          const b = ranking[j].couple_id;
+          const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+          if (seenPairs.has(key)) continue;
+          seenPairs.add(key);
+          matches.push({
+            jugador1: ranking[i]?.players || [{ name: 'Por asignar' }],
+            jugador2: ranking[j]?.players || [{ name: 'Por asignar' }],
+            ganador: null,
+            groupName: group.group_name,
+            id: null,
+            couple1Id: a || null,
+            couple2Id: b || null
+          });
+        }
+      }
+
+      groupRound.push(...matches);
+      
+      // Guardar datos del grupo para cálculo dinámico
+      groupsData.push({
         groupName: group.group_name,
-        id: ranking.game_id || null,          // <-- ID del partido si existe
-        couple1Id: ranking.players?.[0]?.id || null,
-        couple2Id: ranking.players?.[1]?.id || null
+        ranking: ranking,
+        totalCouples: ranking.length
       });
     });
-  });
 
-  if (groupRound.length) rounds.push(groupRound);
+    if (groupRound.length) rounds.push(groupRound);
 
-  // Rondas de eliminación
-  const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
-  eliminationOrder.forEach(round => {
-    if (category.elimination[round]) {
-      const elimRound: Partido[] = category.elimination[round].map((game: any) => ({
-        jugador1: game.couple_1?.players || [{ name: 'Por asignar', photo: '', id: 0 }],
-        jugador2: game.couple_2?.players || [{ name: 'Por asignar', photo: '', id: 0 }],
-        ganador: null,
-        groupName: '',
-        id: game.game_id,
-        couple1Id: game.couple_1?.id || null,
-        couple2Id: game.couple_2?.id || null
+    // 2) CÁLCULO DINÁMICO DE PAREJAS QUE AVANZAN
+    const advancingCouples = this.calculateAdvancingCouples(groupsData);
+    
+    // 3) CREAR ELIMINATORIAS DINÁMICAMENTE
+    this.createDynamicEliminationRounds(advancingCouples, rounds);
+    
+    return rounds;
+  }
+
+  private calculateAdvancingCouples(groupsData: any[]): any[] {
+    const advancingCouples: any[] = [];
+    
+    // Estrategia dinámica basada en el tamaño de los grupos
+    groupsData.forEach(group => {
+      const totalCouples = group.totalCouples;
+      let numToAdvance: number;
+
+      // Lógica de avance escalable y dinámica
+      if (totalCouples <= 2) {
+        numToAdvance = 1; // Grupos muy pequeños
+      } else if (totalCouples <= 4) {
+        numToAdvance = 2; // Grupos medianos (como tu Grupo E)
+      } else if (totalCouples <= 6) {
+        numToAdvance = 3; // Grupos grandes
+      } else {
+        numToAdvance = Math.ceil(totalCouples * 0.5); // 50% para grupos muy grandes
+      }
+
+      console.log(`Grupo ${group.groupName}: ${totalCouples} parejas, avanzan ${numToAdvance}`);
+
+      // Agregar las parejas que avanzan
+      advancingCouples.push(...group.ranking.slice(0, numToAdvance).map((r: any) => ({
+        ...r,
+        groupName: group.groupName,
+        originalGroup: group.groupName
+      })));
+    });
+
+    return advancingCouples;
+  }
+
+  private createDynamicEliminationRounds(advancingCouples: any[], rounds: Partido[][]) {
+    if (advancingCouples.length === 0) return;
+
+    let currentRoundNumber = 1;
+    let currentParticipants = [...advancingCouples];
+    let allEliminationRounds: Partido[][] = [];
+
+    // Crear rondas eliminatorias hasta tener un ganador
+    while (currentParticipants.length > 1) {
+      const currentRound: Partido[] = [];
+      
+      for (let i = 0; i < currentParticipants.length; i += 2) {
+        const left = currentParticipants[i];
+        const right = currentParticipants[i + 1];
+
+        const match: Partido = {
+          jugador1: left?.players || [{ name: `Ganador R${currentRoundNumber}-${i}` }],
+          jugador2: right?.players || [{ name: 'BYE' }], // Para números impares
+          ganador: null,
+          groupName: `Ronda ${currentRoundNumber}`,
+          id: null,
+          couple1Id: left?.couple_id || null,
+          couple2Id: right?.couple_id || null,
+          nextMatchIndex: Math.floor(i / 2)
+        };
+
+        // Si hay BYE, el jugador avanza automáticamente
+        if (!right) {
+          match.ganador = left;
+        }
+
+        currentRound.push(match);
+      }
+
+      allEliminationRounds.push(currentRound);
+      
+      // Preparar siguiente ronda (placeholders)
+      currentParticipants = currentRound.map((match, index) => ({
+        players: [{ name: `Ganador R${currentRoundNumber}-M${index + 1}` }],
+        couple_id: null,
+        groupName: `R${currentRoundNumber}`
       }));
-      rounds.push(elimRound);
+      
+      currentRoundNumber++;
     }
-  });
 
-  return rounds;
-}
+    // Conectar las rondas entre sí
+    allEliminationRounds.forEach((round, roundIndex) => {
+      if (roundIndex < allEliminationRounds.length - 1) {
+        round.forEach((match, matchIndex) => {
+          match.nextMatchIndex = matchIndex;
+        });
+      }
+    });
 
+    // Agregar todas las rondas eliminatorias al bracket
+    rounds.push(...allEliminationRounds);
+  }
 
-
-
-
-
-
-
-
+  // ------------------ HELPERS ------------------
   private calculatePositions(bracketData: Partido[][], containerHeight: number) {
     const maxMatches = Math.max(...bracketData.map(r => r.length));
 
@@ -284,35 +380,25 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   private drawMatch(partido: Partido, roundIndex: number, matchIndex: number) {
     const matchHeight = this.matchHeight;
-    const x = partido.x!;
-    const y = partido.y!;
-    const g = this.gContainer.append('g').attr('transform', `translate(${x}, ${y})`);
+    const g = this.gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
 
-    // Pareja 1
     g.append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
       .attr('width', this.matchWidth)
       .attr('height', matchHeight / 2 - 2)
       .attr('fill', '#90caf9')
       .attr('stroke', '#1e7e34')
       .attr('stroke-width', 2)
-      .attr('rx', 5)
-      .attr('ry', 5);
+      .attr('rx', 5);
 
-    // Pareja 2
     g.append('rect')
-      .attr('x', 0)
       .attr('y', matchHeight / 2 + 2)
       .attr('width', this.matchWidth)
       .attr('height', matchHeight / 2 - 2)
       .attr('fill', '#f48fb1')
       .attr('stroke', '#1e7e34')
       .attr('stroke-width', 2)
-      .attr('rx', 5)
-      .attr('ry', 5);
+      .attr('rx', 5);
 
-    // Texto de grupo
     if (roundIndex === 0 && partido.groupName) {
       g.append('text')
         .text(partido.groupName)
@@ -324,9 +410,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         .attr('font-size', '14px');
     }
 
-    const maxTextWidth = this.matchWidth - 20; // margen de 10px a cada lado
+    const maxTextWidth = this.matchWidth - 20;
 
-    // Nombres pareja 1
     if (partido.jugador1) {
       const nombres1 = partido.jugador1.map(j => j.name).join(' / ');
       g.append('text')
@@ -340,7 +425,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         .call(this.wrapText, maxTextWidth, matchHeight / 2 - 4);
     }
 
-    // Nombres pareja 2
     if (partido.jugador2) {
       const nombres2 = partido.jugador2.map(j => j.name).join(' / ');
       g.append('text')
@@ -354,20 +438,17 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         .call(this.wrapText, maxTextWidth, matchHeight / 2 - 4);
     }
 
-    partido.height = matchHeight;
-
     g.style('cursor', 'pointer')
       .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
   }
 
-  // ------------------- Método wrapText -------------------
   private wrapText(text: d3.Selection<SVGTextElement, unknown, null, undefined>, width: number, maxHeight: number) {
     text.each(function (this: SVGTextElement) {
       const textEl = d3.select(this);
       const words = textEl.text().split(' / ');
       let line: string[] = [];
       let lineNumber = 0;
-      const lineHeight = 14; // tamaño de fuente
+      const lineHeight = 14;
       const tspan = textEl.text(null).append('tspan').attr('x', 10).attr('y', textEl.attr('y')).attr('dy', 0);
 
       for (const word of words) {
@@ -378,7 +459,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           tspan.text(line.join(' / '));
           line = [word];
           lineNumber++;
-          // Si excede el máximo de altura, agregar '...'
           if (lineNumber * lineHeight > maxHeight - lineHeight) {
             tspan.text(tspan.text() + ' ...');
             break;
@@ -393,14 +473,16 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   private drawConnections(partido: Partido, roundIndex: number, matchIndex: number, bracketData: Partido[][]) {
     const currentX = partido.x! + this.matchWidth;
     const currentY = partido.y! + (partido.height! / 2);
     const nextRound = bracketData[roundIndex + 1];
     if (!nextRound) return;
-    const nextMatchIndex = Math.floor(matchIndex / 2);
-    const nextPartido = nextRound[nextMatchIndex];
+
+    if (partido.nextMatchIndex == null) return;
+    const nextPartido = nextRound[partido.nextMatchIndex];
+    if (!nextPartido) return;
+
     const nextX = nextPartido.x!;
     const nextY = nextPartido.y! + (nextPartido.height! / 2);
 
@@ -420,8 +502,23 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('stroke', '#1e7e34').attr('stroke-width', 2);
   }
 
-
-
-
-
+  private computePhaseLabels(bracketData: Partido[][]): string[] {
+    const labels = ['Grupos'];
+    
+    for (let i = 1; i < bracketData.length; i++) {
+      if (i === 1) {
+        labels.push('Octavos');
+      } else if (i === 2) {
+        labels.push('Cuartos');
+      } else if (i === 3) {
+        labels.push('Semifinal');
+      } else if (i === 4) {
+        labels.push('Final');
+      } else {
+        labels.push(`Ronda ${i}`);
+      }
+    }
+    
+    return labels;
+  }
 }
