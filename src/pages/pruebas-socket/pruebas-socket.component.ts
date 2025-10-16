@@ -6,65 +6,100 @@ import { CommonModule } from '@angular/common';
   selector: 'app-pruebas-socket',
   templateUrl: './pruebas-socket.component.html',
   styleUrls: ['./pruebas-socket.component.css'],
-  standalone:true,
-  imports:[
-    CommonModule
-  ]
+  standalone: true,
+  imports: [CommonModule]
 })
 export class PruebasSocketComponent implements OnInit, OnDestroy {
   isConnected = false;
-  courts: any[] = []; // Inicializado como array vacío
-  messages: string[] = []; // Inicializado como array vacío
+  courts: any[] = [];
+  messages: string[] = [];
   private connectionCheckInterval: any;
 
-  constructor(private reverb: ReverbService) {}
+  constructor(private reverb: ReverbService) { }
 
   ngOnInit(): void {
-    // Inicializar explícitamente
+    console.log('🔹 ngOnInit iniciado');
     this.courts = [];
     this.messages = [];
-    this.isConnected = false;
-    
+
     this.checkConnectionStatus();
-    
+
     // Escuchar eventos del canal 'public-chat'
     this.reverb.listen('public-chat', (event: any) => {
-  console.log('📩 Evento recibido crudo:', event);
+  console.log('📩 Evento recibido en componente (raw):', event);
 
-  // Si el servicio te entrega { event, data }, parseamos correctamente:
-  const parsedData = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+  let data = event.data;
+  if(typeof data === 'string'){
+    try {
+      data = JSON.parse(data);
+    } catch(e){
+      console.warn('⚠️ No se pudo parsear data como JSON:', data);
+    }
+  }
 
-  if (event.event === 'court.created' && parsedData?.court) {
-    this.courts.unshift(parsedData.court);
-    this.messages.unshift(`🏟️ Nueva cancha: ${parsedData.court.name} - ${new Date().toLocaleTimeString()}`);
-  } else if (parsedData?.message) {
-    this.messages.unshift(`📢 ${parsedData.message} - ${new Date().toLocaleTimeString()}`);
+  // 🔹 Mostrar mensaje enviado desde Laravel
+  if(data?.message){
+    this.messages.unshift(`📢 ${data.message} - ${new Date().toLocaleTimeString()}`);
+  } 
+  // Otras cosas como canchas
+  else if(event.event === 'court.created' && data?.court){
+    this.courts.unshift(data.court);
+    this.messages.unshift(`🏟️ Nueva cancha: ${data.court.name} - ${new Date().toLocaleTimeString()}`);
+  }
+  else {
+    console.log('ℹ️ Evento recibido pero no coincide:', event);
   }
 });
+
     // Verificar conexión cada segundo
     this.connectionCheckInterval = setInterval(() => {
       this.isConnected = this.reverb.getConnectionStatus();
+      console.log('🔗 Estado de conexión:', this.isConnected);
     }, 1000);
   }
 
   ngOnDestroy(): void {
-    if (this.connectionCheckInterval) {
-      clearInterval(this.connectionCheckInterval);
-    }
+    console.log('🔹 ngOnDestroy ejecutado');
+    if (this.connectionCheckInterval) clearInterval(this.connectionCheckInterval);
   }
 
   checkConnectionStatus() {
     this.isConnected = this.reverb.getConnectionStatus();
+    console.log('🔍 checkConnectionStatus:', this.isConnected);
   }
+
+  sendTestMessage() {
+    console.log('✉️ Enviando mensaje de prueba desde Angular');
+    this.reverb.send('public-chat', {
+      message: 'Mensaje de prueba desde Angular',
+      timestamp: new Date().toISOString(),
+      user: 'Angular Client'
+    });
+  }
+
+  simulateCourtCreation() {
+    console.log('🎮 Simulando creación de cancha');
+    const mockCourt = {
+      id: Math.random(),
+      name: 'Cancha de Prueba',
+      photo: '',
+      description: 'Esta es una cancha de prueba',
+      price: 250,
+      status: 'active',
+      created_at: new Date().toISOString()
+    };
+    this.courts.unshift(mockCourt);
+    this.messages.unshift(`🏟️ Cancha simulada: ${mockCourt.name} - ${new Date().toLocaleTimeString()}`);
+    console.log('🏟️ Cancha simulada agregada a courts:', mockCourt);
+  }
+
 
   getStatusClass(status: string): string {
     return status === 'active' ? 'status-active' : 'status-inactive';
   }
 
-  // Método para formatear fecha manualmente
   formatDate(dateString: string): string {
     if (!dateString) return 'Fecha no disponible';
-    
     try {
       const date = new Date(dateString);
       return date.toLocaleString('es-ES', {
@@ -75,35 +110,8 @@ export class PruebasSocketComponent implements OnInit, OnDestroy {
         minute: '2-digit'
       });
     } catch (error) {
+      console.warn('⚠️ Error formateando fecha:', dateString);
       return dateString;
     }
-  }
-
-  sendTestMessage() {
-    this.reverb.send('public-chat', {
-      message: 'Mensaje de prueba desde Angular',
-      timestamp: new Date().toISOString(),
-      user: 'Angular Client'
-    });
-  }
-
-  simulateCourtCreation() {
-    // Asegurarnos de que courts esté inicializado
-    if (!this.courts) this.courts = [];
-    if (!this.messages) this.messages = [];
-    
-    const mockCourt = {
-      id: Math.random(),
-      name: 'Cancha de Prueba',
-      photo: '',
-      description: 'Esta es una cancha de prueba',
-      price: 250,
-      status: 'active',
-      created_at: new Date().toISOString()
-    };
-    
-    this.courts.unshift(mockCourt);
-    const time = new Date().toLocaleTimeString();
-    this.messages.unshift(`🏟️ Cancha simulada: ${mockCourt.name} - ${time}`);
   }
 }

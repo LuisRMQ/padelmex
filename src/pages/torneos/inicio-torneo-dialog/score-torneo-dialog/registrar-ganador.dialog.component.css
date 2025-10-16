@@ -1,121 +1,268 @@
-.teams-grid {
+/* ===================== */
+/* Variables de color */
+:root {
+  --primary-color: #336699;
+  --accent-color: #f39c12;
+  --success-color: #28a745;
+  --warning-color: #f1c40f;
+  --info-color: #3498db;
+  --background-light: #f8f9fa;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* ===================== */
+/* Tarjeta principal */
+.modern-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.modern-card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* Header */
+.card-header {
+  background: var(--primary-color);
+  color: white;
+  padding: 20px 24px;
   display: flex;
-  justify-content: space-around;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modern-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.tournament-badge {
+  background: var(--accent-color);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ===================== */
+/* Contenido */
+.modern-content {
+  padding: 24px;
+  background: var(--background-light);
+}
+
+/* ===================== */
+/* Equipos */
+.teams-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
 }
 
 .team-column {
-  flex: 1;
-  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.team-header {
+  border-bottom: 2px solid var(--primary-color);
+  margin-bottom: 12px;
 }
 
 .team-title {
-  font-size: 1.1rem;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+  margin: 0;
 }
 
 .players-list {
   display: flex;
-  justify-content: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .player-card {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 8px;
+  background: #f4f6f8;
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
 }
 
-.player-photo {
-  width: 70px;
-  height: 70px;
+.player-card:hover {
+  transform: translateY(-3px);
+}
+
+.player-photo,
+.avatar-placeholder {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #ccc;
-  margin-bottom: 5px;
-}
-
-.avatar-placeholder {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background-color: #1976d2;
-  color: #fff;
+  background: var(--primary-color);
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  margin-bottom: 5px;
 }
 
 .player-name {
-  font-size: 0.9rem;
   font-weight: 500;
+  color: var(--text-dark);
 }
 
+/* ===================== */
+/* Sets */
 .sets-grid {
-  margin-top: 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+  margin-bottom: 24px;
 }
 
 .sets-header,
 .sets-row {
   display: grid;
-  grid-template-columns: 1.5fr repeat(3, 1fr);
-  gap: 0.5rem;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 10px;
   align-items: center;
-  margin-bottom: 0.5rem;
+}
+
+.sets-header {
+  background: var(--primary-color);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 12px;
 }
 
 .header-cell {
-  font-weight: bold;
   text-align: center;
 }
 
 .team-name-cell {
-  text-align: center;
   font-weight: 600;
+  color: var(--text-dark);
 }
 
 .set-input-cell input {
   width: 100%;
-  text-align: center;
-  border-radius: 6px;
+  padding: 6px 8px;
   border: 1px solid #ccc;
-  padding: 4px;
-}
-
-.set-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
-  flex-wrap: wrap;
-}
-
-.set-save-btn {
-  flex: 1 1 150px; /* Todos los botones tendrán el mismo ancho base */
-  max-width: 180px;
-  text-transform: uppercase;
-  font-weight: 600;
-  padding: 0.7rem 0;
-  border-radius: 12px;
-  background-color: #1976d2;
-  color: white;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 14px;
   transition: all 0.3s ease;
 }
 
-.set-save-btn:hover:not(:disabled) {
-  background-color: #125ea5;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+.set-input-cell input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(51, 102, 153, 0.2);
 }
 
-.set-save-btn:disabled {
-  background-color: #b0bec5;
-  cursor: not-allowed;
-  opacity: 0.7;
+/* ===================== */
+/* Botones */
+.set-buttons {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #336699, #2a5d7e);
+  color: white;
+  font-weight: 500;
+  border-radius: 30px;
+  padding: 10px 22px;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s ease;
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ===================== */
+/* Progreso */
+.progress-section {
+  margin-top: 20px;
+}
+
+.progress-info {
+  text-align: center;
+}
+
+.progress-text {
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  background: #e0e0e0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--success-color);
+  transition: width 0.4s ease;
+}
+
+/* ===================== */
+/* Footer */
+.modern-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--background-light);
+  border-top: 1px solid #e0e0e0;
+  border-radius: 0 0 16px 16px;
+}
+
+.cancel-btn {
+  color: #666;
+}
+
+/* ===================== */
+/* Responsive */
+@media (max-width: 768px) {
+  .teams-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sets-header,
+  .sets-row {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+
+  .save-btn {
+    width: 100%;
+  }
 }

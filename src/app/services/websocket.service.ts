@@ -3,135 +3,90 @@ import { Injectable } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class ReverbService {
     private ws!: WebSocket;
-    private callbacks: { [channel: string]: (data: any) => void } = {};
+    private callbacks: { [channel: string]: (event: any) => void } = {};
     private isConnected = false;
     private pendingMessages: any[] = [];
-    private reconnectAttempts = 0;
-    private maxReconnectAttempts = 5;
-    private reconnectInterval = 3000;
 
     constructor() {
         this.connect();
     }
 
     private connect() {
-        try {
-            const appKey = 'hjo5wwuhytdrddxp6rqy';
-            const wsUrl = `ws://localhost:8081/app/${appKey}?protocol=7&client=js&version=8.4.0&flash=false`;
+        const wsUrl = `ws://localhost:8081/app/hjo5wwuhytdrddxp6rqy?protocol=7&client=js&version=8.4.0&flash=false`;
+        console.log('🔗 Conectando a WebSocket:', wsUrl);
 
-            console.log('🔗 Conectando a:', wsUrl);
-            this.ws = new WebSocket(wsUrl);
+        this.ws = new WebSocket(wsUrl);
 
-            this.ws.onopen = () => {
-                console.log('✅ Conectado a Laravel Reverb');
-                this.isConnected = true;
-                this.reconnectAttempts = 0;
+        this.ws.onopen = () => {
+            console.log('✅ Conectado a Reverb');
+            this.isConnected = true;
 
-                this.pendingMessages.forEach(msg => this.ws.send(JSON.stringify(msg)));
-                this.pendingMessages = [];
-            };
+            // Suscribirse a los canales pendientes
+            Object.keys(this.callbacks).forEach(channel => this.subscribe(channel));
 
-            this.ws.onmessage = (event) => {
-                try {
-                    const msg = JSON.parse(event.data);
-                    console.log('📩 Mensaje recibido (crudo):', msg);
+            // Enviar mensajes pendientes
+            this.pendingMessages.forEach(msg => this.ws.send(JSON.stringify(msg)));
+            this.pendingMessages = [];
+        };
 
-                    // Pusher internals
-                    if (msg.event === 'pusher:connection_established') {
-                        return;
-                    }
+        this.ws.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
+                console.log('📩 Mensaje WebSocket recibido:', msg);
 
-                    if (msg.event === 'pusher_internal:subscription_succeeded') {
-                        console.log('✅ Suscrito al canal:', msg.channel);
-                        return;
-                    }
+                // if (msg.event.startsWith('pusher:')) return; // ignorar internos
+                 if (msg.event === 'pusher:ping') {
+            this.ws.send(JSON.stringify({ event: 'pusher:pong' }));
+            return;
+        }
 
-                    // 🔍 Parsear correctamente el payload del evento Laravel
-                    let parsedData = msg.data;
-                    if (typeof parsedData === 'string') {
-                        try {
-                            parsedData = JSON.parse(parsedData);
-                        } catch (e) {
-                            console.warn('⚠️ No se pudo parsear data como JSON:', parsedData);
-                        }
-                    }
+                let parsedData = msg.data;
+                if (typeof parsedData === 'string') parsedData = JSON.parse(parsedData);
 
-                    if (msg.event && msg.channel && this.callbacks[msg.channel]) {
-                        this.callbacks[msg.channel](parsedData);
-                    }
-
-                } catch (error) {
-                    console.error('Error parsing message:', error);
+                if (msg.channel && this.callbacks[msg.channel]) {
+                    this.callbacks[msg.channel]({
+                        channel: msg.channel,
+                        event: msg.event,
+                        data: parsedData
+                    });
                 }
-            };
-            this.ws.onclose = (event) => {
-                console.log('❌ Desconectado de Reverb:', event.code, event.reason);
-                this.isConnected = false;
-                this.handleReconnection();
-            };
-
-            this.ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
-
-        } catch (error) {
-            console.error('Error creating WebSocket:', error);
-            this.handleReconnection();
-        }
-    }
-
-    private handleReconnection() {
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts++;
-            console.log(`🔄 Intentando reconectar... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-
-            setTimeout(() => {
-                this.connect();
-            }, this.reconnectInterval);
-        } else {
-            console.error('❌ Máximo número de intentos de reconexión alcanzado');
-        }
-    }
-
-    listen(channel: string, callback: (data: any) => void) {
-        this.callbacks[channel] = callback;
-
-        const subscribeMsg = {
-            event: 'pusher:subscribe',
-            data: {
-                channel: channel
+            } catch (error) {
+                console.error('⚠️ Error parseando mensaje WebSocket:', error);
             }
         };
 
-        if (this.isConnected) {
-            this.ws.send(JSON.stringify(subscribeMsg));
-            console.log('📡 Suscribiendo al canal:', channel);
-        } else {
-            this.pendingMessages.push(subscribeMsg);
-        }
+        this.ws.onclose = (event) => {
+            console.warn('❌ Conexión cerrada:', event.code, event.reason);
+            this.isConnected = false;
+            setTimeout(() => this.connect(), 3000); // reconectar automáticamente
+        };
+
+        this.ws.onerror = (error) => {
+            console.error('⚠️ Error WebSocket:', error);
+        };
+    }
+
+    listen(channel: string, callback: (event: any) => void) {
+        console.log('📡 Listener registrado para canal:', channel);
+        this.callbacks[channel] = callback;
+        if (this.isConnected) this.subscribe(channel);
+    }
+
+    private subscribe(channel: string) {
+        const msg = { event: 'pusher:subscribe', data: { channel } };
+        console.log('📡 Suscribiéndose al canal:', channel);
+        this.ws.send(JSON.stringify(msg));
     }
 
     send(channel: string, data: any) {
-        const msg = {
-            event: 'client-message',
-            data: {
-                channel: channel,
-                message: data
-            }
-        };
-
+        const msg = { event: 'client-message', data: { channel, message: data } };
         if (this.isConnected) {
+            console.log('📤 Enviando mensaje al canal:', channel, data);
             this.ws.send(JSON.stringify(msg));
-            console.log('📤 Mensaje enviado:', msg);
         } else {
+            console.warn('⚠️ Mensaje pendiente para enviar cuando se conecte', msg);
             this.pendingMessages.push(msg);
-            console.warn('⚠️ Mensaje guardado para enviar cuando se reconecte');
         }
-    }
-
-    // Método opcional - alias para mayor claridad
-    sendMessage(channel: string, data: any) {
-        this.send(channel, data);
     }
 
     getConnectionStatus(): boolean {
@@ -139,8 +94,6 @@ export class ReverbService {
     }
 
     disconnect() {
-        if (this.ws) {
-            this.ws.close(1000, 'Closing connection');
-        }
+        if (this.ws) this.ws.close(1000, 'Closing connection');
     }
 }

@@ -71,7 +71,8 @@
     <tbody>
       <tr *ngFor="let court of courts">
         <td>
-          <img class="club-avatar" [src]="court.photo || 'assets/img/no-image.png'" alt="foto cancha">
+          <img class="club-avatar" [src]="court.photo || 'assets/img/no-image.png'" alt="foto cancha"
+            (error)="onImgError($event)">
           
         </td>
         <td>{{ court.name }}</td>
@@ -83,7 +84,7 @@
             {{ court.availability ? 'Disponible' : 'No disponible' }}
           </span>
         </td>
-        <td>{{ court.price_hour }}</td>
+        <td>{{ court.commission }}</td>
         <td>
           <button mat-icon-button (click)="abrirEditarCanchaDialog(court)">
             <mat-icon>edit</mat-icon>

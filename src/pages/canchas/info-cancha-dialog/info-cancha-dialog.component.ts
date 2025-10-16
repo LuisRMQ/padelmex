@@ -51,6 +51,7 @@ export class InfoCanchaDialogComponent {
     private horariosService: HorariosServiceCancha
   ) {
   }
+displayedColumns: string[] = ['day', 'start_time', 'end_time', 'price_hour', 'shift_name', 'acciones'];
 
   cerrar() {
     this.dialogRef.close();
@@ -91,7 +92,14 @@ export class InfoCanchaDialogComponent {
     }
   }
 
-
+  getShiftLabel(shift: string): string {
+    const map: { [key: string]: string } = {
+      morning: 'Mañana',
+      afternoon: 'Tarde',
+      evening: 'Noche',
+    };
+    return map[shift] || shift;
+  }
 
 
   eliminarHorario(horario: HorarioCancha) {
