@@ -23,7 +23,8 @@ import { SettingsDialogComponent } from './settings-dialog/settings-dialog.compo
 import { ConfigService } from '../../app/services/config.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin } from 'rxjs';
-
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { PageEvent } from '@angular/material/paginator';
 interface Court { id: number; name: string; }
 interface CalendarReservation {
   id: number;
@@ -58,6 +59,8 @@ interface Player {
     MatProgressSpinnerModule,
     MatIconModule,
     MatTooltipModule,
+    MatPaginatorModule,
+    
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es' }
@@ -84,6 +87,12 @@ export class CalendarioComponent implements OnInit {
   advance_reservation_limit = 0;
   cancellation_policy = 0;
   activate_reservation = 0;
+
+
+  pageSize = 5;
+  currentPage = 1;
+  totalPages = 0;
+  totalCourts = 0;
 
   constructor(
     private dialog: MatDialog,
@@ -542,36 +551,46 @@ export class CalendarioComponent implements OnInit {
     });
   }
 
-  loadCourts() {
-    if (!this.selectedClubId) return;
+  loadCourts(page: number = 1) {
+  if (!this.selectedClubId) return;
 
-    this.loading = true;
-    this.courts = [];
-    this.error = '';
+  this.loading = true;
+  this.error = '';
+  this.courts = [];
 
-    this.courtService.getCourtsByClub(this.selectedClubId).subscribe({
-      next: (response: CourtsResponse) => {
-        if (response && Array.isArray(response.data)) {
-          this.courts = response.data;
+  this.courtService.getCourtsByClub(this.selectedClubId, this.pageSize, page).subscribe({
+    next: (response: any) => {
+      if (response && Array.isArray(response.data)) {
+        this.courts = response.data;
+        this.totalCourts = response.total || 0;
+        this.totalPages = response.last_page || 1;
+        this.currentPage = response.current_page || 1;
 
-          this.courtNameToIdMap.clear();
-          this.courts.forEach(court => {
-            this.courtNameToIdMap.set(court.name, court.id);
-          });
-        } else {
-          this.courts = [];
-        }
+        this.courtNameToIdMap.clear();
+        this.courts.forEach(court => {
+          this.courtNameToIdMap.set(court.name, court.id);
+        });
 
-        this.loading = false;
         this.applyFilters();
-      },
-      error: (error) => {
-        this.error = 'Error al cargar las canchas';
-        this.loading = false;
-        console.error(error);
+      } else {
+        this.courts = [];
       }
-    });
-  }
+
+      this.loading = false;
+    },
+    error: (error) => {
+      this.error = 'Error al cargar las canchas';
+      this.loading = false;
+      console.error(error);
+    }
+  });
+}
+
+
+onPageChange(event: PageEvent) {
+  this.pageSize = event.pageSize;
+  this.loadCourts(event.pageIndex + 1);
+}
 
   loadAllReservations() {
     this.loadingReservations = true;

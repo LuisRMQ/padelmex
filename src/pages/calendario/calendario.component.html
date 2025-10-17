@@ -43,7 +43,11 @@
     </mat-form-field>
   </div>
 
-
+<div *ngIf="!loading && !loadingReservations && totalCourts > pageSize" class="paginator-container">
+  <mat-paginator [length]="totalCourts" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 15]"
+    [pageIndex]="currentPage - 1" (page)="onPageChange($event)" aria-label="Selector de página de canchas">
+  </mat-paginator>
+</div>
   <h6>
     <span *ngIf="selectedCourtId === null || selectedCourtId === undefined">
       Ocupación: {{ getTotalOccupationHours() }} horas
