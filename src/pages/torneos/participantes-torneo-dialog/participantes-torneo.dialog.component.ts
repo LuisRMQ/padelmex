@@ -76,14 +76,20 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.categories = this.data.categories;
-    this.cargarParticipantes();
-    this.cargarJugadores();
-    this.filteredPlayers = this.playerSearchControl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filterPlayers(value ?? ''))
-    );
+    if (this.categories.length > 0) {
+    this.selectedCategory = this.categories[0];
+    console.log('Categoría inicial seleccionada:', this.selectedCategory);
+  }
 
-    console.log('Categorías recibidas:', this.categories);
+  this.cargarParticipantes();
+  this.cargarJugadores();
+
+  this.filteredPlayers = this.playerSearchControl.valueChanges.pipe(
+    startWith(''),
+    map(value => this._filterPlayers(value ?? ''))
+  );
+
+  console.log('Categorías recibidas:', this.categories);
   }
 
   cargarParticipantes() {
@@ -204,64 +210,102 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
 
 
   addPlayer(user: User): void {
-  if (!this.selectedCategory) {
-    this.error = 'Selecciona una categoría antes de agregar jugadores.';
-    return;
-  }
-  if (this.selectedPlayers.some(p => p.id === user.id)) return;
-  this.error = null;
-
-  // Agregamos propiedad partner vacía
-  this.selectedPlayers.push({ ...user, partner: null });
-  this.playerSearchControl.setValue('');
-}
-
-// Validar si la pareja ya está asignada a otro jugador
-isAlreadyPaired(p: TournamentPlayer, jugador: TournamentPlayer): boolean {
-  return this.selectedPlayers.some(j => j.partner?.id === p.id && j.id !== jugador.id);
-}
-
-// Confirmar parejas y enviar al servicio
-confirmPairs() {
-  for (const jugador of this.selectedPlayers) {
-    if (!jugador.partner) {
-      this.error = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
+    if (!this.selectedCategory) {
+      this.error = 'Selecciona una categoría antes de agregar jugadores.';
       return;
     }
+    if (this.selectedPlayers.some(p => p.id === user.id)) return;
+    this.error = null;
+
+    // Agregamos propiedad partner vacía
+    this.selectedPlayers.push({ ...user, partner: null });
+    this.playerSearchControl.setValue('');
   }
 
-  // Crear parejas únicas
-  const addedPairs = new Set<number>();
-  this.selectedPlayers.forEach(j => {
-    const key = [j.id, j.partner!.id].sort().join('-');
-    if (!addedPairs.has(Number(key))) {
-      addedPairs.add(Number(key));
+  // Validar si la pareja ya está asignada a otro jugador
+  isAlreadyPaired(p: TournamentPlayer, jugador: TournamentPlayer): boolean {
+    return this.selectedPlayers.some(j => j.partner?.id === p.id && j.id !== jugador.id);
+  }
 
-      this.tournamentService.addUsertoTournament({
-        user_id: j.id,
-        category_tournament_id: this.selectedCategory!.id,
-        partner_id: j.partner!.id
-      }).subscribe({
-        next: (res) => {
-          console.log('✔️ Pareja agregada al torneo', res);
-          this.snackBar.open(`✔️ Pareja agregada: ${j.name} + ${j.partner!.name}`, 'Cerrar', {
-            duration: 4000,
-            panelClass: ['snackbar-success']
-          });
-        },
-        error: (err) => {
-          console.error('❌ Error agregando pareja:', err);
-          const msg = err?.error?.msg || 'Ocurrió un error al agregar la pareja.';
-          this.snackBar.open(`❌ ${msg}`, 'Cerrar', {
-            duration: 6000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
+  // Confirmar parejas y enviar al servicio
+  confirmPairs() {
+    if (!this.selectedCategory) {
+      this.error = 'Selecciona una categoría antes de confirmar las parejas.';
+      return;
     }
-  });
 
-  this.dialogRef.close(this.selectedPlayers);
-}
+    // Validar que todos los jugadores tengan pareja
+    for (const jugador of this.selectedPlayers) {
+      if (!jugador.partner) {
+        this.error = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
+        return;
+      }
+    }
+
+    // Crear parejas únicas
+    const addedPairs = new Set<string>();
+    const requests = [];
+
+    for (const j of this.selectedPlayers) {
+      const key = [Number(j.id), Number(j.partner!.id)].sort().join('-');
+      if (!addedPairs.has(key)) {
+        addedPairs.add(key);
+
+        const payload = {
+          user_id: Number(j.id),
+          category_tournament_id: Number(this.selectedCategory!.id),
+          partner_id: Number(j.partner!.id)
+        };
+
+        console.log('Payload enviado:', payload);
+        console.log('Categoría seleccionada:', this.selectedCategory);
+
+        // Guardamos el observable en un array
+        requests.push(
+          this.tournamentService.addUsertoTournament(payload)
+        );
+      }
+    }
+
+    if (requests.length === 0) {
+      this.snackBar.open('No hay parejas nuevas para agregar.', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-info']
+      });
+      return;
+    }
+
+    // Ejecutar todos los requests y esperar a que terminen
+    forkJoin(requests).subscribe({
+      next: (responses) => {
+        responses.forEach((res, index) => {
+          const jugador = this.selectedPlayers[index];
+          const coupleData = res?.couple?.couple;
+          if (coupleData?.ok) {
+            this.snackBar.open(`✔️ Pareja agregada: ${jugador.name} + ${jugador.partner!.name}`, 'Cerrar', {
+              duration: 4000,
+              panelClass: ['snackbar-success']
+            });
+          } else {
+            const msg = res?.couple?.message || 'Ocurrió un error al agregar la pareja.';
+            this.snackBar.open(`❌ ${msg}`, 'Cerrar', {
+              duration: 6000,
+              panelClass: ['snackbar-error']
+            });
+          }
+        });
+
+        // Cerrar diálogo solo después de todos los POST
+        this.dialogRef.close(this.selectedPlayers);
+      },
+      error: (err) => {
+        console.error('❌ Error agregando parejas:', err);
+        this.snackBar.open('❌ Ocurrió un error al agregar las parejas.', 'Cerrar', {
+          duration: 6000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }
 
 }

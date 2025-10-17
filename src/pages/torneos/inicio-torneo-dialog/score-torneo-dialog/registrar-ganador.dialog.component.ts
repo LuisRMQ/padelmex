@@ -37,12 +37,12 @@ export class RegistrarGanadorDialogComponent {
     error: string | null = null;
 
     // Scores por set - inicializar como null para mejor UX
-    score1_set1: number | null = 0;
-    score2_set1: number | null = 0;
-    score1_set2: number | null = 0;
-    score2_set2: number | null = 0;
-    score1_set3: number | null = 0;
-    score2_set3: number | null = 0;
+    score1_set1: number | null = null;
+    score2_set1: number | null = null;
+    score1_set2: number | null = null;
+    score2_set2: number | null = null;
+    score1_set3: number | null = null;
+    score2_set3: number | null = null;
     // Nuevas propiedades para el diseño mejorado
     completedSets = 0;
     totalScore1: number | null = null;
@@ -56,23 +56,13 @@ export class RegistrarGanadorDialogComponent {
     ) { }
 
     // Método para calcular sets completados y puntuación total
-    private calcularProgreso(): void {
-        let setsCompletados = 0;
-
-        if (this.score1_set1 !== null && this.score2_set1 !== null) setsCompletados++;
-        if (this.score1_set2 !== null && this.score2_set2 !== null) setsCompletados++;
-        if (this.score1_set3 !== null && this.score2_set3 !== null) setsCompletados++;
-
-        this.completedSets = setsCompletados;
-
-        if (this.completedSets === 3) {
-            this.totalScore1 = (this.score1_set1 || 0) + (this.score1_set2 || 0) + (this.score1_set3 || 0);
-            this.totalScore2 = (this.score2_set1 || 0) + (this.score2_set2 || 0) + (this.score2_set3 || 0);
-        } else {
-            this.totalScore1 = null;
-            this.totalScore2 = null;
-        }
-    }
+  private calcularProgreso(): void {
+    let setsCompletados = 0;
+    if (this.score1_set1 !== null && this.score2_set1 !== null) setsCompletados++;
+    if (this.score1_set2 !== null && this.score2_set2 !== null) setsCompletados++;
+    if (this.score1_set3 !== null && this.score2_set3 !== null) setsCompletados++;
+    this.completedSets = setsCompletados;
+}
 
     // Método modificado para guardar sets individuales
     guardarSet(setNumber: number) {
@@ -144,7 +134,7 @@ export class RegistrarGanadorDialogComponent {
         });
     }
 
-   
+
 
     // Método para manejar cambios en los inputs y recalcular progreso
     onScoreChange(): void {
@@ -161,104 +151,87 @@ export class RegistrarGanadorDialogComponent {
     }
 
     registrarResultado() {
-        const gameId = this.data.partido.id;
-        if (!gameId) {
-            this.snackBar.open('Error: no se pudo identificar el partido.', 'Cerrar', {
-                duration: 3000,
-                horizontalPosition: 'center',
-                verticalPosition: 'top',
-            });
-            return;
-        }
-
-        // Validar que los primeros dos sets estén completos
-        if (
-            this.score1_set1 === null || this.score2_set1 === null ||
-            this.score1_set2 === null || this.score2_set2 === null
-        ) {
-            this.snackBar.open('Completa los resultados del Set 1 y Set 2.', 'Cerrar', {
-                duration: 4000,
-                horizontalPosition: 'center',
-                verticalPosition: 'top',
-            });
-            return;
-        }
-
-        // Contar sets ganados por cada equipo
-        let setsGanados1 = 0;
-        let setsGanados2 = 0;
-
-        if (this.score1_set1 > this.score2_set1) setsGanados1++;
-        else if (this.score2_set1 > this.score1_set1) setsGanados2++;
-
-        if (this.score1_set2 > this.score2_set2) setsGanados1++;
-        else if (this.score2_set2 > this.score1_set2) setsGanados2++;
-
-        // Si alguno ganó dos sets, fin del partido
-        if (setsGanados1 === 2 || setsGanados2 === 2) {
-            const ganador = setsGanados1 > setsGanados2 ? 'jugador1' : 'jugador2';
-            this.confirmarPartido(ganador);
-            return;
-        }
-
-        // Si van empatados 1–1, se requiere Set 3
-        if (setsGanados1 === 1 && setsGanados2 === 1) {
-            if (this.score1_set3 === null || this.score2_set3 === null) {
-                this.snackBar.open(
-                    'Empate 1-1. Ingresa el Set 3 para definir el ganador.',
-                    'Cerrar',
-                    {
-                        duration: 4000,
-                        horizontalPosition: 'center',
-                        verticalPosition: 'top',
-                    }
-                );
-                return;
-            }
-
-            // Evaluar tercer set
-            if (this.score1_set3 > this.score2_set3) setsGanados1++;
-            else setsGanados2++;
-
-            const ganador = setsGanados1 > setsGanados2 ? 'jugador1' : 'jugador2';
-            this.confirmarPartido(ganador);
-        }
+    // Set 1
+    if (this.score1_set1 === null || this.score2_set1 === null) {
+        this.snackBar.open('Ingresa ambos puntajes del Set 1', 'Cerrar', { duration: 4000 });
+        return;
+    } else if (this.completedSets < 1) {
+        this.guardarSet(1);
+        return;
     }
 
+    // Set 2
+    if (this.score1_set2 === null || this.score2_set2 === null) {
+        this.snackBar.open('Ingresa ambos puntajes del Set 2', 'Cerrar', { duration: 4000 });
+        return;
+    } else if (this.completedSets < 2) {
+        this.guardarSet(2);
+        return;
+    }
 
+    // Evaluar ganador después de 2 sets
+    let setsGanados1 = 0;
+    let setsGanados2 = 0;
+    if (this.score1_set1 > this.score2_set1) setsGanados1++; else setsGanados2++;
+    if (this.score1_set2 > this.score2_set2) setsGanados1++; else setsGanados2++;
 
-   private confirmarPartido(ganador: string) {
-    console.log('Confirmando partido con ganador:', ganador);
-    this.loading = true;
+    if (setsGanados1 === 2 || setsGanados2 === 2) {
+        const ganador = setsGanados1 > setsGanados2 ? 'jugador1' : 'jugador2';
+        this.confirmarPartido(ganador);
+        return;
+    }
 
-    const gameId = this.data.partido.id ?? 0; // ✅ asegura número
+    // Si 1-1, Set 3
+    if (this.score1_set3 === null || this.score2_set3 === null) {
+        this.snackBar.open('Empate 1-1. Ingresa el Set 3 para definir al ganador.', 'Cerrar', { duration: 4000 });
+        return;
+    } else if (this.completedSets < 3) {
+        this.guardarSet(3);
+        return;
+    }
 
-    this.tournamentService.storeSet({
-        game_id: gameId,
-        set_number: 1, // ✅ agrega set_number porque lo espera el servicio
-        score_1: this.score1_set1 ?? 0,
-        score_2: this.score2_set1 ?? 0
-    }).subscribe({
-        next: () => {
-            this.loading = false;
-            this.snackBar.open('Resultado registrado correctamente', 'Cerrar', {
-                duration: 3000,
-                horizontalPosition: 'center',
-                verticalPosition: 'top',
-            });
-            this.dialogRef.close({ ganador, partido: this.data.partido });
-        },
-        error: (err) => {
-            console.error(err);
-            this.loading = false;
-            this.snackBar.open('Error al registrar el resultado', 'Cerrar', {
-                duration: 4000,
-                horizontalPosition: 'center',
-                verticalPosition: 'top',
-            });
-        },
-    });
+    // Ganador final con Set 3
+    if (this.score1_set3 !== null && this.score2_set3 !== null) {
+        if (this.score1_set3 > this.score2_set3) setsGanados1++; else setsGanados2++;
+        const ganador = setsGanados1 > setsGanados2 ? 'jugador1' : 'jugador2';
+        this.confirmarPartido(ganador);
+    }
 }
+
+
+
+    private confirmarPartido(ganador: string) {
+        console.log('Confirmando partido con ganador:', ganador);
+        this.loading = true;
+
+        const gameId = this.data.partido.id ?? 0;
+
+        this.tournamentService.storeSet({
+            game_id: gameId,
+            set_number: 1,
+            score_1: this.score1_set1 ?? 0,
+            score_2: this.score2_set1 ?? 0
+        }).subscribe({
+            next: () => {
+                this.loading = false;
+                this.snackBar.open('Resultado registrado correctamente', 'Cerrar', {
+                    duration: 3000,
+                    horizontalPosition: 'center',
+                    verticalPosition: 'top',
+                });
+                this.dialogRef.close({ ganador, partido: this.data.partido });
+            },
+            error: (err) => {
+                console.error(err);
+                this.loading = false;
+                this.snackBar.open('Error al registrar el resultado', 'Cerrar', {
+                    duration: 4000,
+                    horizontalPosition: 'center',
+                    verticalPosition: 'top',
+                });
+            },
+        });
+    }
 
 
     onImgError(event: Event) {
