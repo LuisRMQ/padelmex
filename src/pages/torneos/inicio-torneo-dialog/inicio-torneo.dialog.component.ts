@@ -12,6 +12,10 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RegistrarGanadorDialogComponent } from './score-torneo-dialog/registrar-ganador.dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+export type ViewMode = 'bracket' | 'cards';
+
+
+
 
 export interface Partido {
   id?: number | null;
@@ -69,12 +73,28 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private translateX = 0;
   private translateY = 0;
 
+  viewMode: ViewMode = 'bracket'; 
+  bracketDataCards: Partido[][] = [];
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { torneoId: number },
     private dialogRef: MatDialogRef<InicioTorneoDialogComponent>,
     private tournamentService: TournamentService,
     private dialog: MatDialog
   ) { }
+
+
+
+toggleViewMode() {
+  this.viewMode = this.viewMode === 'bracket' ? 'cards' : 'bracket';
+
+  if (this.viewMode === 'bracket') {
+    // 🔹 Esperar al próximo ciclo de detección de cambios de Angular
+    setTimeout(() => {
+      this.drawBracket(true);
+    }, 0);
+  }
+}
 
   ngOnInit(): void {
     this.cargarBracket();
@@ -139,62 +159,105 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   // ------------------ D3 DRAW ------------------
-
-  private drawBracket() {
-    if (!this.bracketContainer?.nativeElement || !this.filteredBracket.length) return;
-
-    const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
-    const container = this.bracketContainer.nativeElement as HTMLElement;
-
-    const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
-    const maxMatches = Math.max(...bracketData.map(r => r.length));
-    const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
-
-    this.svg = d3.select(container).select('svg');
-    if (this.svg.empty()) this.svg = d3.select(container).append('svg');
-
-    this.svg.attr('width', width).attr('height', height);
-    this.svg.selectAll('*').remove();
-
-    this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
-
-    const phases: string[] = this.computePhaseLabels(bracketData);
-    phases.forEach((phase, i) => {
-      const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
-      this.gContainer.append('text')
-        .text(phase)
-        .attr('x', x)
-        .attr('y', 20)
-        .attr('text-anchor', 'middle')
-        .attr('fill', '#000')
-        .attr('font-weight', 'bold')
-        .attr('font-size', '20px');
-    });
-
-    this.calculatePositions(bracketData, height);
-
-    bracketData.forEach((ronda, roundIndex) => {
-      ronda.forEach((partido, matchIndex) => {
-        this.drawMatch(partido, roundIndex, matchIndex);
-        if (roundIndex < bracketData.length - 1) {
-          this.drawConnections(partido, roundIndex, matchIndex, bracketData);
-        }
-      });
-    });
-
-    this.svg.call(
-      d3.drag()
-        .on('start', (event: any) => {
-          this.startX = event.x - this.translateX;
-          this.startY = event.y - this.translateY;
-        })
-        .on('drag', (event: any) => {
-          this.translateX = event.x - this.startX;
-          this.translateY = event.y - this.startY;
-          this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
-        })
-    );
+  private drawBracket(useCachedData: boolean = false) {
+  // 🔹 Si estamos en modo cards, no hacer nada
+  if (this.viewMode === 'cards') {
+    return;
   }
+
+  // 🔹 Verificación más robusta del contenedor
+  if (!this.bracketContainer?.nativeElement) {
+    console.warn('Contenedor bracketContainer no disponible');
+    return;
+  }
+
+  const container = this.bracketContainer.nativeElement as HTMLElement;
+  
+  // 🔹 Verificar si el contenedor es visible
+  if (container.offsetParent === null) {
+    console.warn('Contenedor no visible en el DOM');
+    // Reintentar después de un breve delay
+    setTimeout(() => this.drawBracket(useCachedData), 50);
+    return;
+  }
+
+  // 🔹 Usar datos cacheados si existen
+  const bracketData: Partido[][] = useCachedData && this.bracketDataCards.length
+    ? this.bracketDataCards
+    : this.mapToPartidos(this.filteredBracket[0]);
+
+  // 🔹 Guardar los datos cacheados solo si no vienen de cache
+  if (!useCachedData) {
+    this.bracketDataCards = bracketData;
+  }
+
+  // 🔹 Limpiar completamente el contenedor
+  d3.select(container).selectAll('*').remove();
+
+  const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
+  const maxMatches = bracketData.length > 0
+    ? Math.max(...bracketData.map(r => r.length > 0 ? r.length : 0))
+    : 1;
+  const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
+
+  // 🔹 Crear SVG nuevo
+  this.svg = d3.select(container).append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('class', 'bracket-svg');
+
+  this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
+
+  // ... el resto del código de drawBracket permanece igual
+  const phases: string[] = this.computePhaseLabels(bracketData);
+  phases.forEach((phase, i) => {
+    const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
+    this.gContainer.append('text')
+      .text(phase)
+      .attr('x', x)
+      .attr('y', 20)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#000')
+      .attr('font-weight', 'bold')
+      .attr('font-size', '20px');
+  });
+
+  this.calculatePositions(bracketData, height);
+
+  bracketData.forEach((ronda, roundIndex) => {
+    ronda.forEach((partido, matchIndex) => {
+      this.drawMatch(partido, roundIndex, matchIndex);
+      if (roundIndex < bracketData.length - 1) {
+        this.drawConnections(partido, roundIndex, matchIndex, bracketData);
+      }
+    });
+  });
+
+  this.svg.call(
+    d3.drag()
+      .on('start', (event: any) => {
+        this.startX = event.x - this.translateX;
+        this.startY = event.y - this.translateY;
+      })
+      .on('drag', (event: any) => {
+        this.translateX = event.x - this.startX;
+        this.translateY = event.y - this.startY;
+        this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
+      })
+  );
+}
+
+
+private forceRedrawBracket() {
+  if (this.viewMode === 'bracket') {
+    // Limpiar cache y redibujar desde cero
+    this.bracketDataCards = [];
+    setTimeout(() => {
+      this.drawBracket(false);
+    }, 0);
+  }
+}
+
 
   // ------------------ MAPEO DE PARTIDOS MEJORADO ------------------
   private mapToPartidos(category: any): Partido[][] {
@@ -502,7 +565,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('stroke', '#1e7e34').attr('stroke-width', 2);
   }
 
-  private computePhaseLabels(bracketData: Partido[][]): string[] {
+  public computePhaseLabels(bracketData: Partido[][]): string[] {
     const labels = ['Grupos'];
     
     for (let i = 1; i < bracketData.length; i++) {
@@ -521,4 +584,10 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     
     return labels;
   }
+
+  getPlayerNames(players?: any[]): string {
+    if (!players || players.length === 0) return 'Por asignar';
+    return players.map(p => p.name).join(' / ');
+  }
+
 }

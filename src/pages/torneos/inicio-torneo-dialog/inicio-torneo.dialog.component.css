@@ -578,3 +578,111 @@
     height: 45vh;
   }
 }
+
+
+
+
+
+.cards-view {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 16px;
+}
+
+.round-column {
+  flex: 0 0 300px;
+  background: #fafafa;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 12px;
+}
+
+.round-title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #1565c0;
+}
+
+.match-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  margin-bottom: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.match-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.group-name {
+  font-size: 0.9rem;
+  color: #616161;
+}
+
+.trophy-icon {
+  color: gold;
+}
+
+.players {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background-color: #e3f2fd;
+}
+
+.player2 {
+  background-color: #fce4ec;
+}
+
+.vs {
+  font-weight: bold;
+  color: #616161;
+  margin: 6px 0;
+}
+
+.player.winner {
+  border: 2px solid #43a047;
+  background-color: #e8f5e9;
+}
+
+
+.bracket-container.loading {
+  opacity: 0.5;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.empty-state mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}

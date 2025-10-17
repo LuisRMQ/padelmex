@@ -2,7 +2,7 @@
 <mat-toolbar class="bracket-toolbar" color="primary" role="banner">
   <div class="toolbar-left">
     <div class="logo-container">
-      <mat-icon class="tournament-icon">trophy</mat-icon>
+      <mat-icon class="tournament-icon">emoji_events</mat-icon>
     </div>
     <div class="title-section">
       <h1 class="titulo-modal">Bracket del Torneo</h1>
@@ -72,16 +72,65 @@
     </div>
   </div>
 
-  <!-- Bracket Visualization -->
   <div class="bracket-section">
-    <div class="bracket-header">
-      <h3>Visualización del Bracket</h3>
+  <div class="bracket-header">
+    <h3>Visualización del Bracket</h3>
+
+    <button mat-stroked-button color="accent" (click)="toggleViewMode()">
+      <mat-icon>{{ viewMode === 'bracket' ? 'view_module' : 'schema' }}</mat-icon>
+      {{ viewMode === 'bracket' ? 'Ver en Cards' : 'Ver como Bracket' }}
+    </button>
+  </div>
+
+  <!-- Modo BRACKET -->
+  <div class="bracket-area" *ngIf="viewMode === 'bracket'">
+    <div #bracketContainer class="bracket-container" 
+         aria-label="Visualización del bracket del torneo" 
+         role="img"
+         [class.loading]="loading">
     </div>
     
-    <div class="bracket-area">
-      <div #bracketContainer class="bracket-container" aria-label="Visualización del bracket del torneo" role="img"></div>
+    <!-- Mensaje de estado para bracket -->
+    <div *ngIf="viewMode === 'bracket' && !bracketDataCards.length" class="empty-state">
+      <mat-icon>schema</mat-icon>
+      <p>No hay datos de bracket para mostrar</p>
     </div>
   </div>
+
+  <!-- Modo CARDS -->
+  <div class="cards-view" *ngIf="viewMode === 'cards'">
+    <div *ngFor="let round of bracketDataCards; let i = index" class="round-column">
+      <h4 class="round-title">{{ computePhaseLabels(bracketDataCards)[i] }}</h4>
+
+      <div *ngFor="let match of round; let j = index" 
+           class="match-card" 
+           (click)="abrirModalPartido(match, i, j)">
+        <div class="match-header">
+          <span class="group-name">{{ match.groupName }}</span>
+          <mat-icon class="trophy-icon" *ngIf="match.ganador">emoji_events</mat-icon>
+        </div>
+
+        <div class="players">
+          <div class="player player1" [class.winner]="match.ganador === match.jugador1">
+            <mat-icon>person</mat-icon>
+            <span>{{ getPlayerNames(match.jugador1) }}</span>
+          </div>
+          <div class="vs">VS</div>
+          <div class="player player2" [class.winner]="match.ganador === match.jugador2">
+            <mat-icon>person</mat-icon>
+            <span>{{ getPlayerNames(match.jugador2) }}</span> <!-- 🔹 Corregí esto -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mensaje de estado para cards -->
+    <div *ngIf="viewMode === 'cards' && !bracketDataCards.length" class="empty-state">
+      <mat-icon>view_module</mat-icon>
+      <p>No hay datos para mostrar en vista de cards</p>
+    </div>
+  </div>
+</div>
 
 </mat-dialog-content>
 
