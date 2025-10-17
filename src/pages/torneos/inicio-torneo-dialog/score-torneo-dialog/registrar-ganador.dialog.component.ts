@@ -37,12 +37,12 @@ export class RegistrarGanadorDialogComponent {
     error: string | null = null;
 
     // Scores por set - inicializar como null para mejor UX
-    score1_set1: number | null = null;
-    score2_set1: number | null = null;
-    score1_set2: number | null = null;
-    score2_set2: number | null = null;
-    score1_set3: number | null = null;
-    score2_set3: number | null = null;
+    score1_set1: number | null = 0;
+    score2_set1: number | null = 0;
+    score1_set2: number | null = 0;
+    score2_set2: number | null = 0;
+    score1_set3: number | null = 0;
+    score2_set3: number | null = 0;
     // Nuevas propiedades para el diseño mejorado
     completedSets = 0;
     totalScore1: number | null = null;
@@ -228,6 +228,7 @@ export class RegistrarGanadorDialogComponent {
 
 
    private confirmarPartido(ganador: string) {
+    console.log('Confirmando partido con ganador:', ganador);
     this.loading = true;
 
     const gameId = this.data.partido.id ?? 0; // ✅ asegura número

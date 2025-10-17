@@ -5,10 +5,9 @@
   </div>
 
   <mat-dialog-content class="modern-content">
-    <!-- Cuadrícula de equipos -->
-    <div class="teams-grid">
-      <!-- Equipo 1 -->
-      <div class="team-column">
+    <!-- Equipo 1 -->
+    <div class="team-container team-1">
+      <div class="team-info">
         <div class="team-header">
           <h3 class="team-title">Equipo 1</h3>
         </div>
@@ -24,8 +23,27 @@
         </div>
       </div>
 
-      <!-- Equipo 2 -->
-      <div class="team-column">
+      <div class="sets-container">
+        <div class="sets-grid">
+          <div class="set-input">
+            <label>Set 1</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score1_set1" />
+          </div>
+          <div class="set-input">
+            <label>Set 2</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score1_set2" />
+          </div>
+          <div class="set-input">
+            <label>Set 3</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score1_set3" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equipo 2 -->
+    <div class="team-container team-2">
+      <div class="team-info">
         <div class="team-header">
           <h3 class="team-title">Equipo 2</h3>
         </div>
@@ -40,46 +58,21 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Cuadrícula de sets (1 marcador por equipo) -->
-    <div class="sets-grid">
-      <div class="sets-header">
-        <div class="header-cell">Equipo</div>
-        <div class="header-cell">Set 1</div>
-        <div class="header-cell">Set 2</div>
-        <div class="header-cell">Set 3</div>
-      </div>
-
-      <!-- Fila Equipo 1 -->
-      <div class="sets-row">
-        <div class="team-name-cell">
-          <span>Equipo 1</span>
-        </div>
-        <div class="set-input-cell">
-          <input type="number" min="0" max="50" [(ngModel)]="score1_set1" />
-        </div>
-        <div class="set-input-cell">
-          <input type="number" min="0" max="50" [(ngModel)]="score1_set2" />
-        </div>
-        <div class="set-input-cell">
-          <input type="number" min="0" max="50" [(ngModel)]="score1_set3" />
-        </div>
-      </div>
-
-      <!-- Fila Equipo 2 -->
-      <div class="sets-row">
-        <div class="team-name-cell">
-          <span>Equipo 2</span>
-        </div>
-        <div class="set-input-cell">
-          <input type="number" min="0" max="50" [(ngModel)]="score2_set1" />
-        </div>
-        <div class="set-input-cell">
-          <input type="number" min="0" max="50" [(ngModel)]="score2_set2" />
-        </div>
-        <div class="set-input-cell">
-          <input type="number" min="0" max="50" [(ngModel)]="score2_set3" />
+      <div class="sets-container">
+        <div class="sets-grid">
+          <div class="set-input">
+            <label>Set 1</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score2_set1"/>
+          </div>
+          <div class="set-input">
+            <label>Set 2</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score2_set2"/>
+          </div>
+          <div class="set-input">
+            <label>Set 3</label>
+            <input type="number" min="0" max="50" [(ngModel)]="score2_set3"/>
+          </div>
         </div>
       </div>
     </div>
@@ -106,6 +99,5 @@
     <button mat-button class="cancel-btn" (click)="cancelar()">
       <mat-icon>close</mat-icon> Cancelar
     </button>
-  
   </mat-dialog-actions>
 </div>

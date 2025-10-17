@@ -266,7 +266,7 @@ private forceRedrawBracket() {
     // 1) FASE DE GRUPOS
     const groupRound: Partido[] = [];
     const groupsData: any[] = [];
-    
+
     category.groups.forEach((group: any) => {
       const ranking = group.ranking || [];
       const rankById: { [id: number]: any } = {};
@@ -313,7 +313,7 @@ private forceRedrawBracket() {
       }
 
       groupRound.push(...matches);
-      
+
       // Guardar datos del grupo para cálculo dinámico
       groupsData.push({
         groupName: group.group_name,
@@ -326,16 +326,16 @@ private forceRedrawBracket() {
 
     // 2) CÁLCULO DINÁMICO DE PAREJAS QUE AVANZAN
     const advancingCouples = this.calculateAdvancingCouples(groupsData);
-    
+
     // 3) CREAR ELIMINATORIAS DINÁMICAMENTE
     this.createDynamicEliminationRounds(advancingCouples, rounds);
-    
+
     return rounds;
   }
 
   private calculateAdvancingCouples(groupsData: any[]): any[] {
     const advancingCouples: any[] = [];
-    
+
     // Estrategia dinámica basada en el tamaño de los grupos
     groupsData.forEach(group => {
       const totalCouples = group.totalCouples;
@@ -375,7 +375,7 @@ private forceRedrawBracket() {
     // Crear rondas eliminatorias hasta tener un ganador
     while (currentParticipants.length > 1) {
       const currentRound: Partido[] = [];
-      
+
       for (let i = 0; i < currentParticipants.length; i += 2) {
         const left = currentParticipants[i];
         const right = currentParticipants[i + 1];
@@ -400,14 +400,14 @@ private forceRedrawBracket() {
       }
 
       allEliminationRounds.push(currentRound);
-      
+
       // Preparar siguiente ronda (placeholders)
       currentParticipants = currentRound.map((match, index) => ({
         players: [{ name: `Ganador R${currentRoundNumber}-M${index + 1}` }],
         couple_id: null,
         groupName: `R${currentRoundNumber}`
       }));
-      
+
       currentRoundNumber++;
     }
 
@@ -567,7 +567,7 @@ private forceRedrawBracket() {
 
   public computePhaseLabels(bracketData: Partido[][]): string[] {
     const labels = ['Grupos'];
-    
+
     for (let i = 1; i < bracketData.length; i++) {
       if (i === 1) {
         labels.push('Octavos');
@@ -581,7 +581,7 @@ private forceRedrawBracket() {
         labels.push(`Ronda ${i}`);
       }
     }
-    
+
     return labels;
   }
 
