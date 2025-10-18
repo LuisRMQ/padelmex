@@ -12,7 +12,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RegistrarGanadorDialogComponent } from './score-torneo-dialog/registrar-ganador.dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-export type ViewMode = 'bracket' | 'cards';
+export type ViewMode = 'bracket' | 'cards' | 'sets';
 
 
 
@@ -29,6 +29,8 @@ export interface Partido {
   couple1Id?: number | null;
   couple2Id?: number | null;
   nextMatchIndex?: number | null;
+    scores1?: number[];
+  scores2?: number[];
 }
 
 @Component({
@@ -55,6 +57,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   filteredBracket: any[] = [];
   selectedCategory: any = null;
   categories: any[] = [];
+  results: any[] = [];
 
   loading = false;
   error: string | null = null;
@@ -85,19 +88,24 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
 
 
-toggleViewMode() {
-  this.viewMode = this.viewMode === 'bracket' ? 'cards' : 'bracket';
+  toggleViewMode() {
+    if (this.viewMode === 'bracket') {
+      this.viewMode = 'cards';
+    } else if (this.viewMode === 'cards') {
+      this.viewMode = 'sets';
+    } else {
+      this.viewMode = 'bracket';
+    }
 
-  if (this.viewMode === 'bracket') {
-    // 🔹 Esperar al próximo ciclo de detección de cambios de Angular
-    setTimeout(() => {
-      this.drawBracket(true);
-    }, 0);
+    // Si vuelve a bracket, redibujamos
+    if (this.viewMode === 'bracket') {
+      setTimeout(() => this.drawBracket(true), 0);
+    }
   }
-}
 
   ngOnInit(): void {
     this.cargarBracket();
+    
   }
 
   ngAfterViewInit(): void {
@@ -122,14 +130,63 @@ toggleViewMode() {
     });
   }
 
-  filtrarCategoria() {
-    if (this.selectedCategory) {
-      this.filteredBracket = this.bracket.filter(
-        b => b.category_name === this.selectedCategory
-      );
+
+
+
+
+filtrarCategoria() {
+  if (this.selectedCategory) {
+    this.filteredBracket = this.bracket.filter(
+      b => b.category_name === this.selectedCategory
+    );
+
+    if (this.filteredBracket.length > 0) {
       setTimeout(() => this.drawBracket(), 0);
+
+      // 🔹 Solo generar resultados si hay datos
+      this.generateResultsFromBracket(this.filteredBracket[0]);
+    } else {
+      // Si no hay bracket, limpiar resultados y SVG
+      this.results = [];
+      if (this.gContainer) this.gContainer.selectAll('*').remove();
     }
   }
+}
+
+
+
+
+private generateResultsFromBracket(category: any) {
+  const rounds = this.mapToPartidos(category);
+
+  const results: any[] = [];
+
+  rounds.forEach((round, roundIndex) => {
+    round.forEach((match: any) => {
+      const scores1 = match.scores1 || [];
+      const scores2 = match.scores2 || [];
+      let winner: 'player1' | 'player2' | null = null;
+
+      if (match.ganador) {
+        winner = match.ganador === match.jugador1 ? 'player1' : 'player2';
+      }
+
+      results.push({
+        roundName: this.computePhaseLabels(rounds)[roundIndex] || `Ronda ${roundIndex + 1}`,
+        groupName: match.groupName,
+        player1: this.getPlayerNames(match.jugador1),
+        player2: this.getPlayerNames(match.jugador2),
+        scores1,
+        scores2,
+        winner,
+        isFinal: roundIndex === rounds.length - 1
+      });
+    });
+  });
+
+  this.results = results;
+}
+
 
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
     const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
@@ -289,7 +346,9 @@ private forceRedrawBracket() {
           groupName: group.group_name,
           id: game.game_id || null,
           couple1Id: a || null,
-          couple2Id: b || null
+          couple2Id: b || null,
+            scores1: game.scores1 || [0,0,0], // valores por defecto
+  scores2: game.scores2 || [0,0,0]
         });
       });
 
@@ -307,7 +366,8 @@ private forceRedrawBracket() {
             groupName: group.group_name,
             id: null,
             couple1Id: a || null,
-            couple2Id: b || null
+            couple2Id: b || null,
+            
           });
         }
       }
@@ -584,6 +644,23 @@ private forceRedrawBracket() {
 
     return labels;
   }
+
+
+
+get resultsGroupedByGroup(): { groupName: string, matches: any[] }[] {
+  if (!this.results || this.results.length === 0) return [];
+  const groups: { [key: string]: any[] } = {};
+  this.results.forEach(match => {
+    const group = match.groupName || 'Sin Grupo';
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(match);
+  });
+  return Object.keys(groups).map(groupName => ({
+    groupName,
+    matches: groups[groupName]
+  }));
+}
+
 
   getPlayerNames(players?: any[]): string {
     if (!players || players.length === 0) return 'Por asignar';

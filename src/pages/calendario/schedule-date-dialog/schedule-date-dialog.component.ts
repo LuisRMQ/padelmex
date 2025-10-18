@@ -107,7 +107,7 @@ export class ScheduleDateDialogComponent implements OnInit {
       pay_method: ['single_payment', Validators.required],
       observations: [''],
       type: ['private', Validators.required],
-      category: ['', Validators.required],
+      category_id: ['', Validators.required],
     });
 
     this.filteredUsers = this.userControl.valueChanges.pipe(
@@ -321,7 +321,7 @@ export class ScheduleDateDialogComponent implements OnInit {
     pay_method: this.reservationForm.value.pay_method,
     observations: this.reservationForm.value.observations,
     type: this.reservationForm.value.type,
-    category: this.reservationForm.value.category,
+    category_id: this.reservationForm.value.category_id,
     players: []
   };
 

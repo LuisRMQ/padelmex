@@ -126,15 +126,14 @@
               <mat-option [value]="'private'">Privada</mat-option>
             </mat-select>
           </mat-form-field>
-
-          <mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
-            <mat-label>Categoria</mat-label>
-            <mat-select formControlName="category" required>
-              <mat-option *ngFor="let category of categories" [value]="category.id">
-                {{category.category}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+<mat-form-field class="modal-field" appearance="outline" style="grid-column: 1 / span 2;">
+  <mat-label>Categoría</mat-label>
+  <mat-select formControlName="category_id" required>
+    <mat-option *ngFor="let category of categories" [value]="category.id">
+      {{ category.category }}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
 
 
           <!-- <mat-form-field class="modal-field" appearance="outline">
