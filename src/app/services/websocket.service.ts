@@ -78,13 +78,18 @@ export class ReverbService {
         this.ws.send(JSON.stringify(msg));
     }
 
-    send(channel: string, data: any) {
-        const msg = { event: 'client-message', data: { channel, message: data } };
+    send(channel: string, payload: any) {
+        const msg = {
+            event: 'client-message',      // evento personalizado que Reverb entiende
+            channel: channel,
+            data: payload
+        };
+
         if (this.isConnected) {
-            console.log('📤 Enviando mensaje al canal:', channel, data);
+            console.log('📤 Enviando mensaje al canal:', channel, payload);
             this.ws.send(JSON.stringify(msg));
         } else {
-            console.warn('⚠️ Mensaje pendiente para enviar cuando se conecte', msg);
+            console.warn('⚠️ Mensaje pendiente:', msg);
             this.pendingMessages.push(msg);
         }
     }

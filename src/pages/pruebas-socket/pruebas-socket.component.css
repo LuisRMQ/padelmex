@@ -237,3 +237,43 @@
 .event-logs::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Invitaciones */
+.invitation-card {
+  border: 1px solid #ccc;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.invitation-actions {
+  margin-top: 8px;
+}
+
+.btn-accept {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-right: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-reject {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-accept:hover {
+  background-color: #45a049;
+}
+
+.btn-reject:hover {
+  background-color: #e53935;
+}
