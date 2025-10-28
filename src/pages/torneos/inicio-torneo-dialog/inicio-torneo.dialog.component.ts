@@ -401,7 +401,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const advancingCouples = this.calculateAdvancingCouples(groupsData);
 
     // 3) CREAR ELIMINATORIAS DINÁMICAMENTE
-    this.createDynamicEliminationRounds(advancingCouples, rounds);
+    //this.createDynamicEliminationRounds(advancingCouples, rounds);
 
     return rounds;
   }
@@ -438,64 +438,64 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     return advancingCouples;
   }
 
-  private createDynamicEliminationRounds(advancingCouples: any[], rounds: Partido[][]) {
-    if (advancingCouples.length === 0) return;
+  // private createDynamicEliminationRounds(advancingCouples: any[], rounds: Partido[][]) {
+  //   if (advancingCouples.length === 0) return;
 
-    let currentRoundNumber = 1;
-    let currentParticipants = [...advancingCouples];
-    let allEliminationRounds: Partido[][] = [];
+  //   let currentRoundNumber = 1;
+  //   let currentParticipants = [...advancingCouples];
+  //   let allEliminationRounds: Partido[][] = [];
 
-    // Crear rondas eliminatorias hasta tener un ganador
-    while (currentParticipants.length > 1) {
-      const currentRound: Partido[] = [];
+  //   // Crear rondas eliminatorias hasta tener un ganador
+  //   while (currentParticipants.length > 1) {
+  //     const currentRound: Partido[] = [];
 
-      for (let i = 0; i < currentParticipants.length; i += 2) {
-        const left = currentParticipants[i];
-        const right = currentParticipants[i + 1];
+  //     for (let i = 0; i < currentParticipants.length; i += 2) {
+  //       const left = currentParticipants[i];
+  //       const right = currentParticipants[i + 1];
 
-        const match: Partido = {
-          jugador1: left?.players || [{ name: `Ganador R${currentRoundNumber}-${i}` }],
-          jugador2: right?.players || [{ name: 'BYE' }], // Para números impares
-          ganador: null,
-          groupName: `Ronda ${currentRoundNumber}`,
-          id: null,
-          couple1Id: left?.couple_id || null,
-          couple2Id: right?.couple_id || null,
-          nextMatchIndex: Math.floor(i / 2)
-        };
+  //       const match: Partido = {
+  //         jugador1: left?.players || [{ name: `Ganador R${currentRoundNumber}-${i}` }],
+  //         jugador2: right?.players || [{ name: 'BYE' }], // Para números impares
+  //         ganador: null,
+  //         groupName: `Ronda ${currentRoundNumber}`,
+  //         id: null,
+  //         couple1Id: left?.couple_id || null,
+  //         couple2Id: right?.couple_id || null,
+  //         nextMatchIndex: Math.floor(i / 2)
+  //       };
 
-        // Si hay BYE, el jugador avanza automáticamente
-        if (!right) {
-          match.ganador = left;
-        }
+  //       // Si hay BYE, el jugador avanza automáticamente
+  //       if (!right) {
+  //         match.ganador = left;
+  //       }
 
-        currentRound.push(match);
-      }
+  //       currentRound.push(match);
+  //     }
 
-      allEliminationRounds.push(currentRound);
+  //     allEliminationRounds.push(currentRound);
 
-      // Preparar siguiente ronda (placeholders)
-      currentParticipants = currentRound.map((match, index) => ({
-        players: [{ name: `Ganador R${currentRoundNumber}-M${index + 1}` }],
-        couple_id: null,
-        groupName: `R${currentRoundNumber}`
-      }));
+  //     // Preparar siguiente ronda (placeholders)
+  //     currentParticipants = currentRound.map((match, index) => ({
+  //       players: [{ name: `Ganador R${currentRoundNumber}-M${index + 1}` }],
+  //       couple_id: null,
+  //       groupName: `R${currentRoundNumber}`
+  //     }));
 
-      currentRoundNumber++;
-    }
+  //     currentRoundNumber++;
+  //   }
 
-    // Conectar las rondas entre sí
-    allEliminationRounds.forEach((round, roundIndex) => {
-      if (roundIndex < allEliminationRounds.length - 1) {
-        round.forEach((match, matchIndex) => {
-          match.nextMatchIndex = matchIndex;
-        });
-      }
-    });
+  //   // Conectar las rondas entre sí
+  //   allEliminationRounds.forEach((round, roundIndex) => {
+  //     if (roundIndex < allEliminationRounds.length - 1) {
+  //       round.forEach((match, matchIndex) => {
+  //         match.nextMatchIndex = matchIndex;
+  //       });
+  //     }
+  //   });
 
-    // Agregar todas las rondas eliminatorias al bracket
-    rounds.push(...allEliminationRounds);
-  }
+  //   // Agregar todas las rondas eliminatorias al bracket
+  //   rounds.push(...allEliminationRounds);
+  // }
 
   // ------------------ HELPERS ------------------
   private calculatePositions(bracketData: Partido[][], containerHeight: number) {

@@ -48,6 +48,10 @@ export class RegistrarGanadorDialogComponent {
     totalScore1: number | null = null;
     totalScore2: number | null = null;
 
+    disabledSet1 = false;
+    disabledSet2 = false;
+    disabledSet3 = false;
+
     constructor(
         @Inject(MAT_DIALOG_DATA) public data: { partido: Partido },
         private dialogRef: MatDialogRef<RegistrarGanadorDialogComponent>,
@@ -56,13 +60,13 @@ export class RegistrarGanadorDialogComponent {
     ) { }
 
     // Método para calcular sets completados y puntuación total
-  private calcularProgreso(): void {
-    let setsCompletados = 0;
-    if (this.score1_set1 !== null && this.score2_set1 !== null) setsCompletados++;
-    if (this.score1_set2 !== null && this.score2_set2 !== null) setsCompletados++;
-    if (this.score1_set3 !== null && this.score2_set3 !== null) setsCompletados++;
-    this.completedSets = setsCompletados;
-}
+    private calcularProgreso(): void {
+        let setsCompletados = 0;
+        if (this.score1_set1 !== null && this.score2_set1 !== null) setsCompletados++;
+        if (this.score1_set2 !== null && this.score2_set2 !== null) setsCompletados++;
+        if (this.score1_set3 !== null && this.score2_set3 !== null) setsCompletados++;
+        this.completedSets = setsCompletados;
+    }
 
     // Método modificado para guardar sets individuales
     guardarSet(setNumber: number) {
@@ -151,52 +155,55 @@ export class RegistrarGanadorDialogComponent {
     }
 
     registrarResultado() {
-    // Set 1
-    if (this.score1_set1 === null || this.score2_set1 === null) {
-        this.snackBar.open('Ingresa ambos puntajes del Set 1', 'Cerrar', { duration: 4000 });
-        return;
-    } else if (this.completedSets < 1) {
-        this.guardarSet(1);
-        return;
-    }
+        this.disabledSet1 = this.score1_set1 != null && this.score2_set1 != null;
+        this.disabledSet2 = this.score1_set2 != null && this.score2_set2 != null;
+        this.disabledSet3 = this.score1_set3 != null && this.score2_set3 != null;
+        // Set 1
+        if (this.score1_set1 === null || this.score2_set1 === null) {
+            this.snackBar.open('Ingresa ambos puntajes del Set 1', 'Cerrar', { duration: 4000 });
+            return;
+        } else if (this.completedSets < 1) {
+            this.guardarSet(1);
+            return;
+        }
 
-    // Set 2
-    if (this.score1_set2 === null || this.score2_set2 === null) {
-        this.snackBar.open('Ingresa ambos puntajes del Set 2', 'Cerrar', { duration: 4000 });
-        return;
-    } else if (this.completedSets < 2) {
-        this.guardarSet(2);
-        return;
-    }
+        // Set 2
+        if (this.score1_set2 === null || this.score2_set2 === null) {
+            this.snackBar.open('Ingresa ambos puntajes del Set 2', 'Cerrar', { duration: 4000 });
+            return;
+        } else if (this.completedSets < 2) {
+            this.guardarSet(2);
+            return;
+        }
 
-    // Evaluar ganador después de 2 sets
-    let setsGanados1 = 0;
-    let setsGanados2 = 0;
-    if (this.score1_set1 > this.score2_set1) setsGanados1++; else setsGanados2++;
-    if (this.score1_set2 > this.score2_set2) setsGanados1++; else setsGanados2++;
+        // Evaluar ganador después de 2 sets
+        let setsGanados1 = 0;
+        let setsGanados2 = 0;
+        if (this.score1_set1 > this.score2_set1) setsGanados1++; else setsGanados2++;
+        if (this.score1_set2 > this.score2_set2) setsGanados1++; else setsGanados2++;
 
-    if (setsGanados1 === 2 || setsGanados2 === 2) {
-        const ganador = setsGanados1 > setsGanados2 ? 'jugador1' : 'jugador2';
-        this.confirmarPartido(ganador);
-        return;
-    }
+        if (setsGanados1 === 2 || setsGanados2 === 2) {
+            const ganador = setsGanados1 > setsGanados2 ? 'jugador1' : 'jugador2';
+            this.confirmarPartido(ganador);
+            return;
+        }
 
-    // Si 1-1, Set 3
-    if (this.score1_set3 === null || this.score2_set3 === null) {
-        this.snackBar.open('Empate 1-1. Ingresa el Set 3 para definir al ganador.', 'Cerrar', { duration: 4000 });
-        return;
-    } else if (this.completedSets < 3) {
-        this.guardarSet(3);
-        return;
-    }
+        // Si 1-1, Set 3
+        if (this.score1_set3 === null || this.score2_set3 === null) {
+            this.snackBar.open('Empate 1-1. Ingresa el Set 3 para definir al ganador.', 'Cerrar', { duration: 4000 });
+            return;
+        } else if (this.completedSets < 3) {
+            this.guardarSet(3);
+            return;
+        }
 
-    // Ganador final con Set 3
-    if (this.score1_set3 !== null && this.score2_set3 !== null) {
-        if (this.score1_set3 > this.score2_set3) setsGanados1++; else setsGanados2++;
-        const ganador = setsGanados1 > setsGanados2 ? 'jugador1' : 'jugador2';
-        this.confirmarPartido(ganador);
+        // Ganador final con Set 3
+        if (this.score1_set3 !== null && this.score2_set3 !== null) {
+            if (this.score1_set3 > this.score2_set3) setsGanados1++; else setsGanados2++;
+            const ganador = setsGanados1 > setsGanados2 ? 'jugador1' : 'jugador2';
+            this.confirmarPartido(ganador);
+        }
     }
-}
 
 
 

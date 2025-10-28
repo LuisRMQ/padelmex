@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -14,6 +14,11 @@ import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { FullCalendarModule } from '@fullcalendar/angular';
 
+// 👇 Importa y registra el locale español
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
+registerLocaleData(localeEs);
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
@@ -21,8 +26,10 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideAnimations(),
     provideHttpClient(),
-
     provideNativeDateAdapter(),
+
+    // 👇 Añade el locale español aquí
+    { provide: LOCALE_ID, useValue: 'es' },
 
     importProvidersFrom(
       ReactiveFormsModule,

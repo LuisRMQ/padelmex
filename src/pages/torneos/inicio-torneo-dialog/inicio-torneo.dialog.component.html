@@ -141,8 +141,8 @@
           <div class="result-header">
             <div class="match-info">
               <span class="round-name">{{ match.roundName }}</span>
-              <span class="match-date" style="margin-left: 40px;">
-                {{ match.date ? (match.date + ' ' + (match.start_time ? (match.start_time | slice:0:5) : '')) : 'Sin fecha' }}
+              <span class="match-date" style="margin-left: 180px;">
+                {{ match.date ? (match.date | date:'d \'de\' MMMM y':'es') + ' ' + (match.start_time ? (match.start_time | slice:0:5) : '') : 'Sin fecha' }}
               </span>
               <div *ngIf="match.court" class="match-court">{{ match.court }}</div>
             </div>

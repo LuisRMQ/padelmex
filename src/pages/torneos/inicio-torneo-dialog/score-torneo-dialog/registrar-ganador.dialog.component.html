@@ -27,15 +27,15 @@
         <div class="sets-grid">
           <div class="set-input">
             <label>Set 1</label>
-            <input type="number" min="0" max="50" [(ngModel)]="score1_set1" />
+            <input type="number" min="0" max="50" [(ngModel)]="score1_set1" [disabled]="disabledSet1" />
           </div>
           <div class="set-input">
             <label>Set 2</label>
-            <input type="number" min="0" max="50" [(ngModel)]="score1_set2" />
+            <input type="number" min="0" max="50" [(ngModel)]="score1_set2" [disabled]="disabledSet2" />
           </div>
           <div class="set-input">
             <label>Set 3</label>
-            <input type="number" min="0" max="50" [(ngModel)]="score1_set3" />
+            <input type="number" min="0" max="50" [(ngModel)]="score1_set3" [disabled]="disabledSet3" />
           </div>
         </div>
       </div>
@@ -63,15 +63,15 @@
         <div class="sets-grid">
           <div class="set-input">
             <label>Set 1</label>
-            <input type="number" min="0" max="50" [(ngModel)]="score2_set1"/>
+            <input type="number" min="0" max="50" [(ngModel)]="score2_set1" [disabled]="disabledSet1"/>
           </div>
           <div class="set-input">
             <label>Set 2</label>
-            <input type="number" min="0" max="50" [(ngModel)]="score2_set2"/>
+            <input type="number" min="0" max="50" [(ngModel)]="score2_set2" [disabled]="disabledSet2"/>
           </div>
           <div class="set-input">
             <label>Set 3</label>
-            <input type="number" min="0" max="50" [(ngModel)]="score2_set3"/>
+            <input type="number" min="0" max="50" [(ngModel)]="score2_set3" [disabled]="disabledSet3"/>
           </div>
         </div>
       </div>
