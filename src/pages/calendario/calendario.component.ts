@@ -703,8 +703,6 @@ onPageChange(event: PageEvent) {
     }
 
     const selectedDateStr = this.formatDateForApi(this.selectedDate);
-    console.log('Checking if court', courtId, 'is closed on', selectedDateStr);
-    console.log('Closed days:', closedDays);
     return closedDays.some(closedDay => closedDay.day === selectedDateStr);
   }
 
