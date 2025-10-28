@@ -85,7 +85,9 @@
   min-height: 70vh;
 }
 
-/* Controls */
+/* =========================
+   Controls
+   ========================= */
 .controls-section {
   display: flex;
   gap: 16px;
@@ -123,8 +125,11 @@
   color: #94a3b8;
 }
 
-/* Status */
-.loading-indicator {
+/* =========================
+   Status
+   ========================= */
+.loading-indicator,
+.error-message {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -132,6 +137,9 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.loading-indicator {
   border-left: 4px solid #6366f1;
 }
 
@@ -141,13 +149,6 @@
 }
 
 .error-message {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   border-left: 4px solid #ef4444;
   max-width: 320px;
 }
@@ -205,8 +206,17 @@
   box-shadow: 0 0 0 3px rgba(99,102,241,0.1), 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.card-content { display: flex; flex-direction: column; gap: 16px; }
-.card-main { display: flex; gap: 12px; align-items: start; }
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-main {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+}
 
 .level-badge {
   display: inline-block;
@@ -218,8 +228,18 @@
   font-weight: 600;
 }
 
-.category-title { margin: 0 0 4px 0; font-size: 1.1rem; font-weight: 600; color: #1e293b; }
-.category-stats { margin: 0; color: #64748b; font-size: 0.875rem; }
+.category-title {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.category-stats {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+}
 
 /* =========================
    Bracket Section
@@ -241,7 +261,12 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-.bracket-header h3 { margin: 0; font-size: 1.25rem; font-weight: 600; color: #1e293b; }
+.bracket-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+}
 
 .bracket-area {
   display: flex;
@@ -260,7 +285,9 @@
   position: relative;
 }
 
-.bracket-container.loading { opacity: 0.5; }
+.bracket-container.loading {
+  opacity: 0.5;
+}
 
 /* =========================
    Cards View
@@ -326,11 +353,20 @@
   background-color: #e3f2fd;
 }
 
-.player2 { background-color: #fce4ec; }
+.player2 {
+  background-color: #fce4ec;
+}
 
-.vs { font-weight: bold; color: #616161; margin: 6px 0; }
+.vs {
+  font-weight: bold;
+  color: #616161;
+  margin: 6px 0;
+}
 
-.player.winner { border: 2px solid #43a047; background-color: #e8f5e9; }
+.player.winner {
+  border: 2px solid #43a047;
+  background-color: #e8f5e9;
+}
 
 /* =========================
    Results / Sets View
@@ -339,7 +375,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  align-items: flex-start;  /* Alinea los grupos al inicio */
+  align-items: flex-start; /* Alinea los grupos al inicio */
 }
 
 .result-card.compact {
@@ -375,8 +411,17 @@
   align-items: center;
 }
 
-.player-row .player-name { font-weight: 500; color: #1f2937; width: 20vw;}
-.player-row .player-name.winner { color: #10b981; font-weight: 600; width: 20vw;}
+.player-row .player-name {
+  font-weight: 500;
+  color: #1f2937;
+  width: 20vw;
+}
+
+.player-row .player-name.winner {
+  color: #10b981;
+  font-weight: 600;
+  width: 20vw;
+}
 
 .player-row .score {
   display: inline-flex;
@@ -398,7 +443,9 @@
   font-weight: 600;
 }
 
-/* Empty state */
+/* =========================
+   Empty state
+   ========================= */
 .empty-state {
   text-align: center;
   padding: 40px 0;
@@ -415,31 +462,39 @@
    Responsive
    ========================= */
 @media (max-width: 768px) {
-  .result-card.compact { width: 100%; padding: 8px 12px; }
-  .player-row .score { width: 28px; height: 28px; font-size: 0.8rem; }
+  .result-card.compact {
+    width: 100%;
+    padding: 8px 12px;
+  }
+
+  .player-row .score {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
 }
 
 /* =========================
    Group Containers
    ========================= */
 .group-container {
-  max-width: 500px;         
-  margin: 8px 0;            /* Arriba/abajo 8px, alineado a la izquierda */
-  padding: 8px;              
+  max-width: 500px;
+  margin: 8px 0;
+  padding: 8px;
   border: 1px solid #ccc;
   border-radius: 8px;
   background: #43a047;
-  box-sizing: border-box;    
+  box-sizing: border-box;
 }
 
 .group-title {
-  font-size: 16px;            
+  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 8px;         
+  margin-bottom: 8px;
   color: #fff;
 }
 
 .result-card {
-  margin-bottom: 6px;         
-  padding: 8px;                
+  margin-bottom: 6px;
+  padding: 8px;
 }
