@@ -375,14 +375,14 @@
   align-items: center;
 }
 
-.player-row .player-name { font-weight: 500; color: #1f2937; }
-.player-row .player-name.winner { color: #10b981; font-weight: 600; }
+.player-row .player-name { font-weight: 500; color: #1f2937; width: 20vw;}
+.player-row .player-name.winner { color: #10b981; font-weight: 600; width: 20vw;}
 
 .player-row .score {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
+  width: 5vw;
   height: 36px;
   margin-left: 6px;
   font-size: 0.85rem;

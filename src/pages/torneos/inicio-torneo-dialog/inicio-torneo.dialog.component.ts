@@ -29,8 +29,12 @@ export interface Partido {
   couple1Id?: number | null;
   couple2Id?: number | null;
   nextMatchIndex?: number | null;
-    scores1?: number[];
+  scores1?: number[];
   scores2?: number[];
+  date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  court?: string | null;
 }
 
 @Component({
@@ -76,7 +80,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private translateX = 0;
   private translateY = 0;
 
-  viewMode: ViewMode = 'bracket'; 
+  viewMode: ViewMode = 'bracket';
   bracketDataCards: Partido[][] = [];
 
   constructor(
@@ -105,7 +109,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.cargarBracket();
-    
+
   }
 
   ngAfterViewInit(): void {
@@ -134,58 +138,63 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
 
 
-filtrarCategoria() {
-  if (this.selectedCategory) {
-    this.filteredBracket = this.bracket.filter(
-      b => b.category_name === this.selectedCategory
-    );
+  filtrarCategoria() {
+    if (this.selectedCategory) {
+      this.filteredBracket = this.bracket.filter(
+        b => b.category_name === this.selectedCategory
+      );
 
-    if (this.filteredBracket.length > 0) {
-      setTimeout(() => this.drawBracket(), 0);
+      if (this.filteredBracket.length > 0) {
+        setTimeout(() => this.drawBracket(), 0);
 
-      // 🔹 Solo generar resultados si hay datos
-      this.generateResultsFromBracket(this.filteredBracket[0]);
-    } else {
-      // Si no hay bracket, limpiar resultados y SVG
-      this.results = [];
-      if (this.gContainer) this.gContainer.selectAll('*').remove();
+        // 🔹 Solo generar resultados si hay datos
+        this.generateResultsFromBracket(this.filteredBracket[0]);
+      } else {
+        // Si no hay bracket, limpiar resultados y SVG
+        this.results = [];
+        if (this.gContainer) this.gContainer.selectAll('*').remove();
+      }
     }
   }
-}
 
 
 
 
-private generateResultsFromBracket(category: any) {
-  const rounds = this.mapToPartidos(category);
+  private generateResultsFromBracket(category: any) {
+    const rounds = this.mapToPartidos(category);
 
-  const results: any[] = [];
+    const results: any[] = [];
 
-  rounds.forEach((round, roundIndex) => {
-    round.forEach((match: any) => {
-      const scores1 = match.scores1 || [];
-      const scores2 = match.scores2 || [];
-      let winner: 'player1' | 'player2' | null = null;
+    rounds.forEach((round, roundIndex) => {
+      round.forEach((match: any) => {
+        const scores1 = match.scores1 || [];
+        const scores2 = match.scores2 || [];
+        let winner: 'player1' | 'player2' | null = null;
 
-      if (match.ganador) {
-        winner = match.ganador === match.jugador1 ? 'player1' : 'player2';
-      }
+        if (match.ganador) {
+          winner = match.ganador === match.jugador1 ? 'player1' : 'player2';
+        }
 
-      results.push({
-        roundName: this.computePhaseLabels(rounds)[roundIndex] || `Ronda ${roundIndex + 1}`,
-        groupName: match.groupName,
-        player1: this.getPlayerNames(match.jugador1),
-        player2: this.getPlayerNames(match.jugador2),
-        scores1,
-        scores2,
-        winner,
-        isFinal: roundIndex === rounds.length - 1
+        results.push({
+          roundName: this.computePhaseLabels(rounds)[roundIndex] || `Ronda ${roundIndex + 1}`,
+          groupName: match.groupName,
+          player1: this.getPlayerNames(match.jugador1),
+          player2: this.getPlayerNames(match.jugador2),
+          scores1,
+          scores2,
+          winner,
+          isFinal: roundIndex === rounds.length - 1,
+          date: match.date || null,
+          start_time: match.start_time || null,
+          end_time: match.end_time || null,
+          court: match.court || null,
+          gameId: match.id || null
+        });
       });
     });
-  });
 
-  this.results = results;
-}
+    this.results = results;
+  }
 
 
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
@@ -217,103 +226,103 @@ private generateResultsFromBracket(category: any) {
 
   // ------------------ D3 DRAW ------------------
   private drawBracket(useCachedData: boolean = false) {
-  // 🔹 Si estamos en modo cards, no hacer nada
-  if (this.viewMode === 'cards') {
-    return;
-  }
+    // 🔹 Si estamos en modo cards, no hacer nada
+    if (this.viewMode === 'cards') {
+      return;
+    }
 
-  // 🔹 Verificación más robusta del contenedor
-  if (!this.bracketContainer?.nativeElement) {
-    console.warn('Contenedor bracketContainer no disponible');
-    return;
-  }
+    // 🔹 Verificación más robusta del contenedor
+    if (!this.bracketContainer?.nativeElement) {
+      console.warn('Contenedor bracketContainer no disponible');
+      return;
+    }
 
-  const container = this.bracketContainer.nativeElement as HTMLElement;
-  
-  // 🔹 Verificar si el contenedor es visible
-  if (container.offsetParent === null) {
-    console.warn('Contenedor no visible en el DOM');
-    // Reintentar después de un breve delay
-    setTimeout(() => this.drawBracket(useCachedData), 50);
-    return;
-  }
+    const container = this.bracketContainer.nativeElement as HTMLElement;
 
-  // 🔹 Usar datos cacheados si existen
-  const bracketData: Partido[][] = useCachedData && this.bracketDataCards.length
-    ? this.bracketDataCards
-    : this.mapToPartidos(this.filteredBracket[0]);
+    // 🔹 Verificar si el contenedor es visible
+    if (container.offsetParent === null) {
+      console.warn('Contenedor no visible en el DOM');
+      // Reintentar después de un breve delay
+      setTimeout(() => this.drawBracket(useCachedData), 50);
+      return;
+    }
 
-  // 🔹 Guardar los datos cacheados solo si no vienen de cache
-  if (!useCachedData) {
-    this.bracketDataCards = bracketData;
-  }
+    // 🔹 Usar datos cacheados si existen
+    const bracketData: Partido[][] = useCachedData && this.bracketDataCards.length
+      ? this.bracketDataCards
+      : this.mapToPartidos(this.filteredBracket[0]);
 
-  // 🔹 Limpiar completamente el contenedor
-  d3.select(container).selectAll('*').remove();
+    // 🔹 Guardar los datos cacheados solo si no vienen de cache
+    if (!useCachedData) {
+      this.bracketDataCards = bracketData;
+    }
 
-  const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
-  const maxMatches = bracketData.length > 0
-    ? Math.max(...bracketData.map(r => r.length > 0 ? r.length : 0))
-    : 1;
-  const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
+    // 🔹 Limpiar completamente el contenedor
+    d3.select(container).selectAll('*').remove();
 
-  // 🔹 Crear SVG nuevo
-  this.svg = d3.select(container).append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .attr('class', 'bracket-svg');
+    const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
+    const maxMatches = bracketData.length > 0
+      ? Math.max(...bracketData.map(r => r.length > 0 ? r.length : 0))
+      : 1;
+    const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
 
-  this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
+    // 🔹 Crear SVG nuevo
+    this.svg = d3.select(container).append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('class', 'bracket-svg');
 
-  // ... el resto del código de drawBracket permanece igual
-  const phases: string[] = this.computePhaseLabels(bracketData);
-  phases.forEach((phase, i) => {
-    const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
-    this.gContainer.append('text')
-      .text(phase)
-      .attr('x', x)
-      .attr('y', 20)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#000')
-      .attr('font-weight', 'bold')
-      .attr('font-size', '20px');
-  });
+    this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
 
-  this.calculatePositions(bracketData, height);
-
-  bracketData.forEach((ronda, roundIndex) => {
-    ronda.forEach((partido, matchIndex) => {
-      this.drawMatch(partido, roundIndex, matchIndex);
-      if (roundIndex < bracketData.length - 1) {
-        this.drawConnections(partido, roundIndex, matchIndex, bracketData);
-      }
+    // ... el resto del código de drawBracket permanece igual
+    const phases: string[] = this.computePhaseLabels(bracketData);
+    phases.forEach((phase, i) => {
+      const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
+      this.gContainer.append('text')
+        .text(phase)
+        .attr('x', x)
+        .attr('y', 20)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#000')
+        .attr('font-weight', 'bold')
+        .attr('font-size', '20px');
     });
-  });
 
-  this.svg.call(
-    d3.drag()
-      .on('start', (event: any) => {
-        this.startX = event.x - this.translateX;
-        this.startY = event.y - this.translateY;
-      })
-      .on('drag', (event: any) => {
-        this.translateX = event.x - this.startX;
-        this.translateY = event.y - this.startY;
-        this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
-      })
-  );
-}
+    this.calculatePositions(bracketData, height);
 
+    bracketData.forEach((ronda, roundIndex) => {
+      ronda.forEach((partido, matchIndex) => {
+        this.drawMatch(partido, roundIndex, matchIndex);
+        if (roundIndex < bracketData.length - 1) {
+          this.drawConnections(partido, roundIndex, matchIndex, bracketData);
+        }
+      });
+    });
 
-private forceRedrawBracket() {
-  if (this.viewMode === 'bracket') {
-    // Limpiar cache y redibujar desde cero
-    this.bracketDataCards = [];
-    setTimeout(() => {
-      this.drawBracket(false);
-    }, 0);
+    this.svg.call(
+      d3.drag()
+        .on('start', (event: any) => {
+          this.startX = event.x - this.translateX;
+          this.startY = event.y - this.translateY;
+        })
+        .on('drag', (event: any) => {
+          this.translateX = event.x - this.startX;
+          this.translateY = event.y - this.startY;
+          this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
+        })
+    );
   }
-}
+
+
+  private forceRedrawBracket() {
+    if (this.viewMode === 'bracket') {
+      // Limpiar cache y redibujar desde cero
+      this.bracketDataCards = [];
+      setTimeout(() => {
+        this.drawBracket(false);
+      }, 0);
+    }
+  }
 
 
   // ------------------ MAPEO DE PARTIDOS MEJORADO ------------------
@@ -347,8 +356,12 @@ private forceRedrawBracket() {
           id: game.game_id || null,
           couple1Id: a || null,
           couple2Id: b || null,
-            scores1: game.scores1 || [0,0,0], // valores por defecto
-  scores2: game.scores2 || [0,0,0]
+          scores1: game.scores1 || [0, 0, 0], // valores por defecto
+          scores2: game.scores2 || [0, 0, 0],
+          date: game.date || null,
+          start_time: game.start_time || null,
+          end_time: game.end_time || null,
+          court: game.court || null
         });
       });
 
@@ -367,7 +380,7 @@ private forceRedrawBracket() {
             id: null,
             couple1Id: a || null,
             couple2Id: b || null,
-            
+
           });
         }
       }
@@ -647,24 +660,29 @@ private forceRedrawBracket() {
 
 
 
-get resultsGroupedByGroup(): { groupName: string, matches: any[] }[] {
-  if (!this.results || this.results.length === 0) return [];
-  const groups: { [key: string]: any[] } = {};
-  this.results.forEach(match => {
-    const group = match.groupName || 'Sin Grupo';
-    if (!groups[group]) groups[group] = [];
-    groups[group].push(match);
-  });
-  return Object.keys(groups).map(groupName => ({
-    groupName,
-    matches: groups[groupName]
-  }));
-}
+  get resultsGroupedByGroup(): { groupName: string, matches: any[] }[] {
+    if (!this.results || this.results.length === 0) return [];
+    const groups: { [key: string]: any[] } = {};
+    this.results.forEach(match => {
+      const group = match.groupName || 'Sin Grupo';
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(match);
+    });
+    return Object.keys(groups).map(groupName => ({
+      groupName,
+      matches: groups[groupName]
+    }));
+  }
 
 
   getPlayerNames(players?: any[]): string {
     if (!players || players.length === 0) return 'Por asignar';
     return players.map(p => p.name).join(' / ');
+  }
+
+  logMatch(match: any) {
+    console.log('Match:', match);
+    return true; // Para que Angular permita usarlo en *ngIf
   }
 
 }

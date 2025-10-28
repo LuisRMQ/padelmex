@@ -56,8 +56,8 @@
 
   <!-- Categories Grid -->
   <div class="categories-grid" *ngIf="!loading && filteredBracket?.length">
-    <div *ngFor="let cat of filteredBracket" class="category-card" 
-         [class.active]="selectedCategory === cat.category_name">
+    <div *ngFor="let cat of filteredBracket" class="category-card"
+      [class.active]="selectedCategory === cat.category_name">
       <div class="card-content">
         <div class="card-main">
           <div class="category-badge">
@@ -86,12 +86,10 @@
 
     <!-- Modo BRACKET -->
     <div class="bracket-area" *ngIf="viewMode === 'bracket'">
-      <div #bracketContainer class="bracket-container" 
-           aria-label="Visualización del bracket del torneo" 
-           role="img"
-           [class.loading]="loading">
+      <div #bracketContainer class="bracket-container" aria-label="Visualización del bracket del torneo" role="img"
+        [class.loading]="loading">
       </div>
-      
+
       <!-- Mensaje de estado para bracket -->
       <div *ngIf="viewMode === 'bracket' && !bracketDataCards.length" class="empty-state">
         <mat-icon>schema</mat-icon>
@@ -104,9 +102,7 @@
       <div *ngFor="let round of bracketDataCards; let i = index" class="round-column">
         <h4 class="round-title">{{ computePhaseLabels(bracketDataCards)[i] }}</h4>
 
-        <div *ngFor="let match of round; let j = index" 
-             class="match-card" 
-             (click)="abrirModalPartido(match, i, j)">
+        <div *ngFor="let match of round; let j = index" class="match-card" (click)="abrirModalPartido(match, i, j)">
           <div class="match-header">
             <span class="group-name">{{ match.groupName }}</span>
             <mat-icon class="trophy-icon" *ngIf="match.ganador">emoji_events</mat-icon>
@@ -125,7 +121,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Mensaje de estado para cards -->
       <div *ngIf="viewMode === 'cards' && !bracketDataCards.length" class="empty-state">
         <mat-icon>view_module</mat-icon>
@@ -141,9 +137,14 @@
         <h3 class="group-title">{{ group.groupName }}</h3>
 
         <div *ngFor="let match of group.matches" class="result-card compact">
+          <ng-container *ngIf="logMatch(match)"></ng-container>
           <div class="result-header">
             <div class="match-info">
               <span class="round-name">{{ match.roundName }}</span>
+              <span class="match-date" style="margin-left: 40px;">
+                {{ match.date ? (match.date + ' ' + (match.start_time ? (match.start_time | slice:0:5) : '')) : 'Sin fecha' }}
+              </span>
+              <div *ngIf="match.court" class="match-court">{{ match.court }}</div>
             </div>
             <mat-icon class="trophy-icon" *ngIf="match.isFinal">emoji_events</mat-icon>
           </div>
@@ -153,8 +154,8 @@
               <span class="player-name" [class.winner]="match.winner === 'player1'">
                 {{ match.player1 }}
               </span>
-              <span class="score" *ngFor="let s of match.scores1; let i = index" 
-                    [class.winner-set]="s > match.scores2[i]">
+              <span class="score" *ngFor="let s of match.scores1; let i = index"
+                [class.winner-set]="s > match.scores2[i]">
                 {{ s }}
               </span>
             </div>
@@ -163,8 +164,8 @@
               <span class="player-name" [class.winner]="match.winner === 'player2'">
                 {{ match.player2 }}
               </span>
-              <span class="score" *ngFor="let s of match.scores2; let i = index" 
-                    [class.winner-set]="s > match.scores1[i]">
+              <span class="score" *ngFor="let s of match.scores2; let i = index"
+                [class.winner-set]="s > match.scores1[i]">
                 {{ s }}
               </span>
             </div>
