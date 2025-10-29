@@ -14,6 +14,7 @@ import { EditarTorneoDialogComponent } from '../torneos/editar-torneo-dialog/edi
 import { InicioTorneoDialogComponent } from '../torneos/inicio-torneo-dialog/inicio-torneo.dialog.component';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ParticipantesTorneoDialogComponent } from './participantes-torneo-dialog/participantes-torneo.dialog.component';
+import { MatMenuModule } from '@angular/material/menu';
 
 
 @Component({
@@ -28,13 +29,16 @@ import { ParticipantesTorneoDialogComponent } from './participantes-torneo-dialo
     MatIconModule,
     MatGridListModule,
     MatDialogModule,
-    MatDividerModule
+    MatDividerModule,
+    MatMenuModule, 
+
   ],
   providers: [DatePipe]
 })
 export class TorneosComponent implements OnInit {
 
   torneos: Tournament[] = [];
+  estadosDisponibles: Tournament['status'][] = ['draft', 'open', 'in_progress', 'completed', 'closed', 'cancelled'];
 
   constructor(
     private tournamentService: TournamentService,
@@ -82,7 +86,18 @@ export class TorneosComponent implements OnInit {
     });
   }
 
-
+cambiarEstado(torneo: Tournament, nuevoEstado: Tournament['status']) {
+  this.tournamentService.updateTournamentStatus(torneo.id, nuevoEstado).subscribe({
+    next: (res) => {
+      torneo.status = nuevoEstado;
+      this.snackBar.open(`Estado actualizado a "${this.getEstadoTorneo(nuevoEstado)}"`, '', { duration: 3000 });
+    },
+    error: (err) => {
+      console.error('Error actualizando estado', err);
+      this.snackBar.open(`Error actualizando estado`, '', { duration: 3000 });
+    }
+  });
+}
 
 
   getEstadoTorneo(status: Tournament['status']): string {

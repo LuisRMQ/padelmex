@@ -12,9 +12,16 @@
       <!-- Badge de estado -->
       <div class="card-badge" [class.activo]="torneo.status === 'open' || torneo.status === 'in_progress'"
         [class.finalizado]="torneo.status === 'completed' || torneo.status === 'closed' || torneo.status === 'cancelled'"
-        [class.borrador]="torneo.status === 'draft'">
+        [class.borrador]="torneo.status === 'draft'" [matMenuTriggerFor]="statusMenu"
+        (click)="$event.stopPropagation()">
         {{ getEstadoTorneo(torneo.status) }}
       </div>
+
+      <mat-menu #statusMenu="matMenu">
+        <button mat-menu-item *ngFor="let estado of estadosDisponibles" (click)="cambiarEstado(torneo, estado)">
+          {{ getEstadoTorneo(estado) }}
+        </button>
+      </mat-menu>
 
       <mat-card-header class="torneo-card-header">
         <div class="title-container">

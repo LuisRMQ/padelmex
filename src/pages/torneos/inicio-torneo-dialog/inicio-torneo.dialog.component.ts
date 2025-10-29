@@ -103,16 +103,16 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   toggleViewMode() {
-  if (this.viewMode === 'bracket') this.viewMode = 'cards';
-  else if (this.viewMode === 'cards') this.viewMode = 'sets';
-  else this.viewMode = 'bracket';
+    if (this.viewMode === 'bracket') this.viewMode = 'cards';
+    else if (this.viewMode === 'cards') this.viewMode = 'sets';
+    else this.viewMode = 'bracket';
 
-  if (this.viewMode === 'bracket') {
-    setTimeout(() => this.drawBracket(true), 0);
-  } else if (this.viewMode === 'sets') {
-    setTimeout(() => this.drawBracketSets(), 0);
+    if (this.viewMode === 'bracket') {
+      setTimeout(() => this.drawBracket(true), 0);
+    } else if (this.viewMode === 'sets') {
+      setTimeout(() => this.drawBracketSets(), 0);
+    }
   }
-}
 
   cargarBracket() {
     this.loading = true;
@@ -149,74 +149,74 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private generateResultsFromBracket(category: any) {
-  const rounds = this.mapToPartidos(category);
-  const results: any[] = [];
+    const rounds = this.mapToPartidos(category);
+    const results: any[] = [];
 
-  // Solo tomamos la primera ronda (grupos) para la vista "cards"
-  const groupRound = rounds[0] || [];
+    // Solo tomamos la primera ronda (grupos) para la vista "cards"
+    const groupRound = rounds[0] || [];
 
-  groupRound.forEach((match: any) => {
-    const scores1 = match.scores1 || [];
-    const scores2 = match.scores2 || [];
-    let winner: 'player1' | 'player2' | null = null;
+    groupRound.forEach((match: any) => {
+      const scores1 = match.scores1 || [];
+      const scores2 = match.scores2 || [];
+      let winner: 'player1' | 'player2' | null = null;
 
-    if (match.ganador) winner = match.ganador === match.jugador1 ? 'player1' : 'player2';
+      if (match.ganador) winner = match.ganador === match.jugador1 ? 'player1' : 'player2';
 
-   results.push({
-  roundName: 'Grupos',
-  groupName: match.groupName,
-  jugador1: match.jugador1,
-  jugador2: match.jugador2,
-  scores1,
-  scores2,
-  winner,
-  isFinal: false,
-  date: match.date || null,
-  start_time: match.start_time || null,
-  end_time: match.end_time || null,
-  court: match.court || null,
-  id: match.id || null  
-});
-  });
+      results.push({
+        roundName: 'Grupos',
+        groupName: match.groupName,
+        jugador1: match.jugador1,
+        jugador2: match.jugador2,
+        scores1,
+        scores2,
+        winner,
+        isFinal: false,
+        date: match.date || null,
+        start_time: match.start_time || null,
+        end_time: match.end_time || null,
+        court: match.court || null,
+        id: match.id || null
+      });
+    });
 
-  this.results = results;
-}
-
- abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
-  console.log(partido)
-  const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
-    width: '700px',
-    data: { partido, roundIndex, matchIndex }
-  });
-
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) this.marcarGanador(result, roundIndex, matchIndex);
-  });
-}
-
-marcarGanador(ganador: any, roundIndex: number, matchIndex: number) {
-  const gameId = ganador.gameId || ganador.id;
-
-  // Buscar el partido en bracketDataCards por id
-  const partidoOriginal = this.bracketDataCards
-    .flat()
-    .find(p => p.id === gameId);
-
-  if (!partidoOriginal) {
-    console.warn('No se encontró el partido con ID:', gameId);
-    return;
+    this.results = results;
   }
 
-  // Actualizar ganador
-  partidoOriginal.ganador = ganador;
+  abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
+    console.log(partido)
+    const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
+      width: '700px',
+      data: { partido, roundIndex, matchIndex }
+    });
 
-  // Si hay scores, actualizar también
-  if (ganador.scores1) partidoOriginal.scores1 = ganador.scores1;
-  if (ganador.scores2) partidoOriginal.scores2 = ganador.scores2;
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) this.marcarGanador(result, roundIndex, matchIndex);
+    });
+  }
 
-  this.drawBracket();
-  if (this.viewMode === 'sets') this.drawBracketSets();
-}
+  marcarGanador(ganador: any, roundIndex: number, matchIndex: number) {
+    const gameId = ganador.gameId || ganador.id;
+
+    // Buscar el partido en bracketDataCards por id
+    const partidoOriginal = this.bracketDataCards
+      .flat()
+      .find(p => p.id === gameId);
+
+    if (!partidoOriginal) {
+      console.warn('No se encontró el partido con ID:', gameId);
+      return;
+    }
+
+    // Actualizar ganador
+    partidoOriginal.ganador = ganador;
+
+    // Si hay scores, actualizar también
+    if (ganador.scores1) partidoOriginal.scores1 = ganador.scores1;
+    if (ganador.scores2) partidoOriginal.scores2 = ganador.scores2;
+
+    this.drawBracket();
+    if (this.viewMode === 'sets') this.drawBracketSets();
+  }
 
   cerrar() {
     this.dialogRef.close();
@@ -305,91 +305,91 @@ marcarGanador(ganador: any, roundIndex: number, matchIndex: number) {
 
   // ------------------ MAPEO DE PARTIDOS ------------------
   private mapToPartidos(category: any): Partido[][] {
-  const rounds: Partido[][] = [];
+    const rounds: Partido[][] = [];
 
-  // -------------------------------
-  // 1️⃣ FASE DE GRUPOS
-  // -------------------------------
-  const groupRound: Partido[] = [];
+    // -------------------------------
+    // 1️⃣ FASE DE GRUPOS
+    // -------------------------------
+    const groupRound: Partido[] = [];
 
-  (category.groups || []).forEach((group: any) => {
-    const ranking = group.ranking || [];
-    const rankById: { [id: number]: any } = {};
-    (ranking as RankingItem[]).forEach((r: RankingItem) => {
-  rankById[r.couple_id] = r;
-});
-
-    const seenPairs = new Set<string>();
-    const matches: Partido[] = [];
-
-    (group.games || []).forEach((game: any) => {
-      const a = game.couple_1;
-      const b = game.couple_2;
-      if (!a || !b) return;
-      const key = a < b ? `${a}-${b}` : `${b}-${a}`;
-      seenPairs.add(key);
-
-      matches.push({
-        jugador1: rankById[a]?.players || [{ name: 'Por asignar' }],
-        jugador2: rankById[b]?.players || [{ name: 'Por asignar' }],
-        ganador: null,
-        groupName: group.group_name,
-  id: game.game_id || null,      // ✅ esto setea partido.id
-        couple1Id: a || null,
-        couple2Id: b || null,
-        scores1: game.scores1 || [0,0,0],
-        scores2: game.scores2 || [0,0,0],
-        date: game.date || null,
-        start_time: game.start_time || null,
-        end_time: game.end_time || null,
-        court: game.court || null
+    (category.groups || []).forEach((group: any) => {
+      const ranking = group.ranking || [];
+      const rankById: { [id: number]: any } = {};
+      (ranking as RankingItem[]).forEach((r: RankingItem) => {
+        rankById[r.couple_id] = r;
       });
+
+      const seenPairs = new Set<string>();
+      const matches: Partido[] = [];
+
+      (group.games || []).forEach((game: any) => {
+        const a = game.couple_1;
+        const b = game.couple_2;
+        if (!a || !b) return;
+        const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+        seenPairs.add(key);
+
+        matches.push({
+          jugador1: rankById[a]?.players || [{ name: 'Por asignar' }],
+          jugador2: rankById[b]?.players || [{ name: 'Por asignar' }],
+          ganador: null,
+          groupName: group.group_name,
+          id: game.game_id || null,      // ✅ esto setea partido.id
+          couple1Id: a || null,
+          couple2Id: b || null,
+          scores1: game.scores1 || [0, 0, 0],
+          scores2: game.scores2 || [0, 0, 0],
+          date: game.date || null,
+          start_time: game.start_time || null,
+          end_time: game.end_time || null,
+          court: game.court || null
+        });
+      });
+
+      groupRound.push(...matches);
     });
 
-    groupRound.push(...matches);
-  });
+    if (groupRound.length) rounds.push(groupRound);
 
-  if (groupRound.length) rounds.push(groupRound);
+    // -------------------------------
+    // 2️⃣ FASE DE ELIMINACIONES
+    // -------------------------------
+    const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
 
-  // -------------------------------
-  // 2️⃣ FASE DE ELIMINACIONES
-  // -------------------------------
-const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
+    eliminationOrder.forEach((phase, phaseIndex) => {
+      const phaseGames = category.elimination?.[phase] || [];
+      if (!phaseGames.length) return;
 
-eliminationOrder.forEach((phase, phaseIndex) => {
-  const phaseGames = category.elimination?.[phase] || [];
-  if (!phaseGames.length) return;
+      const phaseMatches: Partido[] = phaseGames.map((game: any, i: number) => {
+        let nextMatchIndex: number | null = null;
+        const nextPhaseGames = category.elimination?.[eliminationOrder[phaseIndex + 1]] || [];
+        if (nextPhaseGames.length) {
+          nextMatchIndex = Math.floor(i / 2); // Cada 2 partidos van al mismo partido de la siguiente ronda
+        }
 
-  const phaseMatches: Partido[] = phaseGames.map((game: any, i: number) => {
-    let nextMatchIndex: number | null = null;
-    const nextPhaseGames = category.elimination?.[eliminationOrder[phaseIndex + 1]] || [];
-    if (nextPhaseGames.length) {
-      nextMatchIndex = Math.floor(i / 2); // Cada 2 partidos van al mismo partido de la siguiente ronda
-    }
+        return {
+          jugador1: game.couple_1?.players || [{ name: 'Por asignar' }],
+          jugador2: game.couple_2?.players || [{ name: 'Por asignar' }],
+          ganador: null,
+          groupName: phase,
+          id: game.game_id || null,      // ✅ esto setea partido.id
+          couple1Id: game.couple_1?.id || null,
+          couple2Id: game.couple_2?.id || null,
+          nextMatchIndex,
+          scores1: [0, 0, 0],
+          scores2: [0, 0, 0],
+          date: game.date || null,
+          start_time: game.start_time || null,
+          end_time: game.end_time || null,
+          court: game.court || null
+        };
+      });
 
-    return {
-      jugador1: game.couple_1?.players || [{ name: 'Por asignar' }],
-      jugador2: game.couple_2?.players || [{ name: 'Por asignar' }],
-      ganador: null,
-      groupName: phase,
-      id: game.game_id || null,      // ✅ esto setea partido.id
-      couple1Id: game.couple_1?.id || null,
-      couple2Id: game.couple_2?.id || null,
-      nextMatchIndex,
-      scores1: [0,0,0],
-      scores2: [0,0,0],
-      date: game.date || null,
-      start_time: game.start_time || null,
-      end_time: game.end_time || null,
-      court: game.court || null
-    };
-  });
+      rounds.push(phaseMatches);
+    });
 
-  rounds.push(phaseMatches);
-  });
-
-  return rounds;
-}
+    return rounds;
+  }
   // ------------------ HELPERS ------------------
   private calculatePositions(bracketData: Partido[][], containerHeight: number) {
     const maxMatches = Math.max(...bracketData.map(r => r.length));
@@ -409,81 +409,81 @@ eliminationOrder.forEach((phase, phaseIndex) => {
 
 
   private drawBracketSets() {
-  if (!this.bracketContainerSets?.nativeElement) return;
+    if (!this.bracketContainerSets?.nativeElement) return;
 
-  const container = this.bracketContainerSets.nativeElement as HTMLElement;
-  if (container.offsetParent === null) {
-    setTimeout(() => this.drawBracketSets(), 50);
-    return;
-  }
+    const container = this.bracketContainerSets.nativeElement as HTMLElement;
+    if (container.offsetParent === null) {
+      setTimeout(() => this.drawBracketSets(), 50);
+      return;
+    }
 
-  // ⚠️ Usamos bracketDataCards para mantener los mismos objetos
-  const bracketData: Partido[][] = this.bracketDataCards;
-  if (!bracketData.length) return;
+    // ⚠️ Usamos bracketDataCards para mantener los mismos objetos
+    const bracketData: Partido[][] = this.bracketDataCards;
+    if (!bracketData.length) return;
 
-  d3.select(container).selectAll('*').remove();
+    d3.select(container).selectAll('*').remove();
 
-  const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
-  const maxMatches = Math.max(...bracketData.map(r => r.length));
-  const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
+    const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
+    const maxMatches = Math.max(...bracketData.map(r => r.length));
+    const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
 
-  const svg = d3.select(container).append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .attr('class', 'bracket-svg');
+    const svg = d3.select(container).append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('class', 'bracket-svg');
 
-  const gContainer = svg.append('g').attr('class', 'bracket-container');
+    const gContainer = svg.append('g').attr('class', 'bracket-container');
 
-  this.calculatePositions(bracketData, height);
+    this.calculatePositions(bracketData, height);
 
-  bracketData.forEach((ronda, roundIndex) => {
-    ronda.forEach((partido, matchIndex) => {
-      const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
-      
-      // ⚡ Rects y nombres como antes
-      g.append('rect')
-        .attr('width', this.matchWidth)
-        .attr('height', this.matchHeight / 2 - 2)
-        .attr('fill', '#90caf9')
-        .attr('stroke', '#1e7e34')
-        .attr('stroke-width', 2)
-        .attr('rx', 5);
+    bracketData.forEach((ronda, roundIndex) => {
+      ronda.forEach((partido, matchIndex) => {
+        const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
 
-      g.append('rect')
-        .attr('y', this.matchHeight / 2 + 2)
-        .attr('width', this.matchWidth)
-        .attr('height', this.matchHeight / 2 - 2)
-        .attr('fill', '#f48fb1')
-        .attr('stroke', '#1e7e34')
-        .attr('stroke-width', 2)
-        .attr('rx', 5);
+        // ⚡ Rects y nombres como antes
+        g.append('rect')
+          .attr('width', this.matchWidth)
+          .attr('height', this.matchHeight / 2 - 2)
+          .attr('fill', '#90caf9')
+          .attr('stroke', '#1e7e34')
+          .attr('stroke-width', 2)
+          .attr('rx', 5);
 
-      const nombres1 = partido.jugador1?.map(j => j.name).join(' / ') || 'Por asignar';
-      const nombres2 = partido.jugador2?.map(j => j.name).join(' / ') || 'Por asignar';
+        g.append('rect')
+          .attr('y', this.matchHeight / 2 + 2)
+          .attr('width', this.matchWidth)
+          .attr('height', this.matchHeight / 2 - 2)
+          .attr('fill', '#f48fb1')
+          .attr('stroke', '#1e7e34')
+          .attr('stroke-width', 2)
+          .attr('rx', 5);
 
-      g.append('text')
-        .text(nombres1)
-        .attr('x', 10)
-        .attr('y', this.matchHeight / 4)
-        .attr('dy', '0.35em')
-        .attr('fill', '#000')
-        .attr('font-weight', 'bold')
-        .attr('font-size', '14px');
+        const nombres1 = partido.jugador1?.map(j => j.name).join(' / ') || 'Por asignar';
+        const nombres2 = partido.jugador2?.map(j => j.name).join(' / ') || 'Por asignar';
 
-      g.append('text')
-        .text(nombres2)
-        .attr('x', 10)
-        .attr('y', (3 * this.matchHeight) / 4)
-        .attr('dy', '0.35em')
-        .attr('fill', '#000')
-        .attr('font-weight', 'bold')
-        .attr('font-size', '14px');
+        g.append('text')
+          .text(nombres1)
+          .attr('x', 10)
+          .attr('y', this.matchHeight / 4)
+          .attr('dy', '0.35em')
+          .attr('fill', '#000')
+          .attr('font-weight', 'bold')
+          .attr('font-size', '14px');
 
-      g.style('cursor', 'pointer')
-        .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+        g.append('text')
+          .text(nombres2)
+          .attr('x', 10)
+          .attr('y', (3 * this.matchHeight) / 4)
+          .attr('dy', '0.35em')
+          .attr('fill', '#000')
+          .attr('font-weight', 'bold')
+          .attr('font-size', '14px');
+
+        g.style('cursor', 'pointer')
+          .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+      });
     });
-  });
-}
+  }
 
 
 
@@ -617,18 +617,18 @@ eliminationOrder.forEach((phase, phaseIndex) => {
       .attr('stroke', '#1e7e34').attr('stroke-width', 2);
   }
 
-public computePhaseLabels(bracketData: Partido[][]): string[] {
-  const labels = ['Grupos'];
-  for (let i = 1; i < bracketData.length; i++) {
-    const ronda = bracketData[i];
-    if (ronda[0]?.groupName === 'octavos') labels.push('Octavos');
-    else if (ronda[0]?.groupName === 'cuartos') labels.push('Cuartos');
-    else if (ronda[0]?.groupName === 'semifinal') labels.push('Semifinal');
-    else if (ronda[0]?.groupName === 'final') labels.push('Final');
-    else labels.push(`Ronda ${i}`);
+  public computePhaseLabels(bracketData: Partido[][]): string[] {
+    const labels = ['Grupos'];
+    for (let i = 1; i < bracketData.length; i++) {
+      const ronda = bracketData[i];
+      if (ronda[0]?.groupName === 'octavos') labels.push('Octavos');
+      else if (ronda[0]?.groupName === 'cuartos') labels.push('Cuartos');
+      else if (ronda[0]?.groupName === 'semifinal') labels.push('Semifinal');
+      else if (ronda[0]?.groupName === 'final') labels.push('Final');
+      else labels.push(`Ronda ${i}`);
+    }
+    return labels;
   }
-  return labels;
-}
 
   get resultsGroupedByGroup(): { groupName: string, matches: any[] }[] {
     if (!this.results || this.results.length === 0) return [];

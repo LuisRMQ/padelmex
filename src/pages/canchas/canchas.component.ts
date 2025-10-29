@@ -319,11 +319,11 @@ export class CanchasComponent implements OnInit {
   }
 
   get totalCanchasPublicas(): number {
-    return this.courts.filter(c => c.type === 'Público').length;
+    return this.courts.filter(c => c.type === 'exterior').length;
   }
 
   get totalCanchasPrivadas(): number {
-    return this.courts.filter(c => c.type === 'Privado').length;
+    return this.courts.filter(c => c.type === 'interior').length;
   }
 
 

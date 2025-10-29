@@ -125,7 +125,7 @@ export class TournamentService extends ApiBaseService {
 
 
   updateTournamentStatus(id: number, status: Tournament['status']): Observable<any> {
-    return this.put(`/tournament/updateStatus/${id}`, { status });
+    return this.patch(`/tournament/updateStatus/${id}`, { status });
   }
 
   deleteTournament(id: number): Observable<any> {

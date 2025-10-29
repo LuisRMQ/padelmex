@@ -229,83 +229,81 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
 
   // Confirmar parejas y enviar al servicio
   confirmPairs() {
-    if (!this.selectedCategory) {
-      this.error = 'Selecciona una categoría antes de confirmar las parejas.';
-      return;
-    }
-
-    // Validar que todos los jugadores tengan pareja
-    for (const jugador of this.selectedPlayers) {
-      if (!jugador.partner) {
-        this.error = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
-        return;
-      }
-    }
-
-    // Crear parejas únicas
-    const addedPairs = new Set<string>();
-    const requests = [];
-
-    for (const j of this.selectedPlayers) {
-      const key = [Number(j.id), Number(j.partner!.id)].sort().join('-');
-      if (!addedPairs.has(key)) {
-        addedPairs.add(key);
-
-        const payload = {
-          user_id: Number(j.id),
-          category_tournament_id: Number(this.selectedCategory!.id),
-          partner_id: Number(j.partner!.id)
-        };
-
-        console.log('Payload enviado:', payload);
-        console.log('Categoría seleccionada:', this.selectedCategory);
-
-        // Guardamos el observable en un array
-        requests.push(
-          this.tournamentService.addUsertoTournament(payload)
-        );
-      }
-    }
-
-    if (requests.length === 0) {
-      this.snackBar.open('No hay parejas nuevas para agregar.', 'Cerrar', {
-        duration: 3000,
-        panelClass: ['snackbar-info']
-      });
-      return;
-    }
-
-    // Ejecutar todos los requests y esperar a que terminen
-    forkJoin(requests).subscribe({
-      next: (responses) => {
-        responses.forEach((res, index) => {
-          const jugador = this.selectedPlayers[index];
-          const coupleData = res?.couple?.couple;
-          if (coupleData?.ok) {
-            this.snackBar.open(`✔️ Pareja agregada: ${jugador.name} + ${jugador.partner!.name}`, 'Cerrar', {
-              duration: 4000,
-              panelClass: ['snackbar-success']
-            });
-          } else {
-            const msg = res?.couple?.message || 'Ocurrió un error al agregar la pareja.';
-            this.snackBar.open(`❌ ${msg}`, 'Cerrar', {
-              duration: 6000,
-              panelClass: ['snackbar-error']
-            });
-          }
-        });
-
-        // Cerrar diálogo solo después de todos los POST
-        this.dialogRef.close(this.selectedPlayers);
-      },
-      error: (err) => {
-        console.error('❌ Error agregando parejas:', err);
-        this.snackBar.open('❌ Ocurrió un error al agregar las parejas.', 'Cerrar', {
-          duration: 6000,
-          panelClass: ['snackbar-error']
-        });
-      }
-    });
+  if (!this.selectedCategory) {
+    this.error = 'Selecciona una categoría antes de confirmar las parejas.';
+    return;
   }
+
+  // Validar que todos los jugadores tengan pareja
+  for (const jugador of this.selectedPlayers) {
+    if (!jugador.partner) {
+      this.error = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
+      console.error('Jugador sin pareja:', jugador); // <-- Log específico
+      return;
+    }
+  }
+
+  const addedPairs = new Set<string>();
+  const requests = [];
+
+  for (const j of this.selectedPlayers) {
+    const key = [Number(j.id), Number(j.partner!.id)].sort().join('-');
+    if (!addedPairs.has(key)) {
+      addedPairs.add(key);
+
+      const payload = {
+        user_id: Number(j.id),
+        category_tournament_id: Number(this.selectedCategory!.id),
+        partner_id: Number(j.partner!.id)
+      };
+
+      console.log('🔹 Payload a enviar:', payload); // <-- Log del payload
+      requests.push(this.tournamentService.addUsertoTournament(payload));
+    } else {
+      console.warn('Pareja duplicada detectada:', j, j.partner); // <-- Log de duplicados
+    }
+  }
+
+  if (requests.length === 0) {
+    this.snackBar.open('No hay parejas nuevas para agregar.', 'Cerrar', {
+      duration: 3000,
+      panelClass: ['snackbar-info']
+    });
+    return;
+  }
+
+  forkJoin(requests).subscribe({
+    next: (responses) => {
+      responses.forEach((res, index) => {
+        const jugador = this.selectedPlayers[index];
+        console.log('🔹 Respuesta del servidor para', jugador, ':', res); // <-- Log de respuesta
+        const coupleData = res?.couple?.couple;
+        if (coupleData?.ok) {
+          this.snackBar.open(`✔️ Pareja agregada: ${jugador.name} + ${jugador.partner!.name}`, 'Cerrar', {
+            duration: 4000,
+            panelClass: ['snackbar-success']
+          });
+        } else {
+          const msg = res?.couple?.message || 'Ocurrió un error al agregar la pareja.';
+          console.error('❌ Error en la respuesta del servidor:', msg, 'Jugador:', jugador, 'Pareja:', jugador.partner);
+          this.snackBar.open(`❌ ${msg}`, 'Cerrar', {
+            duration: 6000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+
+      this.dialogRef.close(this.selectedPlayers);
+    },
+    error: (err) => {
+      console.error('❌ Error agregando parejas:', err); // <-- Log específico de error HTTP
+      this.snackBar.open('❌ Ocurrió un error al agregar las parejas.', 'Cerrar', {
+        duration: 6000,
+        panelClass: ['snackbar-error']
+      });
+    }
+  });
+}
+
 
 }
