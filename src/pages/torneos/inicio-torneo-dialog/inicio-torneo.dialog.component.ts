@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { TournamentService } from '../../../app/services/torneos.service';
+import { GameDetailResponse, TournamentService } from '../../../app/services/torneos.service';
 import * as d3 from 'd3';
 import { CommonModule } from '@angular/common';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -33,6 +33,7 @@ export interface Partido {
   start_time?: string | null;
   end_time?: string | null;
   court?: string | null;
+  status_game?: string | null;
 }
 
 interface RankingItem {
@@ -73,10 +74,11 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private svg: any;
   private gContainer: any;
 
-  private matchWidth = 200;
-  private matchHeight = 80;
-  private spacingX = 150;
-  private verticalSpacing = 40;
+  private matchWidth = 280;
+  private matchHeight = 100;
+  private spacingX = 300;
+  private verticalSpacing = 60;
+  private roundSpacing = 200;
 
   // Variables para arrastrar el bracket (drag)
   private startX = 0;
@@ -99,7 +101,11 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (this.filteredBracket.length) this.drawBracket();
+    if (this.filteredBracket.length) {
+      this.drawBracket();
+      // Inicializar el bracket de eliminatorias también
+      setTimeout(() => this.drawBracketSets(), 100);
+    }
   }
 
   toggleViewMode() {
@@ -140,11 +146,16 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     );
 
     if (this.filteredBracket.length > 0) {
-      setTimeout(() => this.drawBracket(), 0);
+      setTimeout(() => {
+        this.drawBracket();
+        this.drawBracketSets(); // ← SIEMPRE llamar aquí
+      }, 0);
       this.generateResultsFromBracket(this.filteredBracket[0]);
     } else {
       this.results = [];
       if (this.gContainer) this.gContainer.selectAll('*').remove();
+      // También dibujar estructura básica si no hay categoría seleccionada
+      setTimeout(() => this.drawBracketSets(), 0);
     }
   }
 
@@ -152,14 +163,14 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const rounds = this.mapToPartidos(category);
     const results: any[] = [];
 
-    // Solo tomamos la primera ronda (grupos) para la vista "cards"
     const groupRound = rounds[0] || [];
 
     groupRound.forEach((match: any) => {
-      const scores1 = match.scores1 || [];
-      const scores2 = match.scores2 || [];
-      let winner: 'player1' | 'player2' | null = null;
+      // Asegurar que los scores tengan valores por defecto si no existen
+      const scores1 = match.scores1 || [0, 0, 0];
+      const scores2 = match.scores2 || [0, 0, 0];
 
+      let winner: 'player1' | 'player2' | null = null;
       if (match.ganador) winner = match.ganador === match.jugador1 ? 'player1' : 'player2';
 
       results.push({
@@ -167,30 +178,44 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         groupName: match.groupName,
         jugador1: match.jugador1,
         jugador2: match.jugador2,
-        scores1,
-        scores2,
-        winner,
+        scores1: scores1,
+        scores2: scores2,
+        ganador: winner,
         isFinal: false,
         date: match.date || null,
         start_time: match.start_time || null,
         end_time: match.end_time || null,
         court: match.court || null,
-        id: match.id || null
+        id: match.id || null,  // ← Asegurar que el ID esté presente
+        status_game: match.status_game || 'Not started'  // ← Status por defecto
       });
     });
 
     this.results = results;
+    console.log('🎯 Results generados:', this.results);
   }
 
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
-    console.log(partido)
+    console.log('🔍 DEBUG - Partido clickeado:', partido);
+
+    // Cargar los detalles más recientes del juego
+    if (partido.id) {
+      this.loadGameDetails(partido.id);
+    }
+
     const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
       width: '700px',
       data: { partido, roundIndex, matchIndex }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) this.marcarGanador(result, roundIndex, matchIndex);
+      if (result) {
+        this.marcarGanador(result, roundIndex, matchIndex);
+        // Recargar detalles después de actualizar
+        if (partido.id) {
+          setTimeout(() => this.loadGameDetails(partido.id!), 500);
+        }
+      }
     });
   }
 
@@ -298,8 +323,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   private forceRedrawBracket() {
     if (this.viewMode === 'bracket') {
-      this.bracketDataCards = [];
-      setTimeout(() => this.drawBracket(false), 0);
+      this.drawBracket(true);
+    } else if (this.viewMode === 'sets') {
+      this.drawBracketSets();
     }
   }
 
@@ -334,7 +360,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           jugador2: rankById[b]?.players || [{ name: 'Por asignar' }],
           ganador: null,
           groupName: group.group_name,
-          id: game.game_id || null,      // ✅ esto setea partido.id
+          id: game.game_id || null,
           couple1Id: a || null,
           couple2Id: b || null,
           scores1: game.scores1 || [0, 0, 0],
@@ -342,7 +368,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           date: game.date || null,
           start_time: game.start_time || null,
           end_time: game.end_time || null,
-          court: game.court || null
+          court: game.court || null,
+          status_game: game.status_game || null
         });
       });
 
@@ -352,44 +379,74 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     if (groupRound.length) rounds.push(groupRound);
 
     // -------------------------------
-    // 2️⃣ FASE DE ELIMINACIONES
+    // 2️⃣ FASE DE ELIMINACIONES - Asegurar estructura completa
     // -------------------------------
     const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
+    const eliminationRounds: Partido[][] = [];
 
     eliminationOrder.forEach((phase, phaseIndex) => {
       const phaseGames = category.elimination?.[phase] || [];
-      if (!phaseGames.length) return;
+      const phaseMatches: Partido[] = [];
 
-      const phaseMatches: Partido[] = phaseGames.map((game: any, i: number) => {
+      // Determinar cuántos partidos debería tener esta ronda
+      const expectedMatches = phase === 'final' ? 1 :
+        phase === 'semifinal' ? 2 :
+          phase === 'cuartos' ? 4 : 8;
+
+      for (let i = 0; i < expectedMatches; i++) {
+        const existingGame = phaseGames[i];
         let nextMatchIndex: number | null = null;
-        const nextPhaseGames = category.elimination?.[eliminationOrder[phaseIndex + 1]] || [];
-        if (nextPhaseGames.length) {
-          nextMatchIndex = Math.floor(i / 2); // Cada 2 partidos van al mismo partido de la siguiente ronda
+
+        if (phase !== 'final') {
+          nextMatchIndex = Math.floor(i / 2);
         }
 
-        return {
-          jugador1: game.couple_1?.players || [{ name: 'Por asignar' }],
-          jugador2: game.couple_2?.players || [{ name: 'Por asignar' }],
-          ganador: null,
-          groupName: phase,
-          id: game.game_id || null,      // ✅ esto setea partido.id
-          couple1Id: game.couple_1?.id || null,
-          couple2Id: game.couple_2?.id || null,
-          nextMatchIndex,
-          scores1: [0, 0, 0],
-          scores2: [0, 0, 0],
-          date: game.date || null,
-          start_time: game.start_time || null,
-          end_time: game.end_time || null,
-          court: game.court || null
-        };
-      });
+        if (existingGame) {
+          // Usar el juego existente
+          phaseMatches.push({
+            jugador1: existingGame.couple_1?.players || [{ name: 'Por asignar' }],
+            jugador2: existingGame.couple_2?.players || [{ name: 'Por asignar' }],
+            ganador: null,
+            groupName: phase,
+            id: existingGame.game_id || null,
+            couple1Id: existingGame.couple_1?.id || null,
+            couple2Id: existingGame.couple_2?.id || null,
+            nextMatchIndex,
+            scores1: [0, 0, 0],
+            scores2: [0, 0, 0],
+            date: existingGame.date || null,
+            start_time: existingGame.start_time || null,
+            end_time: existingGame.end_time || null,
+            court: existingGame.court || null
+          });
+        } else {
+          // Crear partido vacío
+          phaseMatches.push({
+            jugador1: [{ name: 'Por asignar' }],
+            jugador2: [{ name: 'Por asignar' }],
+            ganador: null,
+            groupName: phase,
+            id: null,
+            couple1Id: null,
+            couple2Id: null,
+            nextMatchIndex,
+            scores1: [0, 0, 0],
+            scores2: [0, 0, 0],
+            date: null,
+            start_time: null,
+            end_time: null,
+            court: null
+          });
+        }
+      }
 
-      rounds.push(phaseMatches);
+      eliminationRounds.push(phaseMatches);
     });
 
+    rounds.push(...eliminationRounds);
     return rounds;
   }
+
   // ------------------ HELPERS ------------------
   private calculatePositions(bracketData: Partido[][], containerHeight: number) {
     const maxMatches = Math.max(...bracketData.map(r => r.length));
@@ -407,93 +464,519 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   private drawBracketSets() {
-    if (!this.bracketContainerSets?.nativeElement) return;
+    console.log('Dibujando bracket sets moderno...');
 
-    const container = this.bracketContainerSets.nativeElement as HTMLElement;
-    if (container.offsetParent === null) {
-      setTimeout(() => this.drawBracketSets(), 50);
+    if (!this.bracketContainerSets?.nativeElement) {
+      console.warn('bracketContainerSets no disponible');
       return;
     }
 
-    // ⚠️ Usamos bracketDataCards para mantener los mismos objetos
-    const bracketData: Partido[][] = this.bracketDataCards;
-    if (!bracketData.length) return;
+    const container = this.bracketContainerSets.nativeElement as HTMLElement;
 
+    // Limpiar contenedor
     d3.select(container).selectAll('*').remove();
 
-    const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
-    const maxMatches = Math.max(...bracketData.map(r => r.length));
-    const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
+    try {
+      // Obtener las eliminatorias o crear estructura básica si no hay datos
+      let eliminationRounds = this.bracketDataCards.filter((round, index) => index > 0);
 
-    const svg = d3.select(container).append('svg')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('class', 'bracket-svg');
+      // Si no hay eliminatorias en los datos, crear estructura básica
+      if (!eliminationRounds.length) {
+        eliminationRounds = this.createBasicEliminationStructure();
+      }
 
-    const gContainer = svg.append('g').attr('class', 'bracket-container');
+      // Asegurarse de que todos los partidos tengan jugadores "Por asignar" si están vacíos
+      eliminationRounds.forEach(round => {
+        round.forEach(partido => {
+          if (!partido.jugador1 || partido.jugador1.length === 0) {
+            partido.jugador1 = [{ name: 'Por asignar' }];
+          }
+          if (!partido.jugador2 || partido.jugador2.length === 0) {
+            partido.jugador2 = [{ name: 'Por asignar' }];
+          }
+        });
+      });
 
-    this.calculatePositions(bracketData, height);
+      // Calcular dimensiones dinámicas
+      const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + this.roundSpacing;
+      const maxMatches = Math.max(...eliminationRounds.map(r => r.length));
+      const totalHeight = maxMatches * (this.matchHeight + this.verticalSpacing) + 200;
 
-    bracketData.forEach((ronda, roundIndex) => {
+      const svg = d3.select(container).append('svg')
+        .attr('width', totalWidth)
+        .attr('height', totalHeight)
+        .attr('class', 'bracket-svg');
+
+      const gContainer = svg.append('g').attr('class', 'bracket-container');
+
+      // Calcular posiciones para las eliminatorias
+      this.calculatePositionsForModernElimination(eliminationRounds, totalWidth, totalHeight);
+
+      // Dibujar fondo de secciones para cada ronda
+      this.drawRoundBackgrounds(eliminationRounds, gContainer);
+
+      // Dibujar las eliminatorias
+      eliminationRounds.forEach((ronda, roundIndex) => {
+        // Dibujar título de la ronda
+        this.drawRoundTitle(eliminationRounds, roundIndex, gContainer);
+
+        // Dibujar partidos
+        ronda.forEach((partido, matchIndex) => {
+          this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
+        });
+
+        // Dibujar conexiones entre rondas
+        if (roundIndex < eliminationRounds.length - 1) {
+          this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
+        }
+      });
+
+      console.log('Bracket moderno dibujado exitosamente');
+
+    } catch (error) {
+      console.error('Error al dibujar bracket moderno:', error);
+      this.showErrorState(container);
+    }
+  }
+
+  private calculatePositionsForModernElimination(eliminationRounds: Partido[][], totalWidth: number, totalHeight: number) {
+    eliminationRounds.forEach((ronda, roundIndex) => {
+      // Posición X con más espacio entre rondas
+      const x = roundIndex * (this.matchWidth + this.spacingX) + 100;
+
+      // Calcular posición Y centrada verticalmente para cada ronda
+      const totalRoundHeight = ronda.length * (this.matchHeight + this.verticalSpacing);
+      const startY = (totalHeight - totalRoundHeight) / 2;
+
       ronda.forEach((partido, matchIndex) => {
-        const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
-
-        // ⚡ Rects y nombres como antes
-        g.append('rect')
-          .attr('width', this.matchWidth)
-          .attr('height', this.matchHeight / 2 - 2)
-          .attr('fill', '#90caf9')
-          .attr('stroke', '#1e7e34')
-          .attr('stroke-width', 2)
-          .attr('rx', 5);
-
-        g.append('rect')
-          .attr('y', this.matchHeight / 2 + 2)
-          .attr('width', this.matchWidth)
-          .attr('height', this.matchHeight / 2 - 2)
-          .attr('fill', '#f48fb1')
-          .attr('stroke', '#1e7e34')
-          .attr('stroke-width', 2)
-          .attr('rx', 5);
-
-        const nombres1 = partido.jugador1?.map(j => j.name).join(' / ') || 'Por asignar';
-        const nombres2 = partido.jugador2?.map(j => j.name).join(' / ') || 'Por asignar';
-
-        g.append('text')
-          .text(nombres1)
-          .attr('x', 10)
-          .attr('y', this.matchHeight / 4)
-          .attr('dy', '0.35em')
-          .attr('fill', '#000')
-          .attr('font-weight', 'bold')
-          .attr('font-size', '14px');
-
-        g.append('text')
-          .text(nombres2)
-          .attr('x', 10)
-          .attr('y', (3 * this.matchHeight) / 4)
-          .attr('dy', '0.35em')
-          .attr('fill', '#000')
-          .attr('font-weight', 'bold')
-          .attr('font-size', '14px');
-
-        g.style('cursor', 'pointer')
-          .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+        partido.x = x;
+        partido.y = startY + matchIndex * (this.matchHeight + this.verticalSpacing);
+        partido.height = this.matchHeight;
       });
     });
+  }
+
+  private drawRoundBackgrounds(eliminationRounds: Partido[][], gContainer: any) {
+    eliminationRounds.forEach((ronda, roundIndex) => {
+      if (ronda.length === 0) return;
+
+      const firstMatch = ronda[0];
+      const lastMatch = ronda[ronda.length - 1];
+
+      const backgroundX = firstMatch.x! - 40;
+      const backgroundY = firstMatch.y! - 60;
+      const backgroundWidth = this.matchWidth + 80;
+      const backgroundHeight = (lastMatch.y! - firstMatch.y!) + this.matchHeight + 80;
+
+      // Fondo con gradiente moderno
+      gContainer.append('rect')
+        .attr('x', backgroundX)
+        .attr('y', backgroundY)
+        .attr('width', backgroundWidth)
+        .attr('height', backgroundHeight)
+        .attr('rx', 16)
+        .attr('fill', 'url(#roundGradient)')
+        .attr('stroke', '#e2e8f0')
+        .attr('stroke-width', 2)
+        .attr('opacity', 0.1);
+
+      // Definir gradiente
+      const defs = gContainer.append('defs');
+      const gradient = defs.append('linearGradient')
+        .attr('id', 'roundGradient')
+        .attr('x1', '0%')
+        .attr('y1', '0%')
+        .attr('x2', '100%')
+        .attr('y2', '100%');
+
+      gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', '#6366f1');
+
+      gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', '#8b5cf6');
+    });
+  }
+
+  private drawRoundTitle(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
+    const ronda = eliminationRounds[roundIndex];
+    if (ronda.length === 0) return;
+
+    const firstMatch = ronda[0];
+    const roundNames: { [key: string]: string } = {
+      'octavos': 'OCTAVOS DE FINAL',
+      'cuartos': 'CUARTOS DE FINAL',
+      'semifinal': 'SEMIFINAL',
+      'final': 'FINAL'
+    };
+
+    const roundName = roundNames[ronda[0].groupName] || ronda[0].groupName.toUpperCase();
+
+    gContainer.append('text')
+      .text(roundName)
+      .attr('x', firstMatch.x! + this.matchWidth / 2)
+      .attr('y', firstMatch.y! - 30)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#334155')
+      .attr('font-weight', '800')
+      .attr('font-size', '16px')
+      .attr('letter-spacing', '1px');
+  }
+
+  private drawModernEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
+    const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
+
+    // Asegurar que los jugadores tengan al menos "Por asignar"
+    const jugador1 = partido.jugador1 && partido.jugador1.length > 0 ? partido.jugador1 : [{ name: 'Por asignar' }];
+    const jugador2 = partido.jugador2 && partido.jugador2.length > 0 ? partido.jugador2 : [{ name: 'Por asignar' }];
+
+    // Fondo moderno del partido con sombra
+    g.append('rect')
+      .attr('width', this.matchWidth)
+      .attr('height', this.matchHeight)
+      .attr('fill', '#ffffff')
+      .attr('stroke', '#e2e8f0')
+      .attr('stroke-width', 2)
+      .attr('rx', 12)
+      .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
+
+    // Jugador 1 - Diseño moderno
+    const isPlayer1Winner = partido.ganador && this.arePlayersEqual(partido.ganador, jugador1);
+    const player1Bg = g.append('rect')
+      .attr('width', this.matchWidth)
+      .attr('height', this.matchHeight / 2 - 1)
+      .attr('fill', isPlayer1Winner ? 'url(#winnerGradient)' : '#f8fafc')
+      .attr('stroke', isPlayer1Winner ? '#10b981' : '#e2e8f0')
+      .attr('stroke-width', isPlayer1Winner ? 2 : 1)
+      .attr('rx', 10)
+      .attr('ry', 10);
+
+    // Jugador 2 - Diseño moderno
+    const isPlayer2Winner = partido.ganador && this.arePlayersEqual(partido.ganador, jugador2);
+    const player2Bg = g.append('rect')
+      .attr('y', this.matchHeight / 2 + 1)
+      .attr('width', this.matchWidth)
+      .attr('height', this.matchHeight / 2 - 1)
+      .attr('fill', isPlayer2Winner ? 'url(#winnerGradient)' : '#f8fafc')
+      .attr('stroke', isPlayer2Winner ? '#10b981' : '#e2e8f0')
+      .attr('stroke-width', isPlayer2Winner ? 2 : 1)
+      .attr('rx', 10)
+      .attr('ry', 10);
+
+    // Nombres de jugadores con mejor estilo
+    const nombres1 = this.getPlayerNames(jugador1);
+    const nombres2 = this.getPlayerNames(jugador2);
+
+    // Jugador 1 text
+    g.append('text')
+      .text(nombres1)
+      .attr('x', 12)
+      .attr('y', this.matchHeight / 4)
+      .attr('dy', '0.35em')
+      .attr('fill', isPlayer1Winner ? '#ffffff' : '#334155')
+      .attr('font-size', '13px')
+      .attr('font-weight', isPlayer1Winner ? '700' : '600')
+      .attr('class', 'player-name');
+
+    // Jugador 2 text
+    g.append('text')
+      .text(nombres2)
+      .attr('x', 12)
+      .attr('y', (3 * this.matchHeight) / 4)
+      .attr('dy', '0.35em')
+      .attr('fill', isPlayer2Winner ? '#ffffff' : '#334155')
+      .attr('font-size', '13px')
+      .attr('font-weight', isPlayer2Winner ? '700' : '600')
+      .attr('class', 'player-name');
+
+    // Añadir gradiente para ganadores si no existe
+    if (!gContainer.select('defs #winnerGradient').size()) {
+      const defs = gContainer.append('defs');
+      const winnerGradient = defs.append('linearGradient')
+        .attr('id', 'winnerGradient')
+        .attr('x1', '0%')
+        .attr('y1', '0%')
+        .attr('x2', '100%')
+        .attr('y2', '0%');
+
+      winnerGradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', '#10b981');
+
+      winnerGradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', '#059669');
+    }
+
+
+  }
+
+  private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
+    const currentRound = eliminationRounds[roundIndex];
+    const nextRound = eliminationRounds[roundIndex + 1];
+
+    currentRound.forEach((partido, matchIndex) => {
+      if (partido.nextMatchIndex != null && nextRound[partido.nextMatchIndex]) {
+        const currentX = partido.x! + this.matchWidth;
+        const currentY = partido.y! + (partido.height! / 2);
+        const nextPartido = nextRound[partido.nextMatchIndex];
+        const nextX = nextPartido.x!;
+        const nextY = nextPartido.y! + (nextPartido.height! / 2);
+
+        // Línea horizontal desde el partido actual (más larga)
+        gContainer.append('line')
+          .attr('x1', currentX)
+          .attr('y1', currentY)
+          .attr('x2', currentX + (this.spacingX / 3))
+          .attr('y2', currentY)
+          .attr('stroke', '#cbd5e1')
+          .attr('stroke-width', 3)
+          .attr('stroke-dasharray', '5,5');
+
+        // Línea vertical
+        gContainer.append('line')
+          .attr('x1', currentX + (this.spacingX / 3))
+          .attr('y1', currentY)
+          .attr('x2', currentX + (this.spacingX / 3))
+          .attr('y2', nextY)
+          .attr('stroke', '#cbd5e1')
+          .attr('stroke-width', 3)
+          .attr('stroke-dasharray', '5,5');
+
+        // Línea horizontal al siguiente partido
+        gContainer.append('line')
+          .attr('x1', currentX + (this.spacingX / 3))
+          .attr('y1', nextY)
+          .attr('x2', nextX)
+          .attr('y2', nextY)
+          .attr('stroke', '#cbd5e1')
+          .attr('stroke-width', 3)
+          .attr('stroke-dasharray', '5,5');
+
+        // Puntos de conexión
+        [currentX + (this.spacingX / 3), nextX].forEach(x => {
+          gContainer.append('circle')
+            .attr('cx', x)
+            .attr('cy', nextY)
+            .attr('r', 4)
+            .attr('fill', '#6366f1');
+        });
+      }
+    });
+  }
+
+
+  private showErrorState(container: HTMLElement) {
+    container.innerHTML = `
+    <div style="display: flex; justify-content: center; align-items: center; height: 200px; color: #dc2626;">
+      <div style="text-align: center;">
+        <mat-icon style="font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px;">error</mat-icon>
+        <p>Error al cargar el bracket de eliminatorias</p>
+      </div>
+    </div>
+  `;
   }
 
 
 
 
 
+  private createBasicEliminationStructure(): Partido[][] {
+    console.log('Creando estructura básica de eliminatorias moderna...');
+
+    const eliminationStructure: Partido[][] = [];
+
+    // Definir las rondas típicas de un torneo
+    const rounds = [
+      { name: 'octavos', matches: 8 },
+      { name: 'cuartos', matches: 4 },
+      { name: 'semifinal', matches: 2 },
+      { name: 'final', matches: 1 }
+    ];
+
+    rounds.forEach(round => {
+      const roundMatches: Partido[] = [];
+
+      for (let i = 0; i < round.matches; i++) {
+        // Calcular nextMatchIndex para las conexiones
+        let nextMatchIndex: number | null = null;
+        if (round.name !== 'final') {
+          nextMatchIndex = Math.floor(i / 2);
+        }
+
+        roundMatches.push({
+          jugador1: [{ name: 'Por asignar' }],
+          jugador2: [{ name: 'Por asignar' }],
+          ganador: null,
+          groupName: round.name,
+          id: null,
+          couple1Id: null,
+          couple2Id: null,
+          nextMatchIndex: nextMatchIndex,
+          scores1: [0, 0, 0],
+          scores2: [0, 0, 0],
+          date: null,
+          start_time: null,
+          end_time: null,
+          court: null,
+          x: 0,
+          y: 0,
+          height: this.matchHeight
+        });
+      }
+
+      eliminationStructure.push(roundMatches);
+    });
+
+    return eliminationStructure;
+  }
+
+  private calculatePositionsForElimination(eliminationRounds: Partido[][], containerWidth: number, containerHeight: number) {
+    const roundWidth = (containerWidth - 100) / eliminationRounds.length;
+    const maxMatches = Math.max(...eliminationRounds.map(r => r.length));
+
+    eliminationRounds.forEach((ronda, roundIndex) => {
+      const x = roundIndex * roundWidth + 50;
+      const totalHeight = ronda.length * this.matchHeight + (ronda.length - 1) * this.verticalSpacing;
+      const startY = (containerHeight - totalHeight) / 2;
+
+      ronda.forEach((partido, i) => {
+        partido.x = x;
+        partido.y = startY + i * (this.matchHeight + this.verticalSpacing);
+        partido.height = this.matchHeight;
+      });
+    });
+  }
+
+  private drawEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
+    const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
+
+    // Asegurar que los jugadores tengan al menos "Por asignar"
+    const jugador1 = partido.jugador1 && partido.jugador1.length > 0 ? partido.jugador1 : [{ name: 'Por asignar' }];
+    const jugador2 = partido.jugador2 && partido.jugador2.length > 0 ? partido.jugador2 : [{ name: 'Por asignar' }];
+
+    // Fondo del partido
+    g.append('rect')
+      .attr('width', this.matchWidth)
+      .attr('height', this.matchHeight)
+      .attr('fill', '#ffffff')
+      .attr('stroke', '#1e7e34')
+      .attr('stroke-width', 2)
+      .attr('rx', 5);
+
+    // Jugador 1
+    const isPlayer1Winner = partido.ganador && this.arePlayersEqual(partido.ganador, jugador1);
+    g.append('rect')
+      .attr('width', this.matchWidth)
+      .attr('height', this.matchHeight / 2 - 1)
+      .attr('fill', isPlayer1Winner ? '#10b981' : '#f3f4f6')
+      .attr('stroke', '#1e7e34')
+      .attr('stroke-width', 1);
+
+    // Jugador 2
+    const isPlayer2Winner = partido.ganador && this.arePlayersEqual(partido.ganador, jugador2);
+    g.append('rect')
+      .attr('y', this.matchHeight / 2 + 1)
+      .attr('width', this.matchWidth)
+      .attr('height', this.matchHeight / 2 - 1)
+      .attr('fill', isPlayer2Winner ? '#10b981' : '#f3f4f6')
+      .attr('stroke', '#1e7e34')
+      .attr('stroke-width', 1);
+
+    // Nombres de jugadores
+    const nombres1 = this.getPlayerNames(jugador1);
+    const nombres2 = this.getPlayerNames(jugador2);
+
+    g.append('text')
+      .text(nombres1)
+      .attr('x', 5)
+      .attr('y', this.matchHeight / 4)
+      .attr('dy', '0.35em')
+      .attr('fill', isPlayer1Winner ? '#ffffff' : '#000000')
+      .attr('font-size', '12px')
+      .attr('font-weight', isPlayer1Winner ? 'bold' : 'normal');
+
+    g.append('text')
+      .text(nombres2)
+      .attr('x', 5)
+      .attr('y', (3 * this.matchHeight) / 4)
+      .attr('dy', '0.35em')
+      .attr('fill', isPlayer2Winner ? '#ffffff' : '#000000')
+      .attr('font-size', '12px')
+      .attr('font-weight', isPlayer2Winner ? 'bold' : 'normal');
+
+    // Nombre de la ronda (solo para el primer partido de cada ronda)
+    if (matchIndex === 0) {
+      const roundNames: { [key: string]: string } = {
+        'octavos': 'Octavos de Final',
+        'cuartos': 'Cuartos de Final',
+        'semifinal': 'Semifinal',
+        'final': 'Final'
+      };
+
+      const roundName = roundNames[partido.groupName] || partido.groupName;
+      gContainer.append('text')
+        .text(roundName)
+        .attr('x', partido.x! + this.matchWidth / 2)
+        .attr('y', partido.y! - 10)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#000')
+        .attr('font-weight', 'bold')
+        .attr('font-size', '14px');
+    }
+
+    g.style('cursor', 'pointer')
+      .on('click', () => this.abrirModalPartido(partido, roundIndex + 1, matchIndex));
+  }
 
 
+  private drawEliminationConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
+    const currentRound = eliminationRounds[roundIndex];
+    const nextRound = eliminationRounds[roundIndex + 1];
 
+    currentRound.forEach((partido, matchIndex) => {
+      if (partido.nextMatchIndex != null && nextRound[partido.nextMatchIndex]) {
+        const currentX = partido.x! + this.matchWidth;
+        const currentY = partido.y! + (partido.height! / 2);
+        const nextPartido = nextRound[partido.nextMatchIndex];
+        const nextX = nextPartido.x!;
+        const nextY = nextPartido.y! + (nextPartido.height! / 2);
 
+        // Línea horizontal desde el partido actual
+        gContainer.append('line')
+          .attr('x1', currentX).attr('y1', currentY)
+          .attr('x2', currentX + 20).attr('y2', currentY)
+          .attr('stroke', '#1e7e34').attr('stroke-width', 2);
 
+        // Línea vertical
+        gContainer.append('line')
+          .attr('x1', currentX + 20).attr('y1', currentY)
+          .attr('x2', currentX + 20).attr('y2', nextY)
+          .attr('stroke', '#1e7e34').attr('stroke-width', 2);
+
+        // Línea horizontal al siguiente partido
+        gContainer.append('line')
+          .attr('x1', currentX + 20).attr('y1', nextY)
+          .attr('x2', nextX).attr('y2', nextY)
+          .attr('stroke', '#1e7e34').attr('stroke-width', 2);
+      }
+    });
+  }
+
+  // Método auxiliar para comparar jugadores
+  private arePlayersEqual(player1: any, player2: any[]): boolean {
+    if (!player1 || !player2) return false;
+
+    const names1 = Array.isArray(player1) ?
+      player1.map(p => p.name).sort().join(',') :
+      player1.name || '';
+
+    const names2 = player2.map(p => p.name).sort().join(',');
+
+    return names1 === names2;
+  }
 
   private drawMatch(partido: Partido, roundIndex: number, matchIndex: number) {
     const g = this.gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
@@ -649,6 +1132,88 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   logMatch(match: any) {
     console.log('Match:', match);
     return true;
+  }
+
+  getStatusGame(match: any): string {
+    if (match.status_game === 'Not started') return 'Pendiente';
+    if (match.status_game === 'proccessing') return 'En Progreso';
+    if (match.status_game === 'completed') return 'Finalizado';
+    return 'Desconocido';
+  }
+
+  getStatusClass(match: any): string {
+    if (match.status_game === 'Not started') return 'pendiente';
+    if (match.status_game === 'proccessing') return 'en-progreso';
+    if (match.status_game === 'completed') return 'finalizado';
+    return 'desconocido';
+  }
+
+  loadGameDetails(gameId: number) {
+    this.tournamentService.getGameDetail(gameId).subscribe({
+      next: (response) => {
+        console.log('Detalles del juego:', response.data);
+
+        // Aquí puedes actualizar los scores en tu interfaz
+        this.updateMatchScores(gameId, response.data);
+      },
+      error: (error) => {
+        console.error('Error al cargar detalles del juego:', error);
+      }
+    });
+  }
+
+  private updateMatchScores(gameId: number, gameDetail: GameDetailResponse) {
+    console.log('🔄 Actualizando scores para gameId:', gameId);
+
+    // Actualizar en bracketDataCards
+    this.bracketDataCards.forEach(round => {
+      round.forEach(match => {
+        if (match.id === gameId) {
+          this.updateSingleMatchScores(match, gameDetail);
+        }
+      });
+    });
+
+    // También actualizar en results
+    this.results.forEach(match => {
+      if (match.id === gameId) {
+        this.updateSingleMatchScores(match, gameDetail);
+      }
+    });
+
+    console.log('✅ Scores actualizados, results:', this.results);
+
+    // Forzar detección de cambios
+    this.forceChangeDetection();
+  }
+
+  private updateSingleMatchScores(match: any, gameDetail: GameDetailResponse) {
+    const sortedSets = gameDetail.sets.sort((a, b) => a.set_number - b.set_number);
+
+    match.scores1 = sortedSets.map(set => set.score_1);
+    match.scores2 = sortedSets.map(set => set.score_2);
+
+    if (gameDetail.winner) {
+      match.ganador = gameDetail.winner.players;
+    }
+
+    match.status_game = gameDetail.status_game;
+
+    console.log('📝 Match actualizado:', {
+      id: match.id,
+      scores1: match.scores1,
+      scores2: match.scores2,
+      ganador: match.ganador,
+      status: match.status_game
+    });
+  }
+
+  private forceChangeDetection() {
+    // Forzar actualización de la vista
+    this.results = [...this.results];
+
+    // Redibujar si es necesario
+    this.forceRedrawBracket();
   }
 
 }

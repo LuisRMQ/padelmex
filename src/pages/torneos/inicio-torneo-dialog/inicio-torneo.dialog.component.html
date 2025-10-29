@@ -1,5 +1,5 @@
 <!-- =========================
-     HEADER / TOOLBAR
+     HEADER / TOOLBAR (mínimo)
      ========================= -->
 <mat-toolbar class="bracket-toolbar" color="primary" role="banner">
   <div class="toolbar-left">
@@ -19,143 +19,48 @@
 </mat-toolbar>
 
 <!-- =========================
-     CONTENIDO PRINCIPAL
+     CONTENIDO PRINCIPAL (categoria + Results / Sets)
      ========================= -->
 <mat-dialog-content class="contenido-modal">
 
-  <!-- Controls Section -->
-  <div class="controls-section">
-    <div class="controls-left">
-      <mat-form-field appearance="outline" class="category-select">
-        <mat-label>Seleccionar Categoría</mat-label>
-        <mat-select [(value)]="selectedCategory" (selectionChange)="filtrarCategoria()">
-          <mat-option *ngFor="let cat of categories" [value]="cat.category_name">
-            <div class="category-option">
-              <span class="category-name">{{ cat.category_name }}</span>
-              <span class="category-level">Nivel {{ cat.level }}</span>
-            </div>
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <div class="controls-right">
-      <div class="status-area">
-        <ng-container *ngIf="loading">
-          <div class="loading-indicator">
-            <mat-spinner diameter="32"></mat-spinner>
-            <span class="status-text">Cargando datos del bracket...</span>
+  <!-- ===== Selección de categoría (reincorporada) ===== -->
+  <div class="controls-section minimal-controls">
+    <mat-form-field appearance="outline" class="category-select">
+      <mat-label>Seleccionar Categoría</mat-label>
+      <mat-select [(value)]="selectedCategory" (selectionChange)="filtrarCategoria()">
+        <mat-option *ngFor="let cat of categories" [value]="cat.category_name">
+          <div class="category-option">
+            <span class="category-name">{{ cat.category_name }}</span>
+            <span class="category-level">Nivel {{ cat.level }}</span>
           </div>
-        </ng-container>
-
-        <div *ngIf="error" class="error-message">
-          <mat-icon class="error-icon">warning</mat-icon>
-          <div class="error-content">
-            <span class="error-title">No se pudo cargar el bracket</span>
-            <span class="error-desc">{{ error }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
   </div>
 
-  <!-- Categories Grid -->
-  <div class="categories-grid" *ngIf="!loading && filteredBracket?.length">
-    <div *ngFor="let cat of filteredBracket" class="category-card"
-      [class.active]="selectedCategory === cat.category_name">
-      <div class="card-content">
-        <div class="card-main">
-          <div class="category-badge">
-            <span class="level-badge">Nvl {{ cat.level }}</span>
-          </div>
-          <div class="category-info">
-            <h3 class="category-title">{{ cat.category_name }}</h3>
-            <p class="category-stats">{{ cat.groups?.length || 0 }} grupos • {{ 20 }} partidos</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================
-       BRACKET / CARDS / RESULTADOS
-       ========================= -->
-  <div class="bracket-section">
-    <div class="bracket-header">
-      <h3>Visualización del Bracket</h3>
-
-      <button mat-stroked-button color="accent" (click)="toggleViewMode()">
-        <mat-icon>
-          {{ viewMode === 'bracket' ? 'view_module' : viewMode === 'cards' ? 'score' : 'timeline' }}
-        </mat-icon>
-        {{ viewMode === 'bracket' ? 'Ver en Cards' : viewMode === 'cards' ? 'Ver Resultados' : 'Ver Bracket' }}
-      </button>
-    </div>
-
-    <!-- MODO BRACKET -->
-    <div class="bracket-area" *ngIf="viewMode === 'bracket'">
-      <div #bracketContainer class="bracket-container" aria-label="Visualización del bracket del torneo" role="img"
-        [class.loading]="loading">
-      </div>
-
-      <div *ngIf="viewMode === 'bracket' && !bracketDataCards.length" class="empty-state">
-        <mat-icon>schema</mat-icon>
-        <p>No hay datos de bracket para mostrar</p>
-      </div>
-    </div>
-
-    <!-- MODO CARDS -->
-    <div class="cards-view" *ngIf="viewMode === 'cards'">
-      <div *ngFor="let round of bracketDataCards; let i = index" class="round-column">
-        <h4 class="round-title">{{ computePhaseLabels(bracketDataCards)[i] }}</h4>
-
-        <div *ngFor="let match of round; let j = index" class="match-card" (click)="abrirModalPartido(match, i, j)">
-          <div class="match-header">
-            <span class="group-name">{{ match.groupName }}</span>
-            <mat-icon class="trophy-icon" *ngIf="match.ganador">emoji_events</mat-icon>
-          </div>
-
-          <div class="players">
-            <div class="player player1" [class.winner]="match.ganador === match.jugador1">
-              <mat-icon>person</mat-icon>
-              <span>{{ getPlayerNames(match.jugador1) }}</span>
-            </div>
-            <div class="vs">VS</div>
-            <div class="player player2" [class.winner]="match.ganador === match.jugador2">
-              <mat-icon>person</mat-icon>
-              <span>{{ getPlayerNames(match.jugador2) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="viewMode === 'cards' && !bracketDataCards.length" class="empty-state">
-        <mat-icon>view_module</mat-icon>
-        <p>No hay datos para mostrar en vista de cards</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- =========================
-     MODO RESULTADOS (SETS)
-     ========================= -->
-  <div class="results-view" *ngIf="viewMode === 'sets'">
+  <div class="results-view">
     <div class="results-and-bracket">
 
-      <!-- COLUMNA IZQUIERDA: Resultados -->
+      <!-- COLUMNA IZQUIERDA: Resultados (SETS) -->
       <div class="results-column">
         <ng-container *ngIf="results.length > 0; else noResults">
           <div *ngFor="let group of resultsGroupedByGroup" class="group-container">
             <h3 class="group-title">{{ group.groupName }}</h3>
 
             <div *ngFor="let match of group.matches; let j = index" class="result-card compact"
-              (click)="abrirModalPartido(match, 0, j)" style="cursor: pointer;">
+              (click)="logMatch(match); abrirModalPartido(match, 0, j)" style="cursor: pointer;">
               <div class="result-header">
                 <div class="match-info">
-                  <span class="round-name">{{ match.roundName }}</span>
                   <span class="match-date">
                     {{ match.date ? (match.date | date:'d \'de\' MMMM y':'es') + ' ' + (match.start_time ?
                     (match.start_time | slice:0:5) : '') : 'Sin fecha' }}
+                  </span>
+                  <span class="status-small-badge" [ngClass]="{
+                    'pendiente': match.status_game === 'Not started',
+                    'en-progreso': match.status_game === 'proccessing', 
+                    'finalizado': match.status_game === 'completed'
+                  }">
+                    {{ getStatusGame(match) }}
                   </span>
                   <div *ngIf="match.court" class="match-court">{{ match.court }}</div>
                 </div>
@@ -186,28 +91,44 @@
             </div>
           </div>
         </ng-container>
-
-        <ng-template #noResults>
-          <div class="empty-state">
-            <mat-icon>sports_tennis</mat-icon>
-            <p>No hay resultados registrados todavía</p>
-          </div>
-        </ng-template>
       </div>
 
       <!-- COLUMNA DERECHA: Bracket Eliminatorias -->
-      <div class="bracket-column">
-        <div #bracketContainerSets class="bracket-container-sets"></div>
+      <div class="bracket-column" *ngIf="results.length > 0; else noCategorySelected">
+        <h3 style="margin: 0 0 16px 0; color: #1e293b;">Bracket de Eliminatorias</h3>
+        <div #bracketContainerSets class="bracket-container-sets" aria-label="Bracket eliminatorias"></div>
       </div>
 
-
     </div>
+
   </div>
+
+  <!-- Mensaje de no results centrado y más grande -->
+  <ng-template #noResults>
+    <div class="no-results-container">
+      <div class="empty-state">
+        <mat-icon class="empty-icon">sports_tennis</mat-icon>
+        <p class="empty-message">Selecciona una categoría para ver los resultados</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Mensaje cuando no hay categoría seleccionada -->
+  <ng-template #noCategorySelected>
+    <div class="bracket-column placeholder">
+      <div class="no-results-container">
+        <div class="empty-state">
+          <mat-icon class="empty-icon">category</mat-icon>
+          <p class="empty-message">Selecciona una categoría para ver el bracket</p>
+        </div>
+      </div>
+    </div>
+  </ng-template>
 
 </mat-dialog-content>
 
 <!-- =========================
-     BOTONES FINALES
+     BOTONES FINALES (mínimos)
      ========================= -->
 <mat-dialog-actions align="end" class="dialog-actions">
   <button mat-stroked-button (click)="cerrar()" class="action-btn">Cerrar</button>

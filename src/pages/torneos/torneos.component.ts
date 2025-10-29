@@ -163,8 +163,8 @@ verDetalles(torneo: Tournament) {
     console.log(torneo.id)
 
   this.dialog.open(InicioTorneoDialogComponent, {
-    width: '90vw',      
-    maxWidth: '90vw',  
+    width: '95vw',      
+    maxWidth: '95vw',  
     height: '90vh',      
     maxHeight: '90vh',   
     data: { torneoId: torneo.id },

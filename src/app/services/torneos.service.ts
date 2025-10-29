@@ -75,6 +75,46 @@ export interface CourtsResponse {
   last_page: number;
 }
 
+export interface SetDetail {
+  set_id: number;
+  score_1: number;
+  score_2: number;
+  set_number: number;
+}
+
+export interface Player {
+  id: number;
+  name: string;
+  photo: string;
+}
+
+export interface Couple {
+  players: Player[];
+  couple_id: number;
+}
+
+export interface Reservation {
+  id: number;
+  date: string;
+  end_time: string;
+  start_time: string;
+}
+
+export interface GameDetailResponse {
+  sets: SetDetail[];
+  phase: string;
+  winner: Couple;
+  couples: Couple[];
+  game_id: number;
+  reservation: Reservation;
+  status_game: string;
+}
+
+export interface GameDetailApiResponse {
+  status: string;
+  data: GameDetailResponse;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -139,6 +179,7 @@ export class TournamentService extends ApiBaseService {
   addUsertoTournament(data: any): Observable<any> {
     return this.post('/coupleTournament/create', data);
   }
+
   getCourtsByClub(clubId: number, limit: number = 5, page: number = 1): Observable<CourtsResponse> {
     let params = new HttpParams()
       .append('club_id', clubId.toString())
@@ -155,6 +196,12 @@ export class TournamentService extends ApiBaseService {
 
 
   storeSet(data: { game_id: number, set_number: number, score_1: number, score_2: number }): Observable<any> {
-  return this.post('/set/store', data);
-}
+    return this.post('/set/store', data);
+  }
+
+  getGameDetail(gameId: number): Observable<GameDetailApiResponse> {
+    return this.get<GameDetailApiResponse>(`/set/getGameDetail/${gameId}`);
+  }
+
+
 }
