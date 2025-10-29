@@ -139,67 +139,66 @@
   <!-- =========================
      MODO RESULTADOS (SETS)
      ========================= -->
-<div class="results-view" *ngIf="viewMode === 'sets'">
-  <div class="results-and-bracket">
-    
-    <!-- COLUMNA IZQUIERDA: Resultados -->
-    <div class="results-column">
-      <ng-container *ngIf="results.length > 0; else noResults">
-        <div *ngFor="let group of resultsGroupedByGroup" class="group-container">
-          <h3 class="group-title">{{ group.groupName }}</h3>
+  <div class="results-view" *ngIf="viewMode === 'sets'">
+    <div class="results-and-bracket">
 
-          <div *ngFor="let match of group.matches; let j = index" 
-               class="result-card compact"
-               (click)="abrirModalPartido(match, 0, j)" 
-               style="cursor: pointer;">
-            <div class="result-header">
-              <div class="match-info">
-                <span class="round-name">{{ match.roundName }}</span>
-                <span class="match-date">
-                  {{ match.date ? (match.date | date:'d \'de\' MMMM y':'es') + ' ' + (match.start_time ? (match.start_time | slice:0:5) : '') : 'Sin fecha' }}
-                </span>
-                <div *ngIf="match.court" class="match-court">{{ match.court }}</div>
-              </div>
-              <mat-icon class="trophy-icon" *ngIf="match.isFinal">emoji_events</mat-icon>
-            </div>
+      <!-- COLUMNA IZQUIERDA: Resultados -->
+      <div class="results-column">
+        <ng-container *ngIf="results.length > 0; else noResults">
+          <div *ngFor="let group of resultsGroupedByGroup" class="group-container">
+            <h3 class="group-title">{{ group.groupName }}</h3>
 
-            <div class="result-body">
-              <div class="player-row">
-                <span class="player-name" [class.winner]="match.winner === 'player1'">
-                  {{ match.player1 }}
-                </span>
-                <span class="score" *ngFor="let s of match.scores1; let i = index"
-                  [class.winner-set]="s > match.scores2[i]">
-                  {{ s }}
-                </span>
+            <div *ngFor="let match of group.matches; let j = index" class="result-card compact"
+              (click)="abrirModalPartido(match, 0, j)" style="cursor: pointer;">
+              <div class="result-header">
+                <div class="match-info">
+                  <span class="round-name">{{ match.roundName }}</span>
+                  <span class="match-date">
+                    {{ match.date ? (match.date | date:'d \'de\' MMMM y':'es') + ' ' + (match.start_time ?
+                    (match.start_time | slice:0:5) : '') : 'Sin fecha' }}
+                  </span>
+                  <div *ngIf="match.court" class="match-court">{{ match.court }}</div>
+                </div>
+                <mat-icon class="trophy-icon" *ngIf="match.isFinal">emoji_events</mat-icon>
               </div>
 
-              <div class="player-row">
-                <span class="player-name" [class.winner]="match.winner === 'player2'">
-                  {{ match.player2 }}
-                </span>
-                <span class="score" *ngFor="let s of match.scores2; let i = index"
-                  [class.winner-set]="s > match.scores1[i]">
-                  {{ s }}
-                </span>
+              <div class="result-body">
+                <div class="player-row">
+                  <span class="player-name" [class.winner]="match.ganador === match.jugador1">
+                    {{ getPlayerNames(match.jugador1) }}
+                  </span>
+                  <span class="score" *ngFor="let s of match.scores1; let i = index"
+                    [class.winner-set]="s > match.scores2[i]">
+                    {{ s }}
+                  </span>
+                </div>
+
+                <div class="player-row">
+                  <span class="player-name" [class.winner]="match.ganador === match.jugador2">
+                    {{ getPlayerNames(match.jugador2) }}
+                  </span>
+                  <span class="score" *ngFor="let s of match.scores2; let i = index"
+                    [class.winner-set]="s > match.scores1[i]">
+                    {{ s }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
 
-      <ng-template #noResults>
-        <div class="empty-state">
-          <mat-icon>sports_tennis</mat-icon>
-          <p>No hay resultados registrados todavía</p>
-        </div>
-      </ng-template>
-    </div>
+        <ng-template #noResults>
+          <div class="empty-state">
+            <mat-icon>sports_tennis</mat-icon>
+            <p>No hay resultados registrados todavía</p>
+          </div>
+        </ng-template>
+      </div>
 
-    <!-- COLUMNA DERECHA: Bracket Eliminatorias -->
-    <div class="bracket-column">
-      <div #bracketContainerSets class="bracket-container-sets"></div>
-    </div>
+      <!-- COLUMNA DERECHA: Bracket Eliminatorias -->
+      <div class="bracket-column">
+        <div #bracketContainerSets class="bracket-container-sets"></div>
+      </div>
 
 
     </div>
