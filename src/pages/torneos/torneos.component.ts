@@ -216,29 +216,30 @@ verDetalles(torneo: Tournament) {
     target.src = '../../assets/images/placeholder.png';
   }
 
-  verParticipantes(torneo: Tournament) {
-        
-    this.tournamentService.getCategoriesByTournamentId(torneo.id).subscribe({
-      next: (response: any[]) => {
-        console.log(response)
-        const categories = response.map(cat => ({
-          id: cat.category.id,
-          name: cat.category.category,
-          max_participants: cat.max_participants
-        }));
-        console.log(categories)
-        this.dialog.open(ParticipantesTorneoDialogComponent, {
-          width: '90vw',
-          maxWidth: '1000px',
-          height: 'auto',
-          maxHeight: '80vh',
-          data: { torneoId: torneo.id, categories },
-          panelClass: 'custom-dialog'
-        });
-      },
-      error: (err) => {
-        console.error('Error obteniendo categorías:', err);
-      }
-    });
-  }
+  verParticipantes(torneoId: number) {
+  this.tournamentService.getTournament(torneoId).subscribe({
+    next: (torneo: Tournament) => {
+      // Extraemos las categorías usando el id interno (no category_id)
+      const categories = torneo.categories?.map(cat => ({
+        id: cat.id, // 👈 ESTE es el que tú quieres mandar
+        max_participants: cat.max_participants,
+        current_participants: cat.current_participants,
+        status: cat.status
+      })) || [];
+
+      console.log('Categorías enviadas:', categories);
+
+      this.dialog.open(ParticipantesTorneoDialogComponent, {
+        width: '90vw',
+        maxWidth: '1000px',
+        height: 'auto',
+        maxHeight: '80vh',
+        data: { torneoId: torneo.id, categories },
+        panelClass: 'custom-dialog'
+      });
+    },
+    error: (err) => console.error('Error obteniendo torneo:', err)
+  });
+}
+
 }

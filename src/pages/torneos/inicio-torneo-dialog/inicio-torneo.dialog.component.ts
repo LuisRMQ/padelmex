@@ -85,7 +85,10 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private startY = 0;
   private translateX = 0;
   private translateY = 0;
+private isDragging = false;
 
+private scrollLeft = 0;
+private scrollTop = 0;
   viewMode: ViewMode = 'bracket';
   bracketDataCards: Partido[][] = [];
 
@@ -98,13 +101,58 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.cargarBracket();
+
   }
+
+
+
+enableBracketDragging(): void {
+  const container = this.bracketContainerSets?.nativeElement;
+  if (!container) return;
+
+  container.addEventListener('mousedown', (e: MouseEvent) => {
+    this.isDragging = true;
+    container.classList.add('active');
+    this.startX = e.pageX - container.offsetLeft;
+    this.startY = e.pageY - container.offsetTop;
+    this.scrollLeft = container.scrollLeft;
+    this.scrollTop = container.scrollTop;
+  });
+
+  container.addEventListener('mouseleave', () => {
+    this.isDragging = false;
+    container.classList.remove('active');
+  });
+
+  container.addEventListener('mouseup', () => {
+    this.isDragging = false;
+    container.classList.remove('active');
+  });
+
+  container.addEventListener('mousemove', (e: MouseEvent) => {
+    if (!this.isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - container.offsetLeft;
+    const y = e.pageY - container.offsetTop;
+    const walkX = (x - this.startX) * 1; // velocidad horizontal
+    const walkY = (y - this.startY) * 1; // velocidad vertical
+    container.scrollLeft = this.scrollLeft - walkX;
+    container.scrollTop = this.scrollTop - walkY;
+  });
+}
+
+
+
+
+
 
   ngAfterViewInit(): void {
     if (this.filteredBracket.length) {
       this.drawBracket();
       // Inicializar el bracket de eliminatorias también
       setTimeout(() => this.drawBracketSets(), 100);
+        setTimeout(() => this.enableBracketDragging(), 100);
+
     }
   }
 

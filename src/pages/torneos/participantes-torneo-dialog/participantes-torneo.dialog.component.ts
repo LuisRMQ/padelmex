@@ -81,7 +81,6 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     console.log('Categoría inicial seleccionada:', this.selectedCategory);
   }
 
-  this.cargarParticipantes();
   this.cargarJugadores();
 
   this.filteredPlayers = this.playerSearchControl.valueChanges.pipe(
@@ -92,20 +91,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
   console.log('Categorías recibidas:', this.categories);
   }
 
-  cargarParticipantes() {
-    this.loading = true;
-    this.usersService.getUsersByRol(8).subscribe({
-      next: (res: User[]) => {
-        this.participantes = res;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Error al cargar los participantes';
-        this.loading = false;
-        console.error(err);
-      }
-    });
-  }
+
 
   cargarJugadores() {
     this.isLoadingPlayers = true;
@@ -171,22 +157,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     return user ? `${user.name} ${user.lastname}` : '';
   }
 
-  // addPlayer(user: User): void {
-  //   if (!this.selectedCategory) {
-  //     this.error = 'Selecciona una categoría antes de agregar jugadores.';
-  //     return;
-  //   }
-  //   if (this.selectedPlayers.some(p => p.id === user.id)) return;
-  //   this.error = null;
-  //   this.selectedPlayers.push(user);
-  //   this.participantes.push(user);
-  //   this.tournamentService.addUsertoTournament({
-  //     user_id: user.id,
-  //     category_tournament_id: this.selectedCategory.id,
-  //     partner_id: null
-  //   }).subscribe();
-  //   this.playerSearchControl.setValue('');
-  // }
+ 
 
   onImageError(event: Event): void {
     (event.target as HTMLImageElement).src = this.defaultAvatar;
@@ -256,7 +227,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
         category_tournament_id: Number(this.selectedCategory!.id),
         partner_id: Number(j.partner!.id)
       };
-
+      console.log(payload)
       console.log('🔹 Payload a enviar:', payload); // <-- Log del payload
       requests.push(this.tournamentService.addUsertoTournament(payload));
     } else {
@@ -271,6 +242,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     });
     return;
   }
+  console.log('✅ Todos los payloads a enviar:');
 
   forkJoin(requests).subscribe({
     next: (responses) => {
@@ -278,6 +250,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
         const jugador = this.selectedPlayers[index];
         console.log('🔹 Respuesta del servidor para', jugador, ':', res); // <-- Log de respuesta
         const coupleData = res?.couple?.couple;
+
         if (coupleData?.ok) {
           this.snackBar.open(`✔️ Pareja agregada: ${jugador.name} + ${jugador.partner!.name}`, 'Cerrar', {
             duration: 4000,

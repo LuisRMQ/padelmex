@@ -23,8 +23,28 @@ export interface Tournament {
   active: boolean;
   created_at: string;
   updated_at: string;
-  categories?: Category[];
+  categories?: TournamentCategory[]; 
 }
+
+export interface CategoryDetail {
+  id: number;
+  category: string; // nombre de la categoría
+}
+
+// Categoria dentro de un torneo
+export interface TournamentCategory {
+  id: number;
+  tournament_id: number;
+  category: CategoryDetail;
+  category_id: number;  // <-- esto existe en la respuesta real
+
+  max_participants: number;
+  current_participants: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 
 export interface TournamentFilters {
   club_id?: string;
