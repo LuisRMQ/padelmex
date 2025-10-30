@@ -23,7 +23,7 @@ export interface Tournament {
   active: boolean;
   created_at: string;
   updated_at: string;
-  categories?: TournamentCategory[]; 
+  categories?: TournamentCategory[];
 }
 
 export interface CategoryDetail {
@@ -156,8 +156,18 @@ export class TournamentService extends ApiBaseService {
     return this.post('/tournament/create', data);
   }
 
+  getPlayersByCategory(tournament_id: number, category_tournament_id: number, page: number = 1) {
+    const url = `${this.apiUrl}/tournament/playersByCategory`;
 
+    const params = {
+      tournament_id: tournament_id.toString(),
+      category_tournament_id: category_tournament_id.toString(),
+      page: page.toString()
+    };
 
+    return this.http.get<any>(url, { params });
+  }
+  
   getCategories(): Observable<Category[]> {
     return this.get<Category[]>('/categories');
   }

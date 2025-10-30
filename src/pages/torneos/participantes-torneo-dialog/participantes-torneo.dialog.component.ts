@@ -17,6 +17,7 @@ import { startWith, map } from 'rxjs/operators';
 import { MatInputModule } from '@angular/material/input';
 import { TournamentService } from '../../../app/services/torneos.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTableModule } from '@angular/material/table';
 
 export interface Partido {
   jugador1: User | null;
@@ -26,6 +27,7 @@ export interface Partido {
   y?: number;
   height?: number;
 }
+
 
 export interface TournamentPlayer extends User {
   partner?: User | null;
@@ -48,10 +50,15 @@ export interface TournamentPlayer extends User {
     MatProgressSpinnerModule,
     FormsModule,
     ReactiveFormsModule,
-    MatInputModule
+    MatInputModule,
+    MatTableModule
   ]
 })
 export class ParticipantesTorneoDialogComponent implements OnInit {
+
+  selectedPlayersFromServer: TournamentPlayer[] = [];
+  displayedColumnsServer: string[] = ['photo', 'name'];
+  isCategoryClosed: boolean = false; // 🔹 Indica si la categoría ya está cerrada
 
   playerSearchControl = new FormControl('');
   selectedPlayers: TournamentPlayer[] = [];
@@ -62,8 +69,20 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
   loading = false;
   defaultAvatar = 'assets/images/placeholder.png';
   allPlayers: User[] = [];
-  selectedCategory: { id: number, max_participants: number } | null = null;
-  categories: { id: number, max_participants: number, name: string }[] = [];
+  selectedCategory: {
+    id: number;
+    max_participants: number;
+    current_participants?: number;
+    status?: string;
+  } | null = null;
+
+  categories: {
+    id: number;
+    max_participants: number;
+    name: string;
+    current_participants?: number;
+    status?: string;
+  }[] = [];
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { torneoId: number, categories: { id: number, max_participants: number, name: string }[] },
@@ -77,18 +96,19 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
   ngOnInit(): void {
     this.categories = this.data.categories;
     if (this.categories.length > 0) {
-    this.selectedCategory = this.categories[0];
-    console.log('Categoría inicial seleccionada:', this.selectedCategory);
-  }
+      this.selectedCategory = this.categories[0];
+      console.log('Categoría inicial seleccionada:', this.selectedCategory);
+      this.cargarParticipantesPorCategoria(); // 🔹 carga inicial
+    }
 
-  this.cargarJugadores();
+    this.cargarJugadores();
 
-  this.filteredPlayers = this.playerSearchControl.valueChanges.pipe(
-    startWith(''),
-    map(value => this._filterPlayers(value ?? ''))
-  );
+    this.filteredPlayers = this.playerSearchControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterPlayers(value ?? ''))
+    );
 
-  console.log('Categorías recibidas:', this.categories);
+    console.log('Categorías recibidas:', this.categories);
   }
 
 
@@ -133,6 +153,100 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     });
   }
 
+
+
+
+
+  cargarParticipantesPorCategoria() {
+    if (!this.selectedCategory) return;
+
+    this.loading = true;
+    this.error = null;
+    this.participantes = [];
+    this.selectedPlayers = [];
+    this.selectedPlayersFromServer = [];
+    this.isCategoryClosed = false; // 🔹 resetear estado de cierre
+
+    const tournament_id = this.data.torneoId;
+    const category_tournament_id = this.selectedCategory.id;
+
+    // 🔹 Página 1
+    this.tournamentService.getPlayersByCategory(tournament_id, category_tournament_id, 1)
+      .subscribe({
+        next: (res) => {
+          const firstPage = res.data.data.data;
+          const lastPage = res.data.data.last_page;
+
+          const mappedPlayers = this.mapPlayers(firstPage);
+          this.participantes.push(...mappedPlayers);
+          this.selectedPlayersFromServer.push(...mappedPlayers);
+
+          // 🔹 Revisar si la categoría está cerrada
+          this.isCategoryClosed =
+            (this.selectedCategory?.current_participants ?? 0) >= (this.selectedCategory?.max_participants ?? 0);
+
+          if (lastPage > 1) {
+            const observables = [];
+            for (let page = 2; page <= lastPage; page++) {
+              observables.push(
+                this.tournamentService.getPlayersByCategory(tournament_id, category_tournament_id, page)
+              );
+            }
+
+            forkJoin(observables).subscribe({
+              next: (results) => {
+                results.forEach(r => {
+                  const players = this.mapPlayers(r.data.data.data);
+                  this.participantes.push(...players);
+                  this.selectedPlayersFromServer.push(...players);
+                });
+
+                // 🔹 También revisar después de cargar todas las páginas
+                this.isCategoryClosed =
+                  (this.selectedCategory?.current_participants ?? 0) >= (this.selectedCategory?.max_participants ?? 0);
+
+                this.loading = false;
+                console.log(`✅ Total participantes cargados del servidor: ${this.selectedPlayersFromServer.length}`);
+              },
+              error: (err) => {
+                console.error('❌ Error al cargar páginas adicionales:', err);
+                this.error = 'Error al cargar participantes.';
+                this.loading = false;
+              }
+            });
+          } else {
+            this.loading = false;
+          }
+        },
+        error: (err) => {
+          console.error('❌ Error al cargar participantes:', err);
+          this.error = 'Error al cargar participantes.';
+          this.loading = false;
+        }
+      });
+  }
+
+
+  private mapPlayers(data: any[]): TournamentPlayer[] {
+    return data.map((item) => {
+      const [name, ...rest] = item.player_full_name.split(' ');
+      const lastname = rest.join(' ');
+
+      return {
+        id: item.player_id,
+        name: name || '',
+        lastname: lastname || '',
+        email: '',          // valor por defecto
+        gender: '',         // valor por defecto
+        phone: '',          // valor por defecto
+        area_code: '',      // valor por defecto
+        club_id: 0,         // valor por defecto
+        profile_photo: null,
+        partner: null
+      } as TournamentPlayer;
+    });
+  }
+
   private _filterPlayers(value: any): User[] {
     let filterValue = '';
     if (typeof value === 'string') {
@@ -157,7 +271,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     return user ? `${user.name} ${user.lastname}` : '';
   }
 
- 
+
 
   onImageError(event: Event): void {
     (event.target as HTMLImageElement).src = this.defaultAvatar;
@@ -170,6 +284,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
 
   onCategoryChange(category: { id: number, max_participants: number }) {
     this.selectedCategory = category;
+    this.cargarParticipantesPorCategoria(); // 🔹 carga automática
   }
 
   removePlayer(user: User): void {
@@ -208,8 +323,10 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
   // Validar que todos los jugadores tengan pareja
   for (const jugador of this.selectedPlayers) {
     if (!jugador.partner) {
-      this.error = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
-      console.error('Jugador sin pareja:', jugador); // <-- Log específico
+      const msg = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
+      this.error = msg;
+      console.error('❌ Error de validación:', msg, jugador);
+      this.snackBar.open(msg, 'Cerrar', { duration: 5000, panelClass: ['snackbar-error'] });
       return;
     }
   }
@@ -227,28 +344,22 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
         category_tournament_id: Number(this.selectedCategory!.id),
         partner_id: Number(j.partner!.id)
       };
-      console.log(payload)
-      console.log('🔹 Payload a enviar:', payload); // <-- Log del payload
       requests.push(this.tournamentService.addUsertoTournament(payload));
-    } else {
-      console.warn('Pareja duplicada detectada:', j, j.partner); // <-- Log de duplicados
     }
   }
 
   if (requests.length === 0) {
-    this.snackBar.open('No hay parejas nuevas para agregar.', 'Cerrar', {
-      duration: 3000,
-      panelClass: ['snackbar-info']
-    });
+    const msg = 'No hay parejas nuevas para agregar.';
+    this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['snackbar-info'] });
     return;
   }
-  console.log('✅ Todos los payloads a enviar:');
 
   forkJoin(requests).subscribe({
     next: (responses) => {
+      const errors: string[] = [];
+
       responses.forEach((res, index) => {
         const jugador = this.selectedPlayers[index];
-        console.log('🔹 Respuesta del servidor para', jugador, ':', res); // <-- Log de respuesta
         const coupleData = res?.couple?.couple;
 
         if (coupleData?.ok) {
@@ -257,19 +368,25 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
             panelClass: ['snackbar-success']
           });
         } else {
+          // Captura mensaje específico del servidor si existe
           const msg = res?.couple?.message || 'Ocurrió un error al agregar la pareja.';
-          console.error('❌ Error en la respuesta del servidor:', msg, 'Jugador:', jugador, 'Pareja:', jugador.partner);
-          this.snackBar.open(`❌ ${msg}`, 'Cerrar', {
-            duration: 6000,
-            panelClass: ['snackbar-error']
-          });
+          errors.push(`Jugador: ${jugador.name} ${jugador.lastname}, Pareja: ${jugador.partner!.name}, Error: ${msg}`);
+          console.error('❌ Error al agregar pareja:', msg, 'Jugador:', jugador, 'Pareja:', jugador.partner);
         }
       });
+
+      if (errors.length > 0) {
+        const combinedMsg = errors.join('\n');
+        this.snackBar.open(`❌ Algunos errores ocurrieron:\n${combinedMsg}`, 'Cerrar', {
+          duration: 8000,
+          panelClass: ['snackbar-error']
+        });
+      }
 
       this.dialogRef.close(this.selectedPlayers);
     },
     error: (err) => {
-      console.error('❌ Error agregando parejas:', err); // <-- Log específico de error HTTP
+      console.error('❌ Error agregando parejas:', err);
       this.snackBar.open('❌ Ocurrió un error al agregar las parejas.', 'Cerrar', {
         duration: 6000,
         panelClass: ['snackbar-error']

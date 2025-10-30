@@ -50,11 +50,10 @@
             <span>Inscripción hasta: {{ torneo.registration_deadline | date:'dd MMM yyyy' }}</span>
           </div>
 
-          <div class="info-item">
-            <mat-icon>payments</mat-icon>
-            <span>Cuota: {{ torneo.registration_fee | currency:'MXN':'symbol-narrow' }}</span>
-          </div>
-
+  <div class="info-item">
+    <mat-icon>payments</mat-icon>
+    <span>Cuota: {{ +torneo.registration_fee | currency:'':'symbol':'1.2-2':'en-US' }}</span>
+  </div>
           <div class="info-item" *ngIf="torneo.prizes">
             <mat-icon>emoji_events</mat-icon>
             <span>{{ torneo.prizes.length ? torneo.prizes.join(', ') : 'Sin premio' }}</span>

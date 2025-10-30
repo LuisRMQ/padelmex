@@ -1,87 +1,197 @@
-<div style="flex-direction: row;">
-  <h2 mat-dialog-title class="titulo-modal">Participantes del Torneo</h2>
-</div>
+<div class="modal-wrapper">
+  <div class="modal-container">
+    <!-- Header del Modal -->
+    <div class="modal-header">
+      <div class="header-content">
+        <h2 mat-dialog-title class="titulo-modal">Participantes del Torneo</h2>
+        <div class="header-decoration"></div>
+      </div>
+    </div>
 
-<div class="row-fields">
-  <mat-form-field class="modal-field" appearance="outline">
-    <mat-label>Agregar Jugadores</mat-label>
-    <input type="text" matInput [formControl]="playerSearchControl" [matAutocomplete]="autoPlayers"
-        placeholder="Busca jugadores para agregar">
-    <mat-autocomplete #autoPlayers="matAutocomplete" [displayWith]="displayFn"
-        (optionSelected)="addPlayer($event.option.value)">
-      <mat-option *ngFor="let user of filteredPlayers | async" [value]="user">
-        <div class="player-option">
-          <img [src]="user.profile_photo || defaultAvatar" class="player-photo" alt="Foto"
-              (error)="onImageError($event)">
-          <div class="player-info">
-            <span class="player-name">{{ user.name }} {{ user.lastname }}</span>
-            <span class="player-email" *ngIf="user.email">{{ user.email }}</span>
-            <span class="player-phone" *ngIf="user.phone">{{ user.phone }}</span>
+    <!-- Contenido Principal -->
+    <div class="modal-content-wrapper">
+      <!-- Controles Superiores -->
+      <div class="controls-section">
+        <div class="row-fields">
+          <!-- Mostrar autocomplete solo si la categoría NO está cerrada -->
+          <ng-container *ngIf="!isCategoryClosed">
+            <mat-form-field class="modal-field search-field" appearance="outline">
+              <mat-label>Agregar Jugadores</mat-label>
+              <input type="text" matInput 
+                     [formControl]="playerSearchControl" 
+                     [matAutocomplete]="autoPlayers"
+                     placeholder="Busca jugadores para agregar">
+              <mat-icon matSuffix>search</mat-icon>
+              <mat-autocomplete #autoPlayers="matAutocomplete" [displayWith]="displayFn"
+                                (optionSelected)="addPlayer($event.option.value)">
+                <mat-option *ngFor="let user of filteredPlayers | async" [value]="user">
+                  <div class="player-option">
+                    <div class="player-photo-container">
+                      <img [src]="user.profile_photo || defaultAvatar" class="player-photo" alt="Foto"
+                           (error)="onImageError($event)">
+                    </div>
+                    <div class="player-info">
+                      <span class="player-name">{{ user.name }} {{ user.lastname }}</span>
+                      <span class="player-details">
+                        <span class="player-email" *ngIf="user.email">{{ user.email }}</span>
+                        <span class="player-phone" *ngIf="user.phone">{{ user.phone }}</span>
+                      </span>
+                    </div>
+                  </div>
+                </mat-option>
+                <mat-option *ngIf="isLoadingPlayers" disabled>
+                  <div class="loading-option">
+                    <mat-spinner diameter="20"></mat-spinner>
+                    <span>Buscando jugadores...</span>
+                  </div>
+                </mat-option>
+                <mat-option
+                    *ngIf="(filteredPlayers | async)?.length === 0 && !isLoadingPlayers && hasValidSearchTermPlayers()"
+                    disabled>
+                  No se encontraron jugadores
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+          </ng-container>
+
+          <!-- Mensaje si la categoría está cerrada -->
+          <ng-container *ngIf="isCategoryClosed">
+            <div class="category-closed-card">
+              <div class="closed-icon">
+                <mat-icon color="warn">lock</mat-icon>
+              </div>
+              <div class="closed-text">
+                <h4>Convocatoria Cerrada</h4>
+                <p>No se pueden agregar más jugadores a esta categoría.</p>
+              </div>
+            </div>
+          </ng-container>
+
+          <mat-form-field appearance="outline" class="modal-field category-field">
+            <mat-label>Categoría</mat-label>
+            <mat-select [(value)]="selectedCategory" (selectionChange)="onCategoryChange($event.value)">
+              <mat-option *ngFor="let category of categories" [value]="category">
+                {{ category.name }} (Máx: {{ category.max_participants }})
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>expand_more</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Contenido Scrollable -->
+      <mat-dialog-content class="contenido-modal">
+        <!-- Estados de carga y error -->
+        <div *ngIf="loading" class="loading-container">
+          <div class="spinner"></div>
+          <p>Cargando participantes...</p>
+        </div>
+        
+        <div *ngIf="error" class="error-container">
+          <mat-icon>error_outline</mat-icon>
+          <p>{{ error }}</p>
+        </div>
+
+        <!-- PARTICIPANTES DEL SERVIDOR -->
+        <div *ngIf="!loading && selectedPlayersFromServer?.length" class="section-container">
+          <div class="section-header">
+            <h3>Participantes registrados</h3>
+            <span class="badge">{{ selectedPlayersFromServer.length }}</span>
+          </div>
+          <div class="table-container">
+            <table mat-table [dataSource]="selectedPlayersFromServer" class="participants-table">
+              <ng-container matColumnDef="photo">
+                <th mat-header-cell *matHeaderCellDef class="table-header">Foto</th>
+                <td mat-cell *matCellDef="let player" class="table-cell">
+                  <div class="player-avatar">
+                    <img *ngIf="player.profile_photo; else defaultAvatar" 
+                         [src]="player.profile_photo" alt="Foto jugador"/>
+                    <ng-template #defaultAvatar>
+                      <mat-icon>person</mat-icon>
+                    </ng-template>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef class="table-header">Nombre</th>
+                <td mat-cell *matCellDef="let player" class="table-cell"> 
+                  <span class="player-name">{{ player.name }} {{ player.lastname }}</span>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumnsServer" class="table-header-row"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumnsServer;" class="table-row"></tr>
+            </table>
           </div>
         </div>
-      </mat-option>
-      <mat-option *ngIf="isLoadingPlayers" disabled>
-        <div style="display: flex; align-items: center;">
-          <mat-spinner diameter="20"></mat-spinner>
-          <span style="margin-left: 10px;">Buscando jugadores...</span>
+
+        <!-- JUGADORES AGREGADOS MANUALMENTE -->
+        <div *ngIf="!loading && selectedPlayers.length" class="section-container">
+          <div class="section-header">
+            <h3>Jugadores agregados</h3>
+            <span class="badge">{{ selectedPlayers.length }}</span>
+          </div>
+          <div class="players-grid">
+            <div *ngFor="let jugador of selectedPlayers" class="participante-card">
+              <div class="card-header">
+                <div class="player-main-info">
+                  <div class="avatar">
+                    <img *ngIf="jugador.profile_photo; else defaultAvatar" 
+                         [src]="jugador.profile_photo" alt="{{ jugador.name }}" />
+                    <ng-template #defaultAvatar>
+                      <mat-icon>person</mat-icon>
+                    </ng-template>
+                  </div>
+                  <div class="info">
+                    <span class="nombre">{{ jugador.name }} {{ jugador.lastname }}</span>
+                  </div>
+                </div>
+                <button mat-icon-button color="warn" class="delete-btn" (click)="removePlayer(jugador)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+
+              <!-- Selección de pareja -->
+              <mat-form-field appearance="outline" class="partner-field">
+                <mat-label>Selecciona Pareja</mat-label>
+                <mat-select [(value)]="jugador.partner">
+                  <mat-option *ngFor="let p of selectedPlayers" 
+                             [value]="p" 
+                             [disabled]="p.id === jugador.id || isAlreadyPaired(p, jugador)">
+                    {{ p.name }} {{ p.lastname }}
+                  </mat-option>
+                </mat-select>
+                <mat-icon matSuffix>people</mat-icon>
+              </mat-form-field>
+            </div>
+          </div>
         </div>
-      </mat-option>
-      <mat-option
-          *ngIf="(filteredPlayers | async)?.length === 0 && !isLoadingPlayers && hasValidSearchTermPlayers()"
-          disabled>
-        No se encontraron jugadores
-      </mat-option>
-    </mat-autocomplete>
-  </mat-form-field>
 
-  <mat-form-field appearance="outline" class="modal-field">
-    <mat-label>Categoría</mat-label>
-    <mat-select [(value)]="selectedCategory" (selectionChange)="onCategoryChange($event.value)">
-      <mat-option *ngFor="let category of categories" [value]="category">
-        {{ category.name }} (Máx: {{ category.max_participants }})
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-</div>
+        <!-- Estado vacío -->
+        <div *ngIf="!loading && selectedPlayers.length === 0 && !selectedPlayersFromServer?.length" 
+             class="empty-state">
+          <mat-icon>group</mat-icon>
+          <h4>No hay participantes</h4>
+          <p>Utiliza el buscador para agregar jugadores al torneo</p>
+        </div>
+      </mat-dialog-content>
+    </div>
 
-<mat-dialog-content class="contenido-modal">
-  <div *ngIf="loading" class="loading">⏳ Cargando participantes...</div>
-  <div *ngIf="error" class="error">{{ error }}</div>
-
-  <div *ngIf="!loading && selectedPlayers.length" class="lista-participantes">
-    <div *ngFor="let jugador of selectedPlayers; let i = index" class="participante-card">
-      <div class="avatar">
-        <img *ngIf="jugador.profile_photo; else defaultAvatar" [src]="jugador.profile_photo" alt="{{ jugador.name }}" />
-        <ng-template #defaultAvatar>
-          <mat-icon>person</mat-icon>
-        </ng-template>
-      </div>
-      <div class="info">
-        <span class="nombre">{{ jugador.name }} {{ jugador.lastname }}</span>
-      </div>
-      
-      <!-- Selección de pareja -->
-      <mat-form-field appearance="outline" class="modal-field">
-        <mat-label>Selecciona Pareja</mat-label>
-        <mat-select [(value)]="jugador.partner">
-          <mat-option *ngFor="let p of selectedPlayers" [value]="p" [disabled]="p.id === jugador.id || isAlreadyPaired(p, jugador)">
-            {{ p.name }} {{ p.lastname }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <button mat-icon-button color="warn" (click)="removePlayer(jugador)">
-        <mat-icon>delete</mat-icon>
-      </button>
+    <!-- Acciones Fijas en la Parte Inferior -->
+    <div class="modal-actions-fixed">
+      <mat-dialog-actions align="end" class="acciones-modal">
+        <button mat-stroked-button color="primary" class="action-btn confirm-btn"
+                (click)="confirmPairs()"
+                [disabled]="isCategoryClosed">
+          <mat-icon>check_circle</mat-icon>
+          Confirmar Parejas
+        </button>
+        <button mat-stroked-button color="warn" class="action-btn" mat-dialog-close>
+          <mat-icon>close</mat-icon>
+          Cerrar
+        </button>
+      </mat-dialog-actions>
     </div>
   </div>
-
-  <div *ngIf="!loading && selectedPlayers.length === 0" class="sin-participantes">
-    No hay participantes registrados.
-  </div>
-</mat-dialog-content>
-
-<mat-dialog-actions align="end" class="acciones-modal">
-  <button mat-stroked-button color="primary" (click)="confirmPairs()">Confirmar Parejas</button>
-  <button mat-stroked-button color="warn" mat-dialog-close>Cerrar</button>
-</mat-dialog-actions>
+</div>

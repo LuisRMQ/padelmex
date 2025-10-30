@@ -1,44 +1,196 @@
-.titulo-modal {
-  text-align: center;
-  font-weight: 600;
-  margin-bottom: 10px;
+/* =========================
+   Variables y configuración global
+========================= */
+:host {
+  --primary-color: #336699;
+  --primary-light: #e8eaf6;
+  --accent-color: #ff4081;
+  --warn-color: #f44336;
+  --success-color: #4caf50;
+  --text-primary: #2c3e50;
+  --text-secondary: #546e7a;
+  --text-light: #90a4ae;
+  --bg-light: #f5f7fa;
+  --border-color: #e0e0e0;
+  --shadow-light: 0 2px 10px rgba(0,0,0,0.08);
+  --shadow-medium: 0 4px 20px rgba(0,0,0,0.12);
+  --border-radius: 12px;
+  --transition: all 0.3s ease;
 }
 
-.contenido-modal {
-  max-height: 70vh;
-  overflow-y: auto;
-  padding: 10px 20px;
-}
-
-.loading,
-.error,
-.sin-participantes {
-  text-align: center;
-  font-size: 16px;
-  margin: 20px 0;
-}
-
-.lista-participantes {
+/* =========================
+   Wrapper principal para el modal
+========================= */
+.modal-wrapper {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px; /* separación entre participantes */
 }
 
-.participante-card {
+.modal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: white;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+  min-width: 800px;
+  max-width: 95vw;
+  max-height: 90vh;
+}
+
+/* =========================
+   Encabezado del modal - Fijo
+========================= */
+.modal-header {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary-color), #5c6bc0);
+  color: white;
+  position: relative;
+}
+
+.header-content {
+  padding: 20px 30px 15px;
+  text-align: center;
+}
+
+.titulo-modal {
+  font-weight: 600;
+  font-size: 1.8rem;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.header-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+}
+
+/* =========================
+   Contenedor de contenido principal
+========================= */
+.modal-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.controls-section {
+  flex-shrink: 0;
+  padding: 25px 30px 15px;
+  background-color: var(--bg-light);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* =========================
+   Fila de campos
+========================= */
+.row-fields {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.search-field {
+  flex: 2;
+  min-width: 300px;
+}
+
+.category-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* =========================
+   Contenido scrollable
+========================= */
+.contenido-modal {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 30px;
+  max-height: none !important; /* Anular max-height de Material */
+  margin: 0 !important; /* Anular márgenes de Material */
+}
+
+/* =========================
+   Secciones de contenido
+========================= */
+.section-container {
+  margin-bottom: 30px;
+}
+
+.section-header {
   display: flex;
   align-items: center;
-  background-color: #f5f5f5;
-  padding: 10px 15px;
-  border-radius: 8px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.participante-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+.section-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.avatar {
+.badge {
+  background: var(--primary-color);
+  color: white;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+/* =========================
+   Tabla de participantes
+========================= */
+.table-container {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-light);
+}
+
+.participants-table {
+  width: 100%;
+  background: white;
+}
+
+.table-header {
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--primary-light);
+  padding: 15px 10px;
+}
+
+.table-cell {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table-header-row {
+  height: 50px;
+}
+
+.table-row {
+  height: 60px;
+  transition: var(--transition);
+}
+
+.table-row:hover {
+  background-color: rgba(0,0,0,0.02);
+}
+
+.player-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -46,7 +198,60 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #3f51b5; /* color de fondo si no hay foto */
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.player-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =========================
+   Grid de jugadores
+========================= */
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.participante-card {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 20px;
+  box-shadow: var(--shadow-light);
+  transition: var(--transition);
+  border: 1px solid var(--border-color);
+}
+
+.participante-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.player-main-info {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-color), #7986cb);
   color: white;
   margin-right: 15px;
   flex-shrink: 0;
@@ -58,104 +263,312 @@
   object-fit: cover;
 }
 
-
 .info {
   display: flex;
   flex-direction: column;
 }
 
 .info .nombre {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
 }
 
-.info .email {
-  font-size: 12px;
-  color: gray;
+.delete-btn {
+  transition: var(--transition);
+}
+
+.delete-btn:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.partner-field {
+  width: 100%;
+}
+
+/* =========================
+   Estados de UI
+========================= */
+.loading-container,
+.error-container,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.loading-container p,
+.error-container p {
+  margin-top: 15px;
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.error-container {
+  color: var(--warn-color);
+}
+
+.error-container mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 10px;
+}
+
+.empty-state {
+  color: var(--text-light);
+}
+
+.empty-state mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.empty-state h4 {
+  margin: 10px 0 5px;
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--primary-light);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================
+   Mensaje categoría cerrada
+========================= */
+.category-closed-card {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  color: #c62828;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  border-left: 4px solid var(--warn-color);
+  flex: 2;
+}
+
+.closed-icon {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.closed-text h4 {
+  margin: 0 0 5px;
+  font-size: 1.1rem;
+}
+
+.closed-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* =========================
+   ACCIONES FIJAS EN LA PARTE INFERIOR
+========================= */
+.modal-actions-fixed {
+  flex-shrink: 0;
+  padding: 20px 30px;
+  background-color: var(--bg-light);
+  border-top: 1px solid var(--border-color);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .acciones-modal {
-  margin-top: 15px;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 15px;
+  margin: 0 !important; /* Anular márgenes de Material */
+  padding: 0 !important; /* Anular padding de Material */
 }
 
-
-.badge-jugador {
-  background: #eaf3ff;
-  color: #1976d2;
-  border-radius: 14px;
-  padding: 6px 18px;
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(44,62,80,0.07);
-  display: inline-block;
+  text-transform: none;
+  padding: 0 20px;
+  min-width: 160px;
+  height: 44px;
+  transition: var(--transition);
 }
-.jugador-item {
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-light);
+}
+
+.confirm-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.confirm-btn:disabled {
+  background-color: var(--text-light);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* =========================
+   Campos de formulario
+========================= */
+.modal-field {
+  width: 100%;
+}
+
+.mat-form-field-appearance-outline .mat-form-field-outline {
+  border-radius: 8px;
+  transition: var(--transition);
+}
+
+.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline {
+  box-shadow: var(--shadow-light);
+}
+
+/* =========================
+   Opciones de jugador en autocomplete
+========================= */
+.player-option {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 6px 0;
-  gap: 12px;
+  padding: 8px 0;
 }
 
-.jugadores-seleccionados {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Opción para los jugadores en autocomplete y lista seleccionada */
-.player-option,
-.jugador-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Imagen pequeña tipo avatar */
-.player-option img,
-.jugador-item img {
-  width: 30px;
-  height: 30px;
+.player-photo-container {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
+  overflow: hidden;
+  margin-right: 12px;
+  flex-shrink: 0;
+  background-color: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-photo {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-/* Contenedor del nombre y teléfono */
 .player-info {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Espacio entre nombre y teléfono */
-  flex-wrap: wrap; /* En pantallas pequeñas, teléfono puede ir a la siguiente línea */
+  flex: 1;
 }
 
-/* Nombre del jugador */
 .player-name {
   font-weight: 600;
-  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 2px;
 }
 
-/* Teléfono */
-.player-phone {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.modal-field {
-	width: 100%;
-}
-
-.row-fields {
+.player-details {
   display: flex;
-  gap: 16px;
-  align-items: flex-end;
-  padding-left: 24px;
-  padding-right: 24px;
+  flex-direction: column;
 }
 
-.row-fields .modal-field {
-  flex: 1;
-  min-width: 200px;
+.player-email,
+.player-phone {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+.loading-option {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.loading-option span {
+  margin-left: 10px;
+}
+
+/* =========================
+   Responsive
+========================= */
+@media (max-width: 768px) {
+  .modal-container {
+    min-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: 15px 20px 10px;
+  }
+  
+  .titulo-modal {
+    font-size: 1.5rem;
+  }
+  
+  .controls-section {
+    padding: 20px 20px 10px;
+  }
+  
+  .row-fields {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .search-field,
+  .category-field {
+    min-width: 100%;
+  }
+  
+  .contenido-modal {
+    padding: 15px 20px;
+  }
+  
+  .players-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-actions-fixed {
+    padding: 15px 20px;
+  }
+  
+  .acciones-modal {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Asegurar que el modal ocupe todo el espacio disponible */
+::ng-deep .mat-dialog-container {
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: var(--border-radius) !important;
 }
