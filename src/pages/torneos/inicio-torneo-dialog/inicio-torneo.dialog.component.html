@@ -1,30 +1,23 @@
 <!-- =========================
      HEADER / TOOLBAR (mínimo)
      ========================= -->
-<mat-toolbar class="bracket-toolbar" color="primary" role="banner">
-  <div class="toolbar-left">
-    <div class="logo-container">
-      <mat-icon class="tournament-icon">emoji_events</mat-icon>
-    </div>
-    <div class="title-section">
-      <h1 class="titulo-modal">Bracket del Torneo</h1>
-    </div>
-  </div>
 
-  <div class="toolbar-right">
-    <button mat-icon-button class="close-btn" aria-label="Cerrar" (click)="cerrar()">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
-</mat-toolbar>
 
 <!-- =========================
      CONTENIDO PRINCIPAL (categoria + Results / Sets)
      ========================= -->
 <mat-dialog-content class="contenido-modal">
 
+  <!-- ===== SPINNER DE CARGA ===== -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="loading-container">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p class="loading-text">Cargando bracket del torneo...</p>
+    </div>
+  </div>
+
   <!-- ===== Selección de categoría (reincorporada) ===== -->
-  <div class="controls-section minimal-controls">
+  <div class="controls-section minimal-controls" *ngIf="!loading">
     <mat-form-field appearance="outline" class="category-select">
       <mat-label>Seleccionar Categoría</mat-label>
       <mat-select [(value)]="selectedCategory" (selectionChange)="filtrarCategoria()">
@@ -38,7 +31,7 @@
     </mat-form-field>
   </div>
 
-  <div class="results-view">
+  <div class="results-view" *ngIf="!loading">
     <div class="results-and-bracket">
 
       <!-- COLUMNA IZQUIERDA: Resultados (SETS) -->
@@ -105,7 +98,7 @@
 
   <!-- Mensaje de no results centrado y más grande -->
   <ng-template #noResults>
-    <div class="no-results-container">
+    <div class="no-results-container" *ngIf="!loading">
       <div class="empty-state">
         <mat-icon class="empty-icon">sports_tennis</mat-icon>
         <p class="empty-message">Selecciona una categoría para ver los resultados</p>
@@ -115,7 +108,7 @@
 
   <!-- Mensaje cuando no hay categoría seleccionada -->
   <ng-template #noCategorySelected>
-    <div class="bracket-column placeholder">
+    <div class="bracket-column placeholder" *ngIf="!loading">
       <div class="no-results-container">
         <div class="empty-state">
           <mat-icon class="empty-icon">category</mat-icon>
@@ -130,6 +123,6 @@
 <!-- =========================
      BOTONES FINALES (mínimos)
      ========================= -->
-<mat-dialog-actions align="end" class="dialog-actions">
+<mat-dialog-actions align="end" class="dialog-actions" *ngIf="!loading">
   <button mat-stroked-button (click)="cerrar()" class="action-btn">Cerrar</button>
 </mat-dialog-actions>

@@ -99,11 +99,38 @@ private scrollTop = 0;
     private dialog: MatDialog
   ) { }
 
-  ngOnInit(): void {
-    this.cargarBracket();
+ngOnInit(): void {
+  this.cargarBracket();
+}
 
+private cargarDetallesJuegosExistentes() {
+  console.log('🔄 Iniciando carga de detalles de juegos existentes...');
+  
+  if (!this.bracketDataCards || this.bracketDataCards.length === 0) {
+    console.warn('⚠️ bracketDataCards está vacío');
+    return;
+  }
+  
+  // Recopilar todos los IDs de juegos existentes de bracketDataCards
+  const allMatches = this.bracketDataCards.flat();
+  console.log('📋 Todos los partidos:', allMatches);
+  
+  const matchesWithIds = allMatches.filter(match => match.id && match.id !== null);
+  
+  console.log('🎯 Encontrados', matchesWithIds.length, 'juegos con IDs:', matchesWithIds.map(m => ({ id: m.id, group: m.groupName })));
+
+  if (matchesWithIds.length === 0) {
+    console.log('ℹ️ No hay juegos con IDs para cargar detalles');
+    console.log('🔍 Revisando estructura de bracketDataCards:', this.bracketDataCards);
+    return;
   }
 
+  // Cargar detalles para cada juego
+  matchesWithIds.forEach(match => {
+    console.log('📥 Cargando detalles para gameId:', match.id);
+    this.loadGameDetails(match.id!);
+  });
+}
 
 
 enableBracketDragging(): void {
@@ -168,44 +195,106 @@ enableBracketDragging(): void {
     }
   }
 
-  cargarBracket() {
-    this.loading = true;
-    this.tournamentService.getBracketsByTournament(this.data.torneoId).subscribe({
-      next: (res) => {
-        this.bracket = res.data?.data?.bracket || [];
-        this.categories = this.bracket;
-        this.selectedCategory = this.categories[0] || null;
-        this.filtrarCategoria();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar el bracket:', err);
-        this.error = 'No se pudo cargar el bracket del torneo';
-        this.loading = false;
-      }
-    });
-  }
+ cargarBracket() {
+  this.loading = true;
+  this.tournamentService.getBracketsByTournament(this.data.torneoId).subscribe({
+    next: (res) => {
+      console.log('🧱 Bracket API RAW:', res);
+      console.log('🧱 Bracket data:', res.data?.data?.bracket);
+      
+      this.bracket = res.data?.data?.bracket || [];
+      this.categories = this.bracket;
+      this.selectedCategory = this.categories[0]?.category_name || null;
+      
+      console.log('📋 Categories disponibles:', this.categories);
+      
+      // Filtrar categoría primero
+      this.filtrarCategoria();
+      
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error al cargar el bracket:', err);
+      this.error = 'No se pudo cargar el bracket del torneo';
+      this.loading = false;
+    }
+  });
+}
+
 
   filtrarCategoria() {
-    if (!this.selectedCategory) return;
-
-    this.filteredBracket = this.bracket.filter(
-      b => b.category_name === this.selectedCategory
-    );
-
-    if (this.filteredBracket.length > 0) {
-      setTimeout(() => {
-        this.drawBracket();
-        this.drawBracketSets(); // ← SIEMPRE llamar aquí
-      }, 0);
-      this.generateResultsFromBracket(this.filteredBracket[0]);
-    } else {
-      this.results = [];
-      if (this.gContainer) this.gContainer.selectAll('*').remove();
-      // También dibujar estructura básica si no hay categoría seleccionada
-      setTimeout(() => this.drawBracketSets(), 0);
-    }
+  if (!this.selectedCategory) {
+    console.warn('⚠️ No hay categoría seleccionada');
+    return;
   }
+
+  console.log('🎯 Filtrando categoría:', this.selectedCategory);
+  
+  this.filteredBracket = this.bracket.filter(
+    b => b.category_name === this.selectedCategory
+  );
+
+  console.log('📊 filteredBracket:', this.filteredBracket);
+
+  if (this.filteredBracket.length > 0) {
+    // Primero generar los datos del bracket
+    this.generateResultsFromBracket(this.filteredBracket[0]);
+    
+    console.log('🔄 Llamando a drawBracket...');
+    
+    // Dibujar con un pequeño delay para asegurar que el DOM esté listo
+    setTimeout(() => {
+      this.drawBracket();
+      this.drawBracketSets();
+      
+      console.log('✅ Bracket dibujado');
+      console.log('📊 bracketDataCards después de draw:', this.bracketDataCards);
+      
+      // 🔥 CARGAR DETALLES SOLO SI HAY DATOS
+      if (this.bracketDataCards.length > 0) {
+        console.log('🎯 Cargando detalles de juegos...');
+        this.cargarDetallesJuegosExistentes();
+      } else {
+        console.warn('⚠️ bracketDataCards sigue vacío, intentando mapear directamente...');
+        this.forceLoadGameDetails();
+      }
+      
+    }, 100);
+  } else {
+    console.warn('⚠️ No hay datos en filteredBracket');
+    this.results = [];
+    if (this.gContainer) this.gContainer.selectAll('*').remove();
+    setTimeout(() => this.drawBracketSets(), 0);
+  }
+}
+
+
+private forceLoadGameDetails() {
+  console.log('🚨 FORZANDO carga de detalles desde filteredBracket...');
+  
+  if (this.filteredBracket.length > 0) {
+    // Mapear directamente desde filteredBracket
+    const bracketData = this.mapToPartidos(this.filteredBracket[0]);
+    this.bracketDataCards = bracketData;
+    
+    console.log('💾 bracketDataCards forzado:', this.bracketDataCards);
+    console.log('📋 Partidos con IDs:', this.bracketDataCards.flat().filter(p => p.id).length);
+    
+    // Ahora cargar detalles
+    this.cargarDetallesJuegosExistentes();
+  }
+}
+
+private cargarScoresExistentes() {
+  const allMatches = this.bracketDataCards.flat();
+  const matchesWithIds = allMatches.filter(match => match.id);
+  
+  console.log('🎯 Cargando scores para matches:', matchesWithIds.length);
+  
+  matchesWithIds.forEach(match => {
+    this.loadGameDetails(match.id!);
+  });
+}
 
   private generateResultsFromBracket(category: any) {
     const rounds = this.mapToPartidos(category);
@@ -302,72 +391,75 @@ enableBracketDragging(): void {
 
   // ------------------ D3 DRAW ------------------
   private drawBracket(useCachedData: boolean = false) {
-    if (this.viewMode === 'cards') return;
-    if (!this.bracketContainer?.nativeElement) return;
+  if (this.viewMode === 'cards') return;
+  if (!this.bracketContainer?.nativeElement) return;
 
-    const container = this.bracketContainer.nativeElement as HTMLElement;
-    if (container.offsetParent === null) {
-      setTimeout(() => this.drawBracket(useCachedData), 50);
-      return;
-    }
-
-    const bracketData: Partido[][] = useCachedData && this.bracketDataCards.length
-      ? this.bracketDataCards
-      : this.mapToPartidos(this.filteredBracket[0]);
-
-    if (!useCachedData) this.bracketDataCards = bracketData;
-
-    d3.select(container).selectAll('*').remove();
-
-    const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
-    const maxMatches = Math.max(...bracketData.map(r => r.length));
-    const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
-
-    this.svg = d3.select(container).append('svg')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('class', 'bracket-svg');
-
-    this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
-
-    const phases: string[] = this.computePhaseLabels(bracketData);
-    phases.forEach((phase, i) => {
-      const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
-      this.gContainer.append('text')
-        .text(phase)
-        .attr('x', x)
-        .attr('y', 20)
-        .attr('text-anchor', 'middle')
-        .attr('fill', '#000')
-        .attr('font-weight', 'bold')
-        .attr('font-size', '20px');
-    });
-
-    this.calculatePositions(bracketData, height);
-
-    bracketData.forEach((ronda, roundIndex) => {
-      ronda.forEach((partido, matchIndex) => {
-        this.drawMatch(partido, roundIndex, matchIndex);
-        if (roundIndex < bracketData.length - 1) {
-          this.drawConnections(partido, roundIndex, matchIndex, bracketData);
-        }
-      });
-    });
-
-    // Dragging
-    this.svg.call(
-      d3.drag()
-        .on('start', (event: any) => {
-          this.startX = event.x - this.translateX;
-          this.startY = event.y - this.translateY;
-        })
-        .on('drag', (event: any) => {
-          this.translateX = event.x - this.startX;
-          this.translateY = event.y - this.startY;
-          this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
-        })
-    );
+  const container = this.bracketContainer.nativeElement as HTMLElement;
+  if (container.offsetParent === null) {
+    setTimeout(() => this.drawBracket(useCachedData), 50);
+    return;
   }
+
+  console.log('🎨 Dibujando bracket, useCachedData:', useCachedData);
+
+  // 🔥 SIEMPRE mapear datos frescos para bracketDataCards
+  const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
+  
+  // 🔥 ACTUALIZAR bracketDataCards SIEMPRE
+  this.bracketDataCards = bracketData;
+  console.log('💾 bracketDataCards actualizado en drawBracket:', this.bracketDataCards.length);
+
+  d3.select(container).selectAll('*').remove();
+
+  const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
+  const maxMatches = Math.max(...bracketData.map(r => r.length));
+  const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
+
+  this.svg = d3.select(container).append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('class', 'bracket-svg');
+
+  this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
+
+  const phases: string[] = this.computePhaseLabels(bracketData);
+  phases.forEach((phase, i) => {
+    const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
+    this.gContainer.append('text')
+      .text(phase)
+      .attr('x', x)
+      .attr('y', 20)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#000')
+      .attr('font-weight', 'bold')
+      .attr('font-size', '20px');
+  });
+
+  this.calculatePositions(bracketData, height);
+
+  bracketData.forEach((ronda, roundIndex) => {
+    ronda.forEach((partido, matchIndex) => {
+      this.drawMatch(partido, roundIndex, matchIndex);
+      if (roundIndex < bracketData.length - 1) {
+        this.drawConnections(partido, roundIndex, matchIndex, bracketData);
+      }
+    });
+  });
+
+  // Dragging
+  this.svg.call(
+    d3.drag()
+      .on('start', (event: any) => {
+        this.startX = event.x - this.translateX;
+        this.startY = event.y - this.translateY;
+      })
+      .on('drag', (event: any) => {
+        this.translateX = event.x - this.startX;
+        this.translateY = event.y - this.startY;
+        this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
+      })
+  );
+}
 
   private forceRedrawBracket() {
     if (this.viewMode === 'bracket') {
@@ -379,121 +471,149 @@ enableBracketDragging(): void {
 
   // ------------------ MAPEO DE PARTIDOS ------------------
   private mapToPartidos(category: any): Partido[][] {
-    const rounds: Partido[][] = [];
+  console.log('🗺️ Mapeando partidos de category:', category);
+  
+  const rounds: Partido[][] = [];
 
-    // -------------------------------
-    // 1️⃣ FASE DE GRUPOS
-    // -------------------------------
-    const groupRound: Partido[] = [];
+  // -------------------------------
+  // 1️⃣ FASE DE GRUPOS
+  // -------------------------------
+  const groupRound: Partido[] = [];
 
-    (category.groups || []).forEach((group: any) => {
-      const ranking = group.ranking || [];
-      const rankById: { [id: number]: any } = {};
-      (ranking as RankingItem[]).forEach((r: RankingItem) => {
-        rankById[r.couple_id] = r;
-      });
-
-      const seenPairs = new Set<string>();
-      const matches: Partido[] = [];
-
-      (group.games || []).forEach((game: any) => {
-        const a = game.couple_1;
-        const b = game.couple_2;
-        if (!a || !b) return;
-        const key = a < b ? `${a}-${b}` : `${b}-${a}`;
-        seenPairs.add(key);
-
-        matches.push({
-          jugador1: rankById[a]?.players || [{ name: 'Por asignar' }],
-          jugador2: rankById[b]?.players || [{ name: 'Por asignar' }],
-          ganador: null,
-          groupName: group.group_name,
-          id: game.game_id || null,
-          couple1Id: a || null,
-          couple2Id: b || null,
-          scores1: game.scores1 || [0, 0, 0],
-          scores2: game.scores2 || [0, 0, 0],
-          date: game.date || null,
-          start_time: game.start_time || null,
-          end_time: game.end_time || null,
-          court: game.court || null,
-          status_game: game.status_game || null
-        });
-      });
-
-      groupRound.push(...matches);
+  (category.groups || []).forEach((group: any) => {
+    console.log('👥 Procesando grupo:', group.group_name);
+    
+    const ranking = group.ranking || [];
+    const rankById: { [id: number]: any } = {};
+    (ranking as RankingItem[]).forEach((r: RankingItem) => {
+      rankById[r.couple_id] = r;
     });
 
-    if (groupRound.length) rounds.push(groupRound);
+    const seenPairs = new Set<string>();
+    const matches: Partido[] = [];
 
-    // -------------------------------
-    // 2️⃣ FASE DE ELIMINACIONES - Asegurar estructura completa
-    // -------------------------------
-    const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
-    const eliminationRounds: Partido[][] = [];
+    (group.games || []).forEach((game: any) => {
+      console.log('🎮 Juego en grupo:', game);
+      
+      const a = game.couple_1;
+      const b = game.couple_2;
+      if (!a || !b) return;
+      
+      const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+      seenPairs.add(key);
 
-    eliminationOrder.forEach((phase, phaseIndex) => {
-      const phaseGames = category.elimination?.[phase] || [];
-      const phaseMatches: Partido[] = [];
+      const partido: Partido = {
+        jugador1: rankById[a]?.players || [{ name: 'Por asignar' }],
+        jugador2: rankById[b]?.players || [{ name: 'Por asignar' }],
+        ganador: null,
+        groupName: group.group_name,
+        id: game.game_id || null,
+        couple1Id: a || null,
+        couple2Id: b || null,
+        scores1: game.scores1 || [0, 0, 0],
+        scores2: game.scores2 || [0, 0, 0],
+        date: game.date || null,
+        start_time: game.start_time || null,
+        end_time: game.end_time || null,
+        court: game.court || null,
+        status_game: game.status_game || null
+      };
+      
+      console.log('➕ Partido creado:', partido);
+      matches.push(partido);
+    });
 
-      // Determinar cuántos partidos debería tener esta ronda
-      const expectedMatches = phase === 'final' ? 1 :
-        phase === 'semifinal' ? 2 :
-          phase === 'cuartos' ? 4 : 8;
+    groupRound.push(...matches);
+  });
 
-      for (let i = 0; i < expectedMatches; i++) {
-        const existingGame = phaseGames[i];
-        let nextMatchIndex: number | null = null;
+  if (groupRound.length) {
+    console.log('📦 Group round partidos:', groupRound);
+    rounds.push(groupRound);
+  }
 
-        if (phase !== 'final') {
-          nextMatchIndex = Math.floor(i / 2);
-        }
+  // -------------------------------
+  // 2️⃣ FASE DE ELIMINACIONES
+  // -------------------------------
+  const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
+  const eliminationRounds: Partido[][] = [];
 
-        if (existingGame) {
-          // Usar el juego existente
-          phaseMatches.push({
-            jugador1: existingGame.couple_1?.players || [{ name: 'Por asignar' }],
-            jugador2: existingGame.couple_2?.players || [{ name: 'Por asignar' }],
-            ganador: null,
-            groupName: phase,
-            id: existingGame.game_id || null,
-            couple1Id: existingGame.couple_1?.id || null,
-            couple2Id: existingGame.couple_2?.id || null,
-            nextMatchIndex,
-            scores1: [0, 0, 0],
-            scores2: [0, 0, 0],
-            date: existingGame.date || null,
-            start_time: existingGame.start_time || null,
-            end_time: existingGame.end_time || null,
-            court: existingGame.court || null
-          });
-        } else {
-          // Crear partido vacío
-          phaseMatches.push({
-            jugador1: [{ name: 'Por asignar' }],
-            jugador2: [{ name: 'Por asignar' }],
-            ganador: null,
-            groupName: phase,
-            id: null,
-            couple1Id: null,
-            couple2Id: null,
-            nextMatchIndex,
-            scores1: [0, 0, 0],
-            scores2: [0, 0, 0],
-            date: null,
-            start_time: null,
-            end_time: null,
-            court: null
-          });
-        }
+  eliminationOrder.forEach((phase, phaseIndex) => {
+    console.log(`🏆 Procesando fase: ${phase}`);
+    
+    const phaseGames = category.elimination?.[phase] || [];
+    console.log(`🎮 Juegos en ${phase}:`, phaseGames);
+    
+    const phaseMatches: Partido[] = [];
+
+    // Determinar cuántos partidos debería tener esta ronda
+    const expectedMatches = phase === 'final' ? 1 :
+      phase === 'semifinal' ? 2 :
+        phase === 'cuartos' ? 4 : 8;
+
+    for (let i = 0; i < expectedMatches; i++) {
+      const existingGame = phaseGames[i];
+      let nextMatchIndex: number | null = null;
+
+      if (phase !== 'final') {
+        nextMatchIndex = Math.floor(i / 2);
       }
 
-      eliminationRounds.push(phaseMatches);
-    });
+      if (existingGame) {
+        console.log(`✅ Juego existente en ${phase}[${i}]:`, existingGame);
+        
+        const partido: Partido = {
+          jugador1: existingGame.couple_1?.players || [{ name: 'Por asignar' }],
+          jugador2: existingGame.couple_2?.players || [{ name: 'Por asignar' }],
+          ganador: null,
+          groupName: phase,
+          id: existingGame.game_id || null,
+          couple1Id: existingGame.couple_1?.id || null,
+          couple2Id: existingGame.couple_2?.id || null,
+          nextMatchIndex,
+          scores1: existingGame.scores1 || [0, 0, 0],
+          scores2: existingGame.scores2 || [0, 0, 0],
+          date: existingGame.date || null,
+          start_time: existingGame.start_time || null,
+          end_time: existingGame.end_time || null,
+          court: existingGame.court || null
+        };
+        
+        console.log(`➕ Partido de eliminación creado:`, partido);
+        phaseMatches.push(partido);
+      } else {
+        console.log(`❌ No hay juego en ${phase}[${i}], creando vacío`);
+        
+        // Crear partido vacío
+        phaseMatches.push({
+          jugador1: [{ name: 'Por asignar' }],
+          jugador2: [{ name: 'Por asignar' }],
+          ganador: null,
+          groupName: phase,
+          id: null,
+          couple1Id: null,
+          couple2Id: null,
+          nextMatchIndex,
+          scores1: [0, 0, 0],
+          scores2: [0, 0, 0],
+          date: null,
+          start_time: null,
+          end_time: null,
+          court: null
+        });
+      }
+    }
 
-    rounds.push(...eliminationRounds);
-    return rounds;
-  }
+    eliminationRounds.push(phaseMatches);
+  });
+
+  rounds.push(...eliminationRounds);
+  
+  console.log('🏁 TOTAL rounds mapeados:', rounds.length);
+  console.log('🏁 TOTAL partidos:', rounds.flat().length);
+  console.log('🏁 Partidos con IDs:', rounds.flat().filter(p => p.id).length);
+  
+  return rounds;
+}
 
   // ------------------ HELPERS ------------------
   private calculatePositions(bracketData: Partido[][], containerHeight: number) {
@@ -1210,51 +1330,95 @@ enableBracketDragging(): void {
     });
   }
 
-  private updateMatchScores(gameId: number, gameDetail: GameDetailResponse) {
-    console.log('🔄 Actualizando scores para gameId:', gameId);
+ private updateMatchScores(gameId: number, gameDetail: GameDetailResponse) {
+  console.log('🔄 Actualizando scores para gameId:', gameId);
 
-    // Actualizar en bracketDataCards
-    this.bracketDataCards.forEach(round => {
-      round.forEach(match => {
-        if (match.id === gameId) {
-          this.updateSingleMatchScores(match, gameDetail);
-        }
-      });
-    });
+  let needsRedraw = false;
 
-    // También actualizar en results
-    this.results.forEach(match => {
+  // Actualizar en bracketDataCards
+  this.bracketDataCards.forEach(round => {
+    round.forEach(match => {
       if (match.id === gameId) {
         this.updateSingleMatchScores(match, gameDetail);
+        needsRedraw = true;
       }
     });
+  });
 
-    console.log('✅ Scores actualizados, results:', this.results);
+  // También actualizar en results
+  this.results.forEach(match => {
+    if (match.id === gameId) {
+      this.updateSingleMatchScores(match, gameDetail);
+      needsRedraw = true;
+    }
+  });
 
-    // Forzar detección de cambios
-    this.forceChangeDetection();
+  console.log('✅ Scores actualizados, needsRedraw:', needsRedraw);
+
+  // Forzar actualización visual inmediata
+  if (needsRedraw) {
+    this.forceImmediateRedraw();
   }
+}
+
+private forceImmediateRedraw() {
+  // Usar setTimeout para asegurar que Angular actualice el ciclo de detección de cambios
+  setTimeout(() => {
+    if (this.viewMode === 'bracket') {
+      this.drawBracket(true);
+    } else if (this.viewMode === 'sets') {
+      this.drawBracketSets();
+    }
+    
+    // Forzar detección de cambios
+    this.results = [...this.results];
+    this.bracketDataCards = [...this.bracketDataCards];
+  }, 0);
+}
 
   private updateSingleMatchScores(match: any, gameDetail: GameDetailResponse) {
-    const sortedSets = gameDetail.sets.sort((a, b) => a.set_number - b.set_number);
+  console.log('📝 Actualizando match:', match.id);
+  console.log('📊 GameDetail sets:', gameDetail.sets);
 
+  // 🔥 MANEJAR CASO CUANDO SETS ES NULL O UNDEFINED
+  let sortedSets: any[] = [];
+  
+  if (gameDetail.sets && Array.isArray(gameDetail.sets)) {
+    sortedSets = gameDetail.sets.sort((a, b) => a.set_number - b.set_number);
+  } else {
+    console.warn('⚠️ gameDetail.sets es null o no es un array, usando array vacío');
+  }
+
+  // Actualizar scores solo si hay sets
+  if (sortedSets.length > 0) {
     match.scores1 = sortedSets.map(set => set.score_1);
     match.scores2 = sortedSets.map(set => set.score_2);
-
-    if (gameDetail.winner) {
-      match.ganador = gameDetail.winner.players;
-    }
-
-    match.status_game = gameDetail.status_game;
-
-    console.log('📝 Match actualizado:', {
-      id: match.id,
-      scores1: match.scores1,
-      scores2: match.scores2,
-      ganador: match.ganador,
-      status: match.status_game
-    });
+  } else {
+    // Si no hay sets, mantener los scores existentes o usar ceros
+    match.scores1 = match.scores1 || [0, 0, 0];
+    match.scores2 = match.scores2 || [0, 0, 0];
   }
+
+  // Actualizar ganador si existe
+  if (gameDetail.winner) {
+    match.ganador = gameDetail.winner.players;
+  } else {
+    // Si no hay ganador, limpiar el ganador existente
+    match.ganador = null;
+  }
+
+  // Actualizar estado del juego
+  match.status_game = gameDetail.status_game || 'Not started';
+
+  console.log('✅ Match actualizado:', {
+    id: match.id,
+    scores1: match.scores1,
+    scores2: match.scores2,
+    ganador: match.ganador,
+    status: match.status_game,
+    setsRecibidos: gameDetail.sets
+  });
+}
 
   private forceChangeDetection() {
     // Forzar actualización de la vista
