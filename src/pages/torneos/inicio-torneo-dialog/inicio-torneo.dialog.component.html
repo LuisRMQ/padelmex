@@ -1,9 +1,4 @@
 <!-- =========================
-     HEADER / TOOLBAR (mínimo)
-     ========================= -->
-
-
-<!-- =========================
      CONTENIDO PRINCIPAL (categoria + Results / Sets)
      ========================= -->
 <mat-dialog-content class="contenido-modal">
@@ -16,7 +11,7 @@
     </div>
   </div>
 
-  <!-- ===== Selección de categoría (reincorporada) ===== -->
+  <!-- ===== CONTROLES SUPERIORES ===== -->
   <div class="controls-section minimal-controls" *ngIf="!loading">
     <mat-form-field appearance="outline" class="category-select">
       <mat-label>Seleccionar Categoría</mat-label>
@@ -29,74 +24,99 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
+
+    <!-- Botón para toggle del sidebar -->
+    <button mat-stroked-button (click)="toggleResultsSidebar()" class="toggle-sidebar-btn">
+      <mat-icon>{{ showResultsSidebar ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+      {{ showResultsSidebar ? 'Ocultar' : 'Mostrar' }} Grupos
+    </button>
   </div>
 
   <div class="results-view" *ngIf="!loading">
     <div class="results-and-bracket">
 
-      <!-- COLUMNA IZQUIERDA: Resultados (SETS) -->
-      <div class="results-column">
-        <ng-container *ngIf="results.length > 0; else noResults">
-          <div *ngFor="let group of resultsGroupedByGroup" class="group-container">
-            <h3 class="group-title">{{ group.groupName }}</h3>
-
-            <div *ngFor="let match of group.matches; let j = index" class="result-card compact"
-              (click)="logMatch(match); abrirModalPartido(match, 0, j)" style="cursor: pointer;">
-              <div class="result-header">
-                <div class="match-info">
-                  <span class="match-date">
-                    {{ match.date ? (match.date | date:'d \'de\' MMMM y':'es') + ' ' + (match.start_time ?
-                    (match.start_time | slice:0:5) : '') : 'Sin fecha' }}
-                  </span>
-                  <span class="status-small-badge" [ngClass]="{
-                    'pendiente': match.status_game === 'Not started',
-                    'en-progreso': match.status_game === 'proccessing', 
-                    'finalizado': match.status_game === 'completed'
-                  }">
-                    {{ getStatusGame(match) }}
-                  </span>
-                  <div *ngIf="match.court" class="match-court">{{ match.court }}</div>
-                </div>
-                <mat-icon class="trophy-icon" *ngIf="match.isFinal">emoji_events</mat-icon>
-              </div>
-
-              <div class="result-body">
-                <div class="player-row">
-                  <span class="player-name" [class.winner]="match.ganador === match.jugador1">
-                    {{ getPlayerNames(match.jugador1) }}
-                  </span>
-                  <span class="score" *ngFor="let s of match.scores1; let i = index"
-                    [class.winner-set]="s > match.scores2[i]">
-                    {{ s }}
-                  </span>
-                </div>
-
-                <div class="player-row">
-                  <span class="player-name" [class.winner]="match.ganador === match.jugador2">
-                    {{ getPlayerNames(match.jugador2) }}
-                  </span>
-                  <span class="score" *ngFor="let s of match.scores2; let i = index"
-                    [class.winner-set]="s > match.scores1[i]">
-                    {{ s }}
-                  </span>
-                </div>
-              </div>
-            </div>
+      <!-- SIDEBAR IZQUIERDO: Resultados (SETS) COLAPSABLE -->
+      <div class="results-sidebar" [class.collapsed]="!showResultsSidebar">
+        <div class="sidebar-content">
+          <div class="sidebar-header">
+            <h3>Grupos</h3>
+            <!-- <button mat-icon-button (click)="toggleResultsSidebar()" class="close-sidebar">
+              <mat-icon>close</mat-icon>
+            </button> -->
           </div>
-        </ng-container>
+          
+          <div class="sidebar-body">
+            <ng-container *ngIf="results.length > 0; else noResults">
+              <div *ngFor="let group of resultsGroupedByGroup" class="group-container">
+                <h3 class="group-title">{{ group.groupName }}</h3>
+
+                <div *ngFor="let match of group.matches; let j = index" class="result-card compact"
+                  (click)="logMatch(match); abrirModalPartido(match, 0, j)" style="cursor: pointer;">
+                  <div class="result-header">
+                    <div class="match-info">
+                      <span class="match-date">
+                        {{ match.date ? (match.date | date:'d \'de\' MMMM y':'es') + ' ' + (match.start_time ?
+                        (match.start_time | slice:0:5) : '') : 'Sin fecha' }}
+                      </span>
+                      <span class="status-small-badge" [ngClass]="{
+                        'pendiente': match.status_game === 'Not started',
+                        'en-progreso': match.status_game === 'proccessing', 
+                        'finalizado': match.status_game === 'completed'
+                      }">
+                        {{ getStatusGame(match) }}
+                      </span>
+                      <div *ngIf="match.court" class="match-court">{{ match.court }}</div>
+                    </div>
+                    <mat-icon class="trophy-icon" *ngIf="match.isFinal">emoji_events</mat-icon>
+                  </div>
+
+                  <div class="result-body">
+                    <div class="player-row">
+                      <span class="player-name" [class.winner]="match.ganador === match.jugador1">
+                        {{ getPlayerNames(match.jugador1) }}
+                      </span>
+                      <span class="score" *ngFor="let s of match.scores1; let i = index"
+                        [class.winner-set]="s > match.scores2[i]">
+                        {{ s }}
+                      </span>
+                    </div>
+
+                    <div class="player-row">
+                      <span class="player-name" [class.winner]="match.ganador === match.jugador2">
+                        {{ getPlayerNames(match.jugador2) }}
+                      </span>
+                      <span class="score" *ngFor="let s of match.scores2; let i = index"
+                        [class.winner-set]="s > match.scores1[i]">
+                        {{ s }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
       </div>
 
-      <!-- COLUMNA DERECHA: Bracket Eliminatorias -->
-      <div class="bracket-column" *ngIf="results.length > 0; else noCategorySelected">
-        <h3 style="margin: 0 0 16px 0; color: #1e293b;">Bracket de Eliminatorias</h3>
-        <div #bracketContainerSets class="bracket-container-sets" aria-label="Bracket eliminatorias"></div>
+      <!-- CONTENIDO PRINCIPAL: Bracket Eliminatorias -->
+      <div class="main-content" [class.full-width]="!showResultsSidebar">
+        <div class="bracket-column" *ngIf="results.length > 0; else noCategorySelected">
+          <div class="bracket-header">
+            <h3>Bracket de Eliminatorias - {{ selectedCategory }}</h3>
+            <!-- Botón flotante para mostrar sidebar cuando está colapsado -->
+            <!-- <button *ngIf="!showResultsSidebar" mat-fab (click)="toggleResultsSidebar()" 
+                    class="floating-sidebar-toggle" color="primary">
+              <mat-icon>menu</mat-icon>
+            </button> -->
+          </div>
+          <div #bracketContainerSets class="bracket-container-sets" aria-label="Bracket eliminatorias"></div>
+        </div>
       </div>
 
     </div>
-
   </div>
 
-  <!-- Mensaje de no results centrado y más grande -->
+  <!-- Mensaje de no results -->
   <ng-template #noResults>
     <div class="no-results-container" *ngIf="!loading">
       <div class="empty-state">
@@ -108,11 +128,13 @@
 
   <!-- Mensaje cuando no hay categoría seleccionada -->
   <ng-template #noCategorySelected>
-    <div class="bracket-column placeholder" *ngIf="!loading">
-      <div class="no-results-container">
-        <div class="empty-state">
-          <mat-icon class="empty-icon">category</mat-icon>
-          <p class="empty-message">Selecciona una categoría para ver el bracket</p>
+    <div class="main-content full-width" *ngIf="!loading">
+      <div class="bracket-column placeholder">
+        <div class="no-results-container">
+          <div class="empty-state">
+            <mat-icon class="empty-icon">category</mat-icon>
+            <p class="empty-message">Selecciona una categoría para ver el bracket</p>
+          </div>
         </div>
       </div>
     </div>

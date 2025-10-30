@@ -74,21 +74,22 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private svg: any;
   private gContainer: any;
 
-  private matchWidth = 280;
-  private matchHeight = 100;
-  private spacingX = 300;
-  private verticalSpacing = 60;
-  private roundSpacing = 200;
+  private matchWidth = 200;    // Reducido de 280
+  private matchHeight = 70;    // Reducido de 100  
+  private spacingX = 180;      // Reducido de 300
+  private verticalSpacing = 40; // Reducido de 60
+  private roundSpacing = 120;   // Reducido de 200
 
   // Variables para arrastrar el bracket (drag)
   private startX = 0;
   private startY = 0;
   private translateX = 0;
   private translateY = 0;
-private isDragging = false;
+  private isDragging = false;
+  showResultsSidebar = true;
 
-private scrollLeft = 0;
-private scrollTop = 0;
+  private scrollLeft = 0;
+  private scrollTop = 0;
   viewMode: ViewMode = 'bracket';
   bracketDataCards: Partido[][] = [];
 
@@ -99,74 +100,74 @@ private scrollTop = 0;
     private dialog: MatDialog
   ) { }
 
-ngOnInit(): void {
-  this.cargarBracket();
-}
-
-private cargarDetallesJuegosExistentes() {
-  console.log('🔄 Iniciando carga de detalles de juegos existentes...');
-  
-  if (!this.bracketDataCards || this.bracketDataCards.length === 0) {
-    console.warn('⚠️ bracketDataCards está vacío');
-    return;
-  }
-  
-  // Recopilar todos los IDs de juegos existentes de bracketDataCards
-  const allMatches = this.bracketDataCards.flat();
-  console.log('📋 Todos los partidos:', allMatches);
-  
-  const matchesWithIds = allMatches.filter(match => match.id && match.id !== null);
-  
-  console.log('🎯 Encontrados', matchesWithIds.length, 'juegos con IDs:', matchesWithIds.map(m => ({ id: m.id, group: m.groupName })));
-
-  if (matchesWithIds.length === 0) {
-    console.log('ℹ️ No hay juegos con IDs para cargar detalles');
-    console.log('🔍 Revisando estructura de bracketDataCards:', this.bracketDataCards);
-    return;
+  ngOnInit(): void {
+    this.cargarBracket();
   }
 
-  // Cargar detalles para cada juego
-  matchesWithIds.forEach(match => {
-    console.log('📥 Cargando detalles para gameId:', match.id);
-    this.loadGameDetails(match.id!);
-  });
-}
+  private cargarDetallesJuegosExistentes() {
+    console.log('🔄 Iniciando carga de detalles de juegos existentes...');
+
+    if (!this.bracketDataCards || this.bracketDataCards.length === 0) {
+      console.warn('⚠️ bracketDataCards está vacío');
+      return;
+    }
+
+    // Recopilar todos los IDs de juegos existentes de bracketDataCards
+    const allMatches = this.bracketDataCards.flat();
+    console.log('📋 Todos los partidos:', allMatches);
+
+    const matchesWithIds = allMatches.filter(match => match.id && match.id !== null);
+
+    console.log('🎯 Encontrados', matchesWithIds.length, 'juegos con IDs:', matchesWithIds.map(m => ({ id: m.id, group: m.groupName })));
+
+    if (matchesWithIds.length === 0) {
+      console.log('ℹ️ No hay juegos con IDs para cargar detalles');
+      console.log('🔍 Revisando estructura de bracketDataCards:', this.bracketDataCards);
+      return;
+    }
+
+    // Cargar detalles para cada juego
+    matchesWithIds.forEach(match => {
+      console.log('📥 Cargando detalles para gameId:', match.id);
+      this.loadGameDetails(match.id!);
+    });
+  }
 
 
-enableBracketDragging(): void {
-  const container = this.bracketContainerSets?.nativeElement;
-  if (!container) return;
+  enableBracketDragging(): void {
+    const container = this.bracketContainerSets?.nativeElement;
+    if (!container) return;
 
-  container.addEventListener('mousedown', (e: MouseEvent) => {
-    this.isDragging = true;
-    container.classList.add('active');
-    this.startX = e.pageX - container.offsetLeft;
-    this.startY = e.pageY - container.offsetTop;
-    this.scrollLeft = container.scrollLeft;
-    this.scrollTop = container.scrollTop;
-  });
+    container.addEventListener('mousedown', (e: MouseEvent) => {
+      this.isDragging = true;
+      container.classList.add('active');
+      this.startX = e.pageX - container.offsetLeft;
+      this.startY = e.pageY - container.offsetTop;
+      this.scrollLeft = container.scrollLeft;
+      this.scrollTop = container.scrollTop;
+    });
 
-  container.addEventListener('mouseleave', () => {
-    this.isDragging = false;
-    container.classList.remove('active');
-  });
+    container.addEventListener('mouseleave', () => {
+      this.isDragging = false;
+      container.classList.remove('active');
+    });
 
-  container.addEventListener('mouseup', () => {
-    this.isDragging = false;
-    container.classList.remove('active');
-  });
+    container.addEventListener('mouseup', () => {
+      this.isDragging = false;
+      container.classList.remove('active');
+    });
 
-  container.addEventListener('mousemove', (e: MouseEvent) => {
-    if (!this.isDragging) return;
-    e.preventDefault();
-    const x = e.pageX - container.offsetLeft;
-    const y = e.pageY - container.offsetTop;
-    const walkX = (x - this.startX) * 1; // velocidad horizontal
-    const walkY = (y - this.startY) * 1; // velocidad vertical
-    container.scrollLeft = this.scrollLeft - walkX;
-    container.scrollTop = this.scrollTop - walkY;
-  });
-}
+    container.addEventListener('mousemove', (e: MouseEvent) => {
+      if (!this.isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - container.offsetLeft;
+      const y = e.pageY - container.offsetTop;
+      const walkX = (x - this.startX) * 1; // velocidad horizontal
+      const walkY = (y - this.startY) * 1; // velocidad vertical
+      container.scrollLeft = this.scrollLeft - walkX;
+      container.scrollTop = this.scrollTop - walkY;
+    });
+  }
 
 
 
@@ -178,7 +179,7 @@ enableBracketDragging(): void {
       this.drawBracket();
       // Inicializar el bracket de eliminatorias también
       setTimeout(() => this.drawBracketSets(), 100);
-        setTimeout(() => this.enableBracketDragging(), 100);
+      setTimeout(() => this.enableBracketDragging(), 100);
 
     }
   }
@@ -195,106 +196,106 @@ enableBracketDragging(): void {
     }
   }
 
- cargarBracket() {
-  this.loading = true;
-  this.tournamentService.getBracketsByTournament(this.data.torneoId).subscribe({
-    next: (res) => {
-      console.log('🧱 Bracket API RAW:', res);
-      console.log('🧱 Bracket data:', res.data?.data?.bracket);
-      
-      this.bracket = res.data?.data?.bracket || [];
-      this.categories = this.bracket;
-      this.selectedCategory = this.categories[0]?.category_name || null;
-      
-      console.log('📋 Categories disponibles:', this.categories);
-      
-      // Filtrar categoría primero
-      this.filtrarCategoria();
-      
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('Error al cargar el bracket:', err);
-      this.error = 'No se pudo cargar el bracket del torneo';
-      this.loading = false;
-    }
-  });
-}
+  cargarBracket() {
+    this.loading = true;
+    this.tournamentService.getBracketsByTournament(this.data.torneoId).subscribe({
+      next: (res) => {
+        console.log('🧱 Bracket API RAW:', res);
+        console.log('🧱 Bracket data:', res.data?.data?.bracket);
+
+        this.bracket = res.data?.data?.bracket || [];
+        this.categories = this.bracket;
+        this.selectedCategory = this.categories[0]?.category_name || null;
+
+        console.log('📋 Categories disponibles:', this.categories);
+
+        // Filtrar categoría primero
+        this.filtrarCategoria();
+
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar el bracket:', err);
+        this.error = 'No se pudo cargar el bracket del torneo';
+        this.loading = false;
+      }
+    });
+  }
 
 
   filtrarCategoria() {
-  if (!this.selectedCategory) {
-    console.warn('⚠️ No hay categoría seleccionada');
-    return;
+    if (!this.selectedCategory) {
+      console.warn('⚠️ No hay categoría seleccionada');
+      return;
+    }
+
+    console.log('🎯 Filtrando categoría:', this.selectedCategory);
+
+    this.filteredBracket = this.bracket.filter(
+      b => b.category_name === this.selectedCategory
+    );
+
+    console.log('📊 filteredBracket:', this.filteredBracket);
+
+    if (this.filteredBracket.length > 0) {
+      // Primero generar los datos del bracket
+      this.generateResultsFromBracket(this.filteredBracket[0]);
+
+      console.log('🔄 Llamando a drawBracket...');
+
+      // Dibujar con un pequeño delay para asegurar que el DOM esté listo
+      setTimeout(() => {
+        this.drawBracket();
+        this.drawBracketSets();
+
+        console.log('✅ Bracket dibujado');
+        console.log('📊 bracketDataCards después de draw:', this.bracketDataCards);
+
+        // 🔥 CARGAR DETALLES SOLO SI HAY DATOS
+        if (this.bracketDataCards.length > 0) {
+          console.log('🎯 Cargando detalles de juegos...');
+          this.cargarDetallesJuegosExistentes();
+        } else {
+          console.warn('⚠️ bracketDataCards sigue vacío, intentando mapear directamente...');
+          this.forceLoadGameDetails();
+        }
+
+      }, 100);
+    } else {
+      console.warn('⚠️ No hay datos en filteredBracket');
+      this.results = [];
+      if (this.gContainer) this.gContainer.selectAll('*').remove();
+      setTimeout(() => this.drawBracketSets(), 0);
+    }
   }
 
-  console.log('🎯 Filtrando categoría:', this.selectedCategory);
-  
-  this.filteredBracket = this.bracket.filter(
-    b => b.category_name === this.selectedCategory
-  );
 
-  console.log('📊 filteredBracket:', this.filteredBracket);
+  private forceLoadGameDetails() {
+    console.log('🚨 FORZANDO carga de detalles desde filteredBracket...');
 
-  if (this.filteredBracket.length > 0) {
-    // Primero generar los datos del bracket
-    this.generateResultsFromBracket(this.filteredBracket[0]);
-    
-    console.log('🔄 Llamando a drawBracket...');
-    
-    // Dibujar con un pequeño delay para asegurar que el DOM esté listo
-    setTimeout(() => {
-      this.drawBracket();
-      this.drawBracketSets();
-      
-      console.log('✅ Bracket dibujado');
-      console.log('📊 bracketDataCards después de draw:', this.bracketDataCards);
-      
-      // 🔥 CARGAR DETALLES SOLO SI HAY DATOS
-      if (this.bracketDataCards.length > 0) {
-        console.log('🎯 Cargando detalles de juegos...');
-        this.cargarDetallesJuegosExistentes();
-      } else {
-        console.warn('⚠️ bracketDataCards sigue vacío, intentando mapear directamente...');
-        this.forceLoadGameDetails();
-      }
-      
-    }, 100);
-  } else {
-    console.warn('⚠️ No hay datos en filteredBracket');
-    this.results = [];
-    if (this.gContainer) this.gContainer.selectAll('*').remove();
-    setTimeout(() => this.drawBracketSets(), 0);
+    if (this.filteredBracket.length > 0) {
+      // Mapear directamente desde filteredBracket
+      const bracketData = this.mapToPartidos(this.filteredBracket[0]);
+      this.bracketDataCards = bracketData;
+
+      console.log('💾 bracketDataCards forzado:', this.bracketDataCards);
+      console.log('📋 Partidos con IDs:', this.bracketDataCards.flat().filter(p => p.id).length);
+
+      // Ahora cargar detalles
+      this.cargarDetallesJuegosExistentes();
+    }
   }
-}
 
+  private cargarScoresExistentes() {
+    const allMatches = this.bracketDataCards.flat();
+    const matchesWithIds = allMatches.filter(match => match.id);
 
-private forceLoadGameDetails() {
-  console.log('🚨 FORZANDO carga de detalles desde filteredBracket...');
-  
-  if (this.filteredBracket.length > 0) {
-    // Mapear directamente desde filteredBracket
-    const bracketData = this.mapToPartidos(this.filteredBracket[0]);
-    this.bracketDataCards = bracketData;
-    
-    console.log('💾 bracketDataCards forzado:', this.bracketDataCards);
-    console.log('📋 Partidos con IDs:', this.bracketDataCards.flat().filter(p => p.id).length);
-    
-    // Ahora cargar detalles
-    this.cargarDetallesJuegosExistentes();
+    console.log('🎯 Cargando scores para matches:', matchesWithIds.length);
+
+    matchesWithIds.forEach(match => {
+      this.loadGameDetails(match.id!);
+    });
   }
-}
-
-private cargarScoresExistentes() {
-  const allMatches = this.bracketDataCards.flat();
-  const matchesWithIds = allMatches.filter(match => match.id);
-  
-  console.log('🎯 Cargando scores para matches:', matchesWithIds.length);
-  
-  matchesWithIds.forEach(match => {
-    this.loadGameDetails(match.id!);
-  });
-}
 
   private generateResultsFromBracket(category: any) {
     const rounds = this.mapToPartidos(category);
@@ -391,75 +392,75 @@ private cargarScoresExistentes() {
 
   // ------------------ D3 DRAW ------------------
   private drawBracket(useCachedData: boolean = false) {
-  if (this.viewMode === 'cards') return;
-  if (!this.bracketContainer?.nativeElement) return;
+    if (this.viewMode === 'cards') return;
+    if (!this.bracketContainer?.nativeElement) return;
 
-  const container = this.bracketContainer.nativeElement as HTMLElement;
-  if (container.offsetParent === null) {
-    setTimeout(() => this.drawBracket(useCachedData), 50);
-    return;
-  }
+    const container = this.bracketContainer.nativeElement as HTMLElement;
+    if (container.offsetParent === null) {
+      setTimeout(() => this.drawBracket(useCachedData), 50);
+      return;
+    }
 
-  console.log('🎨 Dibujando bracket, useCachedData:', useCachedData);
+    console.log('🎨 Dibujando bracket, useCachedData:', useCachedData);
 
-  // 🔥 SIEMPRE mapear datos frescos para bracketDataCards
-  const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
-  
-  // 🔥 ACTUALIZAR bracketDataCards SIEMPRE
-  this.bracketDataCards = bracketData;
-  console.log('💾 bracketDataCards actualizado en drawBracket:', this.bracketDataCards.length);
+    // 🔥 SIEMPRE mapear datos frescos para bracketDataCards
+    const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
 
-  d3.select(container).selectAll('*').remove();
+    // 🔥 ACTUALIZAR bracketDataCards SIEMPRE
+    this.bracketDataCards = bracketData;
+    console.log('💾 bracketDataCards actualizado en drawBracket:', this.bracketDataCards.length);
 
-  const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
-  const maxMatches = Math.max(...bracketData.map(r => r.length));
-  const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
+    d3.select(container).selectAll('*').remove();
 
-  this.svg = d3.select(container).append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .attr('class', 'bracket-svg');
+    const width = bracketData.length * (this.matchWidth + this.spacingX) + 100;
+    const maxMatches = Math.max(...bracketData.map(r => r.length));
+    const height = maxMatches * (this.matchHeight + this.verticalSpacing) + 100;
 
-  this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
+    this.svg = d3.select(container).append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('class', 'bracket-svg');
 
-  const phases: string[] = this.computePhaseLabels(bracketData);
-  phases.forEach((phase, i) => {
-    const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
-    this.gContainer.append('text')
-      .text(phase)
-      .attr('x', x)
-      .attr('y', 20)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#000')
-      .attr('font-weight', 'bold')
-      .attr('font-size', '20px');
-  });
+    this.gContainer = this.svg.append('g').attr('class', 'bracket-container');
 
-  this.calculatePositions(bracketData, height);
-
-  bracketData.forEach((ronda, roundIndex) => {
-    ronda.forEach((partido, matchIndex) => {
-      this.drawMatch(partido, roundIndex, matchIndex);
-      if (roundIndex < bracketData.length - 1) {
-        this.drawConnections(partido, roundIndex, matchIndex, bracketData);
-      }
+    const phases: string[] = this.computePhaseLabels(bracketData);
+    phases.forEach((phase, i) => {
+      const x = i * (this.matchWidth + this.spacingX) + this.matchWidth / 2 + 50;
+      this.gContainer.append('text')
+        .text(phase)
+        .attr('x', x)
+        .attr('y', 20)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#000')
+        .attr('font-weight', 'bold')
+        .attr('font-size', '20px');
     });
-  });
 
-  // Dragging
-  this.svg.call(
-    d3.drag()
-      .on('start', (event: any) => {
-        this.startX = event.x - this.translateX;
-        this.startY = event.y - this.translateY;
-      })
-      .on('drag', (event: any) => {
-        this.translateX = event.x - this.startX;
-        this.translateY = event.y - this.startY;
-        this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
-      })
-  );
-}
+    this.calculatePositions(bracketData, height);
+
+    bracketData.forEach((ronda, roundIndex) => {
+      ronda.forEach((partido, matchIndex) => {
+        this.drawMatch(partido, roundIndex, matchIndex);
+        if (roundIndex < bracketData.length - 1) {
+          this.drawConnections(partido, roundIndex, matchIndex, bracketData);
+        }
+      });
+    });
+
+    // Dragging
+    this.svg.call(
+      d3.drag()
+        .on('start', (event: any) => {
+          this.startX = event.x - this.translateX;
+          this.startY = event.y - this.translateY;
+        })
+        .on('drag', (event: any) => {
+          this.translateX = event.x - this.startX;
+          this.translateY = event.y - this.startY;
+          this.gContainer.attr('transform', `translate(${this.translateX}, ${this.translateY})`);
+        })
+    );
+  }
 
   private forceRedrawBracket() {
     if (this.viewMode === 'bracket') {
@@ -471,149 +472,212 @@ private cargarScoresExistentes() {
 
   // ------------------ MAPEO DE PARTIDOS ------------------
   private mapToPartidos(category: any): Partido[][] {
-  console.log('🗺️ Mapeando partidos de category:', category);
-  
-  const rounds: Partido[][] = [];
+    console.log('🗺️ Mapeando partidos de category:', category);
 
-  // -------------------------------
-  // 1️⃣ FASE DE GRUPOS
-  // -------------------------------
-  const groupRound: Partido[] = [];
+    const rounds: Partido[][] = [];
 
-  (category.groups || []).forEach((group: any) => {
-    console.log('👥 Procesando grupo:', group.group_name);
-    
-    const ranking = group.ranking || [];
-    const rankById: { [id: number]: any } = {};
-    (ranking as RankingItem[]).forEach((r: RankingItem) => {
-      rankById[r.couple_id] = r;
+    // -------------------------------
+    // 1️⃣ FASE DE GRUPOS
+    // -------------------------------
+    const groupRound: Partido[] = [];
+
+    (category.groups || []).forEach((group: any) => {
+      console.log('👥 Procesando grupo:', group.group_name);
+
+      const ranking = group.ranking || [];
+      const rankById: { [id: number]: any } = {};
+      (ranking as RankingItem[]).forEach((r: RankingItem) => {
+        rankById[r.couple_id] = r;
+      });
+
+      (group.games || []).forEach((game: any) => {
+        console.log('🎮 Juego en grupo:', game);
+
+        const a = game.couple_1;
+        const b = game.couple_2;
+        if (!a || !b) return;
+
+        const partido: Partido = {
+          jugador1: rankById[a]?.players || [{ name: 'Por asignar' }],
+          jugador2: rankById[b]?.players || [{ name: 'Por asignar' }],
+          ganador: game.winner_id ?
+            (game.winner_id === a ? rankById[a]?.players :
+              game.winner_id === b ? rankById[b]?.players : null) : null,
+          groupName: group.group_name,
+          id: game.game_id || null,
+          couple1Id: a || null,
+          couple2Id: b || null,
+          scores1: game.scores1 || [0, 0, 0],
+          scores2: game.scores2 || [0, 0, 0],
+          date: game.date || null,
+          start_time: game.start_time || null,
+          end_time: game.end_time || null,
+          court: game.court || null,
+          status_game: game.status_game || 'Not started'
+        };
+
+        console.log('➕ Partido de grupo creado:', partido);
+        groupRound.push(partido);
+      });
     });
 
-    const seenPairs = new Set<string>();
-    const matches: Partido[] = [];
+    if (groupRound.length) {
+      console.log('📦 Group round partidos:', groupRound.length);
+      rounds.push(groupRound);
+    }
 
-    (group.games || []).forEach((game: any) => {
-      console.log('🎮 Juego en grupo:', game);
-      
-      const a = game.couple_1;
-      const b = game.couple_2;
-      if (!a || !b) return;
-      
-      const key = a < b ? `${a}-${b}` : `${b}-${a}`;
-      seenPairs.add(key);
+    // -------------------------------
+    // 2️⃣ FASE DE REPECHAJE
+    // -------------------------------
+    const repechajeRound: Partido[] = [];
+
+    (category.repechaje || []).forEach((game: any) => {
+      console.log('🔄 Procesando repechaje:', game);
 
       const partido: Partido = {
-        jugador1: rankById[a]?.players || [{ name: 'Por asignar' }],
-        jugador2: rankById[b]?.players || [{ name: 'Por asignar' }],
-        ganador: null,
-        groupName: group.group_name,
+        jugador1: game.couple_1?.players || [{ name: 'Por asignar' }],
+        jugador2: game.couple_2?.players || [{ name: 'Por asignar' }],
+        ganador: game.winner_id ?
+          (game.winner_id === game.couple_1?.id ? game.couple_1?.players :
+            game.winner_id === game.couple_2?.id ? game.couple_2?.players : null) : null,
+        groupName: 'repechaje',
         id: game.game_id || null,
-        couple1Id: a || null,
-        couple2Id: b || null,
+        couple1Id: game.couple_1?.id || null,
+        couple2Id: game.couple_2?.id || null,
         scores1: game.scores1 || [0, 0, 0],
         scores2: game.scores2 || [0, 0, 0],
         date: game.date || null,
         start_time: game.start_time || null,
         end_time: game.end_time || null,
         court: game.court || null,
-        status_game: game.status_game || null
+        status_game: game.status_game || 'Not started'
       };
-      
-      console.log('➕ Partido creado:', partido);
-      matches.push(partido);
+
+      console.log('➕ Partido de repechaje creado:', partido);
+      repechajeRound.push(partido);
     });
 
-    groupRound.push(...matches);
-  });
-
-  if (groupRound.length) {
-    console.log('📦 Group round partidos:', groupRound);
-    rounds.push(groupRound);
-  }
-
-  // -------------------------------
-  // 2️⃣ FASE DE ELIMINACIONES
-  // -------------------------------
-  const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
-  const eliminationRounds: Partido[][] = [];
-
-  eliminationOrder.forEach((phase, phaseIndex) => {
-    console.log(`🏆 Procesando fase: ${phase}`);
-    
-    const phaseGames = category.elimination?.[phase] || [];
-    console.log(`🎮 Juegos en ${phase}:`, phaseGames);
-    
-    const phaseMatches: Partido[] = [];
-
-    // Determinar cuántos partidos debería tener esta ronda
-    const expectedMatches = phase === 'final' ? 1 :
-      phase === 'semifinal' ? 2 :
-        phase === 'cuartos' ? 4 : 8;
-
-    for (let i = 0; i < expectedMatches; i++) {
-      const existingGame = phaseGames[i];
-      let nextMatchIndex: number | null = null;
-
-      if (phase !== 'final') {
-        nextMatchIndex = Math.floor(i / 2);
-      }
-
-      if (existingGame) {
-        console.log(`✅ Juego existente en ${phase}[${i}]:`, existingGame);
-        
-        const partido: Partido = {
-          jugador1: existingGame.couple_1?.players || [{ name: 'Por asignar' }],
-          jugador2: existingGame.couple_2?.players || [{ name: 'Por asignar' }],
-          ganador: null,
-          groupName: phase,
-          id: existingGame.game_id || null,
-          couple1Id: existingGame.couple_1?.id || null,
-          couple2Id: existingGame.couple_2?.id || null,
-          nextMatchIndex,
-          scores1: existingGame.scores1 || [0, 0, 0],
-          scores2: existingGame.scores2 || [0, 0, 0],
-          date: existingGame.date || null,
-          start_time: existingGame.start_time || null,
-          end_time: existingGame.end_time || null,
-          court: existingGame.court || null
-        };
-        
-        console.log(`➕ Partido de eliminación creado:`, partido);
-        phaseMatches.push(partido);
-      } else {
-        console.log(`❌ No hay juego en ${phase}[${i}], creando vacío`);
-        
-        // Crear partido vacío
-        phaseMatches.push({
-          jugador1: [{ name: 'Por asignar' }],
-          jugador2: [{ name: 'Por asignar' }],
-          ganador: null,
-          groupName: phase,
-          id: null,
-          couple1Id: null,
-          couple2Id: null,
-          nextMatchIndex,
-          scores1: [0, 0, 0],
-          scores2: [0, 0, 0],
-          date: null,
-          start_time: null,
-          end_time: null,
-          court: null
-        });
-      }
+    if (repechajeRound.length) {
+      console.log('🔄 Repechaje round partidos:', repechajeRound.length);
+      rounds.push(repechajeRound);
     }
 
-    eliminationRounds.push(phaseMatches);
-  });
+    // -------------------------------
+    // 3️⃣ FASE DE ELIMINACIONES - USAR DATOS REALES
+    // -------------------------------
+    const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
+    const eliminationRounds: Partido[][] = [];
 
-  rounds.push(...eliminationRounds);
-  
-  console.log('🏁 TOTAL rounds mapeados:', rounds.length);
-  console.log('🏁 TOTAL partidos:', rounds.flat().length);
-  console.log('🏁 Partidos con IDs:', rounds.flat().filter(p => p.id).length);
-  
-  return rounds;
-}
+    eliminationOrder.forEach((phase, phaseIndex) => {
+      console.log(`🏆 Procesando fase: ${phase}`);
+
+      const phaseGames = category.elimination?.[phase] || [];
+      console.log(`🎮 Juegos en ${phase}:`, phaseGames.length, phaseGames);
+
+      const phaseMatches: Partido[] = [];
+
+      // 🔥 USAR LOS JUEGOS REALES DE LA API, NO CREAR ESTRUCTURA VACÍA
+      phaseGames.forEach((game: any, index: number) => {
+        console.log(`🎯 ${phase}[${index}]:`, game);
+
+        let nextMatchIndex: number | null = null;
+
+        // Calcular nextMatchIndex basado en la fase
+        if (phase === 'octavos') {
+          nextMatchIndex = Math.floor(index / 2); // 8 -> 4
+        } else if (phase === 'cuartos') {
+          nextMatchIndex = Math.floor(index / 2); // 4 -> 2
+        } else if (phase === 'semifinal') {
+          nextMatchIndex = 0; // 2 -> 1 (final)
+        } else if (phase === 'final') {
+          nextMatchIndex = null; // Final no tiene siguiente
+        }
+
+        const partido: Partido = {
+          jugador1: game.couple_1?.players || [{ name: 'Por asignar' }],
+          jugador2: game.couple_2?.players || [{ name: 'Por asignar' }],
+          ganador: game.winner_id ?
+            (game.winner_id === game.couple_1?.id ? game.couple_1?.players :
+              game.winner_id === game.couple_2?.id ? game.couple_2?.players : null) : null,
+          groupName: phase,
+          id: game.game_id || null,
+          couple1Id: game.couple_1?.id || null,
+          couple2Id: game.couple_2?.id || null,
+          nextMatchIndex,
+          scores1: game.scores1 || [0, 0, 0],
+          scores2: game.scores2 || [0, 0, 0],
+          date: game.date || null,
+          start_time: game.start_time || null,
+          end_time: game.end_time || null,
+          court: game.court || null,
+          status_game: game.status_game || 'Not started'
+        };
+
+        console.log(`➕ Partido de ${phase} creado:`, partido);
+        phaseMatches.push(partido);
+      });
+
+      // 🔥 SOLO CREAR ESTRUCTURA VACÍA SI NO HAY DATOS REALES
+      if (phaseMatches.length === 0) {
+        console.log(`❌ No hay juegos reales en ${phase}, creando estructura vacía`);
+
+        const expectedMatches = phase === 'final' ? 1 :
+          phase === 'semifinal' ? 2 :
+            phase === 'cuartos' ? 4 : 8;
+
+        for (let i = 0; i < expectedMatches; i++) {
+          let nextMatchIndex: number | null = null;
+
+          if (phase === 'octavos') {
+            nextMatchIndex = Math.floor(i / 2);
+          } else if (phase === 'cuartos') {
+            nextMatchIndex = Math.floor(i / 2);
+          } else if (phase === 'semifinal') {
+            nextMatchIndex = 0;
+          }
+
+          phaseMatches.push({
+            jugador1: [{ name: 'Por asignar' }],
+            jugador2: [{ name: 'Por asignar' }],
+            ganador: null,
+            groupName: phase,
+            id: null,
+            couple1Id: null,
+            couple2Id: null,
+            nextMatchIndex,
+            scores1: [0, 0, 0],
+            scores2: [0, 0, 0],
+            date: null,
+            start_time: null,
+            end_time: null,
+            court: null,
+            status_game: 'Not started'
+          });
+        }
+      }
+
+      eliminationRounds.push(phaseMatches);
+    });
+
+    rounds.push(...eliminationRounds);
+
+    console.log('🏁 TOTAL rounds mapeados:', rounds.length);
+    console.log('🏁 TOTAL partidos:', rounds.flat().length);
+    console.log('🏁 Partidos con IDs:', rounds.flat().filter(p => p.id).length);
+
+    // Debug detallado de cada ronda
+    rounds.forEach((round, index) => {
+      const roundName = index === 0 ? 'Grupos' :
+        index === 1 ? 'Repechaje' :
+          eliminationOrder[index - 2] || `Ronda ${index}`;
+      console.log(`📊 ${roundName}: ${round.length} partidos`);
+      round.forEach((partido, i) => {
+        console.log(`   ${i}: ${this.getPlayerNames(partido.jugador1)} vs ${this.getPlayerNames(partido.jugador2)} (ID: ${partido.id})`);
+      });
+    });
+
+    return rounds;
+  }
 
   // ------------------ HELPERS ------------------
   private calculatePositions(bracketData: Partido[][], containerHeight: number) {
@@ -1135,15 +1199,21 @@ private cargarScoresExistentes() {
 
   // Método auxiliar para comparar jugadores
   private arePlayersEqual(player1: any, player2: any[]): boolean {
-    if (!player1 || !player2) return false;
+    if (!player1 || !player2 || !Array.isArray(player2)) return false;
 
-    const names1 = Array.isArray(player1) ?
-      player1.map(p => p.name).sort().join(',') :
-      player1.name || '';
+    // Si player1 es un array de jugadores
+    if (Array.isArray(player1)) {
+      const names1 = player1.map(p => p?.name || '').filter(name => name).sort().join(',');
+      const names2 = player2.map(p => p?.name || '').filter(name => name).sort().join(',');
+      return names1 === names2;
+    }
+    // Si player1 es un solo jugador (objeto)
+    else if (player1.name) {
+      const names2 = player2.map(p => p?.name || '').filter(name => name).sort().join(',');
+      return player1.name === names2;
+    }
 
-    const names2 = player2.map(p => p.name).sort().join(',');
-
-    return names1 === names2;
+    return false;
   }
 
   private drawMatch(partido: Partido, roundIndex: number, matchIndex: number) {
@@ -1269,15 +1339,30 @@ private cargarScoresExistentes() {
   }
 
   public computePhaseLabels(bracketData: Partido[][]): string[] {
-    const labels = ['Grupos'];
-    for (let i = 1; i < bracketData.length; i++) {
-      const ronda = bracketData[i];
-      if (ronda[0]?.groupName === 'octavos') labels.push('Octavos');
-      else if (ronda[0]?.groupName === 'cuartos') labels.push('Cuartos');
-      else if (ronda[0]?.groupName === 'semifinal') labels.push('Semifinal');
-      else if (ronda[0]?.groupName === 'final') labels.push('Final');
-      else labels.push(`Ronda ${i}`);
-    }
+    const labels: string[] = [];
+
+    bracketData.forEach((round, index) => {
+      if (round.length === 0) return;
+
+      const firstMatch = round[0];
+
+      if (index === 0) {
+        labels.push('Grupos');
+      } else if (index === 1 && firstMatch.groupName === 'repechaje') {
+        labels.push('Repechaje');
+      } else {
+        const phaseNames: { [key: string]: string } = {
+          'octavos': 'Octavos',
+          'cuartos': 'Cuartos',
+          'semifinal': 'Semifinal',
+          'final': 'Final'
+        };
+
+        const phaseName = phaseNames[firstMatch.groupName] || `Ronda ${index}`;
+        labels.push(phaseName);
+      }
+    });
+
     return labels;
   }
 
@@ -1330,102 +1415,98 @@ private cargarScoresExistentes() {
     });
   }
 
- private updateMatchScores(gameId: number, gameDetail: GameDetailResponse) {
-  console.log('🔄 Actualizando scores para gameId:', gameId);
+  private updateMatchScores(gameId: number, gameDetail: GameDetailResponse) {
+    console.log('🔄 Actualizando scores para gameId:', gameId);
 
-  let needsRedraw = false;
+    let needsRedraw = false;
 
-  // Actualizar en bracketDataCards
-  this.bracketDataCards.forEach(round => {
-    round.forEach(match => {
+    // Actualizar en bracketDataCards
+    this.bracketDataCards.forEach(round => {
+      round.forEach(match => {
+        if (match.id === gameId) {
+          this.updateSingleMatchScores(match, gameDetail);
+          needsRedraw = true;
+        }
+      });
+    });
+
+    // También actualizar en results
+    this.results.forEach(match => {
       if (match.id === gameId) {
         this.updateSingleMatchScores(match, gameDetail);
         needsRedraw = true;
       }
     });
-  });
 
-  // También actualizar en results
-  this.results.forEach(match => {
-    if (match.id === gameId) {
-      this.updateSingleMatchScores(match, gameDetail);
-      needsRedraw = true;
+    console.log('✅ Scores actualizados, needsRedraw:', needsRedraw);
+
+    // Forzar actualización visual inmediata
+    if (needsRedraw) {
+      this.forceImmediateRedraw();
     }
-  });
-
-  console.log('✅ Scores actualizados, needsRedraw:', needsRedraw);
-
-  // Forzar actualización visual inmediata
-  if (needsRedraw) {
-    this.forceImmediateRedraw();
   }
-}
 
-private forceImmediateRedraw() {
-  // Usar setTimeout para asegurar que Angular actualice el ciclo de detección de cambios
-  setTimeout(() => {
-    if (this.viewMode === 'bracket') {
-      this.drawBracket(true);
-    } else if (this.viewMode === 'sets') {
-      this.drawBracketSets();
-    }
-    
-    // Forzar detección de cambios
-    this.results = [...this.results];
-    this.bracketDataCards = [...this.bracketDataCards];
-  }, 0);
-}
+  private forceImmediateRedraw() {
+    // Usar setTimeout para asegurar que Angular actualice el ciclo de detección de cambios
+    setTimeout(() => {
+      if (this.viewMode === 'bracket') {
+        this.drawBracket(true);
+      } else if (this.viewMode === 'sets') {
+        this.drawBracketSets();
+      }
+
+      // Forzar detección de cambios
+      this.results = [...this.results];
+      this.bracketDataCards = [...this.bracketDataCards];
+    }, 0);
+  }
 
   private updateSingleMatchScores(match: any, gameDetail: GameDetailResponse) {
-  console.log('📝 Actualizando match:', match.id);
-  console.log('📊 GameDetail sets:', gameDetail.sets);
+    console.log('📝 Actualizando match:', match.id);
+    console.log('📊 GameDetail sets:', gameDetail.sets);
 
-  // 🔥 MANEJAR CASO CUANDO SETS ES NULL O UNDEFINED
-  let sortedSets: any[] = [];
-  
-  if (gameDetail.sets && Array.isArray(gameDetail.sets)) {
-    sortedSets = gameDetail.sets.sort((a, b) => a.set_number - b.set_number);
-  } else {
-    console.warn('⚠️ gameDetail.sets es null o no es un array, usando array vacío');
+    // 🔥 MANEJAR CASO CUANDO SETS ES NULL O UNDEFINED
+    let sortedSets: any[] = [];
+
+    if (gameDetail.sets && Array.isArray(gameDetail.sets)) {
+      sortedSets = gameDetail.sets.sort((a, b) => a.set_number - b.set_number);
+    } else {
+      console.warn('⚠️ gameDetail.sets es null o no es un array, usando array vacío');
+    }
+
+    // Actualizar scores solo si hay sets
+    if (sortedSets.length > 0) {
+      match.scores1 = sortedSets.map(set => set.score_1);
+      match.scores2 = sortedSets.map(set => set.score_2);
+    } else {
+      // Si no hay sets, mantener los scores existentes o usar ceros
+      match.scores1 = match.scores1 || [0, 0, 0];
+      match.scores2 = match.scores2 || [0, 0, 0];
+    }
+
+    // Actualizar ganador si existe
+    if (gameDetail.winner) {
+      match.ganador = gameDetail.winner.players;
+    } else {
+      // Si no hay ganador, limpiar el ganador existente
+      match.ganador = null;
+    }
+
+    // Actualizar estado del juego
+    match.status_game = gameDetail.status_game || 'Not started';
+
+    console.log('✅ Match actualizado:', {
+      id: match.id,
+      scores1: match.scores1,
+      scores2: match.scores2,
+      ganador: match.ganador,
+      status: match.status_game,
+      setsRecibidos: gameDetail.sets
+    });
   }
 
-  // Actualizar scores solo si hay sets
-  if (sortedSets.length > 0) {
-    match.scores1 = sortedSets.map(set => set.score_1);
-    match.scores2 = sortedSets.map(set => set.score_2);
-  } else {
-    // Si no hay sets, mantener los scores existentes o usar ceros
-    match.scores1 = match.scores1 || [0, 0, 0];
-    match.scores2 = match.scores2 || [0, 0, 0];
-  }
-
-  // Actualizar ganador si existe
-  if (gameDetail.winner) {
-    match.ganador = gameDetail.winner.players;
-  } else {
-    // Si no hay ganador, limpiar el ganador existente
-    match.ganador = null;
-  }
-
-  // Actualizar estado del juego
-  match.status_game = gameDetail.status_game || 'Not started';
-
-  console.log('✅ Match actualizado:', {
-    id: match.id,
-    scores1: match.scores1,
-    scores2: match.scores2,
-    ganador: match.ganador,
-    status: match.status_game,
-    setsRecibidos: gameDetail.sets
-  });
-}
-
-  private forceChangeDetection() {
-    // Forzar actualización de la vista
-    this.results = [...this.results];
-
-    // Redibujar si es necesario
-    this.forceRedrawBracket();
+  toggleResultsSidebar() {
+    this.showResultsSidebar = !this.showResultsSidebar;
   }
 
 }

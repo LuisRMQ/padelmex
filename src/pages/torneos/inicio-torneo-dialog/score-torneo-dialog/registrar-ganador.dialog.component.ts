@@ -43,7 +43,7 @@ export class RegistrarGanadorDialogComponent {
     score2_set2: number | null = null;
     score1_set3: number | null = null;
     score2_set3: number | null = null;
-    
+
     // Nuevas propiedades para el diseño mejorado
     completedSets = 0;
     totalScore1: number | null = null;
@@ -62,7 +62,7 @@ export class RegistrarGanadorDialogComponent {
         private dialogRef: MatDialogRef<RegistrarGanadorDialogComponent>,
         private tournamentService: TournamentService,
         private snackBar: MatSnackBar
-    ) { 
+    ) {
         // Al inicializar, cargar los sets existentes
         this.loadExistingSets();
     }
@@ -71,29 +71,40 @@ export class RegistrarGanadorDialogComponent {
     private loadExistingSets(): void {
         const gameId = this.data.partido.id;
         if (!gameId) {
+            console.log('No hay gameId, partido nuevo');
             this.loading = false;
+            this.existingSets = []; // Inicializar como array vacío
             return;
         }
 
         this.loading = true;
-        
+
         this.tournamentService.getGameDetail(gameId).subscribe({
             next: (response: GameDetailApiResponse) => {
                 if (response.status === 'success' && response.data) {
                     this.gameDetail = response.data;
-                    this.existingSets = response.data.sets;
+
+                    // Asegurar que existingSets siempre sea un array
+                    this.existingSets = response.data.sets || [];
+
                     this.populateScoresFromExistingSets();
-                    
+
                     // Si el partido ya está completado, deshabilitar todo
                     if (response.data.status_game === 'completed') {
                         this.disableAllInputs();
                     }
+                } else {
+                    // Si no hay data, inicializar como array vacío
+                    this.existingSets = [];
                 }
                 this.loading = false;
             },
             error: (err) => {
                 console.error('Error al cargar sets existentes:', err);
-                
+
+                // Inicializar como array vacío en caso de error
+                this.existingSets = [];
+
                 // Si es un error 404 o similar (partido no tiene datos), no es un error crítico
                 if (err.status === 404) {
                     console.log('Partido sin datos existentes, se pueden ingresar nuevos sets');
@@ -104,7 +115,7 @@ export class RegistrarGanadorDialogComponent {
                         verticalPosition: 'top'
                     });
                 }
-                
+
                 this.loading = false;
             }
         });
@@ -112,23 +123,44 @@ export class RegistrarGanadorDialogComponent {
 
     // Método para poblar los scores desde los sets existentes
     private populateScoresFromExistingSets(): void {
+        // Verificar que existingSets no sea null o undefined
+        if (!this.existingSets || !Array.isArray(this.existingSets)) {
+            console.log('No hay sets existentes para poblar');
+            this.existingSets = []; // Asegurar que sea un array vacío
+            return;
+        }
+
+        // Reiniciar estados antes de poblar
+        this.disabledSet1 = false;
+        this.disabledSet2 = false;
+        this.disabledSet3 = false;
+        this.score1_set1 = null;
+        this.score2_set1 = null;
+        this.score1_set2 = null;
+        this.score2_set2 = null;
+        this.score1_set3 = null;
+        this.score2_set3 = null;
+
+        // Poblar solo si hay sets
         this.existingSets.forEach(set => {
-            switch (set.set_number) {
-                case 1:
-                    this.score1_set1 = set.score_1;
-                    this.score2_set1 = set.score_2;
-                    this.disabledSet1 = true;
-                    break;
-                case 2:
-                    this.score1_set2 = set.score_1;
-                    this.score2_set2 = set.score_2;
-                    this.disabledSet2 = true;
-                    break;
-                case 3:
-                    this.score1_set3 = set.score_1;
-                    this.score2_set3 = set.score_2;
-                    this.disabledSet3 = true;
-                    break;
+            if (set && set.set_number) {
+                switch (set.set_number) {
+                    case 1:
+                        this.score1_set1 = set.score_1;
+                        this.score2_set1 = set.score_2;
+                        this.disabledSet1 = true;
+                        break;
+                    case 2:
+                        this.score1_set2 = set.score_1;
+                        this.score2_set2 = set.score_2;
+                        this.disabledSet2 = true;
+                        break;
+                    case 3:
+                        this.score1_set3 = set.score_1;
+                        this.score2_set3 = set.score_2;
+                        this.disabledSet3 = true;
+                        break;
+                }
             }
         });
 
@@ -153,14 +185,17 @@ export class RegistrarGanadorDialogComponent {
 
     // Método para determinar si un equipo es el ganador
     isWinningTeam(teamNumber: number): boolean {
-        if (!this.gameDetail?.winner?.players || 
-            !this.data?.partido || 
-            !Array.isArray(this.gameDetail.winner.players)) {
+        // Verificaciones más estrictas
+        if (!this.gameDetail ||
+            !this.gameDetail.winner ||
+            !this.gameDetail.winner.players ||
+            !Array.isArray(this.gameDetail.winner.players) ||
+            !this.data?.partido) {
             return false;
         }
 
         let teamPlayers: any[] = [];
-        
+
         if (teamNumber === 1) {
             teamPlayers = this.data.partido.jugador1 || [];
         } else if (teamNumber === 2) {
@@ -169,17 +204,19 @@ export class RegistrarGanadorDialogComponent {
             return false;
         }
 
+        // Verificar que teamPlayers sea un array válido
         if (!Array.isArray(teamPlayers) || teamPlayers.length === 0) {
             return false;
         }
 
-        return teamPlayers.some(player => 
-            player && 
-            player.id && 
-            this.gameDetail!.winner.players.some(winner => 
-                winner && winner.id === player.id
-            )
-        );
+        // Buscar coincidencias de IDs
+        return teamPlayers.some(player => {
+            if (!player || !player.id) return false;
+
+            return this.gameDetail!.winner.players.some(winner =>
+                winner && winner.id && winner.id === player.id
+            );
+        });
     }
 
     // Método modificado para guardar sets individuales
@@ -331,7 +368,7 @@ export class RegistrarGanadorDialogComponent {
 
         // Si el partido ya está completado, no permitir cambios
         if (this.isGameCompleted) {
-            this.snackBar.open('Este partido ya está completado y no se puede modificar', 'Cerrar', { 
+            this.snackBar.open('Este partido ya está completado y no se puede modificar', 'Cerrar', {
                 duration: 5000,
                 horizontalPosition: 'center',
                 verticalPosition: 'top'
@@ -402,21 +439,21 @@ export class RegistrarGanadorDialogComponent {
             horizontalPosition: 'center',
             verticalPosition: 'top',
         });
-        this.dialogRef.close({ 
-            ganador, 
+        this.dialogRef.close({
+            ganador,
             partido: this.data.partido,
             scores: {
-                set1: { 
-                    score1: toSafeNumber(this.score1_set1), 
-                    score2: toSafeNumber(this.score2_set1) 
+                set1: {
+                    score1: toSafeNumber(this.score1_set1),
+                    score2: toSafeNumber(this.score2_set1)
                 },
-                set2: { 
-                    score1: toSafeNumber(this.score1_set2), 
-                    score2: toSafeNumber(this.score2_set2) 
+                set2: {
+                    score1: toSafeNumber(this.score1_set2),
+                    score2: toSafeNumber(this.score2_set2)
                 },
-                set3: { 
-                    score1: toSafeNumber(this.score1_set3), 
-                    score2: toSafeNumber(this.score2_set3) 
+                set3: {
+                    score1: toSafeNumber(this.score1_set3),
+                    score2: toSafeNumber(this.score2_set3)
                 }
             }
         });
