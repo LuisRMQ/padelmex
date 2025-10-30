@@ -105,7 +105,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private cargarDetallesJuegosExistentes() {
-    console.log('🔄 Iniciando carga de detalles de juegos existentes...');
 
     if (!this.bracketDataCards || this.bracketDataCards.length === 0) {
       console.warn('⚠️ bracketDataCards está vacío');
@@ -114,21 +113,17 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     // Recopilar todos los IDs de juegos existentes de bracketDataCards
     const allMatches = this.bracketDataCards.flat();
-    console.log('📋 Todos los partidos:', allMatches);
 
     const matchesWithIds = allMatches.filter(match => match.id && match.id !== null);
 
-    console.log('🎯 Encontrados', matchesWithIds.length, 'juegos con IDs:', matchesWithIds.map(m => ({ id: m.id, group: m.groupName })));
 
     if (matchesWithIds.length === 0) {
-      console.log('ℹ️ No hay juegos con IDs para cargar detalles');
-      console.log('🔍 Revisando estructura de bracketDataCards:', this.bracketDataCards);
+
       return;
     }
 
     // Cargar detalles para cada juego
     matchesWithIds.forEach(match => {
-      console.log('📥 Cargando detalles para gameId:', match.id);
       this.loadGameDetails(match.id!);
     });
   }
@@ -200,8 +195,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.tournamentService.getBracketsByTournament(this.data.torneoId).subscribe({
       next: (res) => {
-        console.log('🧱 Bracket API RAW:', res);
-        console.log('🧱 Bracket data:', res.data?.data?.bracket);
+
 
         this.bracket = res.data?.data?.bracket || [];
         this.categories = this.bracket;
@@ -225,38 +219,31 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   filtrarCategoria() {
     if (!this.selectedCategory) {
-      console.warn('⚠️ No hay categoría seleccionada');
       return;
     }
 
-    console.log('🎯 Filtrando categoría:', this.selectedCategory);
 
     this.filteredBracket = this.bracket.filter(
       b => b.category_name === this.selectedCategory
     );
 
-    console.log('📊 filteredBracket:', this.filteredBracket);
 
     if (this.filteredBracket.length > 0) {
       // Primero generar los datos del bracket
       this.generateResultsFromBracket(this.filteredBracket[0]);
 
-      console.log('🔄 Llamando a drawBracket...');
 
       // Dibujar con un pequeño delay para asegurar que el DOM esté listo
       setTimeout(() => {
         this.drawBracket();
         this.drawBracketSets();
 
-        console.log('✅ Bracket dibujado');
-        console.log('📊 bracketDataCards después de draw:', this.bracketDataCards);
+
 
         // 🔥 CARGAR DETALLES SOLO SI HAY DATOS
         if (this.bracketDataCards.length > 0) {
-          console.log('🎯 Cargando detalles de juegos...');
           this.cargarDetallesJuegosExistentes();
         } else {
-          console.warn('⚠️ bracketDataCards sigue vacío, intentando mapear directamente...');
           this.forceLoadGameDetails();
         }
 
@@ -271,15 +258,13 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
 
   private forceLoadGameDetails() {
-    console.log('🚨 FORZANDO carga de detalles desde filteredBracket...');
 
     if (this.filteredBracket.length > 0) {
       // Mapear directamente desde filteredBracket
       const bracketData = this.mapToPartidos(this.filteredBracket[0]);
       this.bracketDataCards = bracketData;
 
-      console.log('💾 bracketDataCards forzado:', this.bracketDataCards);
-      console.log('📋 Partidos con IDs:', this.bracketDataCards.flat().filter(p => p.id).length);
+
 
       // Ahora cargar detalles
       this.cargarDetallesJuegosExistentes();
@@ -290,7 +275,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const allMatches = this.bracketDataCards.flat();
     const matchesWithIds = allMatches.filter(match => match.id);
 
-    console.log('🎯 Cargando scores para matches:', matchesWithIds.length);
 
     matchesWithIds.forEach(match => {
       this.loadGameDetails(match.id!);
@@ -330,7 +314,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     });
 
     this.results = results;
-    console.log('🎯 Results generados:', this.results);
   }
 
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
@@ -401,14 +384,12 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    console.log('🎨 Dibujando bracket, useCachedData:', useCachedData);
 
     // 🔥 SIEMPRE mapear datos frescos para bracketDataCards
     const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
 
     // 🔥 ACTUALIZAR bracketDataCards SIEMPRE
     this.bracketDataCards = bracketData;
-    console.log('💾 bracketDataCards actualizado en drawBracket:', this.bracketDataCards.length);
 
     d3.select(container).selectAll('*').remove();
 
@@ -472,7 +453,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   // ------------------ MAPEO DE PARTIDOS ------------------
   private mapToPartidos(category: any): Partido[][] {
-    console.log('🗺️ Mapeando partidos de category:', category);
+    console.log('🔍 INICIANDO MAPEO DE PARTIDOS');
+    console.log('📦 Category data recibida:', category);
 
     const rounds: Partido[][] = [];
 
@@ -482,8 +464,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const groupRound: Partido[] = [];
 
     (category.groups || []).forEach((group: any) => {
-      console.log('👥 Procesando grupo:', group.group_name);
-
       const ranking = group.ranking || [];
       const rankById: { [id: number]: any } = {};
       (ranking as RankingItem[]).forEach((r: RankingItem) => {
@@ -491,8 +471,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       });
 
       (group.games || []).forEach((game: any) => {
-        console.log('🎮 Juego en grupo:', game);
-
         const a = game.couple_1;
         const b = game.couple_2;
         if (!a || !b) return;
@@ -516,13 +494,11 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           status_game: game.status_game || 'Not started'
         };
 
-        console.log('➕ Partido de grupo creado:', partido);
         groupRound.push(partido);
       });
     });
 
     if (groupRound.length) {
-      console.log('📦 Group round partidos:', groupRound.length);
       rounds.push(groupRound);
     }
 
@@ -532,8 +508,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const repechajeRound: Partido[] = [];
 
     (category.repechaje || []).forEach((game: any) => {
-      console.log('🔄 Procesando repechaje:', game);
-
       const partido: Partido = {
         jugador1: game.couple_1?.players || [{ name: 'Por asignar' }],
         jugador2: game.couple_2?.players || [{ name: 'Por asignar' }],
@@ -553,45 +527,68 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         status_game: game.status_game || 'Not started'
       };
 
-      console.log('➕ Partido de repechaje creado:', partido);
       repechajeRound.push(partido);
     });
 
     if (repechajeRound.length) {
-      console.log('🔄 Repechaje round partidos:', repechajeRound.length);
       rounds.push(repechajeRound);
     }
 
     // -------------------------------
-    // 3️⃣ FASE DE ELIMINACIONES - USAR DATOS REALES
+    // 3️⃣ FASE DE ELIMINACIONES - CORREGIDO
     // -------------------------------
     const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
     const eliminationRounds: Partido[][] = [];
 
-    eliminationOrder.forEach((phase, phaseIndex) => {
-      console.log(`🏆 Procesando fase: ${phase}`);
+    // 🔥 DEBUG: Verificar estructura de eliminación
+    if (category.elimination) {
+      console.log('🏆 ESTRUCTURA DE ELIMINACIÓN ENCONTRADA:', category.elimination);
+      Object.keys(category.elimination).forEach(phase => {
+        const phaseGames = category.elimination[phase];
+        console.log(`📊 ${phase.toUpperCase()}:`, {
+          cantidad: phaseGames?.length || 0,
+          juegos: phaseGames
+        });
+      });
+    } else {
+      console.warn('⚠️ NO se encontró estructura de eliminación en category');
+    }
 
+    eliminationOrder.forEach((phase) => {
       const phaseGames = category.elimination?.[phase] || [];
-      console.log(`🎮 Juegos en ${phase}:`, phaseGames.length, phaseGames);
-
       const phaseMatches: Partido[] = [];
 
-      // 🔥 USAR LOS JUEGOS REALES DE LA API, NO CREAR ESTRUCTURA VACÍA
+      console.log(`🎯 Procesando fase: ${phase}, Juegos encontrados: ${phaseGames.length}`);
+
+      // 🔥 PROCESAR PRIMERO LOS JUEGOS REALES DE LA API
       phaseGames.forEach((game: any, index: number) => {
-        console.log(`🎯 ${phase}[${index}]:`, game);
+        if (!game) {
+          console.warn(`⚠️ Juego nulo en ${phase}[${index}]`);
+          return;
+        }
 
         let nextMatchIndex: number | null = null;
 
         // Calcular nextMatchIndex basado en la fase
         if (phase === 'octavos') {
-          nextMatchIndex = Math.floor(index / 2); // 8 -> 4
+          nextMatchIndex = Math.floor(index / 2);
         } else if (phase === 'cuartos') {
-          nextMatchIndex = Math.floor(index / 2); // 4 -> 2
+          nextMatchIndex = Math.floor(index / 2);
         } else if (phase === 'semifinal') {
-          nextMatchIndex = 0; // 2 -> 1 (final)
+          nextMatchIndex = 0; // Ambos van a la final
         } else if (phase === 'final') {
-          nextMatchIndex = null; // Final no tiene siguiente
+          nextMatchIndex = null;
         }
+
+        // 🔥 VERIFICAR DATOS DE LOS JUGADORES
+        console.log(`🎯 ${phase.toUpperCase()} - Juego ${index}:`, {
+          id: game.game_id,
+          couple1: game.couple_1,
+          couple2: game.couple_2,
+          winner: game.winner_id,
+          players1: game.couple_1?.players,
+          players2: game.couple_2?.players
+        });
 
         const partido: Partido = {
           jugador1: game.couple_1?.players || [{ name: 'Por asignar' }],
@@ -613,47 +610,51 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           status_game: game.status_game || 'Not started'
         };
 
-        console.log(`➕ Partido de ${phase} creado:`, partido);
         phaseMatches.push(partido);
       });
 
-      // 🔥 SOLO CREAR ESTRUCTURA VACÍA SI NO HAY DATOS REALES
+      // 🔥 SOLO CREAR ESTRUCTURA VACÍA SI NO HAY DATOS Y ES NECESARIO
       if (phaseMatches.length === 0) {
-        console.log(`❌ No hay juegos reales en ${phase}, creando estructura vacía`);
+        console.log(`📝 Creando estructura vacía para ${phase} (sin datos reales)`);
 
         const expectedMatches = phase === 'final' ? 1 :
           phase === 'semifinal' ? 2 :
             phase === 'cuartos' ? 4 : 8;
 
-        for (let i = 0; i < expectedMatches; i++) {
-          let nextMatchIndex: number | null = null;
+        // Solo crear estructura vacía para octavos y cuartos si no hay datos
+        if (phase === 'octavos' || phase === 'cuartos') {
+          for (let i = 0; i < expectedMatches; i++) {
+            let nextMatchIndex: number | null = null;
 
-          if (phase === 'octavos') {
-            nextMatchIndex = Math.floor(i / 2);
-          } else if (phase === 'cuartos') {
-            nextMatchIndex = Math.floor(i / 2);
-          } else if (phase === 'semifinal') {
-            nextMatchIndex = 0;
+            if (phase === 'octavos') {
+              nextMatchIndex = Math.floor(i / 2);
+            } else if (phase === 'cuartos') {
+              nextMatchIndex = Math.floor(i / 2);
+            } else if (phase === 'semifinal') {
+              nextMatchIndex = 0;
+            }
+
+            phaseMatches.push({
+              jugador1: [{ name: 'Por asignar' }],
+              jugador2: [{ name: 'Por asignar' }],
+              ganador: null,
+              groupName: phase,
+              id: null,
+              couple1Id: null,
+              couple2Id: null,
+              nextMatchIndex,
+              scores1: [0, 0, 0],
+              scores2: [0, 0, 0],
+              date: null,
+              start_time: null,
+              end_time: null,
+              court: null,
+              status_game: 'Not started'
+            });
           }
-
-          phaseMatches.push({
-            jugador1: [{ name: 'Por asignar' }],
-            jugador2: [{ name: 'Por asignar' }],
-            ganador: null,
-            groupName: phase,
-            id: null,
-            couple1Id: null,
-            couple2Id: null,
-            nextMatchIndex,
-            scores1: [0, 0, 0],
-            scores2: [0, 0, 0],
-            date: null,
-            start_time: null,
-            end_time: null,
-            court: null,
-            status_game: 'Not started'
-          });
         }
+      } else {
+        console.log(`✅ ${phase.toUpperCase()} - ${phaseMatches.length} partidos mapeados correctamente`);
       }
 
       eliminationRounds.push(phaseMatches);
@@ -661,18 +662,16 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     rounds.push(...eliminationRounds);
 
-    console.log('🏁 TOTAL rounds mapeados:', rounds.length);
-    console.log('🏁 TOTAL partidos:', rounds.flat().length);
-    console.log('🏁 Partidos con IDs:', rounds.flat().filter(p => p.id).length);
-
-    // Debug detallado de cada ronda
+    // 🔥 DEBUG FINAL: Resumen de todas las rondas
+    console.log('📋 RESUMEN FINAL DE RONDAS MAPEADAS:');
     rounds.forEach((round, index) => {
       const roundName = index === 0 ? 'Grupos' :
         index === 1 ? 'Repechaje' :
           eliminationOrder[index - 2] || `Ronda ${index}`;
-      console.log(`📊 ${roundName}: ${round.length} partidos`);
+
+      console.log(`🏅 ${roundName}: ${round.length} partidos`);
       round.forEach((partido, i) => {
-        console.log(`   ${i}: ${this.getPlayerNames(partido.jugador1)} vs ${this.getPlayerNames(partido.jugador2)} (ID: ${partido.id})`);
+        console.log(`   ${i}. ${this.getPlayerNames(partido.jugador1)} vs ${this.getPlayerNames(partido.jugador2)} [ID: ${partido.id}]`);
       });
     });
 
@@ -697,22 +696,25 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private drawBracketSets() {
-    console.log('Dibujando bracket sets moderno...');
 
     if (!this.bracketContainerSets?.nativeElement) {
-      console.warn('bracketContainerSets no disponible');
       return;
     }
 
     const container = this.bracketContainerSets.nativeElement as HTMLElement;
+        console.log("9999999999999999999999999999999999999999999999999999")
+
+    console.log(container)
+            console.log("9999999999999999999999999999999999999999999999999999")
 
     // Limpiar contenedor
     d3.select(container).selectAll('*').remove();
 
     try {
       // Obtener las eliminatorias o crear estructura básica si no hay datos
-      let eliminationRounds = this.bracketDataCards.filter((round, index) => index > 0);
+let eliminationRounds = this.bracketDataCards.filter((round, index) => index > 0);
 
+        console.log("asdasdasdasdd" + eliminationRounds +"asdadsadsadsadsadsads")
       // Si no hay eliminatorias en los datos, crear estructura básica
       if (!eliminationRounds.length) {
         eliminationRounds = this.createBasicEliminationStructure();
@@ -764,7 +766,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         }
       });
 
-      console.log('Bracket moderno dibujado exitosamente');
 
     } catch (error) {
       console.error('Error al dibujar bracket moderno:', error);
@@ -860,9 +861,32 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private drawModernEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
     const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
 
-    // Asegurar que los jugadores tengan al menos "Por asignar"
-    const jugador1 = partido.jugador1 && partido.jugador1.length > 0 ? partido.jugador1 : [{ name: 'Por asignar' }];
-    const jugador2 = partido.jugador2 && partido.jugador2.length > 0 ? partido.jugador2 : [{ name: 'Por asignar' }];
+    // 🔥 VERIFICACIÓN MEJORADA Y TYPE-SAFE DE JUGADORES
+    const jugador1Safe = partido.jugador1 &&
+      Array.isArray(partido.jugador1) &&
+      partido.jugador1.length > 0 &&
+      partido.jugador1[0]?.name &&
+      partido.jugador1[0].name !== 'Por asignar' &&
+      partido.jugador1[0].name !== ''
+      ? partido.jugador1
+      : [{ name: 'Por asignar' }];
+
+    const jugador2Safe = partido.jugador2 &&
+      Array.isArray(partido.jugador2) &&
+      partido.jugador2.length > 0 &&
+      partido.jugador2[0]?.name &&
+      partido.jugador2[0].name !== 'Por asignar' &&
+      partido.jugador2[0].name !== ''
+      ? partido.jugador2
+      : [{ name: 'Por asignar' }];
+
+    // 🔥 DEBUG EN TIEMPO REAL DE DIBUJO - CORREGIDO
+    console.log(`🎨 Dibujando partido ${partido.groupName}-${matchIndex}:`, {
+      jugador1: jugador1Safe.map(j => j?.name || 'Sin nombre'),
+      jugador2: jugador2Safe.map(j => j?.name || 'Sin nombre'),
+      id: partido.id,
+      tieneDatosReales: (jugador1Safe[0]?.name !== 'Por asignar') || (jugador2Safe[0]?.name !== 'Por asignar')
+    });
 
     // Fondo moderno del partido con sombra
     g.append('rect')
@@ -874,8 +898,11 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('rx', 12)
       .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
 
+    // 🔥 CORRECCIÓN: Manejar ganador undefined
+    const ganador = partido.ganador || null;
+
     // Jugador 1 - Diseño moderno
-    const isPlayer1Winner = partido.ganador && this.arePlayersEqual(partido.ganador, jugador1);
+    const isPlayer1Winner = ganador && this.arePlayersEqual(ganador, jugador1Safe);
     const player1Bg = g.append('rect')
       .attr('width', this.matchWidth)
       .attr('height', this.matchHeight / 2 - 1)
@@ -886,7 +913,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('ry', 10);
 
     // Jugador 2 - Diseño moderno
-    const isPlayer2Winner = partido.ganador && this.arePlayersEqual(partido.ganador, jugador2);
+    const isPlayer2Winner = ganador && this.arePlayersEqual(ganador, jugador2Safe);
     const player2Bg = g.append('rect')
       .attr('y', this.matchHeight / 2 + 1)
       .attr('width', this.matchWidth)
@@ -898,8 +925,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('ry', 10);
 
     // Nombres de jugadores con mejor estilo
-    const nombres1 = this.getPlayerNames(jugador1);
-    const nombres2 = this.getPlayerNames(jugador2);
+    const nombres1 = this.getPlayerNames(jugador1Safe);
+  const nombres2 = this.getPlayerNames(jugador2Safe);
 
     // Jugador 1 text
     g.append('text')
@@ -942,7 +969,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         .attr('stop-color', '#059669');
     }
 
-
+    // Click handler
+    g.style('cursor', 'pointer')
+      .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
   }
 
   private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
@@ -1404,7 +1433,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   loadGameDetails(gameId: number) {
     this.tournamentService.getGameDetail(gameId).subscribe({
       next: (response) => {
-        console.log('Detalles del juego:', response.data);
 
         // Aquí puedes actualizar los scores en tu interfaz
         this.updateMatchScores(gameId, response.data);
@@ -1416,7 +1444,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private updateMatchScores(gameId: number, gameDetail: GameDetailResponse) {
-    console.log('🔄 Actualizando scores para gameId:', gameId);
 
     let needsRedraw = false;
 
@@ -1438,7 +1465,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       }
     });
 
-    console.log('✅ Scores actualizados, needsRedraw:', needsRedraw);
 
     // Forzar actualización visual inmediata
     if (needsRedraw) {
@@ -1462,8 +1488,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private updateSingleMatchScores(match: any, gameDetail: GameDetailResponse) {
-    console.log('📝 Actualizando match:', match.id);
-    console.log('📊 GameDetail sets:', gameDetail.sets);
+
 
     // 🔥 MANEJAR CASO CUANDO SETS ES NULL O UNDEFINED
     let sortedSets: any[] = [];
@@ -1471,7 +1496,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     if (gameDetail.sets && Array.isArray(gameDetail.sets)) {
       sortedSets = gameDetail.sets.sort((a, b) => a.set_number - b.set_number);
     } else {
-      console.warn('⚠️ gameDetail.sets es null o no es un array, usando array vacío');
     }
 
     // Actualizar scores solo si hay sets
@@ -1495,14 +1519,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     // Actualizar estado del juego
     match.status_game = gameDetail.status_game || 'Not started';
 
-    console.log('✅ Match actualizado:', {
-      id: match.id,
-      scores1: match.scores1,
-      scores2: match.scores2,
-      ganador: match.ganador,
-      status: match.status_game,
-      setsRecibidos: gameDetail.sets
-    });
+
   }
 
   toggleResultsSidebar() {
