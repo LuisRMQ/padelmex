@@ -715,16 +715,14 @@ private normalizeCouple(couple: any) {
   d3.select(container).selectAll('*').remove();
 
   try {
-    // 0) Obtener datos frescos
+    // 0) Verificar datos
     if (!this.filteredBracket || !this.filteredBracket[0]) {
       console.warn('drawBracketSets: filteredBracket vacío');
       return;
     }
-    const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
-    this.bracketDataCards = bracketData; // asegurar cache
-
-    // helpers
     const category = this.filteredBracket[0];
+
+    // helper: resolver players desde rankings de grupos por couple_id
     const tryResolvePlayersFromRanking = (id: number | null) => {
       if (!id || !category || !Array.isArray(category.groups)) return null;
       for (const grp of category.groups) {
@@ -734,6 +732,7 @@ private normalizeCouple(couple: any) {
       return null;
     };
 
+    // normalizar un partido (asegura id, players, ganador, nextMatchIndex, etc.)
     const normalizeMatch = (raw: any, defaultGroupName = 'elimination', idx = 0): Partido => {
       if (!raw) {
         return {
@@ -757,14 +756,14 @@ private normalizeCouple(couple: any) {
 
       const m: any = { ...raw };
 
-      // --- ID (important!)
+      // ID (game_id o id)
       m.id = raw.game_id ?? raw.id ?? null;
 
-      // --- Winner mapping (API uses winner_id)
+      // Winner (winner_id -> ganador como arreglo de players si posible)
       if (typeof raw.winner_id !== 'undefined' && raw.winner_id !== null) {
-        // if couples come as objects, compare ids; otherwise leave ganador null (we'll map to players if possible)
         const c1id = raw.couple_1?.id ?? raw.couple_1 ?? raw.couple1Id ?? null;
         const c2id = raw.couple_2?.id ?? raw.couple_2 ?? raw.couple2Id ?? null;
+
         if (raw.winner_id === c1id) {
           m.ganador = Array.isArray(raw.couple_1?.players) ? raw.couple_1.players : tryResolvePlayersFromRanking(c1id) || null;
         } else if (raw.winner_id === c2id) {
@@ -773,25 +772,26 @@ private normalizeCouple(couple: any) {
           m.ganador = null;
         }
       } else {
-        // preserve existing ganador if any
         m.ganador = m.ganador ?? null;
       }
 
-      // --- couple_1 / couple_2 normalization -> jugador1/jugador2 and couple1Id/couple2Id
+      // Normalizar couple_1 -> jugador1 y couple1Id
       if (m.couple_1) {
         if (Array.isArray(m.couple_1.players) && m.couple_1.players.length) {
           m.jugador1 = m.couple_1.players;
-          m.couple1Id = m.couple_1.id ?? m.couple1Id ?? m.couple_1?.id ?? null;
+          m.couple1Id = m.couple_1.id ?? m.couple1Id ?? null;
         } else if (typeof m.couple_1 === 'number') {
           m.couple1Id = m.couple_1;
         } else {
           m.couple1Id = m.couple1Id ?? (m.couple_1?.id ?? null);
         }
       }
+
+      // Normalizar couple_2 -> jugador2 y couple2Id
       if (m.couple_2) {
         if (Array.isArray(m.couple_2.players) && m.couple_2.players.length) {
           m.jugador2 = m.couple_2.players;
-          m.couple2Id = m.couple_2.id ?? m.couple2Id ?? m.couple_2?.id ?? null;
+          m.couple2Id = m.couple_2.id ?? m.couple2Id ?? null;
         } else if (typeof m.couple_2 === 'number') {
           m.couple2Id = m.couple_2;
         } else {
@@ -799,7 +799,7 @@ private normalizeCouple(couple: any) {
         }
       }
 
-      // Si sólo tenemos ids, intentar resolver names desde ranking
+      // Si sólo hay ids, intentar resolver desde ranking
       if ((!m.jugador1 || m.jugador1.length === 0) && m.couple1Id) {
         m.jugador1 = tryResolvePlayersFromRanking(m.couple1Id) || [{ name: 'Por asignar' }];
       }
@@ -811,7 +811,7 @@ private normalizeCouple(couple: any) {
       if (!m.jugador1 || !Array.isArray(m.jugador1) || m.jugador1.length === 0) m.jugador1 = [{ name: 'Por asignar' }];
       if (!m.jugador2 || !Array.isArray(m.jugador2) || m.jugador2.length === 0) m.jugador2 = [{ name: 'Por asignar' }];
 
-      // nextMatchIndex fallback si no viene
+      // nextMatchIndex por defecto (final -> null)
       if (typeof m.nextMatchIndex === 'undefined' || m.nextMatchIndex === null) {
         m.nextMatchIndex = (defaultGroupName === 'final') ? null : Math.floor(idx / 2);
       }
@@ -824,38 +824,54 @@ private normalizeCouple(couple: any) {
       return m as Partido;
     };
 
-    // --- construir lista de rondas a dibujar (incluye repechaje si existe y omite fases vacías)
+    // Orden posible de fases (de mayor a menor estructura)
+    const phaseOrder = [
+      'ciento_veintiochavos', // 128
+      'sesentaicuatroavos',   // 64
+      'treintaidosavos',      // 32
+      'dieciseisavos',       // 16
+      'octavos',             // 8
+      'cuartos',             // 4
+      'semifinal',           // 2
+      'final'                // 1
+    ];
+
+    // Construir phasesToShow: repechaje primero (si existe), luego las fases en phaseOrder que no estén vacías
     const phasesToShow: { name: string, raw: any[] }[] = [];
     if (Array.isArray(category.repechaje) && category.repechaje.length > 0) {
       phasesToShow.push({ name: 'repechaje', raw: category.repechaje });
     }
-    const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
-    for (const phase of eliminationOrder) {
+    for (const phase of phaseOrder) {
       const raw = category.elimination?.[phase] || [];
       if (Array.isArray(raw) && raw.length > 0) {
         phasesToShow.push({ name: phase, raw });
       } else {
+        // omitimos fases vacías (no las dibujamos)
         console.log(`drawBracketSets: omitiendo fase vacía ${phase}`);
       }
     }
 
-    // fallback a estructura básica si no hay nada
+    // Si no tuvimos ninguna fase real, usar fallback básico (estructura típica)
     if (phasesToShow.length === 0) {
+      console.log('drawBracketSets: no hay fases de eliminación -> uso estructura básica');
       const basic = this.createBasicEliminationStructure();
       const names = ['octavos','cuartos','semifinal','final'];
       basic.forEach((r, i) => phasesToShow.push({ name: names[i], raw: r }));
     }
 
-    // normalizar
+    // Normalizar cada ronda y cada partido
     const eliminationRounds: Partido[][] = phasesToShow.map((p, roundIndex) =>
       (p.raw || []).map((g: any, idx: number) => normalizeMatch(g, p.name, idx))
     );
 
-    // Si no hay partidos reales y quieres fallback completo, ya lo cubrimos arriba.
+    // DEBUG
+    console.log('▶ drawBracketSets - phasesToShow:', phasesToShow.map(p => p.name));
+    console.log('▶ drawBracketSets - eliminationRounds lengths:', eliminationRounds.map(r => r.length));
+    console.log('▶ ejemplo cuartos[0]:', eliminationRounds.find((r,i)=>phasesToShow[i]?.name==='cuartos')?.[0]);
 
-    // --- DIBUJADO (igual que antes)
+    // DIBUJADO
     const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + this.roundSpacing;
-    const maxMatches = Math.max(...eliminationRounds.map(r => (r || []).length));
+    const maxMatches = eliminationRounds.length ? Math.max(...eliminationRounds.map(r => (r || []).length)) : 0;
     const totalHeight = Math.max(200, maxMatches * (this.matchHeight + this.verticalSpacing) + 200);
 
     const svg = d3.select(container).append('svg')
@@ -884,6 +900,7 @@ private normalizeCouple(couple: any) {
     this.showErrorState(container);
   }
 }
+
 
 
   private drawRoundBackgrounds(eliminationRounds: Partido[][], gContainer: any) {
