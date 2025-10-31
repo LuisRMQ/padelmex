@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { GameDetailResponse, TournamentService } from '../../../app/services/torneos.service';
 import * as d3 from 'd3';
@@ -97,7 +97,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public data: { torneoId: number },
     private dialogRef: MatDialogRef<InicioTorneoDialogComponent>,
     private tournamentService: TournamentService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdRef: ChangeDetectorRef
+
   ) { }
 
   ngOnInit(): void {
@@ -170,12 +172,19 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
 
   ngAfterViewInit(): void {
-    if (this.filteredBracket.length) {
-      this.drawBracket();
-      // Inicializar el bracket de eliminatorias también
-      setTimeout(() => this.drawBracketSets(), 100);
-      setTimeout(() => this.enableBracketDragging(), 100);
+    console.log('🚀 ngAfterViewInit ejecutado');
 
+    if (this.filteredBracket.length) {
+      console.log('📦 Contenedores disponibles, dibujando...');
+
+      // 🔥 PEQUEÑO DELAY PARA ASEGURAR QUE EL DOM ESTÉ LISTO
+      setTimeout(() => {
+        this.drawBracket();
+        this.drawBracketSets();
+        this.enableBracketDragging();
+      }, 200);
+    } else {
+      console.log('⏳ Esperando datos para dibujar...');
     }
   }
 
@@ -319,24 +328,276 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
     console.log('🔍 DEBUG - Partido clickeado:', partido);
 
-    // Cargar los detalles más recientes del juego
-    if (partido.id) {
-      this.loadGameDetails(partido.id);
-    }
-
     const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
       width: '700px',
       data: { partido, roundIndex, matchIndex }
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      console.log('🔔 Modal cerrado con resultado:', result);
+
       if (result) {
-        this.marcarGanador(result, roundIndex, matchIndex);
-        // Recargar detalles después de actualizar
+        // 🔥 SOLO ACTUALIZAR EL PARTIDO ESPECÍFICO Y REDIBUJAR
+        this.actualizarPartidoYRedibujar(result);
+        this.drawBracketSets()
+      } else {
+        // 🔥 SI NO HAY RESULTADO, SOLO RECARGAR DETALLES DEL PARTIDO
         if (partido.id) {
-          setTimeout(() => this.loadGameDetails(partido.id!), 500);
+          this.loadGameDetails(partido.id);
         }
       }
+    });
+  }
+
+  private actualizarPartidoYRedibujar(resultado: any) {
+  const gameId = resultado.gameId || resultado.id;
+  if (!gameId) {
+    console.warn('⚠️ No hay gameId en el resultado');
+    return;
+  }
+  console.log('🔄 Actualizando partido:', gameId);
+
+  this.tournamentService.getGameDetail(gameId).subscribe({
+    next: (response) => {
+      const gameDetail = response.data ?? response; // adapta según tu API
+      console.log('✅ Detalles actualizados del partido (API):', gameDetail);
+
+      // 1) actualizar estructuras en memoria
+      this.actualizarPartidoEnTodasLasEstructuras(gameId, gameDetail);
+
+      // 2) actualizar la estructura original que usa drawBracketSets
+      this.updateGameInFilteredBracket(gameId, gameDetail);
+
+      // 3) regenerar bracketDataCards desde filteredBracket (asegura source-of-truth)
+      if (this.filteredBracket && this.filteredBracket[0]) {
+        this.bracketDataCards = this.mapToPartidos(this.filteredBracket[0]);
+      }
+
+      // 4) regenerar results si necesitas (si usan datos del grupo)
+      if (this.filteredBracket && this.filteredBracket[0]) {
+        this.generateResultsFromBracket(this.filteredBracket[0]);
+      }
+
+      // 5) forzar nuevas referencias y detectChanges
+      this.results = [...this.results];
+      this.bracketDataCards = [...this.bracketDataCards];
+      this.filteredBracket = [...this.filteredBracket];
+      this.filteredBracket[0] = { ...this.filteredBracket[0] };
+
+      // 6) limpiar y redibujar en el siguiente frame (evita carreras con Angular)
+      this.limpiarContenedores();
+      this.cdRef.detectChanges();
+      requestAnimationFrame(() => {
+        if (this.viewMode === 'sets') {
+          this.drawBracketSets();
+        } else {
+          this.drawBracket();
+        }
+      });
+    },
+    error: (error) => {
+      console.error('❌ Error al cargar detalles del juego:', error);
+      // fallback: intenta redibujar con lo que hay
+      this.cdRef.detectChanges();
+      requestAnimationFrame(() => {
+        if (this.viewMode === 'sets') this.drawBracketSets();
+        else this.drawBracket();
+      });
+    }
+  });
+}
+
+  private actualizarPartidoEnTodasLasEstructuras(gameId: number, gameDetail: any) {
+    let partidoActualizado = false;
+
+    // 🔥 ACTUALIZAR EN bracketDataCards
+    this.bracketDataCards.forEach(round => {
+      round.forEach(partido => {
+        if (partido.id === gameId) {
+          this.actualizarDatosPartido(partido, gameDetail);
+          partidoActualizado = true;
+          console.log('✅ Partido actualizado en bracketDataCards');
+        }
+      });
+    });
+
+    // 🔥 ACTUALIZAR EN results
+    this.results.forEach(partido => {
+      if (partido.id === gameId) {
+        this.actualizarDatosPartido(partido, gameDetail);
+        partidoActualizado = true;
+        console.log('✅ Partido actualizado en results');
+      }
+    });
+
+    if (!partidoActualizado) {
+      console.warn('⚠️ Partido no encontrado en las estructuras de datos');
+    }
+  }
+
+  private actualizarDatosPartido(partido: any, gameDetail: any) {
+    // 🔥 ACTUALIZAR SCORES
+    if (gameDetail.sets && Array.isArray(gameDetail.sets)) {
+      const sortedSets = gameDetail.sets.sort((a: any, b: any) => a.set_number - b.set_number);
+      partido.scores1 = sortedSets.map((set: any) => set.score_1);
+      partido.scores2 = sortedSets.map((set: any) => set.score_2);
+    }
+
+    // 🔥 ACTUALIZAR GANADOR
+    if (gameDetail.winner) {
+      partido.ganador = gameDetail.winner.players;
+    } else {
+      partido.ganador = null;
+    }
+
+    // 🔥 ACTUALIZAR ESTADO
+    partido.status_game = gameDetail.status_game || 'Not started';
+
+    console.log('📊 Partido actualizado:', {
+      id: partido.id,
+      scores1: partido.scores1,
+      scores2: partido.scores2,
+      ganador: partido.ganador,
+      status: partido.status_game
+    });
+  }
+
+  private redibujarVistas() {
+    console.log('🎨 Redibujando vistas...');
+
+    // 🔥 PEQUEÑO DELAY PARA ASEGURAR QUE LOS DATOS ESTÁN ACTUALIZADOS
+    setTimeout(() => {
+      // 🔥 LIMPIAR CONTENEDORES
+      this.limpiarContenedores();
+
+      // 🔥 REDIBUJAR SEGÚN EL MODO DE VISTA ACTUAL
+      if (this.viewMode === 'bracket') {
+        this.drawBracket();
+        console.log('✅ Bracket redibujado');
+      } else if (this.viewMode === 'sets') {
+        this.drawBracketSets();
+        console.log('✅ Bracket Sets redibujado');
+      }
+
+      // 🔥 FORZAR ACTUALIZACIÓN DE ANGULAR
+      this.forceChangeDetection();
+
+    }, 100);
+  }
+
+  private limpiarContenedores() {
+    // 🔥 LIMPIAR BRACKET PRINCIPAL
+    if (this.bracketContainer?.nativeElement) {
+      const container = this.bracketContainer.nativeElement as HTMLElement;
+      d3.select(container).selectAll('*').remove();
+      console.log('🧹 Contenedor bracket limpiado');
+    }
+
+    // 🔥 LIMPIAR BRACKET SETS
+    if (this.bracketContainerSets?.nativeElement) {
+      const container = this.bracketContainerSets.nativeElement as HTMLElement;
+      d3.select(container).selectAll('*').remove();
+      console.log('🧹 Contenedor bracketSets limpiado');
+    }
+  }
+
+  private forceChangeDetection() {
+    // 🔥 FORZAR DETECCIÓN DE CAMBIOS
+    this.results = [...this.results];
+    this.bracketDataCards = [...this.bracketDataCards];
+    console.log('🔄 Detección de cambios forzada');
+  }
+
+
+
+  private recargarCategoriaCompleta() {
+    console.log('🔄 Recargando categoría completa...');
+
+    if (!this.selectedCategory) {
+      console.warn('⚠️ No hay categoría seleccionada para recargar');
+      return;
+    }
+
+    this.loading = true;
+
+    // 🔥 RECARGAR DATOS DESDE EL SERVIDOR
+    this.tournamentService.getBracketsByTournament(this.data.torneoId).subscribe({
+      next: (res) => {
+        this.bracket = res.data?.data?.bracket || [];
+
+        // 🔥 ACTUALIZAR filteredBracket con los datos frescos
+        this.filteredBracket = this.bracket.filter(
+          b => b.category_name === this.selectedCategory
+        );
+
+        if (this.filteredBracket.length > 0) {
+          // 🔥 REGENERAR TODOS LOS DATOS
+          this.generateResultsFromBracket(this.filteredBracket[0]);
+
+          // 🔥 REDIBUJAR TODO
+          setTimeout(() => {
+            this.drawBracket();
+            this.drawBracketSets();
+
+            // 🔥 RECARGAR DETALLES DE TODOS LOS JUEGOS
+            this.cargarDetallesDeTodosLosJuegos();
+
+            this.loading = false;
+            console.log('✅ Categoría recargada exitosamente');
+          }, 100);
+        } else {
+          this.loading = false;
+          console.warn('⚠️ No se encontró la categoría después de recargar');
+        }
+      },
+      error: (err) => {
+        console.error('❌ Error al recargar el bracket:', err);
+        this.loading = false;
+        // 🔥 INTENTAR REDIBUJAR CON LOS DATOS EXISTENTES
+        this.forceImmediateRedraw();
+      }
+    });
+  }
+
+  private cargarDetallesDeTodosLosJuegos() {
+    console.log('📥 Cargando detalles de todos los juegos...');
+
+    if (!this.bracketDataCards || this.bracketDataCards.length === 0) {
+      console.warn('⚠️ No hay partidos para cargar detalles');
+      return;
+    }
+
+    const allMatches = this.bracketDataCards.flat();
+    const matchesWithIds = allMatches.filter(match => match.id && match.id !== null);
+
+    if (matchesWithIds.length === 0) {
+      console.log('ℹ️ No hay partidos con IDs para cargar detalles');
+      return;
+    }
+
+    console.log(`📋 Cargando detalles para ${matchesWithIds.length} partidos...`);
+
+    // 🔥 CARGAR DETALLES PARA TODOS LOS PARTIDOS
+    let loadedCount = 0;
+    matchesWithIds.forEach(match => {
+      this.tournamentService.getGameDetail(match.id!).subscribe({
+        next: (response) => {
+          this.updateMatchScores(match.id!, response.data);
+          loadedCount++;
+
+          // 🔥 CUANDO TODOS LOS DETALLES ESTÉN CARGADOS, REDIBUJAR
+          if (loadedCount === matchesWithIds.length) {
+            console.log('✅ Todos los detalles cargados, redibujando...');
+            setTimeout(() => {
+              this.forceImmediateRedraw();
+            }, 200);
+          }
+        },
+        error: (error) => {
+          console.error(`❌ Error al cargar detalles del juego ${match.id}:`, error);
+          loadedCount++;
+        }
+      });
     });
   }
 
@@ -1689,18 +1950,98 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     }
   }
 
+
+
+  private updateGameInFilteredBracket(gameId: number, gameDetail: any) {
+  if (!this.filteredBracket || !this.filteredBracket[0]) return;
+  const category = this.filteredBracket[0];
+
+  const applyUpdate = (g: any) => {
+    const sets = Array.isArray(gameDetail.sets) ? gameDetail.sets.sort((a:any,b:any)=>a.set_number-b.set_number) : null;
+    return {
+      ...g,
+      winner_id: gameDetail.winner?.players ? (gameDetail.winner.players[0]?.id ?? g.winner_id) : g.winner_id,
+      scores1: sets ? sets.map((s:any)=>s.score_1) : (gameDetail.scores1 ?? g.scores1),
+      scores2: sets ? sets.map((s:any)=>s.score_2) : (gameDetail.scores2 ?? g.scores2),
+      status_game: gameDetail.status_game ?? g.status_game,
+      sets: gameDetail.sets ?? g.sets
+    };
+  };
+
+  // 1) groups -> group.games
+  if (Array.isArray(category.groups)) {
+    for (const grp of category.groups) {
+      if (!Array.isArray(grp.games)) continue;
+      for (let i = 0; i < grp.games.length; i++) {
+        const g = grp.games[i];
+        if ((g.game_id ?? g.id) === gameId) {
+          grp.games[i] = applyUpdate(g);
+          console.log('✅ updated in groups', grp.games[i]);
+          this.filteredBracket = [...this.filteredBracket];
+          this.filteredBracket[0] = { ...this.filteredBracket[0] };
+          return;
+        }
+      }
+    }
+  }
+
+  // 2) repechaje
+  if (Array.isArray(category.repechaje)) {
+    for (let i = 0; i < category.repechaje.length; i++) {
+      const g = category.repechaje[i];
+      if ((g.game_id ?? g.id) === gameId) {
+        category.repechaje[i] = applyUpdate(g);
+        console.log('✅ updated in repechaje', category.repechaje[i]);
+        this.filteredBracket = [...this.filteredBracket];
+        this.filteredBracket[0] = { ...this.filteredBracket[0] };
+        return;
+      }
+    }
+  }
+
+  // 3) elimination
+  if (category.elimination && typeof category.elimination === 'object') {
+    for (const phaseKey of Object.keys(category.elimination)) {
+      const arr = category.elimination[phaseKey];
+      if (!Array.isArray(arr)) continue;
+      for (let i = 0; i < arr.length; i++) {
+        const g = arr[i];
+        if ((g.game_id ?? g.id) === gameId) {
+          arr[i] = applyUpdate(g);
+          console.log(`✅ updated in elimination.${phaseKey}[${i}]`, arr[i]);
+          this.filteredBracket = [...this.filteredBracket];
+          this.filteredBracket[0] = { ...this.filteredBracket[0] };
+          return;
+        }
+      }
+    }
+  }
+
+  console.warn('⚠️ No se encontró el partido en filteredBracket para gameId', gameId);
+}
+
+
+
+
+
   private forceImmediateRedraw() {
+    console.log('🎨 Forzando redibujo inmediato...');
+
     // Usar setTimeout para asegurar que Angular actualice el ciclo de detección de cambios
     setTimeout(() => {
       if (this.viewMode === 'bracket') {
         this.drawBracket(true);
+        console.log('✅ Bracket redibujado');
       } else if (this.viewMode === 'sets') {
         this.drawBracketSets();
+        console.log('✅ Bracket Sets redibujado');
       }
 
-      // Forzar detección de cambios
+      // 🔥 FORZAR DETECCIÓN DE CAMBIOS EN TODOS LOS COMPONENTES
       this.results = [...this.results];
       this.bracketDataCards = [...this.bracketDataCards];
+
+      console.log('✅ Detección de cambios forzada');
     }, 0);
   }
 
