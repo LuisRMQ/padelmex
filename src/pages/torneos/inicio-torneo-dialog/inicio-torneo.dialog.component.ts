@@ -451,10 +451,23 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     }
   }
 
+
+
+private normalizeCouple(couple: any) {
+  // couple puede ser: un número (id), o un objeto { id, players } o null
+  if (!couple) return { id: null, players: null };
+  if (typeof couple === 'number') {
+    return { id: couple, players: null };
+  }
+  return {
+    id: couple.id ?? null,
+    players: Array.isArray(couple.players) ? couple.players : null
+  };
+}
+
   // ------------------ MAPEO DE PARTIDOS ------------------
   private mapToPartidos(category: any): Partido[][] {
-    console.log('🔍 INICIANDO MAPEO DE PARTIDOS');
-    console.log('📦 Category data recibida:', category);
+    
 
     const rounds: Partido[][] = [];
 
@@ -695,100 +708,183 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private drawBracketSets() {
+ private drawBracketSets() {
+  if (!this.bracketContainerSets?.nativeElement) return;
 
-    if (!this.bracketContainerSets?.nativeElement) {
+  const container = this.bracketContainerSets.nativeElement as HTMLElement;
+  d3.select(container).selectAll('*').remove();
+
+  try {
+    // 0) Obtener datos frescos
+    if (!this.filteredBracket || !this.filteredBracket[0]) {
+      console.warn('drawBracketSets: filteredBracket vacío');
       return;
     }
+    const bracketData: Partido[][] = this.mapToPartidos(this.filteredBracket[0]);
+    this.bracketDataCards = bracketData; // asegurar cache
 
-    const container = this.bracketContainerSets.nativeElement as HTMLElement;
-        console.log("9999999999999999999999999999999999999999999999999999")
+    // helpers
+    const category = this.filteredBracket[0];
+    const tryResolvePlayersFromRanking = (id: number | null) => {
+      if (!id || !category || !Array.isArray(category.groups)) return null;
+      for (const grp of category.groups) {
+        const found = (grp.ranking || []).find((r: any) => r.couple_id === id);
+        if (found && Array.isArray(found.players)) return found.players;
+      }
+      return null;
+    };
 
-    console.log(container)
-            console.log("9999999999999999999999999999999999999999999999999999")
-
-    // Limpiar contenedor
-    d3.select(container).selectAll('*').remove();
-
-    try {
-      // Obtener las eliminatorias o crear estructura básica si no hay datos
-let eliminationRounds = this.bracketDataCards.filter((round, index) => index > 0);
-
-        console.log("asdasdasdasdd" + eliminationRounds +"asdadsadsadsadsadsads")
-      // Si no hay eliminatorias en los datos, crear estructura básica
-      if (!eliminationRounds.length) {
-        eliminationRounds = this.createBasicEliminationStructure();
+    const normalizeMatch = (raw: any, defaultGroupName = 'elimination', idx = 0): Partido => {
+      if (!raw) {
+        return {
+          jugador1: [{ name: 'Por asignar' }],
+          jugador2: [{ name: 'Por asignar' }],
+          ganador: null,
+          groupName: defaultGroupName,
+          id: null,
+          couple1Id: null,
+          couple2Id: null,
+          nextMatchIndex: defaultGroupName === 'final' ? null : Math.floor(idx / 2),
+          scores1: [0,0,0],
+          scores2: [0,0,0],
+          date: null,
+          start_time: null,
+          end_time: null,
+          court: null,
+          status_game: 'Not started'
+        } as Partido;
       }
 
-      // Asegurarse de que todos los partidos tengan jugadores "Por asignar" si están vacíos
-      eliminationRounds.forEach(round => {
-        round.forEach(partido => {
-          if (!partido.jugador1 || partido.jugador1.length === 0) {
-            partido.jugador1 = [{ name: 'Por asignar' }];
-          }
-          if (!partido.jugador2 || partido.jugador2.length === 0) {
-            partido.jugador2 = [{ name: 'Por asignar' }];
-          }
-        });
-      });
+      const m: any = { ...raw };
 
-      // Calcular dimensiones dinámicas
-      const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + this.roundSpacing;
-      const maxMatches = Math.max(...eliminationRounds.map(r => r.length));
-      const totalHeight = maxMatches * (this.matchHeight + this.verticalSpacing) + 200;
+      // --- ID (important!)
+      m.id = raw.game_id ?? raw.id ?? null;
 
-      const svg = d3.select(container).append('svg')
-        .attr('width', totalWidth)
-        .attr('height', totalHeight)
-        .attr('class', 'bracket-svg');
-
-      const gContainer = svg.append('g').attr('class', 'bracket-container');
-
-      // Calcular posiciones para las eliminatorias
-      this.calculatePositionsForModernElimination(eliminationRounds, totalWidth, totalHeight);
-
-      // Dibujar fondo de secciones para cada ronda
-      this.drawRoundBackgrounds(eliminationRounds, gContainer);
-
-      // Dibujar las eliminatorias
-      eliminationRounds.forEach((ronda, roundIndex) => {
-        // Dibujar título de la ronda
-        this.drawRoundTitle(eliminationRounds, roundIndex, gContainer);
-
-        // Dibujar partidos
-        ronda.forEach((partido, matchIndex) => {
-          this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
-        });
-
-        // Dibujar conexiones entre rondas
-        if (roundIndex < eliminationRounds.length - 1) {
-          this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
+      // --- Winner mapping (API uses winner_id)
+      if (typeof raw.winner_id !== 'undefined' && raw.winner_id !== null) {
+        // if couples come as objects, compare ids; otherwise leave ganador null (we'll map to players if possible)
+        const c1id = raw.couple_1?.id ?? raw.couple_1 ?? raw.couple1Id ?? null;
+        const c2id = raw.couple_2?.id ?? raw.couple_2 ?? raw.couple2Id ?? null;
+        if (raw.winner_id === c1id) {
+          m.ganador = Array.isArray(raw.couple_1?.players) ? raw.couple_1.players : tryResolvePlayersFromRanking(c1id) || null;
+        } else if (raw.winner_id === c2id) {
+          m.ganador = Array.isArray(raw.couple_2?.players) ? raw.couple_2.players : tryResolvePlayersFromRanking(c2id) || null;
+        } else {
+          m.ganador = null;
         }
-      });
+      } else {
+        // preserve existing ganador if any
+        m.ganador = m.ganador ?? null;
+      }
 
+      // --- couple_1 / couple_2 normalization -> jugador1/jugador2 and couple1Id/couple2Id
+      if (m.couple_1) {
+        if (Array.isArray(m.couple_1.players) && m.couple_1.players.length) {
+          m.jugador1 = m.couple_1.players;
+          m.couple1Id = m.couple_1.id ?? m.couple1Id ?? m.couple_1?.id ?? null;
+        } else if (typeof m.couple_1 === 'number') {
+          m.couple1Id = m.couple_1;
+        } else {
+          m.couple1Id = m.couple1Id ?? (m.couple_1?.id ?? null);
+        }
+      }
+      if (m.couple_2) {
+        if (Array.isArray(m.couple_2.players) && m.couple_2.players.length) {
+          m.jugador2 = m.couple_2.players;
+          m.couple2Id = m.couple_2.id ?? m.couple2Id ?? m.couple_2?.id ?? null;
+        } else if (typeof m.couple_2 === 'number') {
+          m.couple2Id = m.couple_2;
+        } else {
+          m.couple2Id = m.couple2Id ?? (m.couple_2?.id ?? null);
+        }
+      }
 
-    } catch (error) {
-      console.error('Error al dibujar bracket moderno:', error);
-      this.showErrorState(container);
+      // Si sólo tenemos ids, intentar resolver names desde ranking
+      if ((!m.jugador1 || m.jugador1.length === 0) && m.couple1Id) {
+        m.jugador1 = tryResolvePlayersFromRanking(m.couple1Id) || [{ name: 'Por asignar' }];
+      }
+      if ((!m.jugador2 || m.jugador2.length === 0) && m.couple2Id) {
+        m.jugador2 = tryResolvePlayersFromRanking(m.couple2Id) || [{ name: 'Por asignar' }];
+      }
+
+      // placeholders si faltan
+      if (!m.jugador1 || !Array.isArray(m.jugador1) || m.jugador1.length === 0) m.jugador1 = [{ name: 'Por asignar' }];
+      if (!m.jugador2 || !Array.isArray(m.jugador2) || m.jugador2.length === 0) m.jugador2 = [{ name: 'Por asignar' }];
+
+      // nextMatchIndex fallback si no viene
+      if (typeof m.nextMatchIndex === 'undefined' || m.nextMatchIndex === null) {
+        m.nextMatchIndex = (defaultGroupName === 'final') ? null : Math.floor(idx / 2);
+      }
+
+      m.scores1 = m.scores1 || [0,0,0];
+      m.scores2 = m.scores2 || [0,0,0];
+      m.status_game = m.status_game || 'Not started';
+      m.groupName = m.groupName || defaultGroupName;
+
+      return m as Partido;
+    };
+
+    // --- construir lista de rondas a dibujar (incluye repechaje si existe y omite fases vacías)
+    const phasesToShow: { name: string, raw: any[] }[] = [];
+    if (Array.isArray(category.repechaje) && category.repechaje.length > 0) {
+      phasesToShow.push({ name: 'repechaje', raw: category.repechaje });
     }
-  }
+    const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
+    for (const phase of eliminationOrder) {
+      const raw = category.elimination?.[phase] || [];
+      if (Array.isArray(raw) && raw.length > 0) {
+        phasesToShow.push({ name: phase, raw });
+      } else {
+        console.log(`drawBracketSets: omitiendo fase vacía ${phase}`);
+      }
+    }
 
-  private calculatePositionsForModernElimination(eliminationRounds: Partido[][], totalWidth: number, totalHeight: number) {
+    // fallback a estructura básica si no hay nada
+    if (phasesToShow.length === 0) {
+      const basic = this.createBasicEliminationStructure();
+      const names = ['octavos','cuartos','semifinal','final'];
+      basic.forEach((r, i) => phasesToShow.push({ name: names[i], raw: r }));
+    }
+
+    // normalizar
+    const eliminationRounds: Partido[][] = phasesToShow.map((p, roundIndex) =>
+      (p.raw || []).map((g: any, idx: number) => normalizeMatch(g, p.name, idx))
+    );
+
+    // Si no hay partidos reales y quieres fallback completo, ya lo cubrimos arriba.
+
+    // --- DIBUJADO (igual que antes)
+    const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + this.roundSpacing;
+    const maxMatches = Math.max(...eliminationRounds.map(r => (r || []).length));
+    const totalHeight = Math.max(200, maxMatches * (this.matchHeight + this.verticalSpacing) + 200);
+
+    const svg = d3.select(container).append('svg')
+      .attr('width', totalWidth)
+      .attr('height', totalHeight)
+      .attr('class', 'bracket-svg');
+
+    const gContainer = svg.append('g').attr('class', 'bracket-container');
+
+    this.calculatePositionsForElimination(eliminationRounds, totalWidth, totalHeight);
+    this.drawRoundBackgrounds(eliminationRounds, gContainer);
+
     eliminationRounds.forEach((ronda, roundIndex) => {
-      // Posición X con más espacio entre rondas
-      const x = roundIndex * (this.matchWidth + this.spacingX) + 100;
-
-      // Calcular posición Y centrada verticalmente para cada ronda
-      const totalRoundHeight = ronda.length * (this.matchHeight + this.verticalSpacing);
-      const startY = (totalHeight - totalRoundHeight) / 2;
-
+      this.drawRoundTitle(eliminationRounds, roundIndex, gContainer);
       ronda.forEach((partido, matchIndex) => {
-        partido.x = x;
-        partido.y = startY + matchIndex * (this.matchHeight + this.verticalSpacing);
-        partido.height = this.matchHeight;
+        console.log(`▶ drawing match ${roundIndex}-${matchIndex} id:${partido.id}`, partido.jugador1, partido.jugador2);
+        this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
       });
+      if (roundIndex < eliminationRounds.length - 1) {
+        this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
+      }
     });
+
+  } catch (error) {
+    console.error('Error al dibujar bracket moderno:', error);
+    this.showErrorState(container);
   }
+}
+
 
   private drawRoundBackgrounds(eliminationRounds: Partido[][], gContainer: any) {
     eliminationRounds.forEach((ronda, roundIndex) => {
