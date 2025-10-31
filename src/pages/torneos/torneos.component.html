@@ -91,30 +91,24 @@
     </mat-card>
     
   </div>
+    </div>
 <div class="paginador-wrapper" *ngIf="lastPage > 1" style="margin-top: 16px;">
   <div class="paginador" role="navigation" aria-label="Paginación de torneos">
-    <button mat-button (click)="prevPage()" [disabled]="currentPage === 1">
-      ← Anterior
-    </button>
+    <button mat-button (click)="prevPage()" [disabled]="currentPage === 1">← Anterior</button>
 
-    <!-- botones de páginas -->
     <ng-container *ngFor="let p of pages">
-      <button
-        mat-button
-        (click)="goToPage(p)"
-        [disabled]="currentPage === p"
-        [ngClass]="{'active-page': currentPage === p}">
+      <button mat-button (click)="goToPage(p)" [disabled]="currentPage === p"
+              [ngClass]="{'active-page': currentPage === p}">
         {{ p }}
       </button>
     </ng-container>
 
-    <button mat-button (click)="nextPage()" [disabled]="currentPage === lastPage">
-      Siguiente →
-    </button>
+    <button mat-button (click)="nextPage()" [disabled]="currentPage === lastPage">Siguiente →</button>
   </div>
 
   <div class="paginador-info" style="text-align:center; margin-top:6px;">
     Página {{ currentPage }} de {{ lastPage }} — mostrando {{ perPage }} por página — total {{ total }}
   </div>
+
 </div>
  
