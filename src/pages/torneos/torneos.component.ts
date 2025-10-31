@@ -36,7 +36,10 @@ import { MatMenuModule } from '@angular/material/menu';
   providers: [DatePipe]
 })
 export class TorneosComponent implements OnInit {
-
+  currentPage = 1;
+  lastPage = 1;
+  perPage = 10;
+  total = 0;
   torneos: Tournament[] = [];
   estadosDisponibles: Tournament['status'][] = ['draft', 'open', 'in_progress', 'completed', 'closed', 'cancelled'];
 
@@ -50,41 +53,44 @@ export class TorneosComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.cargarTorneos();
+    this.cargarTorneos(1);
   }
 
-  cargarTorneos() {
-    this.tournamentService.getTournaments().subscribe({
-      next: (res: any) => {
-        console.log('Respuesta completa de la API:', res);
+  cargarTorneos(page: number = 1) {
+  this.tournamentService.getTournamentsv({}, page).subscribe({
+    next: (res) => {
+      // res.data ya es Tournament[]
+      const apiTorneos = res.data || [];
+      this.torneos = apiTorneos.map((t: any) => ({
+        id: t.tournament_id,
+        name: t.name,
+        description: t.description,
+        club_id: t.club_id,
+        club_name: t.club_name,
+        start_date: t.start_date,
+        end_date: t.end_date,
+        registration_deadline: t.registration_deadline,
+        registration_fee: t.registration_fee,
+        max_participants: t.max_participants,
+        current_participants: t.current_participants,
+        status: t.status,
+        prizes: t.prizes || [],
+        rules: t.rules,
+        photo: t.photo,
+        active: t.active,
+        created_at: t.created_at,
+        updated_at: t.updated_at
+      }));
 
-        const apiTorneos = res.data?.data || [];
-        console.log('Array de torneos crudo:', apiTorneos);
+      this.currentPage = res.current_page ?? page;
+      this.lastPage = res.last_page ?? 1;
+      this.perPage = res.per_page ?? this.perPage;
+      this.total = res.total ?? this.total;
 
-        this.torneos = apiTorneos.map((t: any) => ({
-          id: t.tournament_id,
-          name: t.name,
-          description: t.description,
-          club_id: t.club_id,
-          club_name: t.club_name,
-          start_date: t.start_date,
-          end_date: t.end_date,
-          registration_deadline: t.registration_deadline,
-          registration_fee: t.registration_fee,
-          max_participants: t.max_participants,
-          current_participants: t.current_participants,
-          status: t.status,
-          prizes: t.prizes || [],
-          rules: t.rules,
-          photo: t.photo,
-          active: t.active
-        }));
-
-        console.log('Torneos finales para el HTML:', this.torneos);
-      },
-      error: (err) => console.error('Error al obtener torneos:', err)
-    });
-  }
+    },
+    error: (err) => console.error('Error al obtener torneos:', err)
+  });
+}
 
 cambiarEstado(torneo: Tournament, nuevoEstado: Tournament['status']) {
   this.tournamentService.updateTournamentStatus(torneo.id, nuevoEstado).subscribe({
@@ -241,5 +247,27 @@ verDetalles(torneo: Tournament) {
     error: (err) => console.error('Error obteniendo torneo:', err)
   });
 }
+
+  get pages(): number[] {
+    return Array.from({ length: this.lastPage }, (_, i) => i + 1);
+  }
+
+    // Navegación de paginado
+  nextPage() {
+    if (this.currentPage < this.lastPage) {
+      this.cargarTorneos(this.currentPage + 1);
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.cargarTorneos(this.currentPage - 1);
+    }
+  }
+
+  goToPage(page: number) {
+    const p = Math.max(1, Math.min(this.lastPage, page));
+    if (p !== this.currentPage) this.cargarTorneos(p);
+  }
 
 }

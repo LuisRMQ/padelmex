@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ApiBaseService } from './api.service';
 
 export interface Tournament {
@@ -135,6 +135,23 @@ export interface GameDetailApiResponse {
   data: GameDetailResponse;
 }
 
+
+
+export interface PaginatedTournaments {
+  current_page: number;
+  data: Tournament[];
+  per_page: number;
+  total: number;
+  last_page: number;
+  first_page_url?: string;
+  last_page_url?: string;
+  next_page_url?: string | null;
+  prev_page_url?: string | null;
+  links?: any[];
+  // cualquier otra metadata que devuelva tu API
+}
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -147,6 +164,18 @@ export class TournamentService extends ApiBaseService {
     });
     return this.get<Tournament[]>('/tournaments', params);
   }
+  getTournamentsv(filters: TournamentFilters = {}, page: number = 1): Observable<PaginatedTournaments> {
+    let params = new HttpParams().set('page', page.toString());
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params = params.append(key, value.toString());
+    });
+
+ 
+    return this.get<any>('/tournaments', params).pipe(
+      map((res: any) => res.data) 
+    );
+  }
+
 
   getTournament(id: number): Observable<Tournament> {
     return this.get<Tournament>(`/tournament/${id}`);

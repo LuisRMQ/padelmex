@@ -17,18 +17,16 @@
           <ng-container *ngIf="!isCategoryClosed">
             <mat-form-field class="modal-field search-field" appearance="outline">
               <mat-label>Agregar Jugadores</mat-label>
-              <input type="text" matInput 
-                     [formControl]="playerSearchControl" 
-                     [matAutocomplete]="autoPlayers"
-                     placeholder="Busca jugadores para agregar">
+              <input type="text" matInput [formControl]="playerSearchControl" [matAutocomplete]="autoPlayers"
+                placeholder="Busca jugadores para agregar">
               <mat-icon matSuffix>search</mat-icon>
               <mat-autocomplete #autoPlayers="matAutocomplete" [displayWith]="displayFn"
-                                (optionSelected)="addPlayer($event.option.value)">
+                (optionSelected)="addPlayer($event.option.value)">
                 <mat-option *ngFor="let user of filteredPlayers | async" [value]="user">
                   <div class="player-option">
                     <div class="player-photo-container">
                       <img [src]="user.profile_photo || defaultAvatar" class="player-photo" alt="Foto"
-                           (error)="onImageError($event)">
+                        (error)="onImageError($event)">
                     </div>
                     <div class="player-info">
                       <span class="player-name">{{ user.name }} {{ user.lastname }}</span>
@@ -46,8 +44,8 @@
                   </div>
                 </mat-option>
                 <mat-option
-                    *ngIf="(filteredPlayers | async)?.length === 0 && !isLoadingPlayers && hasValidSearchTermPlayers()"
-                    disabled>
+                  *ngIf="(filteredPlayers | async)?.length === 0 && !isLoadingPlayers && hasValidSearchTermPlayers()"
+                  disabled>
                   No se encontraron jugadores
                 </mat-option>
               </mat-autocomplete>
@@ -86,7 +84,7 @@
           <div class="spinner"></div>
           <p>Cargando participantes...</p>
         </div>
-        
+
         <div *ngIf="error" class="error-container">
           <mat-icon>error_outline</mat-icon>
           <p>{{ error }}</p>
@@ -104,8 +102,8 @@
                 <th mat-header-cell *matHeaderCellDef class="table-header">Foto</th>
                 <td mat-cell *matCellDef="let player" class="table-cell">
                   <div class="player-avatar">
-                    <img *ngIf="player.profile_photo; else defaultAvatar" 
-                         [src]="player.profile_photo" alt="Foto jugador"/>
+                    <img *ngIf="player.profile_photo; else defaultAvatar" [src]="player.profile_photo"
+                      alt="Foto jugador" />
                     <ng-template #defaultAvatar>
                       <mat-icon>person</mat-icon>
                     </ng-template>
@@ -115,7 +113,7 @@
 
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef class="table-header">Nombre</th>
-                <td mat-cell *matCellDef="let player" class="table-cell"> 
+                <td mat-cell *matCellDef="let player" class="table-cell">
                   <span class="player-name">{{ player.name }} {{ player.lastname }}</span>
                 </td>
               </ng-container>
@@ -137,9 +135,9 @@
               <div class="card-header">
                 <div class="player-main-info">
                   <div class="avatar">
-                    <img *ngIf="jugador.profile_photo; else defaultAvatar" 
-                         [src]="jugador.profile_photo" alt="{{ jugador.name }}" />
-                    <ng-template #defaultAvatar>
+                    <img *ngIf="jugador.profile_photo; else defaultAvatarCard" [src]="jugador.profile_photo"
+                      alt="{{ jugador.name }}" />
+                    <ng-template #defaultAvatarCard>
                       <mat-icon>person</mat-icon>
                     </ng-template>
                   </div>
@@ -155,11 +153,14 @@
               <!-- Selección de pareja -->
               <mat-form-field appearance="outline" class="partner-field">
                 <mat-label>Selecciona Pareja</mat-label>
-                <mat-select [(value)]="jugador.partner">
-                  <mat-option *ngFor="let p of selectedPlayers" 
-                             [value]="p" 
-                             [disabled]="p.id === jugador.id || isAlreadyPaired(p, jugador)">
-                    {{ p.name }} {{ p.lastname }}
+                <!-- añadimos compareWith -->
+                <mat-select [value]="jugador.partner" (selectionChange)="onPartnerSelected(jugador, $event.value)"
+                  [compareWith]="comparePlayers">
+                  <mat-option [value]="null">-- Ninguna --</mat-option>
+
+                  <mat-option *ngFor="let option of getPartnerOptions(jugador)" [value]="option"
+                    [disabled]="option.id === jugador.id || isAlreadyPaired(option, jugador)">
+                    {{ option.name }} {{ option.lastname }}
                   </mat-option>
                 </mat-select>
                 <mat-icon matSuffix>people</mat-icon>
@@ -169,8 +170,7 @@
         </div>
 
         <!-- Estado vacío -->
-        <div *ngIf="!loading && selectedPlayers.length === 0 && !selectedPlayersFromServer?.length" 
-             class="empty-state">
+        <div *ngIf="!loading && selectedPlayers.length === 0 && !selectedPlayersFromServer?.length" class="empty-state">
           <mat-icon>group</mat-icon>
           <h4>No hay participantes</h4>
           <p>Utiliza el buscador para agregar jugadores al torneo</p>
@@ -181,9 +181,8 @@
     <!-- Acciones Fijas en la Parte Inferior -->
     <div class="modal-actions-fixed">
       <mat-dialog-actions align="end" class="acciones-modal">
-        <button mat-stroked-button color="primary" class="action-btn confirm-btn"
-                (click)="confirmPairs()"
-                [disabled]="isCategoryClosed">
+        <button mat-stroked-button color="primary" class="action-btn confirm-btn" (click)="confirmPairs()"
+          [disabled]="isCategoryClosed">
           <mat-icon>check_circle</mat-icon>
           Confirmar Parejas
         </button>

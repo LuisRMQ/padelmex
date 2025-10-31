@@ -139,16 +139,16 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     return this.form.get('courts') as FormArray;
   }
 
-onCourtChange(event: any, courtId: number) {
-  if (event.checked) {
-    this.courts.push(this.fb.control({id: courtId}));
-  } else {
-    const index = this.courts.controls.findIndex(x => x.value.id === courtId);
-    if (index >= 0) this.courts.removeAt(index);
+  onCourtChange(event: any, courtId: number) {
+    if (event.checked) {
+      this.courts.push(this.fb.control({ id: courtId }));
+    } else {
+      const index = this.courts.controls.findIndex(x => x.value.id === courtId);
+      if (index >= 0) this.courts.removeAt(index);
+    }
   }
-}
 
-  
+
 
   getCategoryFormGroup(control: AbstractControl): FormGroup {
     return control as FormGroup;
@@ -159,7 +159,7 @@ onCourtChange(event: any, courtId: number) {
       this.categories.push(this.fb.group({
         id: [cat.id],
         category: [cat.category],
-        max_participants: ['']
+        max_participants: ['', [Validators.required, Validators.min(5)]]
       }));
     });
   }
@@ -205,16 +205,22 @@ onCourtChange(event: any, courtId: number) {
 
     if (Array.isArray(rawData.categories)) {
       rawData.categories.forEach((cat: any, i: number) => {
+        const maxParticipants = Number(cat.max_participants);
+        if (isNaN(maxParticipants) || maxParticipants < 5) {
+          // Esto debería no pasar si las validaciones funcionan, pero por seguridad:
+          alert(`La categoría "${cat.category}" debe tener al menos 5 participantes.`);
+          return;
+        }
         formData.append(`categories[${i}][id]`, cat.id.toString());
-        formData.append(`categories[${i}][max_participants]`, (cat.max_participants ?? '').toString());
+        formData.append(`categories[${i}][max_participants]`, maxParticipants.toString());
       });
     }
 
     if (this.courts.length > 0) {
-    this.courts.controls.forEach((ctrl, i) => {
-      formData.append(`courts[${i}][id]`, ctrl.value.id.toString());
-    });
-  }
+      this.courts.controls.forEach((ctrl, i) => {
+        formData.append(`courts[${i}][id]`, ctrl.value.id.toString());
+      });
+    }
 
     console.log('RAW FORM VALUES:', rawData);
     console.log('FormData entries:');

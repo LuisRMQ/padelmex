@@ -18,6 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import { TournamentService } from '../../../app/services/torneos.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
+import { AlertService } from '../../../app/services/alert.service';
 
 export interface Partido {
   jugador1: User | null;
@@ -54,7 +55,11 @@ export interface TournamentPlayer extends User {
   ]
 })
 export class ParticipantesTorneoDialogComponent implements OnInit {
-
+comparePlayers = (a: User | null, b: User | null): boolean => {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  return Number(a.id) === Number(b.id);
+}
   selectedPlayersFromServer: TournamentPlayer[] = [];
   displayedColumnsServer: string[] = ['photo', 'name'];
   isCategoryClosed: boolean = false;
@@ -79,6 +84,8 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     private dialog: MatDialog,
     private tournamentService: TournamentService,
     private snackBar: MatSnackBar,
+    private alertService: AlertService,
+
   ) { }
 
   ngOnInit(): void {
@@ -106,7 +113,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
         const totalPages = res.last_page;
 
         if (totalPages > 1) {
-          const observables = [];
+          const observables: any[] = [];
           for (let page = 2; page <= totalPages; page++) {
             observables.push(this.usersService.getUserss(page));
           }
@@ -159,7 +166,7 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
             (this.selectedCategory?.current_participants ?? 0) >= (this.selectedCategory?.max_participants ?? 0);
 
           if (lastPage > 1) {
-            const observables = [];
+            const observables: any[] = [];
             for (let page = 2; page <= lastPage; page++) {
               observables.push(this.tournamentService.getPlayersByCategory(tournament_id, category_tournament_id, page));
             }
@@ -262,17 +269,64 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     }
     if (this.selectedPlayers.some(p => p.id === user.id)) return;
     this.error = null;
-    this.selectedPlayers.push({ ...user, partner: null });
+    this.selectedPlayers.push({ ...user, partner: null } as TournamentPlayer);
     this.playerSearchControl.setValue('');
   }
 
-  isAlreadyPaired(p: TournamentPlayer, jugador: TournamentPlayer): boolean {
-    return this.selectedPlayers.some(j => j.partner?.id === p.id && j.id !== jugador.id);
+  /**
+   * Devuelve opciones combinadas (allPlayers + participantes + selectedPlayersFromServer) sin duplicados
+   * y filtradas para no incluir al propio jugador ni a candidatos ya asignados a otro jugador.
+   */
+  getPartnerOptions(jugador: TournamentPlayer): User[] {
+    const combined = [
+      ...(this.allPlayers || []),
+      ...(this.participantes || []),
+      ...(this.selectedPlayersFromServer || [])
+    ];
+
+    // Dedupe por id, manteniendo el primer encuentro
+    const map = new Map<number, User>();
+    combined.forEach(u => {
+      if (u && typeof u.id === 'number' && !map.has(u.id)) {
+        map.set(u.id, u);
+      }
+    });
+
+    const unique = Array.from(map.values());
+
+    return unique.filter(candidate => {
+      if (!candidate || typeof candidate.id !== 'number') return false;
+      if (candidate.id === jugador.id) return false; // no puede ser él mismo
+
+      // Evitar que alguien ya asignado como pareja lo vuelva a ser para otro jugador distinto
+      const alreadyAssigned = this.selectedPlayers.some(p =>
+        p.partner?.id === candidate.id && p.id !== jugador.id
+      );
+      return !alreadyAssigned;
+    });
   }
 
-  confirmPairs() {
+  /**
+   * Maneja la selección de pareja desde el mat-select
+   */
+  onPartnerSelected(jugador: TournamentPlayer, partner: User | null) {
+  // Asignar la referencia directamente (sin spread) para que compareWith pueda emparejar por id
+  jugador.partner = partner;
+  // opcional para depuración:
+  // console.log('partner asignado para', jugador.id, jugador.partner);
+}
+
+  /**
+   * Comprueba si un candidato ya está emparejado con otro jugador distinto
+   */
+  isAlreadyPaired(candidate: User, jugador: TournamentPlayer): boolean {
+    return this.selectedPlayers.some(p => p.partner?.id === candidate.id && p.id !== jugador.id);
+  }
+
+  async confirmPairs() {
     if (!this.selectedCategory) {
       this.error = 'Selecciona una categoría antes de confirmar las parejas.';
+      await this.alertService.error('Error', this.error);
       return;
     }
 
@@ -281,13 +335,17 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
         const msg = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
         this.error = msg;
         console.error(msg, jugador);
-        this.snackBar.open(msg, 'Cerrar', { duration: 5000, panelClass: ['snackbar-error'] });
+        await this.alertService.error('Falta pareja', msg);
         return;
       }
     }
 
+    // Preguntar confirmar acción al usuario
+    const confirmResult = await this.alertService.confirm('Confirmar', '¿Deseas agregar las parejas al torneo?');
+    if (!confirmResult.isConfirmed) return;
+
     const addedPairs = new Set<string>();
-    const requests = [];
+    const requests: any[] = [];
 
     for (const j of this.selectedPlayers) {
       const key = [Number(j.id), Number(j.partner!.id)].sort().join('-');
@@ -303,50 +361,40 @@ export class ParticipantesTorneoDialogComponent implements OnInit {
     }
 
     if (requests.length === 0) {
-      this.snackBar.open('No hay parejas nuevas para agregar.', 'Cerrar', { duration: 3000, panelClass: ['snackbar-info'] });
+      await this.alertService.info('Nada para agregar', 'No hay parejas nuevas para agregar.');
       return;
     }
 
     forkJoin(requests).subscribe({
-      next: (responses) => {
+      next: async (responses) => {
         const errors: string[] = [];
         const successes: string[] = [];
 
         responses.forEach((res, index) => {
           const jugador = this.selectedPlayers[index];
           const coupleData = res?.couple?.couple;
-
           if (coupleData?.ok) {
             successes.push(`${jugador.name} + ${jugador.partner!.name}`);
           } else {
             const msg = coupleData?.message || 'Ocurrió un error al agregar la pareja.';
-            errors.push(`Jugador: ${jugador.name} ${jugador.lastname}, Pareja: ${jugador.partner!.name}, Error: ${msg}`);
+            errors.push(`Jugador: ${jugador.name} ${jugador.lastname}, Pareja: ${jugador.partner!.name} — ${msg}`);
             console.error('❌ Error al agregar pareja:', msg, jugador, jugador.partner);
           }
         });
 
         if (successes.length > 0) {
-          this.snackBar.open(`✔️ Parejas agregadas: ${successes.join(', ')}`, 'Cerrar', {
-            duration: 5000,
-            panelClass: ['snackbar-success']
-          });
+          await this.alertService.success('Parejas agregadas', successes.join(', '));
         }
 
         if (errors.length > 0) {
-          this.snackBar.open(`❌ Algunos errores ocurrieron:\n${errors.join('\n')}`, 'Cerrar', {
-            duration: 8000,
-            panelClass: ['snackbar-error']
-          });
+          await this.alertService.error('Algunos errores ocurrieron', errors.join('\n'));
         }
 
         this.dialogRef.close(this.selectedPlayers);
       },
-      error: (err) => {
+      error: async (err) => {
         console.error('❌ Error agregando parejas:', err);
-        this.snackBar.open('❌ Ocurrió un error al agregar las parejas.', 'Cerrar', {
-          duration: 6000,
-          panelClass: ['snackbar-error']
-        });
+        await this.alertService.error('Error', 'Ocurrió un error al agregar las parejas.');
       }
     });
   }

@@ -442,3 +442,29 @@ mat-card-actions button:hover {
     font-size: 0.8rem;
   }
 }
+
+
+paginador-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* contenedor de botones */
+.paginador {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+/* estilo al botón activo */
+.paginador .active-page {
+  font-weight: 700;
+  border-bottom: 2px solid rgba(0,0,0,0.12);
+}
