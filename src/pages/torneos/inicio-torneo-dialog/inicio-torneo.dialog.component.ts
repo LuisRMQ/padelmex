@@ -74,9 +74,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private svg: any;
   private gContainer: any;
 
-  private matchWidth = 200;    // Reducido de 280
-  private matchHeight = 70;    // Reducido de 100  
-  private spacingX = 180;      // Reducido de 300
+  private matchWidth = 220;    // Aumentado ligeramente para más espacio
+  private matchHeight = 70;
+  private spacingX = 160;     // Reducido de 300
   private verticalSpacing = 40; // Reducido de 60
   private roundSpacing = 120;   // Reducido de 200
 
@@ -453,21 +453,21 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
 
 
-private normalizeCouple(couple: any) {
-  // couple puede ser: un número (id), o un objeto { id, players } o null
-  if (!couple) return { id: null, players: null };
-  if (typeof couple === 'number') {
-    return { id: couple, players: null };
+  private normalizeCouple(couple: any) {
+    // couple puede ser: un número (id), o un objeto { id, players } o null
+    if (!couple) return { id: null, players: null };
+    if (typeof couple === 'number') {
+      return { id: couple, players: null };
+    }
+    return {
+      id: couple.id ?? null,
+      players: Array.isArray(couple.players) ? couple.players : null
+    };
   }
-  return {
-    id: couple.id ?? null,
-    players: Array.isArray(couple.players) ? couple.players : null
-  };
-}
 
   // ------------------ MAPEO DE PARTIDOS ------------------
   private mapToPartidos(category: any): Partido[][] {
-    
+
 
     const rounds: Partido[][] = [];
 
@@ -708,198 +708,198 @@ private normalizeCouple(couple: any) {
     });
   }
 
- private drawBracketSets() {
-  if (!this.bracketContainerSets?.nativeElement) return;
+  private drawBracketSets() {
+    if (!this.bracketContainerSets?.nativeElement) return;
 
-  const container = this.bracketContainerSets.nativeElement as HTMLElement;
-  d3.select(container).selectAll('*').remove();
+    const container = this.bracketContainerSets.nativeElement as HTMLElement;
+    d3.select(container).selectAll('*').remove();
 
-  try {
-    // 0) Verificar datos
-    if (!this.filteredBracket || !this.filteredBracket[0]) {
-      console.warn('drawBracketSets: filteredBracket vacío');
-      return;
-    }
-    const category = this.filteredBracket[0];
-
-    // helper: resolver players desde rankings de grupos por couple_id
-    const tryResolvePlayersFromRanking = (id: number | null) => {
-      if (!id || !category || !Array.isArray(category.groups)) return null;
-      for (const grp of category.groups) {
-        const found = (grp.ranking || []).find((r: any) => r.couple_id === id);
-        if (found && Array.isArray(found.players)) return found.players;
+    try {
+      // 0) Verificar datos
+      if (!this.filteredBracket || !this.filteredBracket[0]) {
+        console.warn('drawBracketSets: filteredBracket vacío');
+        return;
       }
-      return null;
-    };
+      const category = this.filteredBracket[0];
 
-    // normalizar un partido (asegura id, players, ganador, nextMatchIndex, etc.)
-    const normalizeMatch = (raw: any, defaultGroupName = 'elimination', idx = 0): Partido => {
-      if (!raw) {
-        return {
-          jugador1: [{ name: 'Por asignar' }],
-          jugador2: [{ name: 'Por asignar' }],
-          ganador: null,
-          groupName: defaultGroupName,
-          id: null,
-          couple1Id: null,
-          couple2Id: null,
-          nextMatchIndex: defaultGroupName === 'final' ? null : Math.floor(idx / 2),
-          scores1: [0,0,0],
-          scores2: [0,0,0],
-          date: null,
-          start_time: null,
-          end_time: null,
-          court: null,
-          status_game: 'Not started'
-        } as Partido;
-      }
-
-      const m: any = { ...raw };
-
-      // ID (game_id o id)
-      m.id = raw.game_id ?? raw.id ?? null;
-
-      // Winner (winner_id -> ganador como arreglo de players si posible)
-      if (typeof raw.winner_id !== 'undefined' && raw.winner_id !== null) {
-        const c1id = raw.couple_1?.id ?? raw.couple_1 ?? raw.couple1Id ?? null;
-        const c2id = raw.couple_2?.id ?? raw.couple_2 ?? raw.couple2Id ?? null;
-
-        if (raw.winner_id === c1id) {
-          m.ganador = Array.isArray(raw.couple_1?.players) ? raw.couple_1.players : tryResolvePlayersFromRanking(c1id) || null;
-        } else if (raw.winner_id === c2id) {
-          m.ganador = Array.isArray(raw.couple_2?.players) ? raw.couple_2.players : tryResolvePlayersFromRanking(c2id) || null;
-        } else {
-          m.ganador = null;
+      // helper: resolver players desde rankings de grupos por couple_id
+      const tryResolvePlayersFromRanking = (id: number | null) => {
+        if (!id || !category || !Array.isArray(category.groups)) return null;
+        for (const grp of category.groups) {
+          const found = (grp.ranking || []).find((r: any) => r.couple_id === id);
+          if (found && Array.isArray(found.players)) return found.players;
         }
-      } else {
-        m.ganador = m.ganador ?? null;
-      }
+        return null;
+      };
 
-      // Normalizar couple_1 -> jugador1 y couple1Id
-      if (m.couple_1) {
-        if (Array.isArray(m.couple_1.players) && m.couple_1.players.length) {
-          m.jugador1 = m.couple_1.players;
-          m.couple1Id = m.couple_1.id ?? m.couple1Id ?? null;
-        } else if (typeof m.couple_1 === 'number') {
-          m.couple1Id = m.couple_1;
+      // normalizar un partido (asegura id, players, ganador, nextMatchIndex, etc.)
+      const normalizeMatch = (raw: any, defaultGroupName = 'elimination', idx = 0): Partido => {
+        if (!raw) {
+          return {
+            jugador1: [{ name: 'Por asignar' }],
+            jugador2: [{ name: 'Por asignar' }],
+            ganador: null,
+            groupName: defaultGroupName,
+            id: null,
+            couple1Id: null,
+            couple2Id: null,
+            nextMatchIndex: defaultGroupName === 'final' ? null : Math.floor(idx / 2),
+            scores1: [0, 0, 0],
+            scores2: [0, 0, 0],
+            date: null,
+            start_time: null,
+            end_time: null,
+            court: null,
+            status_game: 'Not started'
+          } as Partido;
+        }
+
+        const m: any = { ...raw };
+
+        // ID (game_id o id)
+        m.id = raw.game_id ?? raw.id ?? null;
+
+        // Winner (winner_id -> ganador como arreglo de players si posible)
+        if (typeof raw.winner_id !== 'undefined' && raw.winner_id !== null) {
+          const c1id = raw.couple_1?.id ?? raw.couple_1 ?? raw.couple1Id ?? null;
+          const c2id = raw.couple_2?.id ?? raw.couple_2 ?? raw.couple2Id ?? null;
+
+          if (raw.winner_id === c1id) {
+            m.ganador = Array.isArray(raw.couple_1?.players) ? raw.couple_1.players : tryResolvePlayersFromRanking(c1id) || null;
+          } else if (raw.winner_id === c2id) {
+            m.ganador = Array.isArray(raw.couple_2?.players) ? raw.couple_2.players : tryResolvePlayersFromRanking(c2id) || null;
+          } else {
+            m.ganador = null;
+          }
         } else {
-          m.couple1Id = m.couple1Id ?? (m.couple_1?.id ?? null);
+          m.ganador = m.ganador ?? null;
+        }
+
+        // Normalizar couple_1 -> jugador1 y couple1Id
+        if (m.couple_1) {
+          if (Array.isArray(m.couple_1.players) && m.couple_1.players.length) {
+            m.jugador1 = m.couple_1.players;
+            m.couple1Id = m.couple_1.id ?? m.couple1Id ?? null;
+          } else if (typeof m.couple_1 === 'number') {
+            m.couple1Id = m.couple_1;
+          } else {
+            m.couple1Id = m.couple1Id ?? (m.couple_1?.id ?? null);
+          }
+        }
+
+        // Normalizar couple_2 -> jugador2 y couple2Id
+        if (m.couple_2) {
+          if (Array.isArray(m.couple_2.players) && m.couple_2.players.length) {
+            m.jugador2 = m.couple_2.players;
+            m.couple2Id = m.couple_2.id ?? m.couple2Id ?? null;
+          } else if (typeof m.couple_2 === 'number') {
+            m.couple2Id = m.couple_2;
+          } else {
+            m.couple2Id = m.couple2Id ?? (m.couple_2?.id ?? null);
+          }
+        }
+
+        // Si sólo hay ids, intentar resolver desde ranking
+        if ((!m.jugador1 || m.jugador1.length === 0) && m.couple1Id) {
+          m.jugador1 = tryResolvePlayersFromRanking(m.couple1Id) || [{ name: 'Por asignar' }];
+        }
+        if ((!m.jugador2 || m.jugador2.length === 0) && m.couple2Id) {
+          m.jugador2 = tryResolvePlayersFromRanking(m.couple2Id) || [{ name: 'Por asignar' }];
+        }
+
+        // placeholders si faltan
+        if (!m.jugador1 || !Array.isArray(m.jugador1) || m.jugador1.length === 0) m.jugador1 = [{ name: 'Por asignar' }];
+        if (!m.jugador2 || !Array.isArray(m.jugador2) || m.jugador2.length === 0) m.jugador2 = [{ name: 'Por asignar' }];
+
+        // nextMatchIndex por defecto (final -> null)
+        if (typeof m.nextMatchIndex === 'undefined' || m.nextMatchIndex === null) {
+          m.nextMatchIndex = (defaultGroupName === 'final') ? null : Math.floor(idx / 2);
+        }
+
+        m.scores1 = m.scores1 || [0, 0, 0];
+        m.scores2 = m.scores2 || [0, 0, 0];
+        m.status_game = m.status_game || 'Not started';
+        m.groupName = m.groupName || defaultGroupName;
+
+        return m as Partido;
+      };
+
+      // Orden posible de fases (de mayor a menor estructura)
+      const phaseOrder = [
+        'ciento_veintiochavos', // 128
+        'sesentaicuatroavos',   // 64
+        'treintaidosavos',      // 32
+        'dieciseisavos',       // 16
+        'octavos',             // 8
+        'cuartos',             // 4
+        'semifinal',           // 2
+        'final'                // 1
+      ];
+
+      // Construir phasesToShow: repechaje primero (si existe), luego las fases en phaseOrder que no estén vacías
+      const phasesToShow: { name: string, raw: any[] }[] = [];
+      if (Array.isArray(category.repechaje) && category.repechaje.length > 0) {
+        phasesToShow.push({ name: 'repechaje', raw: category.repechaje });
+      }
+      for (const phase of phaseOrder) {
+        const raw = category.elimination?.[phase] || [];
+        if (Array.isArray(raw) && raw.length > 0) {
+          phasesToShow.push({ name: phase, raw });
+        } else {
+          // omitimos fases vacías (no las dibujamos)
+          console.log(`drawBracketSets: omitiendo fase vacía ${phase}`);
         }
       }
 
-      // Normalizar couple_2 -> jugador2 y couple2Id
-      if (m.couple_2) {
-        if (Array.isArray(m.couple_2.players) && m.couple_2.players.length) {
-          m.jugador2 = m.couple_2.players;
-          m.couple2Id = m.couple_2.id ?? m.couple2Id ?? null;
-        } else if (typeof m.couple_2 === 'number') {
-          m.couple2Id = m.couple_2;
-        } else {
-          m.couple2Id = m.couple2Id ?? (m.couple_2?.id ?? null);
+      // Si no tuvimos ninguna fase real, usar fallback básico (estructura típica)
+      if (phasesToShow.length === 0) {
+        console.log('drawBracketSets: no hay fases de eliminación -> uso estructura básica');
+        const basic = this.createBasicEliminationStructure();
+        const names = ['octavos', 'cuartos', 'semifinal', 'final'];
+        basic.forEach((r, i) => phasesToShow.push({ name: names[i], raw: r }));
+      }
+
+      // Normalizar cada ronda y cada partido
+      const eliminationRounds: Partido[][] = phasesToShow.map((p, roundIndex) =>
+        (p.raw || []).map((g: any, idx: number) => normalizeMatch(g, p.name, idx))
+      );
+
+      // DEBUG
+      console.log('▶ drawBracketSets - phasesToShow:', phasesToShow.map(p => p.name));
+      console.log('▶ drawBracketSets - eliminationRounds lengths:', eliminationRounds.map(r => r.length));
+      console.log('▶ ejemplo cuartos[0]:', eliminationRounds.find((r, i) => phasesToShow[i]?.name === 'cuartos')?.[0]);
+
+      // DIBUJADO
+      const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + this.roundSpacing;
+      const maxMatches = eliminationRounds.length ? Math.max(...eliminationRounds.map(r => (r || []).length)) : 0;
+      const totalHeight = Math.max(200, maxMatches * (this.matchHeight + this.verticalSpacing) + 200);
+
+      const svg = d3.select(container).append('svg')
+        .attr('width', totalWidth)
+        .attr('height', totalHeight)
+        .attr('class', 'bracket-svg');
+
+      const gContainer = svg.append('g').attr('class', 'bracket-container');
+
+      this.calculatePositionsForElimination(eliminationRounds, totalWidth, totalHeight);
+      this.drawRoundBackgrounds(eliminationRounds, gContainer);
+
+      eliminationRounds.forEach((ronda, roundIndex) => {
+        this.drawRoundTitle(eliminationRounds, roundIndex, gContainer);
+        ronda.forEach((partido, matchIndex) => {
+          console.log(`▶ drawing match ${roundIndex}-${matchIndex} id:${partido.id}`, partido.jugador1, partido.jugador2);
+          this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
+        });
+        if (roundIndex < eliminationRounds.length - 1) {
+          this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
         }
-      }
-
-      // Si sólo hay ids, intentar resolver desde ranking
-      if ((!m.jugador1 || m.jugador1.length === 0) && m.couple1Id) {
-        m.jugador1 = tryResolvePlayersFromRanking(m.couple1Id) || [{ name: 'Por asignar' }];
-      }
-      if ((!m.jugador2 || m.jugador2.length === 0) && m.couple2Id) {
-        m.jugador2 = tryResolvePlayersFromRanking(m.couple2Id) || [{ name: 'Por asignar' }];
-      }
-
-      // placeholders si faltan
-      if (!m.jugador1 || !Array.isArray(m.jugador1) || m.jugador1.length === 0) m.jugador1 = [{ name: 'Por asignar' }];
-      if (!m.jugador2 || !Array.isArray(m.jugador2) || m.jugador2.length === 0) m.jugador2 = [{ name: 'Por asignar' }];
-
-      // nextMatchIndex por defecto (final -> null)
-      if (typeof m.nextMatchIndex === 'undefined' || m.nextMatchIndex === null) {
-        m.nextMatchIndex = (defaultGroupName === 'final') ? null : Math.floor(idx / 2);
-      }
-
-      m.scores1 = m.scores1 || [0,0,0];
-      m.scores2 = m.scores2 || [0,0,0];
-      m.status_game = m.status_game || 'Not started';
-      m.groupName = m.groupName || defaultGroupName;
-
-      return m as Partido;
-    };
-
-    // Orden posible de fases (de mayor a menor estructura)
-    const phaseOrder = [
-      'ciento_veintiochavos', // 128
-      'sesentaicuatroavos',   // 64
-      'treintaidosavos',      // 32
-      'dieciseisavos',       // 16
-      'octavos',             // 8
-      'cuartos',             // 4
-      'semifinal',           // 2
-      'final'                // 1
-    ];
-
-    // Construir phasesToShow: repechaje primero (si existe), luego las fases en phaseOrder que no estén vacías
-    const phasesToShow: { name: string, raw: any[] }[] = [];
-    if (Array.isArray(category.repechaje) && category.repechaje.length > 0) {
-      phasesToShow.push({ name: 'repechaje', raw: category.repechaje });
-    }
-    for (const phase of phaseOrder) {
-      const raw = category.elimination?.[phase] || [];
-      if (Array.isArray(raw) && raw.length > 0) {
-        phasesToShow.push({ name: phase, raw });
-      } else {
-        // omitimos fases vacías (no las dibujamos)
-        console.log(`drawBracketSets: omitiendo fase vacía ${phase}`);
-      }
-    }
-
-    // Si no tuvimos ninguna fase real, usar fallback básico (estructura típica)
-    if (phasesToShow.length === 0) {
-      console.log('drawBracketSets: no hay fases de eliminación -> uso estructura básica');
-      const basic = this.createBasicEliminationStructure();
-      const names = ['octavos','cuartos','semifinal','final'];
-      basic.forEach((r, i) => phasesToShow.push({ name: names[i], raw: r }));
-    }
-
-    // Normalizar cada ronda y cada partido
-    const eliminationRounds: Partido[][] = phasesToShow.map((p, roundIndex) =>
-      (p.raw || []).map((g: any, idx: number) => normalizeMatch(g, p.name, idx))
-    );
-
-    // DEBUG
-    console.log('▶ drawBracketSets - phasesToShow:', phasesToShow.map(p => p.name));
-    console.log('▶ drawBracketSets - eliminationRounds lengths:', eliminationRounds.map(r => r.length));
-    console.log('▶ ejemplo cuartos[0]:', eliminationRounds.find((r,i)=>phasesToShow[i]?.name==='cuartos')?.[0]);
-
-    // DIBUJADO
-    const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + this.roundSpacing;
-    const maxMatches = eliminationRounds.length ? Math.max(...eliminationRounds.map(r => (r || []).length)) : 0;
-    const totalHeight = Math.max(200, maxMatches * (this.matchHeight + this.verticalSpacing) + 200);
-
-    const svg = d3.select(container).append('svg')
-      .attr('width', totalWidth)
-      .attr('height', totalHeight)
-      .attr('class', 'bracket-svg');
-
-    const gContainer = svg.append('g').attr('class', 'bracket-container');
-
-    this.calculatePositionsForElimination(eliminationRounds, totalWidth, totalHeight);
-    this.drawRoundBackgrounds(eliminationRounds, gContainer);
-
-    eliminationRounds.forEach((ronda, roundIndex) => {
-      this.drawRoundTitle(eliminationRounds, roundIndex, gContainer);
-      ronda.forEach((partido, matchIndex) => {
-        console.log(`▶ drawing match ${roundIndex}-${matchIndex} id:${partido.id}`, partido.jugador1, partido.jugador2);
-        this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
       });
-      if (roundIndex < eliminationRounds.length - 1) {
-        this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
-      }
-    });
 
-  } catch (error) {
-    console.error('Error al dibujar bracket moderno:', error);
-    this.showErrorState(container);
+    } catch (error) {
+      console.error('Error al dibujar bracket moderno:', error);
+      this.showErrorState(container);
+    }
   }
-}
 
 
 
@@ -993,14 +993,6 @@ private normalizeCouple(couple: any) {
       ? partido.jugador2
       : [{ name: 'Por asignar' }];
 
-    // 🔥 DEBUG EN TIEMPO REAL DE DIBUJO - CORREGIDO
-    console.log(`🎨 Dibujando partido ${partido.groupName}-${matchIndex}:`, {
-      jugador1: jugador1Safe.map(j => j?.name || 'Sin nombre'),
-      jugador2: jugador2Safe.map(j => j?.name || 'Sin nombre'),
-      id: partido.id,
-      tieneDatosReales: (jugador1Safe[0]?.name !== 'Por asignar') || (jugador2Safe[0]?.name !== 'Por asignar')
-    });
-
     // Fondo moderno del partido con sombra
     g.append('rect')
       .attr('width', this.matchWidth)
@@ -1037,31 +1029,91 @@ private normalizeCouple(couple: any) {
       .attr('rx', 10)
       .attr('ry', 10);
 
-    // Nombres de jugadores con mejor estilo
-    const nombres1 = this.getPlayerNames(jugador1Safe);
-  const nombres2 = this.getPlayerNames(jugador2Safe);
+    // 🔥 OPCIÓN 1: Función para formatear nombres en múltiples líneas
+    const formatPlayerNames = (players: any[]): { displayLines: string[], fullName: string } => {
+      const fullName = players.map(p => p.name || 'Sin nombre').join(' / ');
 
-    // Jugador 1 text
-    g.append('text')
-      .text(nombres1)
-      .attr('x', 12)
-      .attr('y', this.matchHeight / 4)
-      .attr('dy', '0.35em')
-      .attr('fill', isPlayer1Winner ? '#ffffff' : '#334155')
-      .attr('font-size', '13px')
-      .attr('font-weight', isPlayer1Winner ? '700' : '600')
-      .attr('class', 'player-name');
+      // Si el nombre es corto, mostrar en una línea
+      if (fullName.length <= 20) {
+        return { displayLines: [fullName], fullName };
+      }
 
-    // Jugador 2 text
-    g.append('text')
-      .text(nombres2)
-      .attr('x', 12)
-      .attr('y', (3 * this.matchHeight) / 4)
-      .attr('dy', '0.35em')
-      .attr('fill', isPlayer2Winner ? '#ffffff' : '#334155')
-      .attr('font-size', '13px')
-      .attr('font-weight', isPlayer2Winner ? '700' : '600')
-      .attr('class', 'player-name');
+      // Si tiene " / " dividir por parejas
+      if (fullName.includes(' / ')) {
+        const pairs = fullName.split(' / ');
+        // Si son solo 2 nombres, mostrar uno por línea
+        if (pairs.length === 2) {
+          return { displayLines: pairs, fullName };
+        }
+        // Si son más de 2, dividir en grupos
+        if (pairs.length > 2) {
+          const mid = Math.ceil(pairs.length / 2);
+          return {
+            displayLines: [
+              pairs.slice(0, mid).join(' / '),
+              pairs.slice(mid).join(' / ')
+            ],
+            fullName
+          };
+        }
+      }
+
+      // Para nombres largos sin separación, dividir inteligentemente
+      const words = fullName.split(' ');
+      if (words.length >= 4) {
+        // Dividir en dos líneas por la mitad
+        const mid = Math.ceil(words.length / 2);
+        return {
+          displayLines: [
+            words.slice(0, mid).join(' '),
+            words.slice(mid).join(' ')
+          ],
+          fullName
+        };
+      }
+
+      // Último recurso: mostrar en una línea pero más compacto
+      return {
+        displayLines: [this.getCompactName(fullName)],
+        fullName
+      };
+    };
+
+    const nombres1Data = formatPlayerNames(jugador1Safe);
+    const nombres2Data = formatPlayerNames(jugador2Safe);
+
+    // 🔥 DIBUJAR NOMBRES EN MÚLTIPLES LÍNEAS - Jugador 1
+    const lineHeight = 10;
+    nombres1Data.displayLines.forEach((line, index) => {
+      const textElement = g.append('text')
+        .text(line)
+        .attr('x', 8)
+        .attr('y', (this.matchHeight / 4) - (lineHeight * (nombres1Data.displayLines.length - 1) / 2) + (index * lineHeight))
+        .attr('fill', isPlayer1Winner ? '#ffffff' : '#334155')
+        .attr('font-size', '10px')
+        .attr('font-weight', isPlayer1Winner ? '700' : '600')
+        .style('text-anchor', 'start')
+        .style('dominant-baseline', 'central');
+
+      // 🔥 OPCIÓN 3: Añadir tooltip con nombre completo
+      textElement.append('title').text(nombres1Data.fullName);
+    });
+
+    // 🔥 DIBUJAR NOMBRES EN MÚLTIPLES LÍNEAS - Jugador 2
+    nombres2Data.displayLines.forEach((line, index) => {
+      const textElement = g.append('text')
+        .text(line)
+        .attr('x', 8)
+        .attr('y', (3 * this.matchHeight / 4) - (lineHeight * (nombres2Data.displayLines.length - 1) / 2) + (index * lineHeight))
+        .attr('fill', isPlayer2Winner ? '#ffffff' : '#334155')
+        .attr('font-size', '10px')
+        .attr('font-weight', isPlayer2Winner ? '700' : '600')
+        .style('text-anchor', 'start')
+        .style('dominant-baseline', 'central');
+
+      // 🔥 OPCIÓN 3: Añadir tooltip con nombre completo
+      textElement.append('title').text(nombres2Data.fullName);
+    });
 
     // Añadir gradiente para ganadores si no existe
     if (!gContainer.select('defs #winnerGradient').size()) {
@@ -1085,6 +1137,43 @@ private normalizeCouple(couple: any) {
     // Click handler
     g.style('cursor', 'pointer')
       .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+  }
+
+  // 🔥 Función auxiliar para nombres compactos (último recurso)
+  private getCompactName(fullName: string): string {
+    // Si el nombre es corto, mantenerlo completo
+    if (fullName.length <= 18) return fullName;
+
+    // Para nombres con " / " (parejas)
+    if (fullName.includes(' / ')) {
+      const pairs = fullName.split(' / ');
+      return pairs.map(name => {
+        if (name.length <= 12) return name;
+
+        // Acortar nombres largos individuales
+        const parts = name.split(' ');
+        if (parts.length >= 2) {
+          return `${parts[0].charAt(0)}. ${parts[parts.length - 1]}`;
+        }
+
+        return name.length > 15 ? name.substring(0, 14) + '.' : name;
+      }).join(' / ');
+    }
+
+    // Para nombres individuales largos
+    const parts = fullName.split(' ');
+    if (parts.length >= 3) {
+      // Para nombres como "Carlos Alberto Ramírez Hernández"
+      return `${parts[0].charAt(0)}. ${parts[1].charAt(0)}. ${parts[parts.length - 1]}`;
+    }
+
+    if (parts.length === 2) {
+      // Para "Nombre Apellido" → "N. Apellido"
+      return `${parts[0].charAt(0)}. ${parts[1]}`;
+    }
+
+    // Último recurso: truncar
+    return fullName.substring(0, 20) + (fullName.length > 20 ? '...' : '');
   }
 
   private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
@@ -1521,7 +1610,22 @@ private normalizeCouple(couple: any) {
 
   getPlayerNames(players?: any[]): string {
     if (!players || players.length === 0) return 'Por asignar';
-    return players.map(p => p.name).join(' / ');
+
+    // Para nombres muy largos, usar solo iniciales del primer nombre
+    const compactNames = players.map(p => {
+      const fullName = p.name || 'Sin nombre';
+      // Si el nombre es muy largo, usar formato compacto
+      if (fullName.length > 15) {
+        const parts = fullName.split(' ');
+        if (parts.length > 1) {
+          // Usar primera letra del primer nombre + apellido
+          return `${parts[0].charAt(0)}. ${parts[parts.length - 1]}`;
+        }
+      }
+      return fullName;
+    });
+
+    return compactNames.join(' / ');
   }
 
   logMatch(match: any) {
