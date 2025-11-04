@@ -19,6 +19,8 @@ export interface Tournament {
   prizes?: any;
   rules?: string;
   photo?: string;
+  ranking?: number;
+  subtract_ranking? : number;
   tournament_call?: string;
   active: boolean;
   created_at: string;
@@ -28,17 +30,17 @@ export interface Tournament {
 
 export interface CategoryDetail {
   id: number;
-  category: string; // nombre de la categoría
+  category: string; 
 }
 
-// Categoria dentro de un torneo
 export interface TournamentCategory {
   id: number;
   tournament_id: number;
   category: CategoryDetail;
-  category_id: number;  // <-- esto existe en la respuesta real
-
+  category_id: number; 
   max_participants: number;
+  min_participants: number;
+  is_round_robin: boolean;
   current_participants: number;
   status: string;
   created_at: string;

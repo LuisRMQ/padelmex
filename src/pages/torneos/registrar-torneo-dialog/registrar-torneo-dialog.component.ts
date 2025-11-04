@@ -76,6 +76,8 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       registration_fee: [0],
       prizes: [],
       rules: [''],
+      ranking: [500],
+      subtract_ranking: [20],
       photo: [null],
       tournament_call: [null],
       categories: this.fb.array([]),
@@ -167,7 +169,7 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     });
   }
 
-  guardar() {
+  async guardar () {
     if (!this.form.valid) {
       this.form.markAllAsTouched();
       return;
@@ -191,6 +193,8 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     formData.append('end_date', formatDate(rawData.end_date));
     formData.append('registration_deadline', formatDate(rawData.registration_deadline));
     formData.append('registration_fee', rawData.registration_fee?.toString() ?? '0');
+    formData.append('ranking', rawData.ranking?.toString() ?? '500');
+    formData.append('subtract_ranking', rawData.subtract_ranking?.toString() ?? '50');
     formData.append('rules', rawData.rules || '');
     formData.append('cat_extra', rawData.cat_extra?.toString() ?? '200');
     let timePlay = rawData.time_play;
@@ -207,15 +211,50 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     }
 
     if (Array.isArray(rawData.categories)) {
-      rawData.categories.forEach((cat: any, i: number) => {
+      let min_participants = 5;
+
+      for (let i = 0; i < rawData.categories.length; i++) {
+        const cat = rawData.categories[i];
         const maxParticipants = Number(cat.max_participants);
+
         if (isNaN(maxParticipants) || maxParticipants < 5) {
-          alert(`La categoría "${cat.category}" debe tener al menos 5 participantes.`);
+          await this.alertService.error(
+            'Error',
+            `La categoría "${cat.category}" debe tener al menos 5 participantes.`
+          );
           return;
         }
+
+        let is_round_robin = false;
+
+        // Si tiene 5 o 6 participantes preguntar si Round Robin
+        if (maxParticipants === 5 || maxParticipants === 6) {
+
+          const result = await this.alertService.confirm(
+            'Modalidad Round Robin',
+            `La categoría "${cat.category}" tiene ${maxParticipants} participantes. 
+              Se recomienda jugar modalidad Round Robin. ¿Deseas continuar así?`,
+            'Sí, usar Round Robin',
+            'No'
+          );
+
+          if (result.isConfirmed) {
+            is_round_robin = true;
+          } else {
+            await this.alertService.error(
+              'Cantidad insuficiente',
+              `Por favor asigna más participantes si no deseas usar Round Robin.`
+            );
+            return; // Detener el proceso
+          }
+        }
+
+        // Enviar valores
         formData.append(`categories[${i}][id]`, cat.id.toString());
         formData.append(`categories[${i}][max_participants]`, maxParticipants.toString());
-      });
+        formData.append(`categories[${i}][min_participants]`, min_participants.toString());
+        formData.append(`categories[${i}][is_round_robin]`, is_round_robin ? '1' : '0');
+      }
     }
 
     if (this.courts.length > 0) {

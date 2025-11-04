@@ -49,11 +49,23 @@
             <mat-icon>event_available</mat-icon>
             <span>Inscripción hasta: {{ torneo.registration_deadline | date:'dd MMM yyyy' }}</span>
           </div>
+          <div class="info-item">
+            <mat-icon>payments</mat-icon>
+            <span>Cuota: {{ +torneo.registration_fee | currency:'':'symbol':'1.2-2':'en-US' }}</span>
+          </div>
 
-  <div class="info-item">
-    <mat-icon>payments</mat-icon>
-    <span>Cuota: {{ +torneo.registration_fee | currency:'':'symbol':'1.2-2':'en-US' }}</span>
-  </div>
+
+          <div class="info-item">
+            <mat-icon>trending_up</mat-icon>
+            <span>Puntos: {{ +torneo.registration_fee | currency:'':'symbol':'1.2-2':'en-US' }}</span>
+          </div>
+
+
+          <div class="info-item">
+            <mat-icon>trending_down</mat-icon>
+            <span>- {{ +torneo.registration_fee | currency:'':'symbol':'1.2-2':'en-US' }}</span>
+          </div>
+
           <div class="info-item" *ngIf="torneo.prizes">
             <mat-icon>emoji_events</mat-icon>
             <span>{{ torneo.prizes.length ? torneo.prizes.join(', ') : 'Sin premio' }}</span>
@@ -89,16 +101,16 @@
         </button>
       </mat-card-actions>
     </mat-card>
-    
+
   </div>
-    </div>
+</div>
 <div class="paginador-wrapper" *ngIf="lastPage > 1" style="margin-top: 16px;">
   <div class="paginador" role="navigation" aria-label="Paginación de torneos">
     <button mat-button (click)="prevPage()" [disabled]="currentPage === 1">← Anterior</button>
 
     <ng-container *ngFor="let p of pages">
       <button mat-button (click)="goToPage(p)" [disabled]="currentPage === p"
-              [ngClass]="{'active-page': currentPage === p}">
+        [ngClass]="{'active-page': currentPage === p}">
         {{ p }}
       </button>
     </ng-container>
@@ -111,4 +123,3 @@
   </div>
 
 </div>
- 
