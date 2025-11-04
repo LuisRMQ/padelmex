@@ -40,61 +40,38 @@
         <div class="sidebar-content">
           <div class="sidebar-header">
             <h3>Grupos</h3>
-            <!-- <button mat-icon-button (click)="toggleResultsSidebar()" class="close-sidebar">
-              <mat-icon>close</mat-icon>
-            </button> -->
           </div>
 
           <div class="sidebar-body">
-            <ng-container *ngIf="results.length > 0; else noResults">
-              <div *ngFor="let group of resultsGroupedByGroup" class="group-container">
-                <h3 class="group-title">{{ group.groupName }}</h3>
+            <ng-container *ngFor="let group of resultsGroupedByGroup">
 
-                <div *ngFor="let match of group.matches; let j = index" class="result-card compact"
-                  (click)="logMatch(match); abrirModalPartido(match, 0, j)" style="cursor: pointer;">
-                  <div class="result-header">
-                    <div class="match-info">
-                      <span class="match-date">
-                        {{ match.date ? (match.date | date:'d \'de\' MMMM y':'es') + ' ' + (match.start_time ?
-                        (match.start_time | slice:0:5) : '') : 'Sin fecha' }}
-                      </span>
-                      <span class="status-small-badge" [ngClass]="{
-                        'pendiente': match.status_game === 'Not started',
-                        'en-progreso': match.status_game === 'proccessing', 
-                        'finalizado': match.status_game === 'completed'
-                      }">
-                        {{ getStatusGame(match) }}
-                      </span>
-                      <div *ngIf="match.court" class="match-court">{{ match.court }}</div>
-                    </div>
-                    <mat-icon class="trophy-icon" *ngIf="match.isFinal">emoji_events</mat-icon>
-                  </div>
+              <h3 class="group-title">{{ group.groupName }}</h3>
 
-                  <div class="result-body">
-                    <div class="player-row">
-                      <span class="player-name" [class.winner]="match.ganador === match.jugador1">
-                        {{ getPlayerNames(match.jugador1) }}
-                      </span>
-                      <span class="score" *ngFor="let s of match.scores1; let i = index"
-                        [class.winner-set]="s > match.scores2[i]">
-                        {{ s }}
-                      </span>
-                    </div>
+              <table class="ranking-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Equipo</th>
+                    <th>G</th>
+                    <th>P</th>
+                    <th>SET AVE</th>
+                    <th>GAME AVE</th>
+                  </tr>
+                </thead>
 
-                    <div class="player-row">
-                      <span class="player-name" [class.winner]="match.ganador === match.jugador2">
-                        {{ getPlayerNames(match.jugador2) }}
-                      </span>
-                      <span class="score" *ngFor="let s of match.scores2; let i = index"
-                        [class.winner-set]="s > match.scores1[i]">
-                        {{ s }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <tbody>
+                  <tr *ngFor="let match of group.matches; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ match.jugador1[0].name }} / {{ match.jugador2[0].name }}</td>
+                    <td>{{ match.wins ?? 0 }}</td>
+                    <td>{{ match.losses ?? 0 }}</td>
+                  </tr>
+                </tbody>
+              </table>
+
             </ng-container>
           </div>
+
         </div>
       </div>
 

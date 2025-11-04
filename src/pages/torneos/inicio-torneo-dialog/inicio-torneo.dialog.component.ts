@@ -36,10 +36,43 @@ export interface Partido {
   status_game?: string | null;
 }
 
-interface RankingItem {
-  couple_id: number;
-  players?: { name: string }[] | null;
+
+
+export interface RankingPlayer {
+  id: number;
+  name: string;
+  photo: string;
+  category: string;
+  level: string;
+  club: string;
 }
+
+export interface RankingStats {
+  games_played: number;
+  wins: number;
+  set_diff: number;
+  game_diff: number;
+}
+
+export interface RankingItem {
+  position: number;
+  couple_id: number;
+  players: RankingPlayer[];
+  stats: RankingStats;
+}
+
+
+export interface BracketGroup {
+  group_id: number;
+  group_name: string;
+  ranking: RankingItem[];
+  games: Partido[];
+}
+
+// interface RankingItem {
+//   couple_id: number;
+//   players?: { name: string }[] | null;
+// }
 
 @Component({
   selector: 'app-inicio-torneo-dialog',
@@ -2083,5 +2116,19 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   toggleResultsSidebar() {
     this.showResultsSidebar = !this.showResultsSidebar;
   }
+
+  resultssGroupedByGroup = [
+  {
+    groupName: "GRUPO 2",
+    standings: [
+      { name: "LOS ALBURES", gamesWon: 2, gamesLost: 0, points: "11G-5P", setsWon: 24, setsLost: 15, gamesWonTotal: 202, gamesLostTotal: 161 },
+      { name: "HIJOS DEL PADEL", gamesWon: 1, gamesLost: 1, points: "11G-5P", setsWon: 23, setsLost: 14, gamesWonTotal: 174, gamesLostTotal: 161 },
+      { name: "GOATS", gamesWon: 1, gamesLost: 1, points: "9G-7P", setsWon: 21, setsLost: 15, gamesWonTotal: 182, gamesLostTotal: 165 },
+      { name: "BANDEJEROS", gamesWon: 1, gamesLost: 1, points: "8G-8P", setsWon: 18, setsLost: 19, gamesWonTotal: 180, gamesLostTotal: 182 },
+      { name: "ALIENS", gamesWon: 1, gamesLost: 1, points: "7G-9P", setsWon: 15, setsLost: 21, gamesWonTotal: 155, gamesLostTotal: 174 },
+      { name: "CHUNKUN", gamesWon: 0, gamesLost: 2, points: "2G-14P", setsWon: 9, setsLost: 28, gamesWonTotal: 152, gamesLostTotal: 202 },
+    ]
+  }
+];
 
 }

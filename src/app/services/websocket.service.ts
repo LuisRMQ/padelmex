@@ -12,7 +12,7 @@ export class ReverbService {
     }
 
     private connect() {
-        const wsUrl = `ws://localhost:8081/app/hjo5wwuhytdrddxp6rqy?protocol=7&client=js&version=8.4.0&flash=false`;
+        const wsUrl = `wss://www.padelmex.app:8081/app/hjo5wwuhytdrddxp6rqy?protocol=7&client=js&version=8.4.0&flash=false`;
         console.log('🔗 Conectando a WebSocket:', wsUrl);
 
         this.ws = new WebSocket(wsUrl);

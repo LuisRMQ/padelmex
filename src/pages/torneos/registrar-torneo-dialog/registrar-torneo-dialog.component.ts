@@ -16,6 +16,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { AlertService } from '../../../app/services/alert.service';
+
 
 export interface Participante {
   id: number;
@@ -60,7 +62,9 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<RegistrarTorneoDialogComponent>,
     private dialog: MatDialog,
     private usersService: UsersService,
-    private tournamentService: TournamentService
+    private tournamentService: TournamentService,
+    private alertService: AlertService,
+
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
@@ -85,7 +89,6 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     this.cargarUsuarios();
     this.cargarCategorias();
     this.cargarClubs();
-    // this.cargarCanchas(); 
 
   }
 
@@ -102,7 +105,7 @@ export class RegistrarTorneoDialogComponent implements OnInit {
   }
 
   cargarCanchas(clubId: number) {
-    this.tournamentService.getCourtsByClub(clubId).subscribe({
+    this.tournamentService.getCourtsByClubv2(clubId).subscribe({
       next: (res: any) => this.courtsDisponibles = res.data,
       error: (err) => console.error('Error al cargar canchas', err)
     });
@@ -207,7 +210,6 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       rawData.categories.forEach((cat: any, i: number) => {
         const maxParticipants = Number(cat.max_participants);
         if (isNaN(maxParticipants) || maxParticipants < 5) {
-          // Esto debería no pasar si las validaciones funcionan, pero por seguridad:
           alert(`La categoría "${cat.category}" debe tener al menos 5 participantes.`);
           return;
         }
@@ -230,9 +232,20 @@ export class RegistrarTorneoDialogComponent implements OnInit {
 
     this.tournamentService.createTournament(formData).subscribe({
       next: (res) => this.dialogRef.close(true),
-      error: (err) => {
+      error: async (err) => {
         console.error('Error al crear torneo:', err);
-        alert('Error al crear torneo. Revisa la consola.');
+
+        let message = 'Error al crear torneo';
+
+        if (err.status === 422 && err.error?.errors) {
+          const validationErrors = err.error.errors;
+          message = Object.values(validationErrors).flat().join('\n');
+        }
+        else if (err.error?.msg) {
+          message = err.error.msg;
+        }
+
+        await this.alertService.error('Ocurrio un Error', message);
       }
     });
   }

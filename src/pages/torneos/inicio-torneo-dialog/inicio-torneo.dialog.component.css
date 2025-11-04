@@ -559,3 +559,43 @@
 * {
   box-sizing: border-box;
 }
+
+
+
+
+
+
+
+
+
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.ranking-table th, 
+.ranking-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.ranking-table th {
+  background: #FFD500;
+  color: black;
+  font-weight: bold;
+}
+
+.ranking-table tr:hover {
+  background: #f1f1f1;
+  cursor: pointer;
+}
+
+.group-title {
+  font-size: 18px;
+  margin-top: 10px;
+  font-weight: bold;
+}
