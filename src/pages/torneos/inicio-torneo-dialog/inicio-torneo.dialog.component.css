@@ -1,82 +1,4 @@
 /* =========================
-   Toolbar Modernizado
-   ========================= */
-.bracket-container-sets text {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.bracket-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #336699, #64748b);
-  color: #fff;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  position: relative;
-  overflow: hidden;
-}
-
-.bracket-toolbar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-}
-
-.toolbar-left {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  z-index: 1;
-}
-
-.logo-container {
-  padding: 8px;
-  background: rgba(77, 41, 41, 0.15);
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-}
-
-.tournament-icon {
-  color: #fff;
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-}
-
-.title-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.titulo-modal {
-  font-weight: 700;
-  font-size: 1.25rem;
-  letter-spacing: -0.2px;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.close-btn {
-  background: rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  z-index: 1;
-}
-
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.25) !important;
-  transform: scale(1.05);
-}
-
-/* =========================
    Dialog Content
    ========================= */
 .contenido-modal {
@@ -122,8 +44,15 @@
   color: #94a3b8;
 }
 
+.toggle-sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
 /* =========================
-   Results / Sets View
+   Results View
    ========================= */
 .results-view {
   display: flex;
@@ -132,180 +61,6 @@
   align-items: flex-start;
   flex: 1;
   height: 100%;
-}
-
-.result-card.compact {
-  width: 450px;
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  background: white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
-}
-
-.result-card.compact .result-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #4b5563;
-  margin-bottom: 8px;
-}
-
-.result-card.compact .result-body {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.player-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.player-name {
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  max-width: 160px;
-}
-
-.player-name-container {
-  pointer-events: none;
-}
-
-.bracket-container-sets .player-name {
-  font-size: 10px !important;
-  max-width: 150px !important;
-}
-
-@media (max-width: 1400px) {
-  .bracket-container-sets text {
-    font-size: 9px !important;
-  }
-}
-
-@media (max-width: 1200px) {
-  .bracket-container-sets text {
-    font-size: 8px !important;
-  }
-}
-
-.player-row .player-name {
-  font-weight: 500;
-  color: #1f2937;
-  width: 20vw;
-}
-
-.player-row .player-name.winner {
-  color: #10b981;
-  font-weight: 600;
-  width: 20vw;
-}
-
-.player-row .score {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 5vw;
-  height: 36px;
-  margin-left: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  border-radius: 4px;
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.player-row .score.winner-set {
-  background-color: #10b981;
-  color: white;
-  font-weight: 600;
-}
-
-/* =========================
-   Group Containers
-   ========================= */
-.group-container {
-  max-width: 100%;
-  margin: 8px 0;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #ffffff;
-  box-sizing: border-box;
-  height: auto;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.group-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #334155;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.result-card {
-  margin-bottom: 6px;
-  padding: 8px;
-}
-
-/* =========================
-   Empty State Centrado
-   ========================= */
-.no-results-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 300px;
-  text-align: center;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
-
-.empty-icon {
-  font-size: 64px;
-  width: 64px;
-  height: 64px;
-  color: #ccc;
-}
-
-.empty-message {
-  font-size: 20px;
-  font-weight: 500;
-  color: #666;
-  margin: 0;
-}
-
-/* =========================
-   Responsive
-   ========================= */
-@media (max-width: 768px) {
-  .result-card.compact {
-    width: 100%;
-    padding: 8px 12px;
-  }
-
-  .player-row .score {
-    width: 28px;
-    height: 28px;
-    font-size: 0.8rem;
-  }
 }
 
 /* =========================
@@ -365,10 +120,6 @@
   font-weight: 600;
 }
 
-.close-sidebar {
-  color: #64748b;
-}
-
 .sidebar-body {
   flex: 1;
   overflow-y: auto;
@@ -392,23 +143,9 @@
   flex: 1 0 100%;
 }
 
-/* Botón de toggle en controles */
-.toggle-sidebar-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-/* Botón flotante cuando el sidebar está colapsado */
-.floating-sidebar-toggle {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
+/* =========================
+   Bracket Container
+   ========================= */
 .bracket-header {
   display: flex;
   justify-content: space-between;
@@ -426,7 +163,6 @@
   font-weight: 600;
 }
 
-/* Ajustes para el bracket container */
 .bracket-column {
   flex: 1;
   min-height: 600px;
@@ -447,28 +183,154 @@
 }
 
 /* =========================
-   Contenedor del Modal Principal
+   Tabla de Grupos
    ========================= */
-::ng-deep .mat-dialog-container {
+.group-section {
+  margin-bottom: 2rem;
+}
+
+.group-title {
+  background: linear-gradient(135deg, #336699 0%, #1e3a8a 100%);
+  color: white;
+  padding: 12px 16px;
+  margin: 0 0 12px 0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.ranking-table th {
+  background: #FFD500;
+  color: black;
+  font-weight: bold;
+  padding: 12px 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.ranking-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+}
+
+.ranking-table tr:hover {
+  background: #f1f1f1;
+  cursor: pointer;
+}
+
+.position-cell {
+  text-align: center;
+  width: 40px;
+}
+
+.position-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.position-badge.top-badge {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.team-name {
+  font-weight: 500;
+  color: #334155;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.points-cell {
+  font-weight: 700;
+  color: #1e40af;
+  text-align: center;
+}
+
+.positive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* =========================
+   Estados Vacíos
+   ========================= */
+.no-groups-message {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #64748b;
+}
+
+.no-groups-message mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+  color: #cbd5e1;
+}
+
+.no-results-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 300px;
+  text-align: center;
+}
+
+.empty-state {
   display: flex;
   flex-direction: column;
-  max-height: 95vh !important;
-  height: 95vh !important;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
 }
 
-/* Mejoras para los resultados en el sidebar */
-.results-sidebar .group-container {
-  max-width: 100%;
-  margin: 8px 0;
-  padding: 8px;
+.empty-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #ccc;
 }
 
-.results-sidebar .result-card.compact {
-  width: 100%;
-  margin-bottom: 12px;
+.empty-message {
+  font-size: 20px;
+  font-weight: 500;
+  color: #666;
+  margin: 0;
 }
 
-/* Scroll personalizado para el sidebar */
+/* =========================
+   Scroll Personalizado
+   ========================= */
 .sidebar-body::-webkit-scrollbar {
   width: 6px;
 }
@@ -487,7 +349,9 @@
   background: #94a3b8;
 }
 
-/* Responsive */
+/* =========================
+   Responsive
+   ========================= */
 @media (max-width: 1200px) {
   .results-sidebar {
     width: 400px;
@@ -521,81 +385,41 @@
   .sidebar-content {
     width: 100%;
   }
+
+  .category-select {
+    width: 100%;
+  }
+
+  .controls-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
-/* Animación suave para el toggle */
+/* =========================
+   Animaciones
+   ========================= */
 .results-sidebar,
 .main-content {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Overlay para móviles */
-@media (max-width: 768px) {
-  .sidebar-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 99;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-  }
-
-  .results-sidebar:not(.collapsed)+.sidebar-overlay {
-    opacity: 1;
-    visibility: visible;
-  }
-}
-
-.mat-dialog-actions {
-  margin-bottom: 0;
-  padding-bottom: 0;
-  flex-shrink: 0;
-}
-
+/* =========================
+   Estilos Globales
+   ========================= */
 * {
   box-sizing: border-box;
 }
 
-
-
-
-
-
-
-
-
-
-.ranking-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-  margin-bottom: 20px;
+.team-name {
+  white-space: normal;
+  line-height: 1.4;
+  max-width: 150px;
+  text-align: left;
+  padding: 8px 6px;
 }
 
-.ranking-table th, 
-.ranking-table td {
-  border-bottom: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-}
-
-.ranking-table th {
-  background: #FFD500;
-  color: black;
-  font-weight: bold;
-}
-
-.ranking-table tr:hover {
-  background: #f1f1f1;
-  cursor: pointer;
-}
-
-.group-title {
-  font-size: 18px;
-  margin-top: 10px;
-  font-weight: bold;
+.team-name small {
+  color: #94a3b8;
+  font-size: 0.8em;
 }

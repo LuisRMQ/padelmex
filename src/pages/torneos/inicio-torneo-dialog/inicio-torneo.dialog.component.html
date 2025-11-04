@@ -39,55 +39,69 @@
       <div class="results-sidebar" [class.collapsed]="!showResultsSidebar">
         <div class="sidebar-content">
           <div class="sidebar-header">
-            <h3>Grupos</h3>
+            <h3>Grupos - {{ selectedCategory }}</h3>
           </div>
 
           <div class="sidebar-body">
-            <ng-container *ngFor="let group of resultsGroupedByGroup">
+            <ng-container *ngFor="let group of groupStandings">
+              <div class="group-section">
+                <h4 class="group-title">{{ group.groupName }}</h4>
 
-              <h3 class="group-title">{{ group.groupName }}</h3>
-
-              <table class="ranking-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Equipo</th>
-                    <th>G</th>
-                    <th>P</th>
-                    <th>SET AVE</th>
-                    <th>GAME AVE</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <tr *ngFor="let match of group.matches; let i = index">
-                    <td>{{ i + 1 }}</td>
-                    <td>{{ match.jugador1[0].name }} / {{ match.jugador2[0].name }}</td>
-                    <td>{{ match.wins ?? 0 }}</td>
-                    <td>{{ match.losses ?? 0 }}</td>
-                  </tr>
-                </tbody>
-              </table>
-
+                <table class="ranking-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Equipo</th>
+                      <th>PJ</th>
+                      <th>G</th>
+                      <th>P</th>
+                      <th>+/- Sets</th>
+                      <th>+/- Games</th>
+                      <th>Pts</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let team of group.standings">
+                      <td class="position-cell">
+                        <span class="position-badge" [class.top-badge]="team.position <= 2">
+                          {{ team.position }}
+                        </span>
+                      </td>
+                      <td class="team-name" [innerHTML]="team.teamName.replace('/', '<br/><span class=\'separator\'>/</span> ')"></td>
+                      <td>{{ team.gamesPlayed }}</td>
+                      <td>{{ team.gamesWon }}</td>
+                      <td>{{ team.gamesLost }}</td>
+                      <td [class.positive]="team.setDiff > 0" [class.negative]="team.setDiff < 0">
+                        {{ team.setDiff > 0 ? '+' : '' }}{{ team.setDiff }}
+                      </td>
+                      <td [class.positive]="team.gameDiff > 0" [class.negative]="team.gameDiff < 0">
+                        {{ team.gameDiff > 0 ? '+' : '' }}{{ team.gameDiff }}
+                      </td>
+                      <td class="points-cell">{{ team.points }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </ng-container>
-          </div>
 
+            <!-- Mensaje si no hay grupos -->
+            <div *ngIf="groupStandings.length === 0" class="no-groups-message">
+              <mat-icon>group</mat-icon>
+              <p>No hay grupos disponibles</p>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- CONTENIDO PRINCIPAL: Bracket Eliminatorias -->
       <div class="main-content" [class.full-width]="!showResultsSidebar">
-        <div class="bracket-column" *ngIf="results.length > 0; else noCategorySelected">
+        <div class="bracket-column" *ngIf="filteredBracket.length > 0; else noCategorySelected">
           <div class="bracket-header">
             <h3>Bracket de Eliminatorias - {{ selectedCategory }}</h3>
-            <!-- Botón flotante para mostrar sidebar cuando está colapsado -->
-            <!-- <button *ngIf="!showResultsSidebar" mat-fab (click)="toggleResultsSidebar()" 
-                    class="floating-sidebar-toggle" color="primary">
-              <mat-icon>menu</mat-icon>
-            </button> -->
           </div>
           <div #bracketContainerSets class="bracket-container-sets"
-            style="width: 100%; height: 600px; background: #f8fafc;" aria-label="Bracket eliminatorias">
+            style="width: 100%; height: 600px; overflow: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;"
+            aria-label="Bracket eliminatorias">
             <!-- El contenido se generará por D3 -->
           </div>
         </div>
@@ -121,10 +135,3 @@
   </ng-template>
 
 </mat-dialog-content>
-
-<!-- =========================
-     BOTONES FINALES (mínimos)
-     ========================= -->
-<!-- <mat-dialog-actions align="end" class="dialog-actions" *ngIf="!loading">
-  <button mat-stroked-button (click)="cerrar()" class="action-btn">Cerrar</button>
-</mat-dialog-actions> -->
