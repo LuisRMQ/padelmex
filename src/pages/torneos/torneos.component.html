@@ -57,13 +57,13 @@
 
           <div class="info-item">
             <mat-icon>trending_up</mat-icon>
-            <span>Puntos: {{ +torneo.registration_fee | currency:'':'symbol':'1.2-2':'en-US' }}</span>
+            <span>Puntos A Ganar: {{ torneo.ranking  }}</span>
           </div>
 
 
           <div class="info-item">
             <mat-icon>trending_down</mat-icon>
-            <span>- {{ +torneo.registration_fee | currency:'':'symbol':'1.2-2':'en-US' }}</span>
+            <span>Descuento De Puntos: {{ torneo.subtract_ranking  }}</span>
           </div>
 
           <div class="info-item" *ngIf="torneo.prizes">

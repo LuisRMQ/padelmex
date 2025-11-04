@@ -73,6 +73,8 @@ export class TorneosComponent implements OnInit {
         registration_fee: t.registration_fee,
         max_participants: t.max_participants,
         current_participants: t.current_participants,
+        ranking: t.ranking,
+        subtract_ranking: t.subtract_ranking,
         status: t.status,
         prizes: t.prizes || [],
         rules: t.rules,
