@@ -227,9 +227,8 @@ verDetalles(torneo: Tournament) {
   verParticipantes(torneoId: number) {
   this.tournamentService.getTournament(torneoId).subscribe({
     next: (torneo: Tournament) => {
-      // Extraemos las categorías usando el id interno (no category_id)
       const categories = torneo.categories?.map(cat => ({
-        id: cat.id, // 👈 ESTE es el que tú quieres mandar
+        id: cat.id,
         max_participants: cat.max_participants,
         current_participants: cat.current_participants,
         status: cat.status
@@ -237,13 +236,22 @@ verDetalles(torneo: Tournament) {
 
       console.log('Categorías enviadas:', categories);
 
-      this.dialog.open(ParticipantesTorneoDialogComponent, {
+      const dialogRef = this.dialog.open(ParticipantesTorneoDialogComponent, {
         width: '90vw',
         maxWidth: '1000px',
         height: 'auto',
         maxHeight: '80vh',
         data: { torneoId: torneo.id, categories },
         panelClass: 'custom-dialog'
+      });
+
+      dialogRef.afterClosed().subscribe((updated) => {
+        console.log('Modal cerrado. ¿Hubo cambios?', updated);
+
+        if (updated) {
+          this.cargarTorneos();
+
+        }
       });
     },
     error: (err) => console.error('Error obteniendo torneo:', err)

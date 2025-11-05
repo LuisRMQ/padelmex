@@ -334,13 +334,11 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
       if (!jugador.partner) {
         const msg = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
         this.error = msg;
-        console.error(msg, jugador);
         await this.alertService.error('Falta pareja', msg);
         return;
       }
     }
 
-    // Preguntar confirmar acción al usuario
     const confirmResult = await this.alertService.confirm('Confirmar', '¿Deseas agregar las parejas al torneo?');
     if (!confirmResult.isConfirmed) return;
 
@@ -356,7 +354,10 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
           category_tournament_id: Number(this.selectedCategory!.id),
           partner_id: Number(j.partner!.id)
         };
-        requests.push(this.tournamentService.addUsertoTournament(payload));
+        requests.push({
+          req: this.tournamentService.addUsertoTournament(payload),
+          jugador: j
+        });
       }
     }
 
@@ -365,20 +366,20 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
       return;
     }
 
-    forkJoin(requests).subscribe({
+    forkJoin(requests.map(r => r.req)).subscribe({
       next: async (responses) => {
         const errors: string[] = [];
         const successes: string[] = [];
 
-        responses.forEach((res, index) => {
-          const jugador = this.selectedPlayers[index];
+        responses.forEach((res, i) => {
+          const jugador = requests[i].jugador;
           const coupleData = res?.couple?.couple;
+
           if (coupleData?.ok) {
             successes.push(`${jugador.name} + ${jugador.partner!.name}`);
           } else {
-            const msg = coupleData?.message || 'Ocurrió un error al agregar la pareja.';
+            const msg = coupleData?.message || 'Error al agregar la pareja.';
             errors.push(`Jugador: ${jugador.name} ${jugador.lastname}, Pareja: ${jugador.partner!.name} — ${msg}`);
-            console.error('❌ Error al agregar pareja:', msg, jugador, jugador.partner);
           }
         });
 
@@ -390,10 +391,9 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
           await this.alertService.error('Algunos errores ocurrieron', errors.join('\n'));
         }
 
-        this.dialogRef.close(this.selectedPlayers);
+        this.dialogRef.close(true);
       },
-      error: async (err) => {
-        console.error('❌ Error agregando parejas:', err);
+      error: async () => {
         await this.alertService.error('Error', 'Ocurrió un error al agregar las parejas.');
       }
     });
