@@ -1,0 +1,108 @@
+<div class="matches-dialog-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>Partidos del Grupo</h2>
+    <button mat-icon-button (click)="close()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <div class="games-container">
+      <div *ngFor="let game of games; let i = index" class="game-card">
+        <mat-card [class]="getStatusColor(game)">
+          <mat-card-header>
+            <div class="game-header">
+              <span class="game-number">Partido {{ i + 1 }}</span>
+              <span class="game-status" [class]="getStatusColor(game)">
+                {{ getGameStatus(game) }}
+              </span>
+            </div>
+          </mat-card-header>
+
+          <mat-card-content>
+            <!-- Equipos -->
+            <div class="teams-container">
+              <div class="team team-1">
+                <div class="team-info">
+                  <span class="team-name">{{ getPlayerNames(game.couple_1.players) }}</span>
+                </div>
+                <div class="team-score">
+                  <span class="sets-won">{{ getTeamScore(game.sets, 1) }}</span>
+                </div>
+              </div>
+
+              <div class="vs-separator">
+                <span>VS</span>
+              </div>
+
+              <div class="team team-2">
+                <div class="team-score">
+                  <span class="sets-won">{{ getTeamScore(game.sets, 2) }}</span>
+                </div>
+                <div class="team-info">
+                  <span class="team-name">{{ getPlayerNames(game.couple_2.players) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sets -->
+            <div class="sets-container">
+              <h4>Sets</h4>
+              <div class="sets-grid">
+                <div *ngFor="let set of game.sets; let setIndex = index" class="set-input-group">
+                  <span class="set-label">Set {{ set.set_number }}</span>
+                  <div class="score-inputs">
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="50"
+                      [value]="set.score_1"
+                      (change)="updateSetScore(game, setIndex, 1, $any($event.target).value)"
+                      class="score-input"
+                      [class.winner]="set.winner === 1"
+                    >
+                    <span class="score-separator">-</span>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="50"
+                      [value]="set.score_2"
+                      (change)="updateSetScore(game, setIndex, 2, $any($event.target).value)"
+                      class="score-input"
+                      [class.winner]="set.winner === 2"
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información adicional -->
+            <div class="game-info" *ngIf="game.court || game.date">
+              <div class="info-item" *ngIf="game.court">
+                <mat-icon>place</mat-icon>
+                <span>{{ game.court }}</span>
+              </div>
+              <div class="info-item" *ngIf="game.date">
+                <mat-icon>event</mat-icon>
+                <span>{{ game.date }} {{ game.start_time }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions>
+            <button 
+              mat-raised-button 
+              color="primary" 
+              (click)="saveGame(game)"
+              [disabled]="!canSaveGame(game)"
+              class="save-btn"
+            >
+              <mat-icon>save</mat-icon>
+              Guardar Resultado
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </mat-dialog-content>
+</div>
