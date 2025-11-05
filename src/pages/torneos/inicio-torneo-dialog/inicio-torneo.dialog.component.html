@@ -45,8 +45,10 @@
           <div class="sidebar-body">
             <ng-container *ngFor="let group of groupStandings">
               <div class="group-section">
-                <h4 class="group-title">{{ group.groupName }}</h4>
-
+                <h4 class="group-title" (click)="abrirPartidosGrupo(group)">
+                  {{ group.groupName }}
+                  <mat-icon class="group-icon">sports_tennis</mat-icon>
+                </h4>
                 <table class="ranking-table">
                   <thead>
                     <tr>
@@ -67,7 +69,8 @@
                           {{ team.position }}
                         </span>
                       </td>
-                      <td class="team-name" [innerHTML]="team.teamName.replace('/', '<br/><span class=\'separator\'>/</span> ')"></td>
+                      <td class="team-name"
+                        [innerHTML]="team.teamName.replace('/', '<br/><span class=\'separator\'>/</span> ')"></td>
                       <td>{{ team.gamesPlayed }}</td>
                       <td>{{ team.gamesWon }}</td>
                       <td>{{ team.gamesLost }}</td>

@@ -12,6 +12,7 @@ import { MatIconModule } from "@angular/material/icon";
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RegistrarGanadorDialogComponent } from './score-torneo-dialog/registrar-ganador.dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { MatchesGrupoDialogComponent } from '../matches-grupo-dialog/matches-grupo-dialog.component';
 
 export interface Partido {
   id?: number | null;
@@ -721,5 +722,84 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   cerrar() {
     this.dialogRef.close();
+  }
+
+  abrirPartidosGrupo(group: any) {
+    // Crear datos dummy para el modal
+    const dummyGames = this.createDummyGamesForGroup(group);
+
+    const dialogRef = this.dialog.open(MatchesGrupoDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      data: { games: dummyGames }
+    });
+
+    dialogRef.afterClosed().subscribe(updatedGames => {
+      if (updatedGames) {
+        console.log('Juegos actualizados:', updatedGames);
+        // Aquí podrías actualizar los datos en tu componente principal
+        // Por ejemplo: this.actualizarResultadosGrupo(updatedGames);
+      }
+    });
+  }
+
+  // Función para crear datos dummy del grupo
+  private createDummyGamesForGroup(group: any): any[] {
+    const standings = group.standings || [];
+
+    // Si no hay suficientes equipos, retornar array vacío
+    if (standings.length < 2) return [];
+
+    // Crear partidos round-robin entre todos los equipos del grupo
+    const games = [];
+
+    for (let i = 0; i < standings.length; i++) {
+      for (let j = i + 1; j < standings.length; j++) {
+        const team1 = standings[i];
+        const team2 = standings[j];
+
+        games.push({
+          game_id: this.generateGameId(group.groupName, i, j),
+          phase: "group",
+          status_game: "Not started",
+          winner_id: null,
+          couple_1: {
+            id: team1.coupleId,
+            players: this.parsePlayerNames(team1.teamName)
+          },
+          couple_2: {
+            id: team2.coupleId,
+            players: this.parsePlayerNames(team2.teamName)
+          },
+          court: "Cancha " + (Math.floor(Math.random() * 3) + 1),
+          date: "2024-01-15",
+          start_time: "10:00:00",
+          end_time: "11:00:00",
+          sets: [
+            { set_number: 1, score_1: 0, score_2: 0 },
+            { set_number: 2, score_1: 0, score_2: 0 },
+            { set_number: 3, score_1: 0, score_2: 0 }
+          ]
+        });
+      }
+    }
+
+    return games;
+  }
+
+  private generateGameId(groupName: string, i: number, j: number): number {
+    return parseInt(`${groupName.charCodeAt(0)}${i}${j}${Date.now().toString().slice(-4)}`);
+  }
+
+  // Helper para parsear nombres de jugadores desde el string del equipo
+  private parsePlayerNames(teamName: string): any[] {
+    // Asumiendo que teamName es "Jugador1 / Jugador2"
+    const names = teamName.split('/').map(name => name.trim());
+    return names.map((name, index) => ({
+      id: index + 1,
+      name: name,
+      photo: "https://qapadel.sfo3.digitaloceanspaces.com/logo_mexpadel.png",
+      level: "1"
+    }));
   }
 }
