@@ -7,6 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TournamentService } from '../../../app/services/torneos.service';
 
 export interface Game {
   game_id: number;
@@ -53,7 +56,8 @@ export interface Set {
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './matches-grupo-dialog.component.html',
   styleUrls: ['./matches-grupo-dialog.component.css']
@@ -62,10 +66,14 @@ export class MatchesGrupoDialogComponent implements OnInit {
   games: Game[] = [];
   currentSetIndex: number = 0;
   maxSets: number = 3;
+  loading = false;
+  savingGameId: number | null = null;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { games: Game[] },
-    private dialogRef: MatDialogRef<MatchesGrupoDialogComponent>
+    private dialogRef: MatDialogRef<MatchesGrupoDialogComponent>,
+    private tournamentService: TournamentService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -73,6 +81,9 @@ export class MatchesGrupoDialogComponent implements OnInit {
       ...game,
       sets: game.sets || this.initializeSets()
     }));
+    
+    // Cargar datos actualizados de cada juego
+    this.loadGamesDetails();
   }
 
   private initializeSets(): Set[] {
@@ -81,6 +92,41 @@ export class MatchesGrupoDialogComponent implements OnInit {
       score_1: 0,
       score_2: 0
     }));
+  }
+
+  private loadGamesDetails() {
+    this.games.forEach(game => {
+      if (game.game_id) {
+        this.tournamentService.getGameDetail(game.game_id).subscribe({
+          next: (response) => {
+            if (response.status === 'success' && response.data) {
+              const gameDetail = response.data;
+              const gameIndex = this.games.findIndex(g => g.game_id === game.game_id);
+              if (gameIndex !== -1) {
+                // Actualizar sets desde la API
+                if (gameDetail.sets && gameDetail.sets.length > 0) {
+                  this.games[gameIndex].sets = gameDetail.sets.map(set => ({
+                    set_number: set.set_number,
+                    score_1: set.score_1,
+                    score_2: set.score_2,
+                    winner: set.score_1 > set.score_2 ? 1 : set.score_2 > set.score_1 ? 2 : undefined
+                  }));
+                }
+                
+                // Actualizar estado y ganador
+                this.games[gameIndex].status_game = gameDetail.status_game;
+                if (gameDetail.winner && gameDetail.winner.couple_id) {
+                  this.games[gameIndex].winner_id = gameDetail.winner.couple_id;
+                }
+              }
+            }
+          },
+          error: (error) => {
+            console.error('Error cargando detalles del juego:', error);
+          }
+        });
+      }
+    });
   }
 
   getPlayerNames(players: Player[]): string {
@@ -117,7 +163,7 @@ export class MatchesGrupoDialogComponent implements OnInit {
   }
 
   canSaveGame(game: Game): boolean {
-    if (!game.sets) return false;
+    if (!game.sets || game.status_game === 'Completed') return false;
     
     const setsPlayed = game.sets.filter(set => set.score_1 > 0 || set.score_2 > 0);
     const team1Wins = this.getTeamScore(game.sets, 1);
@@ -127,24 +173,74 @@ export class MatchesGrupoDialogComponent implements OnInit {
   }
 
   saveGame(game: Game) {
-    if (!this.canSaveGame(game)) return;
+    if (!this.canSaveGame(game)) {
+      this.snackBar.open('No se puede guardar: el partido no está completo o ya está finalizado', 'Cerrar', {
+        duration: 3000,
+      });
+      return;
+    }
 
+    this.loading = true;
+    this.savingGameId = game.game_id;
+
+    // Determinar ganador
     const team1Wins = this.getTeamScore(game.sets, 1);
     const team2Wins = this.getTeamScore(game.sets, 2);
-    
     game.winner_id = team1Wins > team2Wins ? game.couple_1.id : game.couple_2.id;
-    game.status_game = 'Completed';
 
-    // Aquí integrarías con tu API
-    console.log('Guardando partido:', game);
-    
-    // Simulación de éxito
-    this.showSuccessMessage();
+    // Guardar todos los sets
+    this.saveAllSets(game).then(() => {
+      this.snackBar.open('Resultados guardados exitosamente', 'Cerrar', {
+        duration: 3000,
+      });
+      this.loading = false;
+      this.savingGameId = null;
+      
+      // Actualizar estado local
+      game.status_game = 'Completed';
+      
+    }).catch(error => {
+      console.error('Error al guardar el partido:', error);
+      this.snackBar.open('Error al guardar los resultados', 'Cerrar', {
+        duration: 5000,
+      });
+      this.loading = false;
+      this.savingGameId = null;
+    });
   }
 
-  private showSuccessMessage() {
-    // Podrías implementar un snackbar o toast aquí
-    alert('Resultados guardados exitosamente');
+  private saveAllSets(game: Game): Promise<void> {
+    const promises: Promise<void>[] = [];
+
+    if (game.sets) {
+      game.sets.forEach((set, index) => {
+        if (set.score_1 > 0 || set.score_2 > 0) {
+          promises.push(this.saveSet(game.game_id, set));
+        }
+      });
+    }
+
+    return Promise.all(promises).then(() => {});
+  }
+
+  private saveSet(gameId: number, set: Set): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.tournamentService.storeSet({
+        game_id: gameId,
+        set_number: set.set_number,
+        score_1: set.score_1,
+        score_2: set.score_2
+      }).subscribe({
+        next: (response: any) => {
+          console.log(`Set ${set.set_number} guardado:`, response);
+          resolve();
+        },
+        error: (error) => {
+          console.error(`Error guardando set ${set.set_number}:`, error);
+          reject(error);
+        }
+      });
+    });
   }
 
   close() {
@@ -163,5 +259,40 @@ export class MatchesGrupoDialogComponent implements OnInit {
       case 'In progress': return 'in-progress';
       default: return 'not-started';
     }
+  }
+
+  // Método para verificar si un set está completo
+  isSetComplete(set: Set): boolean {
+    return set.score_1 > 0 && set.score_2 > 0;
+  }
+
+  // Método para obtener el progreso del partido
+  getGameProgress(game: Game): number {
+    if (!game.sets) return 0;
+    const completedSets = game.sets.filter(set => this.isSetComplete(set)).length;
+    return (completedSets / this.maxSets) * 100;
+  }
+
+  // Verificar si se está guardando un juego específico
+  isSavingGame(game: Game): boolean {
+    return this.loading && this.savingGameId === game.game_id;
+  }
+
+  // Método para resetear los scores de un juego
+  resetGame(game: Game) {
+    if (game.sets) {
+      game.sets.forEach(set => {
+        set.score_1 = 0;
+        set.score_2 = 0;
+        set.winner = undefined;
+      });
+      game.winner_id = null;
+      game.status_game = 'Not started';
+    }
+  }
+
+  // Verificar si un juego tiene scores ingresados
+  hasScores(game: Game): boolean {
+    return game.sets?.some(set => set.score_1 > 0 || set.score_2 > 0) || false;
   }
 }

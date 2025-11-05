@@ -285,6 +285,16 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     setTimeout(() => this.drawBracketSets(), 0);
   }
 
+  private showEmptyState(container: HTMLElement) {
+    container.innerHTML = `
+    <div style="display: flex; justify-content: center; align-items: center; height: 200px; color: #6b7280; flex-direction: column;">
+      <mat-icon style="font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px;">sports_tennis</mat-icon>
+      <p>No hay partidos de eliminatorias programados aún</p>
+      <small>Las llaves se generarán automáticamente cuando finalice la fase de grupos</small>
+    </div>
+  `;
+  }
+
   // BRACKET DRAWING METHODS
   private drawBracketSets() {
     if (!this.bracketContainerSets?.nativeElement || !this.filteredBracket?.[0]) return;
@@ -296,17 +306,15 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       const category = this.filteredBracket[0];
       const allRounds = this.mapToPartidos(category);
 
-      console.log('Todas las rondas:', allRounds);
+  
 
-      let eliminationRounds = allRounds.filter(r => r && r.length > 0);
-
-      // ✅ ORDENAR las rondas por mayor cantidad de partidos (32avos → ... → final)
-      eliminationRounds = eliminationRounds.sort((a, b) => b.length - a.length);
-
-      console.log("Rondas de eliminación reales:", eliminationRounds);
+     
+      const eliminationRounds = allRounds
+        .filter(r => Array.isArray(r) && r.length > 0);
+   
 
       if (eliminationRounds.length === 0) {
-        console.warn("No hay rondas eliminatorias para mostrar");
+        this.showEmptyState(container);
         return;
       }
 
@@ -327,6 +335,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       this.drawRoundBackgrounds(eliminationRounds, gContainer);
 
       eliminationRounds.forEach((ronda, roundIndex) => {
+        console.log(`🎯 Dibujando ronda ${roundIndex}:`, ronda[0]?.groupName, 'con', ronda.length, 'partidos');
         this.drawRoundTitle(ronda, roundIndex, gContainer);
         ronda.forEach((partido, matchIndex) => {
           this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
@@ -337,104 +346,105 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       });
 
     } catch (error) {
-      console.error('Error al dibujar bracket:', error);
+      console.error('💥 Error al dibujar bracket:', error);
       this.showErrorState(container);
     }
   }
 
   private mapToPartidos(category: any): Partido[][] {
-    const rounds: Partido[][] = [];
+ 
 
-    // ✅ Fase de grupos
-    const groupRound: Partido[] = [];
-    category.groups?.forEach((group: any) => {
-      const rankById: { [id: number]: any } = {};
-      group.ranking?.forEach((r: any) => rankById[r.couple_id] = r);
+  const rounds: Partido[][] = [];
+  const eliminationPhases = Object.keys(category.elimination || {});
 
-      group.games?.forEach((game: any) => {
-        if (!game.couple_1 || !game.couple_2) return;
-
-        groupRound.push({
-          jugador1: rankById[game.couple_1]?.players || [{ name: 'Por asignar' }],
-          jugador2: rankById[game.couple_2]?.players || [{ name: 'Por asignar' }],
-          ganador: game.winner_id ?
-            (game.winner_id === game.couple_1 ? rankById[game.couple_1]?.players :
-              game.winner_id === game.couple_2 ? rankById[game.couple_2]?.players : null) : null,
-          groupName: group.group_name,
-          id: game.game_id || null,
-          couple1Id: game.couple_1,
-          couple2Id: game.couple_2,
-          scores1: game.scores1 || [0, 0, 0],
-          scores2: game.scores2 || [0, 0, 0],
-          date: game.date,
-          start_time: game.start_time,
-          end_time: game.end_time,
-          court: game.court,
-          status_game: game.status_game || 'Not started'
-        });
-      });
-    });
-
-    if (groupRound.length) rounds.push(groupRound);
-
-    // ✅ Fase de eliminación dinámica
-    const eliminationPhases = Object.keys(category.elimination || {});
-
-    // Ordenar por número de partidos (de mayor → menor)
-    const eliminationOrder = eliminationPhases.sort(
-      (a, b) => (category.elimination[b]?.length || 0) - (category.elimination[a]?.length || 0)
-    );
-
-    const eliminationRounds = eliminationOrder
-      .map(phase => {
-        const phaseGames = category.elimination?.[phase] || [];
-
-        const phaseMatches = phaseGames
-          .filter((game: any) => game.couple_1 || game.couple_2 || game.couple_1?.pending || game.couple_2?.pending)
-          .map((game: any, index: number) => {
-            const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
-
-            const jugador1 = game.couple_1?.pending
-              ? [{ name: game.couple_1.pending }]
-              : game.couple_1?.players || [{ name: 'Por asignar' }];
-
-            const jugador2 = game.couple_2?.pending
-              ? [{ name: game.couple_2.pending }]
-              : game.couple_2?.players || [{ name: 'Por asignar' }];
-
-            return {
-              jugador1,
-              jugador2,
-              ganador: game.winner_id
-                ? (game.winner_id === game.couple_1?.id
-                  ? game.couple_1?.players
-                  : game.winner_id === game.couple_2?.id
-                    ? game.couple_2?.players
-                    : null)
-                : null,
-              groupName: phase,
-              id: game.game_id || null,
-              couple1Id: game.couple_1?.id,
-              couple2Id: game.couple_2?.id,
-              nextMatchIndex,
-              scores1: game.scores1 || [0, 0, 0],
-              scores2: game.scores2 || [0, 0, 0],
-              date: game.date,
-              start_time: game.start_time,
-              end_time: game.end_time,
-              court: game.court,
-              status_game: game.status_game || 'Not started'
-            };
-          });
-
-        return phaseMatches.length > 0 ? phaseMatches : null;
-      })
-      .filter(r => r !== null);
-
-    rounds.push(...eliminationRounds);
+  if (eliminationPhases.length === 0) {
     return rounds;
   }
 
+  const phaseOrder: { [key: string]: number } = {
+    'octavos': 1, 'cuartos': 2, 'semifinal': 3, 'semifinals': 3, 'final': 4, 'finals': 4
+  };
+
+  const sortedPhases = eliminationPhases.sort((a, b) => {
+    const orderA = phaseOrder[a.toLowerCase()] || 99;
+    const orderB = phaseOrder[b.toLowerCase()] || 99;
+    return orderA - orderB;
+  });
+
+
+  sortedPhases.forEach(phase => {
+    const phaseGames = category.elimination[phase] || [];
+
+    const phaseMatches = phaseGames.map((game: any, index: number) => {
+      const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
+
+      const jugador1 = this.getPlayersFromEliminationCouple(game.couple_1);
+      const jugador2 = this.getPlayersFromEliminationCouple(game.couple_2);
+
+     
+
+      return {
+        jugador1,
+        jugador2,
+        ganador: this.getWinnerFromEliminationGame(game, jugador1, jugador2),
+        groupName: phase,
+        id: game.game_id || game.id || null,
+        couple1Id: null, 
+        couple2Id: null, 
+        nextMatchIndex,
+        scores1: game.scores1 || [0, 0, 0],
+        scores2: game.scores2 || [0, 0, 0],
+        date: game.date,
+        start_time: game.start_time,
+        end_time: game.end_time,
+        court: game.court,
+        status_game: game.status_game || 'Not started'
+      };
+    });
+
+    if (phaseMatches.length > 0) {
+      rounds.push(phaseMatches);
+    }
+  });
+
+  return rounds;
+}
+
+private getPlayersFromEliminationCouple(couple: any[]): any[] {
+  if (!couple || !Array.isArray(couple) || couple.length === 0) {
+    return [{ name: 'Por asignar' }];
+  }
+
+  return couple.map(player => ({
+    name: player.name || 'Jugador sin nombre',
+    level: player.level,
+    tournament_victories: player.tournament_victories
+  }));
+}
+
+private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]): any | null {
+  if (!game.winner_id) return null;
+
+  return null; 
+}
+
+  private getPlayersFromCouple(couple: any): any[] {
+    if (!couple) return [{ name: 'Por asignar' }];
+    if (couple.pending) return [{ name: couple.pending }];
+    return couple.players || [{ name: 'Por asignar' }];
+  }
+
+  private getWinnerFromGame(game: any): any | null {
+    if (!game.winner_id) return null;
+
+    if (game.winner_id === game.couple_1?.id) {
+      return game.couple_1?.players || null;
+    }
+    if (game.winner_id === game.couple_2?.id) {
+      return game.couple_2?.players || null;
+    }
+    return null;
+  }
 
   private calculateNextMatchIndex(phase: string, index: number): number | null {
     if (phase === 'final') return null;
@@ -442,13 +452,11 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private getExpectedMatchesForPhase(phase: string): number {
-    // casos especiales
     if (phase === 'final') return 1;
     if (phase === 'semifinal') return 2;
     if (phase === 'cuartos') return 4;
     if (phase === 'octavos') return 8;
 
-    // buscar número al inicio (ej: "32avos")
     const num = parseInt(phase);
 
     if (!isNaN(num)) return num / 2;
@@ -546,7 +554,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const jugador2Safe = this.getSafePlayers(partido.jugador2);
     const ganador = partido.ganador || null;
 
-    // Fondo del partido
     g.append('rect')
       .attr('width', this.matchWidth)
       .attr('height', this.matchHeight)
@@ -556,14 +563,12 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('rx', 12)
       .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
 
-    // Jugadores
     const isPlayer1Winner = ganador && this.arePlayersEqual(ganador, jugador1Safe);
     const isPlayer2Winner = ganador && this.arePlayersEqual(ganador, jugador2Safe);
 
     this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
     this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
 
-    // Nombres
     this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
     this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
 
@@ -724,82 +729,71 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     this.dialogRef.close();
   }
 
-  abrirPartidosGrupo(group: any) {
-    // Crear datos dummy para el modal
-    const dummyGames = this.createDummyGamesForGroup(group);
+  abrirPartidosGrupo(groupStanding: any) {
+    console.log('Group standing recibido:', groupStanding);
+
+    const category = this.filteredBracket[0];
+    const groupComplete = category.groups?.find((g: any) => g.group_name === groupStanding.groupName);
+
+    console.log('Grupo completo encontrado:', groupComplete);
+
+    if (!groupComplete) {
+      console.error('No se encontró el grupo completo');
+      return;
+    }
+
+    const realGames = this.mapRealGamesForGroup(groupComplete);
+
+    console.log('Games mapeados para el modal:', realGames);
 
     const dialogRef = this.dialog.open(MatchesGrupoDialogComponent, {
       width: '900px',
       maxWidth: '95vw',
-      data: { games: dummyGames }
+      data: { games: realGames }
     });
 
     dialogRef.afterClosed().subscribe(updatedGames => {
       if (updatedGames) {
         console.log('Juegos actualizados:', updatedGames);
-        // Aquí podrías actualizar los datos en tu componente principal
-        // Por ejemplo: this.actualizarResultadosGrupo(updatedGames);
       }
     });
   }
 
-  // Función para crear datos dummy del grupo
-  private createDummyGamesForGroup(group: any): any[] {
-    const standings = group.standings || [];
+  private mapRealGamesForGroup(group: any): any[] {
+    const realGames = group.games || [];
+    console.log('Games originales del grupo:', realGames);
 
-    // Si no hay suficientes equipos, retornar array vacío
-    if (standings.length < 2) return [];
-
-    // Crear partidos round-robin entre todos los equipos del grupo
-    const games = [];
-
-    for (let i = 0; i < standings.length; i++) {
-      for (let j = i + 1; j < standings.length; j++) {
-        const team1 = standings[i];
-        const team2 = standings[j];
-
-        games.push({
-          game_id: this.generateGameId(group.groupName, i, j),
-          phase: "group",
-          status_game: "Not started",
-          winner_id: null,
-          couple_1: {
-            id: team1.coupleId,
-            players: this.parsePlayerNames(team1.teamName)
-          },
-          couple_2: {
-            id: team2.coupleId,
-            players: this.parsePlayerNames(team2.teamName)
-          },
-          court: "Cancha " + (Math.floor(Math.random() * 3) + 1),
-          date: "2024-01-15",
-          start_time: "10:00:00",
-          end_time: "11:00:00",
-          sets: [
-            { set_number: 1, score_1: 0, score_2: 0 },
-            { set_number: 2, score_1: 0, score_2: 0 },
-            { set_number: 3, score_1: 0, score_2: 0 }
-          ]
-        });
-      }
-    }
-
-    return games;
+    return realGames.map((game: any) => {
+      return {
+        game_id: game.game_id,
+        phase: "group",
+        status_game: game.status_game || "Not started",
+        winner_id: game.winner_id || null,
+        couple_1: {
+          id: game.couple_1?.id,
+          players: game.couple_1?.players || [{ name: 'Por asignar' }]
+        },
+        couple_2: {
+          id: game.couple_2?.id,
+          players: game.couple_2?.players || [{ name: 'Por asignar' }]
+        },
+        court: game.court || "Por definir",
+        date: game.date || "2024-01-15",
+        start_time: game.start_time || "10:00:00",
+        end_time: game.end_time || "11:00:00",
+        sets: game.sets || [
+          { set_number: 1, score_1: 0, score_2: 0 },
+          { set_number: 2, score_1: 0, score_2: 0 },
+          { set_number: 3, score_1: 0, score_2: 0 }
+        ],
+        label: game.label,
+        group_name: group.group_name
+      };
+    });
   }
 
-  private generateGameId(groupName: string, i: number, j: number): number {
-    return parseInt(`${groupName.charCodeAt(0)}${i}${j}${Date.now().toString().slice(-4)}`);
-  }
 
-  // Helper para parsear nombres de jugadores desde el string del equipo
-  private parsePlayerNames(teamName: string): any[] {
-    // Asumiendo que teamName es "Jugador1 / Jugador2"
-    const names = teamName.split('/').map(name => name.trim());
-    return names.map((name, index) => ({
-      id: index + 1,
-      name: name,
-      photo: "https://qapadel.sfo3.digitaloceanspaces.com/logo_mexpadel.png",
-      level: "1"
-    }));
-  }
+
+
+
 }
