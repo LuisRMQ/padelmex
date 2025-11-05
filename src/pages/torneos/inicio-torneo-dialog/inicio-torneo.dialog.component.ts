@@ -295,24 +295,18 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       const category = this.filteredBracket[0];
       const allRounds = this.mapToPartidos(category);
 
-      // DEBUG: Ver qué rondas tenemos
-      console.log('Todas las rondas:', allRounds.map(r => ({
-        name: r[0]?.groupName,
-        count: r.length
-      })));
+      console.log('Todas las rondas:', allRounds);
 
-      // Obtener solo las rondas de eliminación (las últimas 4)
-      const eliminationRounds = allRounds.slice(-4); // Cambio aquí: usar slice(-4) para tomar las últimas 4 rondas
+      let eliminationRounds = allRounds.filter(r => r && r.length > 0);
 
-      // DEBUG: Ver las rondas de eliminación que vamos a mostrar
-      console.log('Rondas de eliminación a mostrar:', eliminationRounds.map(r => ({
-        name: r[0]?.groupName,
-        count: r.length
-      })));
+      // ✅ ORDENAR las rondas por mayor cantidad de partidos (32avos → ... → final)
+      eliminationRounds = eliminationRounds.sort((a, b) => b.length - a.length);
 
-      // Si no hay suficientes rondas, usar estructura básica
+      console.log("Rondas de eliminación reales:", eliminationRounds);
+
       if (eliminationRounds.length === 0) {
-        eliminationRounds.push(...this.createBasicEliminationStructure());
+        console.warn("No hay rondas eliminatorias para mostrar");
+        return;
       }
 
       const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + 120;
@@ -350,7 +344,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private mapToPartidos(category: any): Partido[][] {
     const rounds: Partido[][] = [];
 
-    // Fase de grupos
+    // ✅ Fase de grupos
     const groupRound: Partido[] = [];
     category.groups?.forEach((group: any) => {
       const rankById: { [id: number]: any } = {};
@@ -382,54 +376,64 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     if (groupRound.length) rounds.push(groupRound);
 
-    // Fase de eliminación
-    const eliminationOrder = ['octavos', 'cuartos', 'semifinal', 'final'];
-    const eliminationRounds = eliminationOrder.map(phase => {
-      const phaseGames = category.elimination?.[phase] || [];
-      const phaseMatches = phaseGames.map((game: any, index: number) => {
-        const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
+    // ✅ Fase de eliminación dinámica
+    const eliminationPhases = Object.keys(category.elimination || {});
 
-        const jugador1 = game.couple_1?.pending ? [{ name: game.couple_1.pending }] :
-          game.couple_1?.players || [{ name: 'Por asignar' }];
+    // Ordenar por número de partidos (de mayor → menor)
+    const eliminationOrder = eliminationPhases.sort(
+      (a, b) => (category.elimination[b]?.length || 0) - (category.elimination[a]?.length || 0)
+    );
 
-        const jugador2 = game.couple_2?.pending ? [{ name: game.couple_2.pending }] :
-          game.couple_2?.players || [{ name: 'Por asignar' }];
+    const eliminationRounds = eliminationOrder
+      .map(phase => {
+        const phaseGames = category.elimination?.[phase] || [];
 
-        return {
-          jugador1,
-          jugador2,
-          ganador: game.winner_id ?
-            (game.winner_id === game.couple_1?.id ? game.couple_1?.players :
-              game.winner_id === game.couple_2?.id ? game.couple_2?.players : null) : null,
-          groupName: phase,
-          id: game.game_id || null,
-          couple1Id: game.couple_1?.id,
-          couple2Id: game.couple_2?.id,
-          nextMatchIndex,
-          scores1: game.scores1 || [0, 0, 0],
-          scores2: game.scores2 || [0, 0, 0],
-          date: game.date,
-          start_time: game.start_time,
-          end_time: game.end_time,
-          court: game.court,
-          status_game: game.status_game || 'Not started'
-        };
-      });
+        const phaseMatches = phaseGames
+          .filter((game: any) => game.couple_1 || game.couple_2 || game.couple_1?.pending || game.couple_2?.pending)
+          .map((game: any, index: number) => {
+            const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
 
-      // Crear estructura vacía si no hay partidos
-      if (phaseMatches.length === 0) {
-        const expectedMatches = this.getExpectedMatchesForPhase(phase);
-        for (let i = 0; i < expectedMatches; i++) {
-          phaseMatches.push(this.createEmptyMatch(phase, i));
-        }
-      }
+            const jugador1 = game.couple_1?.pending
+              ? [{ name: game.couple_1.pending }]
+              : game.couple_1?.players || [{ name: 'Por asignar' }];
 
-      return phaseMatches;
-    });
+            const jugador2 = game.couple_2?.pending
+              ? [{ name: game.couple_2.pending }]
+              : game.couple_2?.players || [{ name: 'Por asignar' }];
+
+            return {
+              jugador1,
+              jugador2,
+              ganador: game.winner_id
+                ? (game.winner_id === game.couple_1?.id
+                  ? game.couple_1?.players
+                  : game.winner_id === game.couple_2?.id
+                    ? game.couple_2?.players
+                    : null)
+                : null,
+              groupName: phase,
+              id: game.game_id || null,
+              couple1Id: game.couple_1?.id,
+              couple2Id: game.couple_2?.id,
+              nextMatchIndex,
+              scores1: game.scores1 || [0, 0, 0],
+              scores2: game.scores2 || [0, 0, 0],
+              date: game.date,
+              start_time: game.start_time,
+              end_time: game.end_time,
+              court: game.court,
+              status_game: game.status_game || 'Not started'
+            };
+          });
+
+        return phaseMatches.length > 0 ? phaseMatches : null;
+      })
+      .filter(r => r !== null);
 
     rounds.push(...eliminationRounds);
     return rounds;
   }
+
 
   private calculateNextMatchIndex(phase: string, index: number): number | null {
     if (phase === 'final') return null;
@@ -437,11 +441,20 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private getExpectedMatchesForPhase(phase: string): number {
-    const phaseMatches: { [key: string]: number } = {
-      'octavos': 8, 'cuartos': 4, 'semifinal': 2, 'final': 1
-    };
-    return phaseMatches[phase] || 0;
+    // casos especiales
+    if (phase === 'final') return 1;
+    if (phase === 'semifinal') return 2;
+    if (phase === 'cuartos') return 4;
+    if (phase === 'octavos') return 8;
+
+    // buscar número al inicio (ej: "32avos")
+    const num = parseInt(phase);
+
+    if (!isNaN(num)) return num / 2;
+
+    return 0;
   }
+
 
   private createEmptyMatch(phase: string, index: number): Partido {
     return {
