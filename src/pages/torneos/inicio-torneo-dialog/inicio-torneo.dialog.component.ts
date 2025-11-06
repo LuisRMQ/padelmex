@@ -160,17 +160,17 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
       width: '700px',
       data: { partido, roundIndex, matchIndex },
-      disableClose: false, 
+      disableClose: false,
 
     });
 
     dialogRef.afterClosed().subscribe(result => {
-        this.limpiarContenedores();
-        this.cargarBracket();
-       setTimeout(() => {
+      this.limpiarContenedores();
+      this.cargarBracket();
+      setTimeout(() => {
         this.drawBracketSets();
       }, 200);
-    
+
     });
   }
 
@@ -208,7 +208,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           partido.scores1 = sortedSets.map((set: any) => set.score_1);
           partido.scores2 = sortedSets.map((set: any) => set.score_2);
         }
-        // CORREGIDO: Usar gameDetail.winner?.id en lugar de gameDetail.winner_id
         partido.winner_id = gameDetail.winner?.id || null;
         partido.status_game = gameDetail.status_game || 'Not started';
       }
@@ -224,7 +223,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       const sets = gameDetail.sets?.sort((a: any, b: any) => a.set_number - b.set_number);
       return {
         ...g,
-        // CORREGIDO: Usar gameDetail.winner?.id
         winner_id: gameDetail.winner?.id ?? g.winner_id,
         scores1: sets ? sets.map((s: any) => s.score_1) : (gameDetail.scores1 ?? g.scores1),
         scores2: sets ? sets.map((s: any) => s.score_2) : (gameDetail.scores2 ?? g.scores2),
@@ -234,7 +232,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     const category = this.filteredBracket[0];
 
-    // Buscar y actualizar en groups
     category.groups?.forEach((grp: any) => {
       grp.games?.forEach((g: any, i: number) => {
         if ((g.game_id ?? g.id) === gameId) {
@@ -243,7 +240,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       });
     });
 
-    // Buscar y actualizar en elimination
     if (category.elimination) {
       Object.keys(category.elimination).forEach(phaseKey => {
         const arr = category.elimination[phaseKey];
@@ -282,7 +278,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           match.scores1 = sortedSets.map(set => set.score_1);
           match.scores2 = sortedSets.map(set => set.score_2);
         }
-        // CORREGIDO: Usar gameDetail.winner?.id
         match.winner_id = gameDetail.winner?.couple_id || null;
         match.status_game = gameDetail.status_game || 'Not started';
       }
@@ -302,60 +297,120 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   `;
   }
 
-  // BRACKET DRAWING METHODS
-  private drawBracketSets() {
-    if (!this.bracketContainerSets?.nativeElement || !this.filteredBracket?.[0]) return;
+private drawBracketSets() {
+  if (!this.bracketContainerSets?.nativeElement || !this.filteredBracket?.[0]) return;
 
-    const container = this.bracketContainerSets.nativeElement as HTMLElement;
-    d3.select(container).selectAll('*').remove();
+  const container = this.bracketContainerSets.nativeElement as HTMLElement;
+  d3.select(container).selectAll('*').remove();
 
-    try {
-      const category = this.filteredBracket[0];
-      console.log('🔍 CATEGORÍA COMPLETA:', category);
+  try {
+    const category = this.filteredBracket[0];
+    console.log('🔍 CATEGORÍA COMPLETA:', category);
 
-      const allRounds = this.mapToPartidos(category);
-      console.log('🔍 PARTIDOS MAPEADOS:', allRounds);
+    const allRounds = this.mapToPartidos(category);
+    console.log('🔍 PARTIDOS MAPEADOS:', allRounds);
 
-      const eliminationRounds = allRounds
-        .filter(r => Array.isArray(r) && r.length > 0);
+    const eliminationRounds = allRounds.filter(r => Array.isArray(r) && r.length > 0);
 
-
-      if (eliminationRounds.length === 0) {
-        this.showEmptyState(container);
-        return;
-      }
-
-      const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + 120;
-      const maxMatches = Math.max(...eliminationRounds.map(r => r.length));
-      const totalHeight = Math.max(600, maxMatches * (this.matchHeight + this.verticalSpacing) + 200);
-
-      const svg = d3.select(container).append('svg')
-        .attr('width', totalWidth)
-        .attr('height', totalHeight)
-        .attr('class', 'bracket-svg')
-        .style('background', '#f8fafc')
-        .style('border-radius', '8px');
-
-      const gContainer = svg.append('g').attr('class', 'bracket-container');
-
-      this.calculatePositionsForElimination(eliminationRounds, totalWidth, totalHeight);
-      this.drawRoundBackgrounds(eliminationRounds, gContainer);
-
-      eliminationRounds.forEach((ronda, roundIndex) => {
-        this.drawRoundTitle(ronda, roundIndex, gContainer);
-        ronda.forEach((partido, matchIndex) => {
-          this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
-        });
-        if (roundIndex < eliminationRounds.length - 1) {
-          this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
-        }
-      });
-
-    } catch (error) {
-      console.error('💥 Error al dibujar bracket:', error);
-      this.showErrorState(container);
+    if (eliminationRounds.length === 0) {
+      this.showEmptyState(container);
+      return;
     }
+
+    const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + 300;
+    const maxMatches = Math.max(...eliminationRounds.map(r => r.length));
+    const totalHeight = Math.max(600, maxMatches * (this.matchHeight + this.verticalSpacing) + 200);
+
+    const svg = d3.select(container).append('svg')
+      .attr('width', totalWidth + 150)
+      .attr('height', totalHeight + 150)
+      .attr('class', 'bracket-svg')
+      .style('background', '#f8fafc')
+      .style('border-radius', '8px');
+
+    const gContainer = svg.append('g')
+      .attr('class', 'bracket-container')
+      .attr('transform', 'translate(50, 50)');
+
+    this.calculatePositionsForElimination(eliminationRounds, totalWidth, totalHeight);
+    this.drawRoundBackgrounds(eliminationRounds, gContainer);
+
+    // === Dibujar rondas ===
+    eliminationRounds.forEach((ronda, roundIndex) => {
+      this.drawRoundTitle(ronda, roundIndex, gContainer);
+      ronda.forEach((partido, matchIndex) => {
+        this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
+      });
+      if (roundIndex < eliminationRounds.length - 1) {
+        this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
+      }
+    });
+
+    // === Dibujar cuadro del ganador final solo si existe ===
+    if (category.winner && category.winner.name && category.winner.name.trim() !== '') {
+      const ganador = category.winner.name.trim();
+      const icono = category.winner.icon || '🏆';
+
+      const finalRound = eliminationRounds[eliminationRounds.length - 1];
+      const finalMatch = finalRound?.[0];
+
+      // Si no hay coordenadas del partido final, lo centramos arriba
+      const xPos = finalMatch?.x ? finalMatch.x + this.matchWidth + 100 : totalWidth / 2 - 100;
+      const yPos = finalMatch?.y ? finalMatch.y + this.matchHeight / 2 : 80;
+
+      const rectWidth = 250;
+      const rectHeight = 90;
+
+      // Fondo del recuadro
+      gContainer.append('rect')
+        .attr('x', xPos - 40)
+        .attr('y', yPos - 45)
+        .attr('width', rectWidth)
+        .attr('height', rectHeight)
+        .attr('rx', 16)
+        .attr('fill', '#fffbea')
+        .attr('stroke', '#facc15')
+        .attr('stroke-width', 3)
+        .attr('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
+
+      // Ícono del trofeo
+      gContainer.append('text')
+        .text(icono)
+        .attr('x', xPos + rectWidth / 2 - 40)
+        .attr('y', yPos - 10)
+        .attr('font-size', '32px')
+        .attr('text-anchor', 'middle');
+
+      // Texto del nombre del ganador
+      const textElement = gContainer.append('text')
+        .text(ganador)
+        .attr('x', xPos + rectWidth / 2 - 40)
+        .attr('y', yPos + 25)
+        .attr('fill', '#1e293b')
+        .attr('font-weight', '700')
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '16px');
+
+      // Ajuste dinámico de tamaño de texto según ancho disponible
+      const maxTextWidth = rectWidth - 20;
+      let fontSize = 16;
+      const textNode = textElement.node() as SVGTextElement;
+
+      // Reducir tamaño de fuente si el texto es más ancho que el rectángulo
+      while (textNode.getComputedTextLength() > maxTextWidth && fontSize > 8) {
+        fontSize -= 1;
+        textElement.attr('font-size', `${fontSize}px`);
+      }
+    }
+
+  } catch (error) {
+    console.error('💥 Error al dibujar bracket:', error);
+    this.showErrorState(container);
   }
+}
+
+
+
 
   private mapToPartidos(category: any): Partido[][] {
     const rounds: Partido[][] = [];
@@ -553,7 +608,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private determineWinnersFromOriginalData(partido: Partido): { isPlayer1Winner: boolean, isPlayer2Winner: boolean } {
     console.log('🎯 Determinando ganador para partido:', partido.id, 'winner_id:', partido.winner_id);
 
-    // Si no hay winner_id o no está completado, no hay ganadores
     if (!partido.winner_id || partido.status_game !== 'completed') {
       console.log('❌ No hay ganador - winner_id:', partido.winner_id, 'status:', partido.status_game);
       return { isPlayer1Winner: false, isPlayer2Winner: false };
@@ -578,7 +632,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     console.log('👥 Nombres en partido:', { player1Names, player2Names });
 
-    // Buscar qué couple_id corresponde a cada equipo basado en los nombres
     let player1CoupleId: number | null = null;
     let player2CoupleId: number | null = null;
 
@@ -595,7 +648,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       }
     }
 
-    // Si encontramos las coincidencias, determinar ganadores
     if (player1CoupleId !== null || player2CoupleId !== null) {
       console.log('🏆 Comparando winner_id:', partido.winner_id, 'con couple_ids:', { player1CoupleId, player2CoupleId });
 
@@ -614,7 +666,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private getPlayerNamesFromPlayers(players: any[] | undefined): string {
     if (!players || !Array.isArray(players)) return '';
 
-    // Si es "Por asignar", retornar vacío
     if (players.length === 1 && players[0]?.name === 'Por asignar') {
       return '';
     }
@@ -629,10 +680,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private namesMatch(names1: string, names2: string): boolean {
     if (!names1 || !names2) return false;
 
-    // Normalizar nombres: quitar acentos, convertir a minúsculas, ordenar
     const normalize = (str: string) => {
       return str
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quitar acentos
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
         .toLowerCase()
         .split(',')
         .map(name => name.trim())
