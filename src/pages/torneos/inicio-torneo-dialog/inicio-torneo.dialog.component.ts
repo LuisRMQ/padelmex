@@ -158,17 +158,18 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
     const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
       width: '700px',
-      
-      data: { partido, roundIndex, matchIndex }
+      data: { partido, roundIndex, matchIndex },
+      disableClose: false, 
+
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.actualizarPartidoYRedibujar(result);
+        this.limpiarContenedores();
+        this.cargarBracket();
+       setTimeout(() => {
         this.drawBracketSets();
-      } else if (partido.id) {
-        this.loadGameDetails(partido.id);
-      }
+      }, 200);
+    
     });
   }
 

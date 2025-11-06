@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ApiBaseService } from './api.service';
 
 
@@ -19,6 +19,44 @@ export interface UserStatistic {
   club_id: number;
   club: string;
   total_reservations: number;
+}
+
+
+export interface RankingPlayer {
+  id: number;
+  name: string;
+  lastname: string;
+  point: number;
+  tournament_victories: number;
+  club_id: number;
+  profile_photo: string;
+  category: string;
+  level: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaginationLink {
+  url: string | null;
+  label: string;
+  page: number | null;
+  active: boolean;
+}
+
+export interface RankingResponse {
+  current_page: number;
+  data: RankingPlayer[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: PaginationLink[];
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
 }
 
 @Injectable({
@@ -46,4 +84,17 @@ export class EstadisticasService extends ApiBaseService {
   getUserWithMostReservationByClub(): Observable<UserStatistic> {
     return this.get<UserStatistic>(`/userWithMostReservationByClub`);
   }
+
+  getRanking(limit: number = 10, page: number = 1): Observable<RankingResponse> {
+    return this.get<RankingResponse>(`/ranking?per_page=${limit}&page=${page}`);
+  }
+
+
+  getTop10Ranking(): Observable<any[]> {
+    return this.get<any>('/ranking?per_page=10').pipe(
+      map(res => res.data || [])
+    );
+  }
+
+
 }

@@ -59,7 +59,6 @@ export class TorneosComponent implements OnInit {
   cargarTorneos(page: number = 1) {
   this.tournamentService.getTournamentsv({}, page).subscribe({
     next: (res) => {
-      // res.data ya es Tournament[]
       const apiTorneos = res.data || [];
       this.torneos = apiTorneos.map((t: any) => ({
         id: t.tournament_id,
@@ -262,7 +261,6 @@ verDetalles(torneo: Tournament) {
     return Array.from({ length: this.lastPage }, (_, i) => i + 1);
   }
 
-    // Navegación de paginado
   nextPage() {
     if (this.currentPage < this.lastPage) {
       this.cargarTorneos(this.currentPage + 1);

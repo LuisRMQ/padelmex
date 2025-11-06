@@ -70,10 +70,8 @@
                 <div class="ranking-row" *ngFor="let jugador of ranking">
                     <span class="ranking-pos">{{ jugador.posicion }}</span>
                     <span class="ranking-nombre">{{ jugador.nombre }}</span>
-                    <span class="ranking-movimiento {{jugador.tipo}}">
-                        {{ jugador.tipo === 'positive' ? '▲' : jugador.tipo === 'negative' ? '▼' : '■' }} {{
-                        jugador.movimiento }}
-                    </span>
+                    <span class="ranking-nombre">{{ jugador.puntos }}</span>
+
                 </div>
             </div>
         </div>
