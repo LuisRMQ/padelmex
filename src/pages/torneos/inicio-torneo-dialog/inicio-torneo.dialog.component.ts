@@ -18,7 +18,7 @@ export interface Partido {
   id?: number | null;
   jugador1?: any[];
   jugador2?: any[];
-  ganador?: any | null;
+  winner_id?: any | null;
   x?: number;
   y?: number;
   height?: number;
@@ -33,6 +33,7 @@ export interface Partido {
   end_time?: string | null;
   court?: string | null;
   status_game?: string | null;
+  
 }
 
 export interface RankingItem {
@@ -157,6 +158,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
     const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
       width: '700px',
+      
       data: { partido, roundIndex, matchIndex }
     });
 
@@ -335,7 +337,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       this.drawRoundBackgrounds(eliminationRounds, gContainer);
 
       eliminationRounds.forEach((ronda, roundIndex) => {
-        console.log(`🎯 Dibujando ronda ${roundIndex}:`, ronda[0]?.groupName, 'con', ronda.length, 'partidos');
         this.drawRoundTitle(ronda, roundIndex, gContainer);
         ronda.forEach((partido, matchIndex) => {
           this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
@@ -469,7 +470,7 @@ private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]
     return {
       jugador1: [{ name: 'Por asignar' }],
       jugador2: [{ name: 'Por asignar' }],
-      ganador: null,
+      winner_id: null,
       groupName: phase,
       id: null,
       couple1Id: null,
@@ -548,33 +549,41 @@ private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]
   }
 
   private drawModernEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
-    const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
+  console.log('🧠 Partido:', partido);
 
-    const jugador1Safe = this.getSafePlayers(partido.jugador1);
-    const jugador2Safe = this.getSafePlayers(partido.jugador2);
-    const ganador = partido.ganador || null;
+  const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
 
-    g.append('rect')
-      .attr('width', this.matchWidth)
-      .attr('height', this.matchHeight)
-      .attr('fill', '#ffffff')
-      .attr('stroke', '#e2e8f0')
-      .attr('stroke-width', 2)
-      .attr('rx', 12)
-      .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
+  const jugador1Safe = this.getSafePlayers(partido.jugador1);
+  const jugador2Safe = this.getSafePlayers(partido.jugador2);
+  const ganador = partido.winner_id || null;
 
-    const isPlayer1Winner = ganador && this.arePlayersEqual(ganador, jugador1Safe);
-    const isPlayer2Winner = ganador && this.arePlayersEqual(ganador, jugador2Safe);
+  console.log('🎯 Ganador:', ganador);
+  console.log('👤 Jugador1:', jugador1Safe);
+  console.log('👤 Jugador2:', jugador2Safe);
 
-    this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
-    this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
+  const isPlayer1Winner = ganador && this.arePlayersEqual(ganador, jugador1Safe);
+  const isPlayer2Winner = ganador && this.arePlayersEqual(ganador, jugador2Safe);
 
-    this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
-    this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
+  console.log('🏆 isPlayer1Winner:', isPlayer1Winner, ' | isPlayer2Winner:', isPlayer2Winner);
 
-    g.style('cursor', 'pointer')
-      .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
-  }
+  g.append('rect')
+    .attr('width', this.matchWidth)
+    .attr('height', this.matchHeight)
+    .attr('fill', '#ffffff')
+    .attr('stroke', '#e2e8f0')
+    .attr('stroke-width', 2)
+    .attr('rx', 12)
+    .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
+
+  this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
+  this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
+
+  this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
+  this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
+
+  g.style('cursor', 'pointer')
+    .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+}
 
   private getSafePlayers(players: any[] | undefined): any[] {
     return (players?.length && players[0]?.name && players[0].name !== 'Por asignar') ?
@@ -749,13 +758,15 @@ private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]
     const dialogRef = this.dialog.open(MatchesGrupoDialogComponent, {
       width: '900px',
       maxWidth: '95vw',
+      disableClose: false, 
+
       data: { games: realGames }
     });
 
-    dialogRef.afterClosed().subscribe(updatedGames => {
-      if (updatedGames) {
-        console.log('Juegos actualizados:', updatedGames);
-      }
+    dialogRef.afterClosed().subscribe(result => {
+        this.cargarBracket();
+
+        
     });
   }
 
