@@ -38,6 +38,55 @@
 }
 
 /* ===================== */
+/* Banner de Ganadores */
+.winner-banner {
+  background: white;
+  color: white;
+  padding: 20px;
+  margin: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.winner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.trophy-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #FFD700;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.winner-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.winner-label {
+  font-size: 0.9em;
+  opacity: 0.9;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.winner-names {
+  font-size: 1.2em;
+  font-weight: 700;
+  text-align: center;
+  color: #2c3e50;
+}
+
+/* ===================== */
 /* Contenido */
 .modern-content {
   padding: 24px;
@@ -79,6 +128,9 @@
   border-bottom: 2px solid;
   margin-bottom: 16px;
   padding-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .team-1 .team-header {
@@ -150,7 +202,7 @@
 }
 
 /* ===================== */
-/* Sets - MODIFICADO: Todos los sets en una línea */
+/* Sets */
 .sets-container {
   flex: 1;
   background: #f8fafc;
@@ -164,7 +216,7 @@
 
 .sets-grid {
   display: flex;
-  flex-direction: row; /* Cambiado de column a row */
+  flex-direction: row;
   gap: 20px;
   width: 100%;
   max-width: 260px;
@@ -214,6 +266,30 @@
 .team-2 .set-input input:focus {
   border-color: #e74c3c;
   box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.set-input.disabled input {
+  background-color: #f5f5f5;
+  border-color: #ddd;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.set-saved-indicator {
+  color: #4caf50;
+}
+
+/* Indicador de ganador en los equipos */
+.winner-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.winner-indicator mat-icon {
+  color: #4caf50;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 /* ===================== */
@@ -273,6 +349,25 @@
 }
 
 /* ===================== */
+/* Mensaje de partido completado */
+.completed-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #e8f5e8;
+  color: #2e7d32;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+.completed-message mat-icon {
+  color: #4caf50;
+}
+
+/* ===================== */
 /* Footer */
 .modern-actions {
   display: flex;
@@ -328,6 +423,12 @@
   
   .team-info {
     padding: 16px;
+  }
+  
+  .winner-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 }
 

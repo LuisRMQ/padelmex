@@ -8,6 +8,17 @@
     </div>
   </div>
 
+  <!-- Banner de Ganadores - Ahora entre el header y el contenido -->
+  <div *ngIf="isGameCompleted && gameDetail?.winner" class="winner-banner">
+    <div class="winner-content">
+      <mat-icon class="trophy-icon">emoji_events</mat-icon>
+      <div class="winner-info">
+        <span class="winner-label">Ganadores</span>
+        <span class="winner-names">{{ getWinnerNames() }}</span>
+      </div>
+    </div>
+  </div>
+
   <mat-dialog-content class="modern-content">
     
     <!-- Loading Spinner solo durante carga inicial -->
@@ -24,9 +35,8 @@
         <div class="team-info">
           <div class="team-header">
             <h3 class="team-title">Equipo 1</h3>
-            <div *ngIf="isGameCompleted && gameDetail?.winner" class="winner-badge">
-              <mat-icon *ngIf="isWinningTeam(1)">emoji_events</mat-icon>
-              {{ isWinningTeam(1) ? 'Ganador' : '' }}
+            <div *ngIf="isGameCompleted && gameDetail?.winner" class="winner-indicator">
+              <mat-icon *ngIf="isWinningTeam(1)">check_circle</mat-icon>
             </div>
           </div>
 
@@ -79,9 +89,8 @@
         <div class="team-info">
           <div class="team-header">
             <h3 class="team-title">Equipo 2</h3>
-            <div *ngIf="isGameCompleted && gameDetail?.winner" class="winner-badge">
-              <mat-icon *ngIf="isWinningTeam(2)">emoji_events</mat-icon>
-              {{ isWinningTeam(2) ? 'Ganador' : '' }}
+            <div *ngIf="isGameCompleted && gameDetail?.winner" class="winner-indicator">
+              <mat-icon *ngIf="isWinningTeam(2)">check_circle</mat-icon>
             </div>
           </div>
 

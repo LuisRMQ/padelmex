@@ -462,4 +462,77 @@ export class RegistrarGanadorDialogComponent {
     onImgError(event: Event) {
         (event.target as HTMLImageElement).src = '../../../assets/images/iconuser.png';
     }
+
+    // Método para determinar qué equipo va ganando en tiempo real
+    getWinningTeam(): number | null {
+        if (this.isGameCompleted) {
+            return this.isWinningTeam(1) ? 1 : this.isWinningTeam(2) ? 2 : null;
+        }
+
+        // Calcular sets ganados en tiempo real
+        let setsGanados1 = 0;
+        let setsGanados2 = 0;
+
+        // Set 1
+        if (this.score1_set1 !== null && this.score2_set1 !== null) {
+            if (this.score1_set1 > this.score2_set1) setsGanados1++;
+            else if (this.score2_set1 > this.score1_set1) setsGanados2++;
+        }
+
+        // Set 2
+        if (this.score1_set2 !== null && this.score2_set2 !== null) {
+            if (this.score1_set2 > this.score2_set2) setsGanados1++;
+            else if (this.score2_set2 > this.score1_set2) setsGanados2++;
+        }
+
+        // Set 3
+        if (this.score1_set3 !== null && this.score2_set3 !== null) {
+            if (this.score1_set3 > this.score2_set3) setsGanados1++;
+            else if (this.score2_set3 > this.score1_set3) setsGanados2++;
+        }
+
+        if (setsGanados1 > setsGanados2) return 1;
+        if (setsGanados2 > setsGanados1) return 2;
+        return null; // Empate
+    }
+
+    // Método para obtener el marcador actual
+    getCurrentScore(): string {
+        let setsGanados1 = 0;
+        let setsGanados2 = 0;
+
+        if (this.score1_set1 !== null && this.score2_set1 !== null && this.score1_set1 !== this.score2_set1) {
+            if (this.score1_set1 > this.score2_set1) setsGanados1++;
+            else setsGanados2++;
+        }
+
+        if (this.score1_set2 !== null && this.score2_set2 !== null && this.score1_set2 !== this.score2_set2) {
+            if (this.score1_set2 > this.score2_set2) setsGanados1++;
+            else setsGanados2++;
+        }
+
+        if (this.score1_set3 !== null && this.score2_set3 !== null && this.score1_set3 !== this.score2_set3) {
+            if (this.score1_set3 > this.score2_set3) setsGanados1++;
+            else setsGanados2++;
+        }
+
+        return `${setsGanados1} - ${setsGanados2}`;
+    }
+
+    // Método para verificar si un equipo está ganando en tiempo real
+    isTeamWinning(teamNumber: number): boolean {
+        const winningTeam = this.getWinningTeam();
+        return winningTeam === teamNumber;
+    }
+
+    // Método para obtener los nombres de los ganadores
+    getWinnerNames(): string {
+        if (!this.gameDetail?.winner?.players || !Array.isArray(this.gameDetail.winner.players)) {
+            return 'Ganador no definido';
+        }
+
+        return this.gameDetail.winner.players
+            .map(player => player?.name || 'Jugador')
+            .join(' / ');
+    }
 }

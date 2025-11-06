@@ -49,17 +49,29 @@
             <div class="sets-container">
               <h4>Sets</h4>
               <div class="sets-grid">
-                <div *ngFor="let set of game.sets; let setIndex = index" class="set-input-group">
-                  <span class="set-label">Set {{ set.set_number }}</span>
+                <div *ngFor="let set of game.sets; let setIndex = index" 
+                     class="set-input-group"
+                     [class.disabled]="!isSetEnabled(game, setIndex)">
+                  
+                  <div class="set-header">
+                    <span class="set-label">Set {{ set.set_number }}</span>
+                    <span *ngIf="set.is_completed" class="set-completed-badge">
+                      <mat-icon>check_circle</mat-icon>
+                      Completado
+                    </span>
+                  </div>
+
                   <div class="score-inputs">
                     <input 
                       type="number" 
                       min="0" 
                       max="50"
                       [value]="set.score_1"
-                      (change)="updateSetScore(game, setIndex, 1, $any($event.target).value)"
+                      (input)="updateSetScore(game, setIndex, 1, $any($event.target).value)"
                       class="score-input"
                       [class.winner]="set.winner === 1"
+                      [disabled]="!isSetEnabled(game, setIndex) || set.is_completed"
+                      placeholder="0"
                     >
                     <span class="score-separator">-</span>
                     <input 
@@ -67,12 +79,52 @@
                       min="0" 
                       max="50"
                       [value]="set.score_2"
-                      (change)="updateSetScore(game, setIndex, 2, $any($event.target).value)"
+                      (input)="updateSetScore(game, setIndex, 2, $any($event.target).value)"
                       class="score-input"
                       [class.winner]="set.winner === 2"
+                      [disabled]="!isSetEnabled(game, setIndex) || set.is_completed"
+                      placeholder="0"
                     >
                   </div>
+
+                  <div class="set-actions">
+                    <button 
+                      mat-raised-button 
+                      color="primary" 
+                      (click)="saveSet(game, setIndex)"
+                      [disabled]="isSaveSetDisabled(game, setIndex)"
+                      class="save-set-btn"
+                      *ngIf="!set.is_completed"
+                    >
+                      <mat-spinner 
+                        diameter="16" 
+                        *ngIf="isSavingSet(game, setIndex)"
+                        class="set-spinner"
+                      ></mat-spinner>
+                      <mat-icon *ngIf="!isSavingSet(game, setIndex)">save</mat-icon>
+                      {{ getSetButtonText(set) }}
+                    </button>
+                  </div>
+
+                  <div class="set-instruction" *ngIf="!isSetEnabled(game, setIndex) && !set.is_completed">
+                    <small>
+                      <span *ngIf="setIndex === 1">Completa el Set 1 primero</span>
+                      <span *ngIf="setIndex === 2">Habilítase solo si hay empate 1-1</span>
+                    </small>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            <!-- Marcador actual -->
+            <div class="current-score" *ngIf="getTeamScore(game.sets, 1) > 0 || getTeamScore(game.sets, 2) > 0">
+              <h4>Marcador Actual</h4>
+              <div class="score-display">
+                <span class="score-team">{{ getPlayerNames(game.couple_1.players) }}</span>
+                <span class="score-value">{{ getTeamScore(game.sets, 1) }}</span>
+                <span class="score-separator">-</span>
+                <span class="score-value">{{ getTeamScore(game.sets, 2) }}</span>
+                <span class="score-team">{{ getPlayerNames(game.couple_2.players) }}</span>
               </div>
             </div>
 
@@ -88,21 +140,12 @@
               </div>
             </div>
           </mat-card-content>
-
-          <mat-card-actions>
-            <button 
-              mat-raised-button 
-              color="primary" 
-              (click)="saveGame(game)"
-              [disabled]="!canSaveGame(game)"
-              class="save-btn"
-            >
-              <mat-icon>save</mat-icon>
-              Guardar Resultado
-            </button>
-          </mat-card-actions>
         </mat-card>
       </div>
     </div>
   </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="close()">Cerrar</button>
+  </mat-dialog-actions>
 </div>

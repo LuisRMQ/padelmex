@@ -261,3 +261,115 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Agrega estos estilos a tu CSS existente */
+
+.set-input-group.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.set-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.set-completed-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #4caf50;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.set-completed-badge mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.set-actions {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.save-set-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.set-spinner {
+  margin-right: 8px;
+}
+
+.set-instruction {
+  margin-top: 4px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.current-score {
+  margin: 16px 0;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.current-score h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.score-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.score-team {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+}
+
+.score-value {
+  font-size: 24px;
+  color: #2196f3;
+  min-width: 30px;
+  text-align: center;
+}
+
+.score-separator {
+  font-size: 18px;
+  font-weight: 700;
+  color: #666;
+}
+
+/* Mejoras para inputs deshabilitados */
+.score-input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .score-display {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .score-team {
+    flex: none;
+  }
+}

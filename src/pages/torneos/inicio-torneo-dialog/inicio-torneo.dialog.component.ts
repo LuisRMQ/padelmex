@@ -33,7 +33,8 @@ export interface Partido {
   end_time?: string | null;
   court?: string | null;
   status_game?: string | null;
-  
+  // Para debug
+  _originalGame?: any;
 }
 
 export interface RankingItem {
@@ -207,7 +208,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           partido.scores1 = sortedSets.map((set: any) => set.score_1);
           partido.scores2 = sortedSets.map((set: any) => set.score_2);
         }
-        partido.ganador = gameDetail.winner?.players || null;
+        // CORREGIDO: Usar gameDetail.winner?.id en lugar de gameDetail.winner_id
+        partido.winner_id = gameDetail.winner?.id || null;
         partido.status_game = gameDetail.status_game || 'Not started';
       }
     };
@@ -222,7 +224,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       const sets = gameDetail.sets?.sort((a: any, b: any) => a.set_number - b.set_number);
       return {
         ...g,
-        winner_id: gameDetail.winner?.players?.[0]?.id ?? g.winner_id,
+        // CORREGIDO: Usar gameDetail.winner?.id
+        winner_id: gameDetail.winner?.id ?? g.winner_id,
         scores1: sets ? sets.map((s: any) => s.score_1) : (gameDetail.scores1 ?? g.scores1),
         scores2: sets ? sets.map((s: any) => s.score_2) : (gameDetail.scores2 ?? g.scores2),
         status_game: gameDetail.status_game ?? g.status_game,
@@ -279,7 +282,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           match.scores1 = sortedSets.map(set => set.score_1);
           match.scores2 = sortedSets.map(set => set.score_2);
         }
-        match.ganador = gameDetail.winner?.players || null;
+        // CORREGIDO: Usar gameDetail.winner?.id
+        match.winner_id = gameDetail.winner?.couple_id || null;
         match.status_game = gameDetail.status_game || 'Not started';
       }
     };
@@ -307,14 +311,14 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     try {
       const category = this.filteredBracket[0];
+      console.log('🔍 CATEGORÍA COMPLETA:', category);
+
       const allRounds = this.mapToPartidos(category);
+      console.log('🔍 PARTIDOS MAPEADOS:', allRounds);
 
-  
-
-     
       const eliminationRounds = allRounds
         .filter(r => Array.isArray(r) && r.length > 0);
-   
+
 
       if (eliminationRounds.length === 0) {
         this.showEmptyState(container);
@@ -354,137 +358,85 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private mapToPartidos(category: any): Partido[][] {
- 
+    const rounds: Partido[][] = [];
+    const eliminationPhases = Object.keys(category.elimination || {});
 
-  const rounds: Partido[][] = [];
-  const eliminationPhases = Object.keys(category.elimination || {});
+    if (eliminationPhases.length === 0) {
+      return rounds;
+    }
 
-  if (eliminationPhases.length === 0) {
+    const phaseOrder: { [key: string]: number } = {
+      'octavos': 1, 'cuartos': 2, 'semifinal': 3, 'semifinals': 3, 'final': 4, 'finals': 4
+    };
+
+    const sortedPhases = eliminationPhases.sort((a, b) => {
+      const orderA = phaseOrder[a.toLowerCase()] || 99;
+      const orderB = phaseOrder[b.toLowerCase()] || 99;
+      return orderA - orderB;
+    });
+
+    sortedPhases.forEach(phase => {
+      const phaseGames = category.elimination[phase] || [];
+      console.log(`🔍 Fase ${phase}:`, phaseGames);
+
+      const phaseMatches = phaseGames.map((game: any, index: number) => {
+        const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
+
+        // Preservar la estructura original completa
+        const partido: Partido = {
+          jugador1: this.getPlayersFromEliminationCouple(game.couple_1),
+          jugador2: this.getPlayersFromEliminationCouple(game.couple_2),
+          winner_id: game.winner_id || null,
+          groupName: phase,
+          id: game.game_id || game.id || null,
+          couple1Id: game.couple_1?.id || null,
+          couple2Id: game.couple_2?.id || null,
+          nextMatchIndex,
+          scores1: game.scores1 || [0, 0, 0],
+          scores2: game.scores2 || [0, 0, 0],
+          date: game.date,
+          start_time: game.start_time,
+          end_time: game.end_time,
+          court: game.court,
+          status_game: game.status_game || 'Not started',
+          // Guardar referencia al juego original para debug
+          _originalGame: game
+        };
+
+        console.log(`🎯 Partido mapeado [${phase}-${index}]:`, partido);
+        return partido;
+      });
+
+      if (phaseMatches.length > 0) {
+        rounds.push(phaseMatches);
+      }
+    });
+
     return rounds;
   }
 
-  const phaseOrder: { [key: string]: number } = {
-    'octavos': 1, 'cuartos': 2, 'semifinal': 3, 'semifinals': 3, 'final': 4, 'finals': 4
-  };
-
-  const sortedPhases = eliminationPhases.sort((a, b) => {
-    const orderA = phaseOrder[a.toLowerCase()] || 99;
-    const orderB = phaseOrder[b.toLowerCase()] || 99;
-    return orderA - orderB;
-  });
-
-
-  sortedPhases.forEach(phase => {
-    const phaseGames = category.elimination[phase] || [];
-
-    const phaseMatches = phaseGames.map((game: any, index: number) => {
-      const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
-
-      const jugador1 = this.getPlayersFromEliminationCouple(game.couple_1);
-      const jugador2 = this.getPlayersFromEliminationCouple(game.couple_2);
-
-     
-
-      return {
-        jugador1,
-        jugador2,
-        ganador: this.getWinnerFromEliminationGame(game, jugador1, jugador2),
-        groupName: phase,
-        id: game.game_id || game.id || null,
-        couple1Id: null, 
-        couple2Id: null, 
-        nextMatchIndex,
-        scores1: game.scores1 || [0, 0, 0],
-        scores2: game.scores2 || [0, 0, 0],
-        date: game.date,
-        start_time: game.start_time,
-        end_time: game.end_time,
-        court: game.court,
-        status_game: game.status_game || 'Not started'
-      };
-    });
-
-    if (phaseMatches.length > 0) {
-      rounds.push(phaseMatches);
-    }
-  });
-
-  return rounds;
-}
-
-private getPlayersFromEliminationCouple(couple: any[]): any[] {
-  if (!couple || !Array.isArray(couple) || couple.length === 0) {
-    return [{ name: 'Por asignar' }];
-  }
-
-  return couple.map(player => ({
-    name: player.name || 'Jugador sin nombre',
-    level: player.level,
-    tournament_victories: player.tournament_victories
-  }));
-}
-
-private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]): any | null {
-  if (!game.winner_id) return null;
-
-  return null; 
-}
-
-  private getPlayersFromCouple(couple: any): any[] {
-    if (!couple) return [{ name: 'Por asignar' }];
-    if (couple.pending) return [{ name: couple.pending }];
-    return couple.players || [{ name: 'Por asignar' }];
-  }
-
-  private getWinnerFromGame(game: any): any | null {
-    if (!game.winner_id) return null;
-
-    if (game.winner_id === game.couple_1?.id) {
-      return game.couple_1?.players || null;
-    }
-    if (game.winner_id === game.couple_2?.id) {
-      return game.couple_2?.players || null;
-    }
+  private extractCoupleId(couple: any): number | null {
+    if (!couple) return null;
+    if (couple.id) return couple.id;
+    if (Array.isArray(couple) && couple[0]?.couple_id) return couple[0].couple_id;
     return null;
+  }
+
+  private getPlayersFromEliminationCouple(couple: any[]): any[] {
+    if (!couple || !Array.isArray(couple) || couple.length === 0) {
+      return [{ name: 'Por asignar' }];
+    }
+
+    return couple.map(player => ({
+      name: player.name || 'Jugador sin nombre',
+      level: player.level,
+      tournament_victories: player.tournament_victories
+    }));
   }
 
   private calculateNextMatchIndex(phase: string, index: number): number | null {
     if (phase === 'final') return null;
     return Math.floor(index / 2);
-  }
-
-  private getExpectedMatchesForPhase(phase: string): number {
-    if (phase === 'final') return 1;
-    if (phase === 'semifinal') return 2;
-    if (phase === 'cuartos') return 4;
-    if (phase === 'octavos') return 8;
-
-    const num = parseInt(phase);
-
-    if (!isNaN(num)) return num / 2;
-
-    return 0;
-  }
-
-
-  private createEmptyMatch(phase: string, index: number): Partido {
-    return {
-      jugador1: [{ name: 'Por asignar' }],
-      jugador2: [{ name: 'Por asignar' }],
-      winner_id: null,
-      groupName: phase,
-      id: null,
-      couple1Id: null,
-      couple2Id: null,
-      nextMatchIndex: this.calculateNextMatchIndex(phase, index),
-      scores1: [0, 0, 0],
-      scores2: [0, 0, 0],
-      date: null,
-      start_time: null,
-      end_time: null,
-      court: null,
-      status_game: 'Not started'
-    };
   }
 
   private calculatePositionsForElimination(eliminationRounds: Partido[][], containerWidth: number, containerHeight: number) {
@@ -550,41 +502,151 @@ private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]
   }
 
   private drawModernEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
-  console.log('🧠 Partido:', partido);
+    const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
 
-  const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
+    const jugador1Safe = this.getSafePlayers(partido.jugador1);
+    const jugador2Safe = this.getSafePlayers(partido.jugador2);
 
-  const jugador1Safe = this.getSafePlayers(partido.jugador1);
-  const jugador2Safe = this.getSafePlayers(partido.jugador2);
-  const ganador = partido.winner_id || null;
+    console.log(`🎲 Dibujando partido ${partido.id}:`, {
+      player1: this.getPlayerNamesFromPlayers(partido.jugador1),
+      player2: this.getPlayerNamesFromPlayers(partido.jugador2),
+      winner_id: partido.winner_id,
+      status: partido.status_game
+    });
 
-  console.log('🎯 Ganador:', ganador);
-  console.log('👤 Jugador1:', jugador1Safe);
-  console.log('👤 Jugador2:', jugador2Safe);
+    // SOLUCIÓN MEJORADA
+    const { isPlayer1Winner, isPlayer2Winner } = this.determineWinnersFromOriginalData(partido);
 
-  const isPlayer1Winner = ganador && this.arePlayersEqual(ganador, jugador1Safe);
-  const isPlayer2Winner = ganador && this.arePlayersEqual(ganador, jugador2Safe);
+    console.log(`🏅 Partido ${partido.id} - Ganadores:`, {
+      isPlayer1Winner,
+      isPlayer2Winner,
+      expected: partido.winner_id
+    });
 
-  console.log('🏆 isPlayer1Winner:', isPlayer1Winner, ' | isPlayer2Winner:', isPlayer2Winner);
+    // Fondo del partido
+    g.append('rect')
+      .attr('width', this.matchWidth)
+      .attr('height', this.matchHeight)
+      .attr('fill', '#ffffff')
+      .attr('stroke', '#e2e8f0')
+      .attr('stroke-width', 2)
+      .attr('rx', 12)
+      .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
 
-  g.append('rect')
-    .attr('width', this.matchWidth)
-    .attr('height', this.matchHeight)
-    .attr('fill', '#ffffff')
-    .attr('stroke', '#e2e8f0')
-    .attr('stroke-width', 2)
-    .attr('rx', 12)
-    .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
+    // Jugadores - fondo verde para ganadores
+    this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
+    this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
 
-  this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
-  this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
+    // Nombres
+    this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
+    this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
 
-  this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
-  this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
+    // Indicador de ganador
+    if (partido.status_game === 'completed' && partido.winner_id) {
+      this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
+    }
 
-  g.style('cursor', 'pointer')
-    .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
-}
+    g.style('cursor', 'pointer')
+      .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+  }
+
+  private determineWinnersFromOriginalData(partido: Partido): { isPlayer1Winner: boolean, isPlayer2Winner: boolean } {
+    console.log('🎯 Determinando ganador para partido:', partido.id, 'winner_id:', partido.winner_id);
+
+    // Si no hay winner_id o no está completado, no hay ganadores
+    if (!partido.winner_id || partido.status_game !== 'completed') {
+      console.log('❌ No hay ganador - winner_id:', partido.winner_id, 'status:', partido.status_game);
+      return { isPlayer1Winner: false, isPlayer2Winner: false };
+    }
+
+    // Construir el mapa de couple_id a nombres
+    const category = this.filteredBracket[0];
+    const coupleIdToNamesMap = this.buildCoupleIdToNamesMap(category);
+
+    // Buscar el partido original
+    const originalGame = partido.id != null ? this.findOriginalGame(partido.id) : null;
+    if (!originalGame) {
+      console.log('❌ No se encontró el juego original');
+      return { isPlayer1Winner: false, isPlayer2Winner: false };
+    }
+
+    console.log('🔍 Juego original encontrado:', originalGame);
+
+    // Obtener los nombres de los equipos del partido
+    const player1Names = this.getPlayerNamesFromPlayers(partido.jugador1).toLowerCase();
+    const player2Names = this.getPlayerNamesFromPlayers(partido.jugador2).toLowerCase();
+
+    console.log('👥 Nombres en partido:', { player1Names, player2Names });
+
+    // Buscar qué couple_id corresponde a cada equipo basado en los nombres
+    let player1CoupleId: number | null = null;
+    let player2CoupleId: number | null = null;
+
+    // Buscar en el mapa por coincidencia de nombres
+    for (const [coupleId, names] of coupleIdToNamesMap.entries()) {
+      const normalizedNames = names.toLowerCase();
+      if (this.namesMatch(normalizedNames, player1Names)) {
+        player1CoupleId = coupleId;
+        console.log('✅ Player 1 coincide con couple_id:', coupleId);
+      }
+      if (this.namesMatch(normalizedNames, player2Names)) {
+        player2CoupleId = coupleId;
+        console.log('✅ Player 2 coincide con couple_id:', coupleId);
+      }
+    }
+
+    // Si encontramos las coincidencias, determinar ganadores
+    if (player1CoupleId !== null || player2CoupleId !== null) {
+      console.log('🏆 Comparando winner_id:', partido.winner_id, 'con couple_ids:', { player1CoupleId, player2CoupleId });
+
+      const isPlayer1Winner = player1CoupleId === partido.winner_id;
+      const isPlayer2Winner = player2CoupleId === partido.winner_id;
+
+      console.log('🎊 Resultado:', { isPlayer1Winner, isPlayer2Winner });
+
+      return { isPlayer1Winner, isPlayer2Winner };
+    }
+
+    console.log('❌ No se pudieron encontrar coincidencias de couple_id');
+    return { isPlayer1Winner: false, isPlayer2Winner: false };
+  }
+
+  private getPlayerNamesFromPlayers(players: any[] | undefined): string {
+    if (!players || !Array.isArray(players)) return '';
+
+    // Si es "Por asignar", retornar vacío
+    if (players.length === 1 && players[0]?.name === 'Por asignar') {
+      return '';
+    }
+
+    return players
+      .map(p => p?.name || '')
+      .filter(name => name && name !== 'Por asignar')
+      .sort()
+      .join(',');
+  }
+
+  private namesMatch(names1: string, names2: string): boolean {
+    if (!names1 || !names2) return false;
+
+    // Normalizar nombres: quitar acentos, convertir a minúsculas, ordenar
+    const normalize = (str: string) => {
+      return str
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // quitar acentos
+        .toLowerCase()
+        .split(',')
+        .map(name => name.trim())
+        .sort()
+        .join(',');
+    };
+
+    const normalized1 = normalize(names1);
+    const normalized2 = normalize(names2);
+
+    console.log('🔤 Comparando nombres:', { normalized1, normalized2 });
+
+    return normalized1 === normalized2;
+  }
 
   private getSafePlayers(players: any[] | undefined): any[] {
     return (players?.length && players[0]?.name && players[0].name !== 'Por asignar') ?
@@ -669,33 +731,6 @@ private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]
     });
   }
 
-  private createBasicEliminationStructure(): Partido[][] {
-    return [
-      { name: 'octavos', matches: 8 },
-      { name: 'cuartos', matches: 4 },
-      { name: 'semifinal', matches: 2 },
-      { name: 'final', matches: 1 }
-    ].map(round => {
-      return Array.from({ length: round.matches }, (_, i) => ({
-        jugador1: [{ name: 'Por asignar' }],
-        jugador2: [{ name: 'Por asignar' }],
-        ganador: null,
-        groupName: round.name,
-        id: null,
-        couple1Id: null,
-        couple2Id: null,
-        nextMatchIndex: round.name !== 'final' ? Math.floor(i / 2) : null,
-        scores1: [0, 0, 0],
-        scores2: [0, 0, 0],
-        date: null,
-        start_time: null,
-        end_time: null,
-        court: null,
-        status_game: 'Not started'
-      }));
-    });
-  }
-
   private showErrorState(container: HTMLElement) {
     container.innerHTML = `
       <div style="display: flex; justify-content: center; align-items: center; height: 200px; color: #dc2626;">
@@ -705,23 +740,6 @@ private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]
         </div>
       </div>
     `;
-  }
-
-  private arePlayersEqual(player1: any, player2: any[]): boolean {
-    if (!player1 || !player2 || !Array.isArray(player2)) return false;
-
-    if (Array.isArray(player1)) {
-      const names1 = player1.map(p => p?.name || '').filter(name => name).sort().join(',');
-      const names2 = player2.map(p => p?.name || '').filter(name => name).sort().join(',');
-      return names1 === names2;
-    }
-
-    if (player1.name) {
-      const names2 = player2.map(p => p?.name || '').filter(name => name).sort().join(',');
-      return player1.name === names2;
-    }
-
-    return false;
   }
 
   getPlayerNames(players?: any[]): string {
@@ -759,15 +777,15 @@ private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]
     const dialogRef = this.dialog.open(MatchesGrupoDialogComponent, {
       width: '900px',
       maxWidth: '95vw',
-      disableClose: false, 
+      disableClose: false,
 
       data: { games: realGames }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-        this.cargarBracket();
+      this.cargarBracket();
 
-        
+
     });
   }
 
@@ -804,8 +822,62 @@ private getWinnerFromEliminationGame(game: any, jugador1: any[], jugador2: any[]
     });
   }
 
+  private drawWinnerIndicator(g: any, isWinner: boolean) {
+    if (!isWinner) return;
 
+    g.append('circle')
+      .attr('cx', this.matchWidth - 15)
+      .attr('cy', this.matchHeight / 2)
+      .attr('r', 8)
+      .attr('fill', '#10b981')
+      .attr('stroke', '#059669')
+      .attr('stroke-width', 2);
 
+    g.append('text')
+      .text('✓')
+      .attr('x', this.matchWidth - 15)
+      .attr('y', this.matchHeight / 2)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
+      .attr('fill', 'white')
+      .attr('font-size', '10px')
+      .attr('font-weight', 'bold');
+  }
 
+  private buildCoupleIdToNamesMap(category: any): Map<number, string> {
+    const map = new Map<number, string>();
+
+    // Mapear desde los grupos donde tenemos la relación completa
+    if (category.groups && Array.isArray(category.groups)) {
+      category.groups.forEach((group: any) => {
+        if (group.ranking && Array.isArray(group.ranking)) {
+          group.ranking.forEach((team: any) => {
+            if (team.couple_id && team.players) {
+              const names = team.players.map((p: any) => p.name).sort().join(',');
+              map.set(team.couple_id, names);
+            }
+          });
+        }
+      });
+    }
+
+    console.log('🗺️ Mapa de couple_id a nombres:', Object.fromEntries(map));
+    return map;
+  }
+
+  private findOriginalGame(gameId: number): any {
+    const category = this.filteredBracket[0];
+    if (!category || !category.elimination) return null;
+
+    const eliminationPhases = ['octavos', 'cuartos', 'semifinal', 'final'];
+
+    for (const phase of eliminationPhases) {
+      const phaseGames = category.elimination[phase] || [];
+      const game = phaseGames.find((g: any) => (g.game_id || g.id) === gameId);
+      if (game) return game;
+    }
+
+    return null;
+  }
 
 }
