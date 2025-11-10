@@ -44,48 +44,64 @@
 
           <div class="sidebar-body">
             <ng-container *ngFor="let group of groupStandings">
-              <div class="group-section">
-                <h4 class="group-title" (click)="abrirPartidosGrupo(group)">
-                  {{ group.groupName }}
-                  <mat-icon class="group-icon">sports_tennis</mat-icon>
-                </h4>
-                <table class="ranking-table">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Equipo</th>
-                      <th>PJ</th>
-                      <th>G</th>
-                      <th>P</th>
-                      <th>+/- Sets</th>
-                      <th>+/- Games</th>
-                      <th>Pts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let team of group.standings">
-                      <td class="position-cell">
-                        <span class="position-badge" [class.top-badge]="team.position <= 2">
-                          {{ team.position }}
-                        </span>
-                      </td>
-                      <td class="team-name"
-                        [innerHTML]="team.teamName.replace('/', '<br/><span class=\'separator\'>/</span> ')"></td>
-                      <td>{{ team.gamesPlayed }}</td>
-                      <td>{{ team.gamesWon }}</td>
-                      <td>{{ team.gamesLost }}</td>
-                      <td [class.positive]="team.setDiff > 0" [class.negative]="team.setDiff < 0">
-                        {{ team.setDiff > 0 ? '+' : '' }}{{ team.setDiff }}
-                      </td>
-                      <td [class.positive]="team.gameDiff > 0" [class.negative]="team.gameDiff < 0">
-                        {{ team.gameDiff > 0 ? '+' : '' }}{{ team.gameDiff }}
-                      </td>
-                      <td class="points-cell">{{ team.points }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </ng-container>
+  <div class="group-section">
+    <h4 class="group-title" (click)="abrirPartidosGrupo(group)">
+      {{ group.groupName }}
+      <mat-icon class="group-icon">sports_tennis</mat-icon>
+    </h4>
+
+    <!-- 🔹 Barra de progreso -->
+    <div class="progress-container" *ngIf="group.totalGames > 0">
+      <div class="progress-info">
+        <span>Progreso: {{ group.completedGames }}/{{ group.totalGames }}</span>
+        <span>{{ getProgressPercent(group) }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div
+          class="progress-fill"
+          [style.width.%]="getProgressPercent(group)"
+        ></div>
+      </div>
+    </div>
+
+    <table class="ranking-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Equipo</th>
+          <th>PJ</th>
+          <th>G</th>
+          <th>P</th>
+          <th>+/- Sets</th>
+          <th>+/- Games</th>
+          <th>Pts</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let team of group.standings">
+          <td class="position-cell">
+            <span class="position-badge" [class.top-badge]="team.position <= 2">
+              {{ team.position }}
+            </span>
+          </td>
+          <td class="team-name"
+              [innerHTML]="team.teamName.replace('/', '<br/><span class=\'separator\'>/</span> ')">
+          </td>
+          <td>{{ team.gamesPlayed }}</td>
+          <td>{{ team.gamesWon }}</td>
+          <td>{{ team.gamesLost }}</td>
+          <td [class.positive]="team.setDiff > 0" [class.negative]="team.setDiff < 0">
+            {{ team.setDiff > 0 ? '+' : '' }}{{ team.setDiff }}
+          </td>
+          <td [class.positive]="team.gameDiff > 0" [class.negative]="team.gameDiff < 0">
+            {{ team.gameDiff > 0 ? '+' : '' }}{{ team.gameDiff }}
+          </td>
+          <td class="points-cell">{{ team.points }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</ng-container>
 
             <!-- Mensaje si no hay grupos -->
             <div *ngIf="groupStandings.length === 0" class="no-groups-message">

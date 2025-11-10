@@ -39,6 +39,8 @@ export interface Player {
 }
 
 export interface Set {
+    set_id?: number;
+
   set_number: number;
   score_1: number;
   score_2: number;
@@ -380,5 +382,53 @@ export class MatchesGrupoDialogComponent implements OnInit {
     }
 
     return false;
+  }
+
+
+editSet(game: Game, setIndex: number) {
+  const set = game.sets?.[setIndex];
+  if (!set) return;
+
+  // Marcar el set como editable
+  set.is_completed = false;
+
+  this.snackBar.open(`Editando Set ${set.set_number}`, 'Cerrar', {
+    duration: 2000,
+  });
+}
+
+  updateSet(game: Game, setIndex: number, setId: number) {
+    const set = game.sets?.[setIndex];
+    if (!set) return;
+
+    if (!this.isSetComplete(set)) {
+      this.snackBar.open('Completa el set correctamente antes de actualizar', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    this.savingSetGameId = game.game_id;
+
+    this.tournamentService.updateSet(setId, {
+      game_id: game.game_id,
+      set_number: set.set_number,
+      score_1: set.score_1,
+      score_2: set.score_2
+    }).subscribe({
+      next: (response) => {
+        console.log(`✅ Set ${set.set_number} actualizado:`, response);
+        set.is_completed = true;
+        set.winner = set.score_1 > set.score_2 ? 1 : 2;
+
+        this.snackBar.open(`Set ${set.set_number} actualizado correctamente`, 'Cerrar', {
+          duration: 3000,
+        });
+        this.savingSetGameId = null;
+      },
+      error: (error) => {
+        console.error('❌ Error actualizando set:', error);
+        this.snackBar.open('Error al actualizar el set', 'Cerrar', { duration: 3000 });
+        this.savingSetGameId = null;
+      }
+    });
   }
 }

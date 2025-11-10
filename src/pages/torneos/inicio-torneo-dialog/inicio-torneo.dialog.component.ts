@@ -91,6 +91,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.cargarBracket();
+
   }
 
   ngAfterViewInit(): void {
@@ -108,7 +109,10 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         this.bracket = res.data?.data?.bracket || [];
         this.categories = this.bracket;
         this.selectedCategory = this.categories[0]?.category_name || null;
+        this.calcularProgresoGrupos();
+
         this.filtrarCategoria();
+
         this.loading = false;
       },
       error: (err) => {
@@ -139,8 +143,18 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   private processGroupsForTable(groups: any[]) {
     this.groupStandings = groups?.map(group => ({
       groupName: group.group_name,
+      games: group.games || [], // 👈 aquí incluimos los partidos
+
       standings: (group.ranking || []).map((team: any) => {
-        const stats = team.stats || { games_played: 0, wins: 0, losses: 0, set_diff: 0, game_diff: 0, points: 0 };
+        const stats = team.stats || {
+          games_played: 0,
+          wins: 0,
+          losses: 0,
+          set_diff: 0,
+          game_diff: 0,
+          points: 0
+        };
+
         return {
           position: team.position,
           teamName: this.getPlayerNames(team.players),
@@ -154,6 +168,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         };
       })
     })) || [];
+
+    // ✅ Llama aquí al cálculo del progreso una vez procesado
+    this.calcularProgresoGrupos();
   }
 
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
@@ -297,117 +314,117 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   `;
   }
 
-private drawBracketSets() {
-  if (!this.bracketContainerSets?.nativeElement || !this.filteredBracket?.[0]) return;
+  private drawBracketSets() {
+    if (!this.bracketContainerSets?.nativeElement || !this.filteredBracket?.[0]) return;
 
-  const container = this.bracketContainerSets.nativeElement as HTMLElement;
-  d3.select(container).selectAll('*').remove();
+    const container = this.bracketContainerSets.nativeElement as HTMLElement;
+    d3.select(container).selectAll('*').remove();
 
-  try {
-    const category = this.filteredBracket[0];
-    console.log('🔍 CATEGORÍA COMPLETA:', category);
+    try {
+      const category = this.filteredBracket[0];
+      console.log('🔍 CATEGORÍA COMPLETA:', category);
 
-    const allRounds = this.mapToPartidos(category);
-    console.log('🔍 PARTIDOS MAPEADOS:', allRounds);
+      const allRounds = this.mapToPartidos(category);
+      console.log('🔍 PARTIDOS MAPEADOS:', allRounds);
 
-    const eliminationRounds = allRounds.filter(r => Array.isArray(r) && r.length > 0);
+      const eliminationRounds = allRounds.filter(r => Array.isArray(r) && r.length > 0);
 
-    if (eliminationRounds.length === 0) {
-      this.showEmptyState(container);
-      return;
-    }
+      if (eliminationRounds.length === 0) {
+        this.showEmptyState(container);
+        return;
+      }
 
-    const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + 300;
-    const maxMatches = Math.max(...eliminationRounds.map(r => r.length));
-    const totalHeight = Math.max(600, maxMatches * (this.matchHeight + this.verticalSpacing) + 200);
+      const totalWidth = eliminationRounds.length * (this.matchWidth + this.spacingX) + 300;
+      const maxMatches = Math.max(...eliminationRounds.map(r => r.length));
+      const totalHeight = Math.max(600, maxMatches * (this.matchHeight + this.verticalSpacing) + 200);
 
-    const svg = d3.select(container).append('svg')
-      .attr('width', totalWidth + 150)
-      .attr('height', totalHeight + 150)
-      .attr('class', 'bracket-svg')
-      .style('background', '#f8fafc')
-      .style('border-radius', '8px');
+      const svg = d3.select(container).append('svg')
+        .attr('width', totalWidth + 150)
+        .attr('height', totalHeight + 150)
+        .attr('class', 'bracket-svg')
+        .style('background', '#f9f8fcff')
+        .style('border-radius', '8px');
 
-    const gContainer = svg.append('g')
-      .attr('class', 'bracket-container')
-      .attr('transform', 'translate(50, 50)');
+      const gContainer = svg.append('g')
+        .attr('class', 'bracket-container')
+        .attr('transform', 'translate(50, 50)');
 
-    this.calculatePositionsForElimination(eliminationRounds, totalWidth, totalHeight);
-    this.drawRoundBackgrounds(eliminationRounds, gContainer);
+      this.calculatePositionsForElimination(eliminationRounds, totalWidth, totalHeight);
+      this.drawRoundBackgrounds(eliminationRounds, gContainer);
 
-    // === Dibujar rondas ===
-    eliminationRounds.forEach((ronda, roundIndex) => {
-      this.drawRoundTitle(ronda, roundIndex, gContainer);
-      ronda.forEach((partido, matchIndex) => {
-        this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
+      // === Dibujar rondas ===
+      eliminationRounds.forEach((ronda, roundIndex) => {
+        this.drawRoundTitle(ronda, roundIndex, gContainer);
+        ronda.forEach((partido, matchIndex) => {
+          this.drawModernEliminationMatch(gContainer, partido, roundIndex, matchIndex);
+        });
+        if (roundIndex < eliminationRounds.length - 1) {
+          this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
+        }
       });
-      if (roundIndex < eliminationRounds.length - 1) {
-        this.drawModernConnections(eliminationRounds, roundIndex, gContainer);
+
+      // === Dibujar cuadro del ganador final solo si existe ===
+      if (category.winner && category.winner.name && category.winner.name.trim() !== '') {
+        const ganador = category.winner.name.trim();
+        const icono = category.winner.icon || '🏆';
+
+        const finalRound = eliminationRounds[eliminationRounds.length - 1];
+        const finalMatch = finalRound?.[0];
+
+        // Si no hay coordenadas del partido final, lo centramos arriba
+        const xPos = finalMatch?.x ? finalMatch.x + this.matchWidth + 100 : totalWidth / 2 - 100;
+        const yPos = finalMatch?.y ? finalMatch.y + this.matchHeight / 2 : 80;
+
+        const rectWidth = 250;
+        const rectHeight = 90;
+
+        // Fondo del recuadro
+        gContainer.append('rect')
+          .attr('x', xPos - 40)
+          .attr('y', yPos - 45)
+          .attr('width', rectWidth)
+          .attr('height', rectHeight)
+          .attr('rx', 16)
+          .attr('fill', '#fffbea')
+          .attr('stroke', '#facc15')
+          .attr('stroke-width', 3)
+          .attr('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
+
+        // Ícono del trofeo
+        gContainer.append('text')
+          .text(icono)
+          .attr('x', xPos + rectWidth / 2 - 40)
+          .attr('y', yPos - 10)
+          .attr('font-size', '32px')
+          .attr('text-anchor', 'middle');
+
+        // Texto del nombre del ganador
+        const textElement = gContainer.append('text')
+          .text(ganador)
+          .attr('x', xPos + rectWidth / 2 - 40)
+          .attr('y', yPos + 25)
+          .attr('fill', '#1e293b')
+          .attr('font-weight', '700')
+          .attr('text-anchor', 'middle')
+          .attr('font-size', '16px');
+
+        // Ajuste dinámico de tamaño de texto según ancho disponible
+        const maxTextWidth = rectWidth - 20;
+        let fontSize = 16;
+        const textNode = textElement.node() as SVGTextElement;
+
+        // Reducir tamaño de fuente si el texto es más ancho que el rectángulo
+        while (textNode.getComputedTextLength() > maxTextWidth && fontSize > 8) {
+          fontSize -= 1;
+          textElement.attr('font-size', `${fontSize}px`);
+        }
       }
-    });
 
-    // === Dibujar cuadro del ganador final solo si existe ===
-    if (category.winner && category.winner.name && category.winner.name.trim() !== '') {
-      const ganador = category.winner.name.trim();
-      const icono = category.winner.icon || '🏆';
-
-      const finalRound = eliminationRounds[eliminationRounds.length - 1];
-      const finalMatch = finalRound?.[0];
-
-      // Si no hay coordenadas del partido final, lo centramos arriba
-      const xPos = finalMatch?.x ? finalMatch.x + this.matchWidth + 100 : totalWidth / 2 - 100;
-      const yPos = finalMatch?.y ? finalMatch.y + this.matchHeight / 2 : 80;
-
-      const rectWidth = 250;
-      const rectHeight = 90;
-
-      // Fondo del recuadro
-      gContainer.append('rect')
-        .attr('x', xPos - 40)
-        .attr('y', yPos - 45)
-        .attr('width', rectWidth)
-        .attr('height', rectHeight)
-        .attr('rx', 16)
-        .attr('fill', '#fffbea')
-        .attr('stroke', '#facc15')
-        .attr('stroke-width', 3)
-        .attr('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
-
-      // Ícono del trofeo
-      gContainer.append('text')
-        .text(icono)
-        .attr('x', xPos + rectWidth / 2 - 40)
-        .attr('y', yPos - 10)
-        .attr('font-size', '32px')
-        .attr('text-anchor', 'middle');
-
-      // Texto del nombre del ganador
-      const textElement = gContainer.append('text')
-        .text(ganador)
-        .attr('x', xPos + rectWidth / 2 - 40)
-        .attr('y', yPos + 25)
-        .attr('fill', '#1e293b')
-        .attr('font-weight', '700')
-        .attr('text-anchor', 'middle')
-        .attr('font-size', '16px');
-
-      // Ajuste dinámico de tamaño de texto según ancho disponible
-      const maxTextWidth = rectWidth - 20;
-      let fontSize = 16;
-      const textNode = textElement.node() as SVGTextElement;
-
-      // Reducir tamaño de fuente si el texto es más ancho que el rectángulo
-      while (textNode.getComputedTextLength() > maxTextWidth && fontSize > 8) {
-        fontSize -= 1;
-        textElement.attr('font-size', `${fontSize}px`);
-      }
+    } catch (error) {
+      console.error('💥 Error al dibujar bracket:', error);
+      this.showErrorState(container);
     }
-
-  } catch (error) {
-    console.error('💥 Error al dibujar bracket:', error);
-    this.showErrorState(container);
   }
-}
 
 
 
@@ -420,8 +437,22 @@ private drawBracketSets() {
       return rounds;
     }
 
+    // Orden lógico de fases: 64avos -> 32avos -> 16avos -> octavos -> cuartos -> semifinal -> final
     const phaseOrder: { [key: string]: number } = {
-      'octavos': 1, 'cuartos': 2, 'semifinal': 3, 'semifinals': 3, 'final': 4, 'finals': 4
+      'sesentaicuatroavos': 1,   // 1/64
+      'sesentaicuatroavoss': 1,  // por si hay variantes (no usual)
+      'sesentaicuatro': 1,
+      'treintaidosavos': 2,      // 1/32
+      'treintaidos': 2,
+      'treintaidosavoss': 2,
+      'dieciseisavos': 3,        // 1/16
+      'dieciseis': 3,
+      'octavos': 4,              // 1/8
+      'cuartos': 5,              // 1/4
+      'semifinal': 6,
+      'semifinals': 6,
+      'final': 7,
+      'finals': 7
     };
 
     const sortedPhases = eliminationPhases.sort((a, b) => {
@@ -470,6 +501,7 @@ private drawBracketSets() {
     return rounds;
   }
 
+
   private extractCoupleId(couple: any): number | null {
     if (!couple) return null;
     if (couple.id) return couple.id;
@@ -477,16 +509,26 @@ private drawBracketSets() {
     return null;
   }
 
-  private getPlayersFromEliminationCouple(couple: any[]): any[] {
-    if (!couple || !Array.isArray(couple) || couple.length === 0) {
+  private getPlayersFromEliminationCouple(couple: any): any[] {
+    if (!couple) {
       return [{ name: 'Por asignar' }];
     }
 
-    return couple.map(player => ({
-      name: player.name || 'Jugador sin nombre',
-      level: player.level,
-      tournament_victories: player.tournament_victories
-    }));
+    // Si el couple es un objeto con propiedad "pending"
+    if (typeof couple === 'object' && !Array.isArray(couple) && couple.pending !== undefined) {
+      return [{ name: couple.pending }];
+    }
+
+    // Si el couple es un array de jugadores
+    if (Array.isArray(couple) && couple.length > 0) {
+      return couple.map(player => ({
+        name: player.name || 'Jugador sin nombre',
+        level: player.level,
+        tournament_victories: player.tournament_victories
+      }));
+    }
+
+    return [{ name: 'Por asignar' }];
   }
 
   private calculateNextMatchIndex(phase: string, index: number): number | null {
@@ -537,13 +579,17 @@ private drawBracketSets() {
 
     const firstMatch = ronda[0];
     const roundNames: { [key: string]: string } = {
+      'sesentaicuatroavos': '64AVOS DE FINAL',
+      'treintaidosavos': '32AVOS DE FINAL',
+      'dieciseisavos': '16AVOS DE FINAL',
       'octavos': 'OCTAVOS DE FINAL',
       'cuartos': 'CUARTOS DE FINAL',
       'semifinal': 'SEMIFINAL',
       'final': 'FINAL'
     };
 
-    const roundName = roundNames[ronda[0].groupName] || ronda[0].groupName.toUpperCase();
+    const rawName = String(ronda[0].groupName || '').toLowerCase();
+    const roundName = roundNames[rawName] || ronda[0].groupName?.toUpperCase() || 'RONDA';
 
     gContainer.append('text')
       .text(roundName)
@@ -555,6 +601,7 @@ private drawBracketSets() {
       .attr('font-size', '16px')
       .attr('letter-spacing', '1px');
   }
+
 
   private drawModernEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
     const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
@@ -682,7 +729,7 @@ private drawBracketSets() {
 
     const normalize = (str: string) => {
       return str
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
         .split(',')
         .map(name => name.trim())
@@ -716,7 +763,9 @@ private drawBracketSets() {
   }
 
   private drawPlayerNames(g: any, players: any[], isWinner: boolean, baseY: number) {
+    console.log(players)
     const names = players.map(p => p.name || 'Sin nombre').join(' / ');
+    console.log(names)
     const displayName = names.length <= 20 ? names : this.getCompactName(names);
 
     g.append('text')
@@ -792,10 +841,28 @@ private drawBracketSets() {
     `;
   }
 
-  getPlayerNames(players?: any[]): string {
-    if (!players || players.length === 0) return 'Por asignar';
+  getPlayerNames(players?: any): string {
+    // Caso 1: sin datos
+    if (!players) return 'Por asignar';
+
+    // Caso 2: si es un objeto con "pending" (como en la final)
+    if (typeof players === 'object' && !Array.isArray(players) && 'pending' in players) {
+      return players.pending;
+    }
+
+    // Caso 3: si es un arreglo de jugadores
+    if (Array.isArray(players) && players.length > 0) {
+      // Verificar si el primer elemento tiene nombre válido
+      const firstPlayer = players[0];
+      if (firstPlayer?.name && firstPlayer.name !== 'Por asignar') {
+        return players.map(p => p.name || 'Sin nombre').join(' / ');
+      }
+    }
+
+    // Caso 4: si es un string
     if (typeof players === 'string') return players;
-    if (Array.isArray(players)) return players.map(p => p.name || 'Sin nombre').join(' / ');
+
+    // Caso 5: fallback
     return 'Por asignar';
   }
 
@@ -919,7 +986,8 @@ private drawBracketSets() {
     const category = this.filteredBracket[0];
     if (!category || !category.elimination) return null;
 
-    const eliminationPhases = ['octavos', 'cuartos', 'semifinal', 'final'];
+    // Recorre dinámicamente todas las claves disponibles en elimination
+    const eliminationPhases = Object.keys(category.elimination || {});
 
     for (const phase of eliminationPhases) {
       const phaseGames = category.elimination[phase] || [];
@@ -928,6 +996,31 @@ private drawBracketSets() {
     }
 
     return null;
+  }
+
+
+
+  calcularProgresoGrupos() {
+    if (!this.groupStandings || this.groupStandings.length === 0) return;
+
+    this.groupStandings.forEach(group => {
+      if (group.games && Array.isArray(group.games)) {
+        const total = group.games.length;
+        const completed = group.games.filter((g: any) => g.status_game === 'completed').length;
+        group.totalGames = total;
+        group.completedGames = completed;
+        console.log(`✅ ${group.groupName}: ${completed}/${total}`);
+      } else {
+        console.warn(`⚠️ ${group.groupName} no tiene games`);
+        group.totalGames = 0;
+        group.completedGames = 0;
+      }
+    });
+  }
+
+  getProgressPercent(group: any): number {
+    if (!group.totalGames || group.totalGames === 0) return 0;
+    return Math.round((group.completedGames / group.totalGames) * 100);
   }
 
 }

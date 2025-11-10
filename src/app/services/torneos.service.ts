@@ -272,6 +272,10 @@ export class TournamentService extends ApiBaseService {
     return this.post('/set/store', data);
   }
 
+  updateSet(setId: number, data: { game_id: number; set_number: number; score_1: number; score_2: number }): Observable<any> {
+    return this.post(`/set/update/${setId}`, data);
+  }
+
   getGameDetail(gameId: number): Observable<GameDetailApiResponse> {
     return this.get<GameDetailApiResponse>(`/set/getGameDetail/${gameId}`);
   }

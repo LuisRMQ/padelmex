@@ -59,6 +59,13 @@
                       <mat-icon>check_circle</mat-icon>
                       Completado
                     </span>
+                    <button 
+                      mat-icon-button 
+                      color="accent" 
+                      (click)="editSet(game, setIndex)" 
+                      matTooltip="Editar Set">
+                      <mat-icon>edit</mat-icon>
+                    </button>
                   </div>
 
                   <div class="score-inputs">
@@ -87,11 +94,12 @@
                     >
                   </div>
 
+                  <!-- 🔹 Guardar o Actualizar Set -->
                   <div class="set-actions">
                     <button 
                       mat-raised-button 
                       color="primary" 
-                      (click)="saveSet(game, setIndex)"
+                      (click)="set.set_id ? updateSet(game, setIndex, set.set_id) : saveSet(game, setIndex)"
                       [disabled]="isSaveSetDisabled(game, setIndex)"
                       class="save-set-btn"
                       *ngIf="!set.is_completed"
@@ -102,7 +110,7 @@
                         class="set-spinner"
                       ></mat-spinner>
                       <mat-icon *ngIf="!isSavingSet(game, setIndex)">save</mat-icon>
-                      {{ getSetButtonText(set) }}
+                      {{ set.set_id ? 'Actualizar Set' : getSetButtonText(set) }}
                     </button>
                   </div>
 
