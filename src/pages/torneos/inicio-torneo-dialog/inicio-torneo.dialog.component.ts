@@ -616,30 +616,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
     console.log(`🎯 Dibujando match ID ${partido.id}, game_label: ${partido.game_label}`);
 
-if (partido.game_label) {
-  console.log(`🎯 Dibujando game_label: ${partido.game_label}`);
-
-  const labelGroup = g.append('g')
-    // Coloca el label dentro del rectángulo, arriba a la derecha
-    .attr('transform', `translate(${this.matchWidth - 45}, 14)`);
-
-  // Fondo gris claro visible
-  labelGroup.append('rect')
-    .attr('width', 40)
-    .attr('height', 16)
-    .attr('rx', 4)
-    .attr('fill', '#e2e8f0'); // gris suave
-
-  // Texto visible centrado
-  labelGroup.append('text')
-    .text(partido.game_label)
-    .attr('x', 20)
-    .attr('y', 11)
-    .attr('text-anchor', 'middle')
-    .attr('font-size', '10px')
-    .attr('fill', '#0f172a')
-    .attr('font-weight', '700');
-}
+    
 
     // === Secciones de jugadores ===
     this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
@@ -654,9 +631,42 @@ if (partido.game_label) {
       this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
     }
 
+    if (partido.game_label) {
+      this.drawGameLabel(g, partido.game_label);
+    }
+
     // === Evento click para abrir modal ===
     g.style('cursor', 'pointer')
       .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+  }
+
+
+  private drawGameLabel(g: any, gameLabel: string) {
+    console.log(`🏷️ Dibujando label: ${gameLabel}`);
+
+    const labelGroup = g.append('g')
+      .attr('transform', `translate(${this.matchWidth - 45}, 4)`)
+      .attr('class', 'game-label'); // ← Añade clase para debugging
+
+    // Fondo más visible
+    labelGroup.append('rect')
+      .attr('width', 40)
+      .attr('height',14)
+      .attr('rx', 6)
+      .attr('fill', '#3b82f6') // ← Azul más visible
+      .attr('stroke', '#1d4ed8')
+      .attr('stroke-width', 1);
+
+    // Texto blanco para mejor contraste
+    labelGroup.append('text')
+      .text(gameLabel)
+      .attr('x', 20)
+      .attr('y', 11)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '9px')
+      .attr('fill', '#ffffff')
+      .attr('font-weight', '700')
+      .attr('pointer-events', 'none');
   }
 
 
