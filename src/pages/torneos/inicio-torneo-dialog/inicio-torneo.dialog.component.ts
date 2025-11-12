@@ -428,73 +428,95 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
 
 
-  private mapToPartidos(category: any): Partido[][] {
-    const rounds: Partido[][] = [];
-    const eliminationPhases = Object.keys(category.elimination || {});
+private mapToPartidos(category: any): Partido[][] {
+  const rounds: Partido[][] = [];
+  const eliminationPhases = Object.keys(category.elimination || {});
 
-    if (eliminationPhases.length === 0) {
-      return rounds;
-    }
-
-    const phaseOrder: { [key: string]: number } = {
-      'sesentaicuatroavos': 1,
-      'sesentaicuatroavoss': 1,
-      'sesentaicuatro': 1,
-      'treintaidosavos': 2,
-      'treintaidos': 2,
-      'treintaidosavoss': 2,
-      'dieciseisavos': 3,
-      'dieciseis': 3,
-      'octavos': 4,
-      'cuartos': 5,
-      'semifinal': 6,
-      'semifinals': 6,
-      'final': 7,
-      'finals': 7
-    };
-
-    const sortedPhases = eliminationPhases.sort((a, b) => {
-      const orderA = phaseOrder[a.toLowerCase()] || 99;
-      const orderB = phaseOrder[b.toLowerCase()] || 99;
-      return orderA - orderB;
-    });
-
-    sortedPhases.forEach(phase => {
-      const phaseGames = category.elimination[phase] || [];
-
-      const phaseMatches = phaseGames.map((game: any, index: number) => {
-        const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
-
-        const partido: Partido = {
-          jugador1: this.getPlayersFromEliminationCouple(game.couple_1),
-          jugador2: this.getPlayersFromEliminationCouple(game.couple_2),
-          winner_id: game.winner_id || null,
-          groupName: phase,
-          id: game.game_id || game.id || null,
-          couple1Id: game.couple_1?.id || null,
-          couple2Id: game.couple_2?.id || null,
-          game_label: game.game_label,
-          nextMatchIndex,
-          scores1: game.scores1 || [0, 0, 0],
-          scores2: game.scores2 || [0, 0, 0],
-          date: game.date,
-          start_time: game.start_time,
-          end_time: game.end_time,
-          court: game.court,
-          status_game: game.status_game || 'Not started',
-          _originalGame: game
-        };
-
-        return partido;
-      });
-
-      if (phaseMatches.length > 0) {
-        rounds.push(phaseMatches);
-      }
-    });
-
+  if (eliminationPhases.length === 0) {
     return rounds;
   }
+
+  const phaseOrder: { [key: string]: number } = {
+    'sesentaicuatroavos': 1,
+    'sesentaicuatroavoss': 1,
+    'sesentaicuatro': 1,
+    'treintaidosavos': 2,
+    'treintaidos': 2,
+    'treintaidosavoss': 2,
+    'dieciseisavos': 3,
+    'dieciseis': 3,
+    'octavos': 4,
+    'cuartos': 5,
+    'semifinal': 6,
+    'semifinals': 6,
+    'final': 7,
+    'finals': 7
+  };
+
+  const sortedPhases = eliminationPhases.sort((a, b) => {
+    const orderA = phaseOrder[a.toLowerCase()] || 99;
+    const orderB = phaseOrder[b.toLowerCase()] || 99;
+    return orderA - orderB;
+  });
+
+  sortedPhases.forEach((phase, phaseIndex) => {
+    const phaseGames = category.elimination[phase] || [];
+
+    const isFirstRound = phaseIndex === 0; // 🔹 La primera ronda en orden
+
+    const phaseMatches = phaseGames.map((game: any, index: number) => {
+      const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
+
+      // 🔹 Verificamos si hay parejas asignadas
+      const hasCouple1 = game.couple_1 && Object.keys(game.couple_1).length > 0;
+      const hasCouple2 = game.couple_2 && Object.keys(game.couple_2).length > 0;
+
+      // 🔹 Si es la primera ronda y no hay parejas -> "Por asignar"
+      const jugador1 =
+        isFirstRound && !hasCouple1
+          ? [{ name: 'Por asignar' }]
+          : this.getPlayersFromEliminationCouple(game.couple_1);
+
+      const jugador2 =
+        isFirstRound && !hasCouple2
+          ? [{ name: 'Por asignar' }]
+          : this.getPlayersFromEliminationCouple(game.couple_2);
+
+      const partido: Partido = {
+        jugador1,
+        jugador2,
+        winner_id: game.winner_id || null,
+        groupName: phase,
+        id: game.game_id || game.id || null,
+        couple1Id: game.couple_1?.id || null,
+        couple2Id: game.couple_2?.id || null,
+        game_label:
+          isFirstRound && !hasCouple1 && !hasCouple2
+            ? null // 🔹 No mostrar label si está vacío
+            : game.game_label,
+        nextMatchIndex,
+        scores1: game.scores1 || [0, 0, 0],
+        scores2: game.scores2 || [0, 0, 0],
+        date: game.date,
+        start_time: game.start_time,
+        end_time: game.end_time,
+        court: game.court,
+        status_game: game.status_game || 'Not started',
+        _originalGame: game
+      };
+
+      return partido;
+    });
+
+    if (phaseMatches.length > 0) {
+      rounds.push(phaseMatches);
+    }
+  });
+
+  return rounds;
+}
+
+
 
 
   private extractCoupleId(couple: any): number | null {
@@ -505,25 +527,28 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private getPlayersFromEliminationCouple(couple: any): any[] {
-    if (!couple) {
-      return [{ name: 'Por asignar' }];
-    }
-
-    if (typeof couple === 'object' && !Array.isArray(couple) && couple.pending !== undefined) {
-      return [{ name: couple.pending }];
-    }
-
-    if (Array.isArray(couple) && couple.length > 0) {
-      return couple.map(player => ({
-        name: player.name || 'Jugador sin nombre',
-        level: player.level,
-        tournament_victories: player.tournament_victories
-      }));
-    }
-
+  if (!couple) {
     return [{ name: 'Por asignar' }];
   }
 
+  // 🔹 Si tiene el campo "pending"
+  if (typeof couple === 'object' && !Array.isArray(couple) && couple.pending !== undefined) {
+    // Si el pending dice "Ganador de Jx", reemplazamos por "Por asignar"
+    const pendingText = couple.pending;
+    const esGanador = /^Ganador de J\d+/i.test(pendingText);
+    return [{ name: esGanador ? 'Por asignar' : pendingText }];
+  }
+
+  if (Array.isArray(couple) && couple.length > 0) {
+    return couple.map(player => ({
+      name: player.name || 'Jugador sin nombre',
+      level: player.level,
+      tournament_victories: player.tournament_victories
+    }));
+  }
+
+  return [{ name: 'Por asignar' }];
+}
   private calculateNextMatchIndex(phase: string, index: number): number | null {
     if (phase === 'final') return null;
     return Math.floor(index / 2);
@@ -596,16 +621,10 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const jugador1Safe = this.getSafePlayers(partido.jugador1);
     const jugador2Safe = this.getSafePlayers(partido.jugador2);
 
-    console.log(`🎲 Dibujando partido ${partido.id}:`, {
-      player1: this.getPlayerNamesFromPlayers(partido.jugador1),
-      player2: this.getPlayerNamesFromPlayers(partido.jugador2),
-      winner_id: partido.winner_id,
-      status: partido.status_game
-    });
+    
 
     const { isPlayer1Winner, isPlayer2Winner } = this.determineWinnersFromOriginalData(partido);
 
-    // === Cuadro principal del partido ===
     g.append('rect')
       .attr('width', this.matchWidth)
       .attr('height', this.matchHeight)
@@ -618,15 +637,12 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     
 
-    // === Secciones de jugadores ===
     this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
     this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
 
-    // === Nombres de jugadores ===
     this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
     this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
 
-    // === Indicador de ganador ===
     if (partido.status_game === 'completed' && partido.winner_id) {
       this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
     }
@@ -635,7 +651,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       this.drawGameLabel(g, partido.game_label);
     }
 
-    // === Evento click para abrir modal ===
     g.style('cursor', 'pointer')
       .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
   }
@@ -646,18 +661,16 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     const labelGroup = g.append('g')
       .attr('transform', `translate(${this.matchWidth - 45}, 4)`)
-      .attr('class', 'game-label'); // ← Añade clase para debugging
+      .attr('class', 'game-label'); 
 
-    // Fondo más visible
     labelGroup.append('rect')
       .attr('width', 40)
       .attr('height',14)
       .attr('rx', 6)
-      .attr('fill', '#3b82f6') // ← Azul más visible
+      .attr('fill', '#3b82f6') 
       .attr('stroke', '#1d4ed8')
       .attr('stroke-width', 1);
 
-    // Texto blanco para mejor contraste
     labelGroup.append('text')
       .text(gameLabel)
       .attr('x', 20)
