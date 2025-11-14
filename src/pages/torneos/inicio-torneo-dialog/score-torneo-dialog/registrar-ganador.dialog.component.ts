@@ -221,109 +221,102 @@ export class RegistrarGanadorDialogComponent {
 
     // Método modificado para guardar sets individuales
     guardarSet(setNumber: number) {
-        // Si ya está cargando, no hacer nada
-        if (this.loading) {
-            return;
-        }
+    if (this.loading) return;
 
-        const gameId = this.data.partido.id;
-        if (!gameId) {
-            this.snackBar.open('Error: No se pudo identificar el partido', 'Cerrar', {
-                duration: 5000,
-                horizontalPosition: 'center',
-                verticalPosition: 'top'
-            });
-            return;
-        }
+    const gameId = this.data.partido.id;
+    if (!gameId) {
+        this.snackBar.open('Error: No se encontró el partido', 'Cerrar', { duration: 3000 });
+        return;
+    }
 
-        let score1: number, score2: number;
+    let score1: number | null = null;
+    let score2: number | null = null;
 
-        if (setNumber === 1) {
-            if (this.score1_set1 === null || this.score2_set1 === null) {
-                this.snackBar.open('Por favor ingresa ambos puntajes para el Set 1', 'Cerrar', {
-                    duration: 5000,
-                    horizontalPosition: 'center',
-                    verticalPosition: 'top'
-                });
-                return;
-            }
+    // Asignar los valores según el set correspondiente
+    switch (setNumber) {
+        case 1:
             score1 = this.score1_set1;
             score2 = this.score2_set1;
-        } else if (setNumber === 2) {
-            if (this.score1_set2 === null || this.score2_set2 === null) {
-                this.snackBar.open('Por favor ingresa ambos puntajes para el Set 2', 'Cerrar', {
-                    duration: 5000,
-                    horizontalPosition: 'center',
-                    verticalPosition: 'top'
-                });
-                return;
-            }
+            break;
+        case 2:
             score1 = this.score1_set2;
             score2 = this.score2_set2;
-        } else if (setNumber === 3) {
-            if (this.score1_set3 === null || this.score2_set3 === null) {
-                this.snackBar.open('Por favor ingresa ambos puntajes para el Set 3', 'Cerrar', {
-                    duration: 5000,
-                    horizontalPosition: 'center',
-                    verticalPosition: 'top'
-                });
-                return;
-            }
+            break;
+        case 3:
             score1 = this.score1_set3;
             score2 = this.score2_set3;
-        } else {
-            this.snackBar.open('Número de set inválido', 'Cerrar', {
-                duration: 5000,
-                horizontalPosition: 'center',
-                verticalPosition: 'top'
-            });
+            break;
+        default:
+            this.snackBar.open('Número de set inválido', 'Cerrar', { duration: 3000 });
             return;
-        }
-
-        if (isNaN(score1) || isNaN(score2)) {
-            this.snackBar.open('Los puntajes deben ser números válidos', 'Cerrar', {
-                duration: 5000,
-                horizontalPosition: 'center',
-                verticalPosition: 'top'
-            });
-            return;
-        }
-
-        this.loading = true;
-
-        this.tournamentService.storeSet({
-            game_id: gameId,
-            set_number: setNumber,
-            score_1: score1,
-            score_2: score2
-        }).subscribe({
-            next: (response: any) => {
-                this.loading = false;
-                const mensaje = response.message || `Set ${setNumber} guardado correctamente`;
-                this.snackBar.open(mensaje, 'Cerrar', {
-                    duration: 5000,
-                    horizontalPosition: 'center',
-                    verticalPosition: 'top'
-                });
-
-                if (setNumber === 1) this.disabledSet1 = true;
-                if (setNumber === 2) this.disabledSet2 = true;
-                if (setNumber === 3) this.disabledSet3 = true;
-
-                this.calcularProgreso();
-                this.loadExistingSets();
-            },
-            error: (err) => {
-                console.error(err);
-                this.loading = false;
-                this.snackBar.open(`Error guardando Set ${setNumber}`, 'Cerrar', {
-                    duration: 5000,
-                    horizontalPosition: 'center',
-                    verticalPosition: 'top'
-                });
-            }
-        });
     }
+
+    // Validaciones
+    if (score1 === null || score2 === null) {
+        this.snackBar.open(`Ingresa ambos puntajes para el Set ${setNumber}`, 'Cerrar', { duration: 3000 });
+        return;
+    }
+
+    if (score1 === score2) {
+        this.snackBar.open('Los puntajes no pueden ser iguales', 'Cerrar', { duration: 3000 });
+        return;
+    }
+
+    if (score1 > 7 || score2 > 7) {
+        this.snackBar.open('❌ Ningún puntaje puede ser mayor a 7', 'Cerrar', { duration: 3500 });
+        return;
+    }
+
+    if (!(score1 === 6 || score1 === 7 || score2 === 6 || score2 === 7)) {
+        this.snackBar.open('El set debe tener un ganador con 6 o 7 ', 'Cerrar', { duration: 3500 });
+        return;
+    }
+
+    this.loading = true;
+
+    this.tournamentService.storeSet({
+        game_id: gameId,
+        set_number: setNumber,
+        score_1: score1,
+        score_2: score2
+    }).subscribe({
+        next: (response: any) => {
+            this.loading = false;
+
+            // ⭐ Mensaje del backend si existe
+            const msg = response.message ?? `Set ${setNumber} guardado correctamente`;
+
+            this.snackBar.open(msg, 'Cerrar', {
+                duration: 4000,
+                horizontalPosition: 'center',
+                verticalPosition: 'top'
+            });
+
+            // Deshabilitar set guardado
+            if (setNumber === 1) this.disabledSet1 = true;
+            if (setNumber === 2) this.disabledSet2 = true;
+            if (setNumber === 3) this.disabledSet3 = true;
+
+            this.calcularProgreso();
+            this.loadExistingSets();
+        },
+        error: (err) => {
+            this.loading = false;
+
+            // ⭐ Muestra mensaje del backend si viene
+            const backendMsg = err?.error?.message ?? `Error al guardar Set ${setNumber}`;
+
+            this.snackBar.open(backendMsg, 'Cerrar', {
+                duration: 4000,
+                horizontalPosition: 'center',
+                verticalPosition: 'top'
+            });
+
+            console.error(err);
+        }
+    });
+}
+
 
     // Método para manejar cambios en los inputs y recalcular progreso
     onScoreChange(): void {

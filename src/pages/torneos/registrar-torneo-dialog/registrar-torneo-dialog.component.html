@@ -154,9 +154,14 @@
           <mat-icon matPrefix>groups</mat-icon>
         </mat-form-field>
 
-         <mat-form-field appearance="fill" class="modern-field full-width">
+        <mat-form-field appearance="fill" class="modern-field full-width">
           <mat-label>Puntos</mat-label>
-          <input matInput type="number" min="1" formControlName="ranking" placeholder="Puntos">
+          <mat-select formControlName="ranking">
+            <mat-option [value]="0">0</mat-option>
+            <mat-option [value]="250">250</mat-option>
+            <mat-option [value]="500">500</mat-option>
+            <mat-option [value]="1000">1000</mat-option>
+          </mat-select>
           <mat-icon matPrefix>star_border</mat-icon>
         </mat-form-field>
 

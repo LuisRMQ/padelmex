@@ -173,22 +173,49 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
-    const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
-      width: '700px',
-      data: { partido, roundIndex, matchIndex },
-      disableClose: false,
-
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      this.limpiarContenedores();
-      this.cargarBracket();
-      setTimeout(() => {
-        this.drawBracketSets();
-      }, 200);
-
-    });
+  // Validar si las parejas están completas
+  const tieneParejasCompletas = this.validarParejasCompletas(partido);
+  
+  if (!tieneParejasCompletas) {
+    return; // No abrir el modal si no hay parejas completas
   }
+
+  const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
+    width: '700px',
+    data: { partido, roundIndex, matchIndex },
+    disableClose: false,
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    this.limpiarContenedores();
+    this.cargarBracket();
+    setTimeout(() => {
+      this.drawBracketSets();
+    }, 200);
+  });
+}
+
+private validarParejasCompletas(partido: Partido): boolean {
+  const juegoOriginal = partido._originalGame;
+  
+  if (juegoOriginal?.couple_1?.pending || juegoOriginal?.couple_2?.pending) {
+    return false;
+  }
+
+  const jugador1Valido = partido.jugador1 && 
+                         partido.jugador1.length > 0 && 
+                         partido.jugador1[0]?.name !== 'Por asignar' &&
+                         partido.jugador1[0]?.name !== undefined &&
+                         !partido.jugador1[0]?.name?.includes('Ganador de'); 
+
+  const jugador2Valido = partido.jugador2 && 
+                         partido.jugador2.length > 0 && 
+                         partido.jugador2[0]?.name !== 'Por asignar' &&
+                         partido.jugador2[0]?.name !== undefined &&
+                         !partido.jugador2[0]?.name?.includes('Ganador de'); 
+
+  return Boolean(jugador1Valido && jugador2Valido);
+}
 
   private actualizarPartidoYRedibujar(resultado: any) {
     const gameId = resultado.gameId || resultado.id;
@@ -428,7 +455,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
 
 
-private mapToPartidos(category: any): Partido[][] {
+  private mapToPartidos(category: any): Partido[][] {
   const rounds: Partido[][] = [];
   const eliminationPhases = Object.keys(category.elimination || {});
 
@@ -461,26 +488,30 @@ private mapToPartidos(category: any): Partido[][] {
 
   sortedPhases.forEach((phase, phaseIndex) => {
     const phaseGames = category.elimination[phase] || [];
-
-    const isFirstRound = phaseIndex === 0; // 🔹 La primera ronda en orden
+    const isFirstRound = phaseIndex === 0;
 
     const phaseMatches = phaseGames.map((game: any, index: number) => {
       const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
 
-      // 🔹 Verificamos si hay parejas asignadas
       const hasCouple1 = game.couple_1 && Object.keys(game.couple_1).length > 0;
       const hasCouple2 = game.couple_2 && Object.keys(game.couple_2).length > 0;
 
-      // 🔹 Si es la primera ronda y no hay parejas -> "Por asignar"
-      const jugador1 =
-        isFirstRound && !hasCouple1
-          ? [{ name: 'Por asignar' }]
-          : this.getPlayersFromEliminationCouple(game.couple_1);
+      // 👉 CORRECCIÓN ÚNICA: mandar la fase a la función
+       const isPlaceholderCouple = (c: any) => {
+      if (!c) return true;
+      if (Array.isArray(c) && c.length === 0) return true;
+      if (typeof c === 'object' && 'pending' in c) return true;
+      return false;
+    };
 
-      const jugador2 =
-        isFirstRound && !hasCouple2
-          ? [{ name: 'Por asignar' }]
-          : this.getPlayersFromEliminationCouple(game.couple_2);
+    const jugador1 = isPlaceholderCouple(game.couple_1) && isFirstRound
+      ? [{ name: 'Por asignar' }]
+      : this.getPlayersFromEliminationCouple(game.couple_1, isFirstRound);
+
+    const jugador2 = isPlaceholderCouple(game.couple_2) && isFirstRound
+      ? [{ name: 'Por asignar' }]
+      : this.getPlayersFromEliminationCouple(game.couple_2, isFirstRound);
+
 
       const partido: Partido = {
         jugador1,
@@ -492,7 +523,7 @@ private mapToPartidos(category: any): Partido[][] {
         couple2Id: game.couple_2?.id || null,
         game_label:
           isFirstRound && !hasCouple1 && !hasCouple2
-            ? null // 🔹 No mostrar label si está vacío
+            ? null
             : game.game_label,
         nextMatchIndex,
         scores1: game.scores1 || [0, 0, 0],
@@ -519,6 +550,7 @@ private mapToPartidos(category: any): Partido[][] {
 
 
 
+
   private extractCoupleId(couple: any): number | null {
     if (!couple) return null;
     if (couple.id) return couple.id;
@@ -526,29 +558,50 @@ private mapToPartidos(category: any): Partido[][] {
     return null;
   }
 
-  private getPlayersFromEliminationCouple(couple: any): any[] {
-  if (!couple) {
-    return [{ name: 'Por asignar' }];
-  }
+ private getPlayersFromEliminationCouple(couple: any, isFirstRound: boolean = false): any[] {
+  if (!couple) return [{ name: 'Por asignar' }];
 
-  // 🔹 Si tiene el campo "pending"
-  if (typeof couple === 'object' && !Array.isArray(couple) && couple.pending !== undefined) {
-    // Si el pending dice "Ganador de Jx", reemplazamos por "Por asignar"
-    const pendingText = couple.pending;
-    const esGanador = /^Ganador de J\d+/i.test(pendingText);
-    return [{ name: esGanador ? 'Por asignar' : pendingText }];
-  }
-
-  if (Array.isArray(couple) && couple.length > 0) {
-    return couple.map(player => ({
-      name: player.name || 'Jugador sin nombre',
-      level: player.level,
-      tournament_victories: player.tournament_victories
+  // Caso: estructura con players reales
+  if (couple.players && Array.isArray(couple.players)) {
+    return couple.players.map((p: any) => ({
+      name: p?.name ?? 'Jugador sin nombre',
+      level: p?.level,
+      tournament_victories: p?.tournament_victories
     }));
   }
 
+  // Caso: couple es array de jugadores
+  if (Array.isArray(couple) && couple.length > 0) {
+    return couple.map((p: any) => ({
+      name: p?.name ?? 'Jugador sin nombre',
+      level: p?.level,
+      tournament_victories: p?.tournament_victories
+    }));
+  }
+
+  // Caso: estructura con pending
+  if (typeof couple === 'object' && 'pending' in couple) {
+    const text = String(couple.pending || '').trim();
+
+    // detectar "Ganador de JX" (permitir espacio opcional y mayúsc/minúsc)
+    const esGanador = /^Ganador de\s*J\d+$/i.test(text);
+
+    if (isFirstRound) {
+      // en la primera ronda preferimos mostrar "Por asignar"
+      return [{ name: 'Por asignar' }];
+    }
+
+    // si no es primera ronda, mostramos el texto tal cual (p.e. "Ganador de J1")
+    return [{ name: text }];
+  }
+
+  // Caso final por defecto
   return [{ name: 'Por asignar' }];
 }
+
+
+
+
   private calculateNextMatchIndex(phase: string, index: number): number | null {
     if (phase === 'final') return null;
     return Math.floor(index / 2);
@@ -617,43 +670,53 @@ private mapToPartidos(category: any): Partido[][] {
 
 
   private drawModernEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
-    const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
-    const jugador1Safe = this.getSafePlayers(partido.jugador1);
-    const jugador2Safe = this.getSafePlayers(partido.jugador2);
+  const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
+  const jugador1Safe = this.getSafePlayers(partido.jugador1);
+  const jugador2Safe = this.getSafePlayers(partido.jugador2);
 
-    
+  const { isPlayer1Winner, isPlayer2Winner } = this.determineWinnersFromOriginalData(partido);
 
-    const { isPlayer1Winner, isPlayer2Winner } = this.determineWinnersFromOriginalData(partido);
+  g.append('rect')
+    .attr('width', this.matchWidth)
+    .attr('height', this.matchHeight)
+    .attr('fill', '#ffffff')
+    .attr('stroke', '#e2e8f0')
+    .attr('stroke-width', 2)
+    .attr('rx', 12)
+    .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
 
-    g.append('rect')
-      .attr('width', this.matchWidth)
-      .attr('height', this.matchHeight)
-      .attr('fill', '#ffffff')
-      .attr('stroke', '#e2e8f0')
-      .attr('stroke-width', 2)
-      .attr('rx', 12)
-      .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
-    console.log(`🎯 Dibujando match ID ${partido.id}, game_label: ${partido.game_label}`);
+  this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
+  this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
 
-    
+  this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
+  this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
 
-    this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
-    this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
-
-    this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
-    this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
-
-    if (partido.status_game === 'completed' && partido.winner_id) {
-      this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
-    }
-
-    if (partido.game_label) {
-      this.drawGameLabel(g, partido.game_label);
-    }
-
-    g.style('cursor', 'pointer')
-      .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+  if (partido.status_game === 'completed' && partido.winner_id) {
+    this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
   }
+
+  if (partido.game_label) {
+    this.drawGameLabel(g, partido.game_label);
+  }
+
+  // Validar si se puede hacer clic
+  const tieneParejasCompletas = this.validarParejasCompletas(partido);
+  
+  if (tieneParejasCompletas) {
+    g.style('cursor', 'pointer')
+     .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+  } else {
+    g.style('cursor', 'not-allowed')
+     .append('title')
+     .text('No se puede abrir el partido: parejas incompletas');
+    
+    // Opcional: agregar un estilo visual para partidos bloqueados
+    g.selectAll('rect')
+     .attr('fill', '#f9fafb')
+     .attr('stroke', '#d1d5db');
+  }
+}
+
 
 
   private drawGameLabel(g: any, gameLabel: string) {
@@ -661,13 +724,13 @@ private mapToPartidos(category: any): Partido[][] {
 
     const labelGroup = g.append('g')
       .attr('transform', `translate(${this.matchWidth - 45}, 4)`)
-      .attr('class', 'game-label'); 
+      .attr('class', 'game-label');
 
     labelGroup.append('rect')
       .attr('width', 40)
-      .attr('height',14)
+      .attr('height', 14)
       .attr('rx', 6)
-      .attr('fill', '#3b82f6') 
+      .attr('fill', '#3b82f6')
       .attr('stroke', '#1d4ed8')
       .attr('stroke-width', 1);
 
@@ -856,24 +919,28 @@ private mapToPartidos(category: any): Partido[][] {
     `;
   }
 
-  getPlayerNames(players?: any): string {
-    if (!players) return 'Por asignar';
+getPlayerNames(players?: any): string {
+  if (!players) return 'Por asignar';
 
-    if (typeof players === 'object' && !Array.isArray(players) && 'pending' in players) {
-      return players.pending;
-    }
-
-    if (Array.isArray(players) && players.length > 0) {
-      const firstPlayer = players[0];
-      if (firstPlayer?.name && firstPlayer.name !== 'Por asignar') {
-        return players.map(p => p.name || 'Sin nombre').join(' / ');
-      }
-    }
-
-    if (typeof players === 'string') return players;
-
-    return 'Por asignar';
+  if (typeof players === 'object' && !Array.isArray(players) && 'pending' in players) {
+    return players.pending;
   }
+
+  if (Array.isArray(players) && players.length > 0) {
+
+  const nombresConLevel = players.map(p => {
+    const level = p.level ?? 'N/A';
+    return `${p.name} <span style="color:#FF8800; font-weight:bold;">(L:${level})</span>`;
+  });
+
+  return nombresConLevel.join(' / ');
+}
+
+  if (typeof players === 'string') return players;
+
+  return 'Por asignar';
+}
+
 
   toggleResultsSidebar() {
     this.showResultsSidebar = !this.showResultsSidebar;

@@ -12,13 +12,14 @@ import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { FormsModule, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Observable, forkJoin } from 'rxjs';
-import { startWith, map } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { startWith, map, delay, switchMap } from 'rxjs/operators';
 import { MatInputModule } from '@angular/material/input';
 import { TournamentService } from '../../../app/services/torneos.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { AlertService } from '../../../app/services/alert.service';
+import { lastValueFrom } from 'rxjs';
 
 export interface Partido {
   jugador1: User | null;
@@ -55,14 +56,16 @@ export interface TournamentPlayer extends User {
   ]
 })
 export class ParticipantesTorneoDialogComponent implements OnInit {
-comparePlayers = (a: User | null, b: User | null): boolean => {
-  if (!a && !b) return true;
-  if (!a || !b) return false;
-  return Number(a.id) === Number(b.id);
-}
+  comparePlayers = (a: User | null, b: User | null): boolean => {
+    if (!a && !b) return true;
+    if (!a || !b) return false;
+    return Number(a.id) === Number(b.id);
+  }
+  
   selectedPlayersFromServer: TournamentPlayer[] = [];
   displayedColumnsServer: string[] = ['photo', 'name'];
   isCategoryClosed: boolean = false;
+  isProcessingPairs: boolean = false;
 
   playerSearchControl = new FormControl('');
   selectedPlayers: TournamentPlayer[] = [];
@@ -85,7 +88,6 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
     private tournamentService: TournamentService,
     private snackBar: MatSnackBar,
     private alertService: AlertService,
-
   ) { }
 
   ngOnInit(): void {
@@ -310,17 +312,97 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
    * Maneja la selección de pareja desde el mat-select
    */
   onPartnerSelected(jugador: TournamentPlayer, partner: User | null) {
-  // Asignar la referencia directamente (sin spread) para que compareWith pueda emparejar por id
-  jugador.partner = partner;
-  // opcional para depuración:
-  // console.log('partner asignado para', jugador.id, jugador.partner);
-}
+    jugador.partner = partner;
+  }
 
   /**
    * Comprueba si un candidato ya está emparejado con otro jugador distinto
    */
   isAlreadyPaired(candidate: User, jugador: TournamentPlayer): boolean {
     return this.selectedPlayers.some(p => p.partner?.id === candidate.id && p.id !== jugador.id);
+  }
+
+  /**
+   * Procesa las parejas de forma secuencial para evitar problemas de concurrencia
+   */
+  private async processPairsSequentially(requests: any[]): Promise<{ successes: string[], errors: string[] }> {
+    const results = {
+      successes: [] as string[],
+      errors: [] as string[]
+    };
+
+    for (let i = 0; i < requests.length; i++) {
+      const request = requests[i];
+      
+      try {
+        console.log(`Procesando pareja ${i + 1} de ${requests.length}: ${request.jugador.name} + ${request.jugador.partner!.name}`);
+        
+        // Usar lastValueFrom para convertir el Observable a Promise
+        const res = await lastValueFrom(request.req);
+        const jugador = request.jugador;
+
+        // ✅ MANEJO CORREGIDO DE LA RESPUESTA
+        // Verificar diferentes estructuras posibles de respuesta
+        const success = this.checkResponseSuccess(res);
+        
+        if (success) {
+          results.successes.push(`${jugador.name} + ${jugador.partner!.name}`);
+          console.log(`✅ Pareja ${i + 1} agregada exitosamente`);
+        } else {
+          const errorMessage = this.getErrorMessage(res);
+          results.errors.push(`Jugador: ${jugador.name} ${jugador.lastname}, Pareja: ${jugador.partner!.name} — ${errorMessage}`);
+          console.error(`❌ Error en pareja ${i + 1}:`, errorMessage);
+        }
+
+        // Pequeña pausa entre requests para evitar saturación (opcional)
+        if (i < requests.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+      } catch (error) {
+        const jugador = request.jugador;
+        const errorMsg = `Error de conexión: ${error}`;
+        results.errors.push(`Jugador: ${jugador.name} ${jugador.lastname}, Pareja: ${jugador.partner!.name} — ${errorMsg}`);
+        console.error(`❌ Error de conexión en pareja ${i + 1}:`, error);
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Verifica si la respuesta indica éxito
+   */
+  private checkResponseSuccess(res: any): boolean {
+    // Verificar diferentes estructuras posibles de respuesta
+    if (res?.couple?.couple?.ok) return true;
+    if (res?.ok) return true;
+    if (res?.success) return true;
+    if (res?.status === 'success') return true;
+    if (res?.message?.includes('éxito') || res?.message?.includes('success')) return true;
+    
+    // Si no hay error explícito, asumimos éxito
+    return !this.hasExplicitError(res);
+  }
+
+  /**
+   * Verifica si la respuesta tiene un error explícito
+   */
+  private hasExplicitError(res: any): boolean {
+    if (res?.error) return true;
+    if (res?.couple?.couple?.error) return true;
+    if (res?.message?.includes('error') || res?.message?.includes('Error')) return true;
+    return false;
+  }
+
+  /**
+   * Obtiene el mensaje de error de la respuesta
+   */
+  private getErrorMessage(res: any): string {
+    if (res?.couple?.couple?.message) return res.couple.couple.message;
+    if (res?.message) return res.message;
+    if (res?.error) return res.error;
+    return 'Error desconocido al agregar la pareja';
   }
 
   async confirmPairs() {
@@ -330,6 +412,7 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
       return;
     }
 
+    // Validar que todas las parejas estén asignadas
     for (const jugador of this.selectedPlayers) {
       if (!jugador.partner) {
         const msg = `El jugador ${jugador.name} ${jugador.lastname} no tiene pareja asignada.`;
@@ -342,6 +425,7 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
     const confirmResult = await this.alertService.confirm('Confirmar', '¿Deseas agregar las parejas al torneo?');
     if (!confirmResult.isConfirmed) return;
 
+    // Preparar requests únicas
     const addedPairs = new Set<string>();
     const requests: any[] = [];
 
@@ -366,36 +450,47 @@ comparePlayers = (a: User | null, b: User | null): boolean => {
       return;
     }
 
-    forkJoin(requests.map(r => r.req)).subscribe({
-      next: async (responses) => {
-        const errors: string[] = [];
-        const successes: string[] = [];
+    console.log(`Iniciando procesamiento secuencial de ${requests.length} parejas...`);
+    console.log('Estructura de requests:', requests);
+    this.isProcessingPairs = true;
 
-        responses.forEach((res, i) => {
-          const jugador = requests[i].jugador;
-          const coupleData = res?.couple?.couple;
+    try {
+      // ✅ PROCESAMIENTO SECUENCIAL en lugar de forkJoin
+      const results = await this.processPairsSequentially(requests);
 
-          if (coupleData?.ok) {
-            successes.push(`${jugador.name} + ${jugador.partner!.name}`);
-          } else {
-            const msg = coupleData?.message || 'Error al agregar la pareja.';
-            errors.push(`Jugador: ${jugador.name} ${jugador.lastname}, Pareja: ${jugador.partner!.name} — ${msg}`);
-          }
-        });
-
-        if (successes.length > 0) {
-          await this.alertService.success('Parejas agregadas', successes.join(', '));
-        }
-
-        if (errors.length > 0) {
-          await this.alertService.error('Algunos errores ocurrieron', errors.join('\n'));
-        }
-
-        this.dialogRef.close(true);
-      },
-      error: async () => {
-        await this.alertService.error('Error', 'Ocurrió un error al agregar las parejas.');
+      // Mostrar resultados
+      if (results.successes.length > 0) {
+        await this.alertService.success(
+          'Parejas agregadas', 
+          `Se agregaron ${results.successes.length} parejas exitosamente:\n${results.successes.join('\n')}`
+        );
       }
-    });
+
+      if (results.errors.length > 0) {
+        await this.alertService.error(
+          'Algunos errores ocurrieron', 
+          `Errores en ${results.errors.length} parejas:\n${results.errors.join('\n')}`
+        );
+      }
+
+      // Cerrar diálogo solo si hubo al menos un éxito, o preguntar al usuario
+      if (results.successes.length > 0) {
+        this.dialogRef.close(true);
+      } else if (results.errors.length > 0) {
+        const retry = await this.alertService.confirm(
+          'Error', 
+          'No se pudo agregar ninguna pareja. ¿Deseas intentarlo de nuevo?'
+        );
+        if (!retry.isConfirmed) {
+          this.dialogRef.close(false);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error general en el procesamiento:', error);
+      await this.alertService.error('Error', 'Ocurrió un error inesperado al procesar las parejas.');
+    } finally {
+      this.isProcessingPairs = false;
+    }
   }
 }

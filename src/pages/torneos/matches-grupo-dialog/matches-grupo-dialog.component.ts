@@ -174,74 +174,89 @@ export class MatchesGrupoDialogComponent implements OnInit {
 
   // Guardar un set individual
   saveSet(game: Game, setIndex: number) {
-    if (!game.sets) return;
+  if (!game.sets) return;
 
-    const set = game.sets[setIndex];
+  const set = game.sets[setIndex];
 
-    // Validaciones antes de guardar
-    if (!this.isSetComplete(set)) {
-      if (set.score_1 === set.score_2) {
-        this.snackBar.open('Los scores no pueden ser iguales', 'Cerrar', {
-          duration: 3000,
-        });
-      } else if (set.score_1 === 0 && set.score_2 === 0) {
-        this.snackBar.open('Ingresa al menos un score mayor que cero', 'Cerrar', {
-          duration: 3000,
-        });
-      } else {
-        this.snackBar.open('Completa el set correctamente antes de guardar', 'Cerrar', {
-          duration: 3000,
-        });
-      }
+  // Validaciones antes de guardar
+  if (!this.isSetComplete(set)) {
+    if (set.score_1 === set.score_2) {
+      this.snackBar.open('Los scores no pueden ser iguales', 'Cerrar', { duration: 3000 });
+    } else if (set.score_1 === 0 && set.score_2 === 0) {
+      this.snackBar.open('Ingresa al menos un score mayor que cero', 'Cerrar', { duration: 3000 });
+    } else {
+      this.snackBar.open('Completa el set correctamente antes de guardar', 'Cerrar', { duration: 3000 });
+    }
+    return;
+  }
+  const validScores = [6, 7];
+    if (!validScores.includes(set.score_1) && !validScores.includes(set.score_2)) {
+      this.snackBar.open('Al menos una de las casillas debe tener 6 o 7 ', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
-    this.savingSetGameId = game.game_id;
+  this.savingSetGameId = game.game_id;
 
-    this.tournamentService.storeSet({
-      game_id: game.game_id,
-      set_number: set.set_number,
-      score_1: set.score_1,
-      score_2: set.score_2
-    }).subscribe({
-      next: (response: any) => {
-        console.log(`Set ${set.set_number} guardado:`, response);
-        set.is_completed = true;
-        set.winner = set.score_1 > set.score_2 ? 1 : 2;
+  this.tournamentService.storeSet({
+    game_id: game.game_id,
+    set_number: set.set_number,
+    score_1: set.score_1,
+    score_2: set.score_2
+  }).subscribe({
 
-        // Verificar si después de guardar este set el partido queda decidido
-        const team1Wins = this.getTeamScore(game.sets, 1);
-        const team2Wins = this.getTeamScore(game.sets, 2);
+    next: (response: any) => {
+      console.log(`Set ${set.set_number} guardado:`, response);
 
-        // Si después del set 2 el partido está decidido (2-0), marcar automáticamente
-        // AGREGAR VERIFICACIÓN DE SEGURIDAD
-        if (setIndex === 1 && (team1Wins === 2 || team2Wins === 2) && game.sets) {
-          // El partido terminó 2-0, marcar el tercer set como no jugado
-          if (game.sets[2]) {
-            game.sets[2].is_completed = true;
-            game.sets[2].score_1 = 0;
-            game.sets[2].score_2 = 0;
-            game.sets[2].winner = undefined;
-          }
-        }
-
-        // Verificar si el partido está completo
-        this.checkIfGameIsComplete(game);
-
-        this.snackBar.open(`Set ${set.set_number} guardado exitosamente`, 'Cerrar', {
-          duration: 3000,
-        });
+      // ⛔ Si el backend envía un mensaje tipo error (aunque diga success)
+      if (response?.message?.includes('❌')) {
+        this.snackBar.open(response.message, 'Cerrar', { duration: 5000 });
         this.savingSetGameId = null;
-      },
-      error: (error) => {
-        console.error(`Error guardando set ${set.set_number}:`, error);
-        this.snackBar.open('Error al guardar el set', 'Cerrar', {
-          duration: 5000,
-        });
-        this.savingSetGameId = null;
+        return; // No continuar procesando
       }
-    });
-  }
+
+      // Si todo OK, continuar
+      set.is_completed = true;
+      set.winner = set.score_1 > set.score_2 ? 1 : 2;
+
+      // Verificar si después de guardar este set el partido queda decidido
+      const team1Wins = this.getTeamScore(game.sets, 1);
+      const team2Wins = this.getTeamScore(game.sets, 2);
+
+      // Si el partido terminó 2-0, marcar el tercer set como no jugado
+      if (setIndex === 1 && (team1Wins === 2 || team2Wins === 2) && game.sets) {
+        if (game.sets[2]) {
+          game.sets[2].is_completed = true;
+          game.sets[2].score_1 = 0;
+          game.sets[2].score_2 = 0;
+          game.sets[2].winner = undefined;
+        }
+      }
+
+      // Verificar si el partido está completo
+      this.checkIfGameIsComplete(game);
+
+      this.snackBar.open(`Set ${set.set_number} guardado exitosamente`, 'Cerrar', {
+        duration: 3000,
+      });
+
+      this.savingSetGameId = null;
+    },
+
+    error: (error) => {
+      console.error(`Error guardando set ${set.set_number}:`, error);
+
+      // Mostrar mensaje del backend si existe
+      const backendMessage = error?.error?.message || 'Error al guardar el set';
+
+      this.snackBar.open(backendMessage, 'Cerrar', { duration: 5000 });
+
+      this.savingSetGameId = null;
+    }
+  });
+}
+
 
   // Verificar si un set está completo
   isSetComplete(set: Set): boolean {
