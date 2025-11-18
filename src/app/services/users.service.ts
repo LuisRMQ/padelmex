@@ -222,4 +222,10 @@ export class UsersService extends ApiBaseService {
         );
     }
 
+    getUserGameHistory(userId: number): Observable<any[]> {
+    return this.get<any>(`/user/gameHistory/${userId}`).pipe(
+        map(res => res.data ?? res) 
+    );
+}
+
 }

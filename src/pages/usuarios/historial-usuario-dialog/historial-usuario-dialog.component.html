@@ -1,0 +1,102 @@
+<!-- MENSAJE CUANDO NO HAY REGISTROS -->
+<div *ngIf="!tournaments || tournaments.length === 0" class="no-data">
+  <mat-icon>info</mat-icon>
+  <span>No hay registros</span>
+</div>
+
+<!-- LISTA DE CARDS -->
+<div class="cards-container" *ngIf="tournaments && tournaments.length > 0">
+  <ng-container *ngFor="let t of tournaments">
+    <mat-card class="tournament-card" [class.past-tournament]="isPast(t.end_date)">
+      
+      <!-- Header con imagen y badge de fechas -->
+      <div class="card-media">
+        <div class="image-container">
+          <img 
+            mat-card-image 
+            [src]="t.tournament_photo || placeholder" 
+            [alt]="t.tournament_name"
+            class="tournament-image"
+            (error)="onImageError($event)"
+          />
+          <div class="image-overlay"></div>
+        </div>
+        
+        <!-- Badge de fechas flotante -->
+        <div class="date-badge" [class.past]="isPast(t.end_date)">
+          <div class="date-icon">
+            <mat-icon aria-hidden="false" aria-label="calendar">event</mat-icon>
+          </div>
+          <div class="date-content">
+            <div class="start-date">{{ t.start_date | date:'dd MMM' }}</div>
+            <div class="date-separator">—</div>
+            <div class="end-date">{{ t.end_date | date:'dd MMM yyyy' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenido de la tarjeta -->
+      <mat-card-content class="card-content">
+
+        <!-- Header con título y ranking -->
+        <div class="card-header">
+          <h3 class="tournament-title">{{ t.tournament_name }}</h3>
+          <div class="ranking-badge">
+            <span class="ranking-value">{{ t.tournament_ranking }}</span>
+            <span class="ranking-label">PTS</span>
+          </div>
+        </div>
+
+        <!-- Metadatos del torneo -->
+        <div class="tournament-meta">
+          <div class="meta-item">
+            <mat-icon class="meta-icon">category</mat-icon>
+            <span>{{ t.category_name }}</span>
+          </div>
+          <div class="meta-item">
+            <mat-icon class="meta-icon">wc</mat-icon>
+            <span>{{ t.gender }}</span>
+          </div>
+          <div class="meta-item">
+            <mat-icon class="meta-icon">trending_up</mat-icon>
+            <span>Nivel {{ t.level }}</span>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-container">
+          <div class="stat-item">
+            <div class="stat-icon ranking">
+              <mat-icon>emoji_events</mat-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">Posición</div>
+              <div class="stat-value">{{ t.ranking_torneo }}</div>
+            </div>
+          </div>
+
+          <div class="stat-item">
+            <div class="stat-icon points">
+              <mat-icon>military_tech</mat-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-label">Puntos Ganados</div>
+              <div class="stat-value highlight">{{ t.puntos_ganados }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado del torneo -->
+        <div class="tournament-status" [class.past]="isPast(t.end_date)">
+          <mat-icon class="status-icon">
+            {{ isPast(t.end_date) ? 'check_circle' : 'schedule' }}
+          </mat-icon>
+          <span class="status-text">
+            {{ isPast(t.end_date) ? 'Finalizado' : 'En progreso' }}
+          </span>
+        </div>
+      </mat-card-content>
+
+    </mat-card>
+  </ng-container>
+</div>

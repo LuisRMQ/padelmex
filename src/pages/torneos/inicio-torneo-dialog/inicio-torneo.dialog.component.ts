@@ -930,7 +930,7 @@ getPlayerNames(players?: any): string {
 
   const nombresConLevel = players.map(p => {
     const level = p.level ?? 'N/A';
-    return `${p.name} <span style="color:#FF8800; font-weight:bold;">(L:${level})</span>`;
+    return `${p.name} (L:${level})`;
   });
 
   return nombresConLevel.join(' / ');

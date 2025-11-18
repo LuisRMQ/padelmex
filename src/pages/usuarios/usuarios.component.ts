@@ -16,6 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { RegistrarUsuarioDialogComponent } from './registrar-usuario-dialog/registrar-usuario-dialog.component';
 import { EditarUsuarioDialogComponent } from './editar-usuario-dialog/editar-usuario-dialog.component';
 import { ReservacionesUsuarioDialogComponent } from './reservaciones-usuario-dialog/reservaciones-usuario-dialog.component';
+import { TournamentsCardsComponent } from './historial-usuario-dialog/historial-usuario-dialog.component';
 
 
 import { UsersService, User  } from '../../app/services/users.service';
@@ -349,5 +350,17 @@ goToPage(page: number) {
       maxHeight: '90vh',   
       data: { userId: usuario.id!, nombre: usuario.nombre }
     })
+  }
+
+
+  abrirHistorialTorneo(usuario: UsuarioTabla){
+
+    this.dialog.open(TournamentsCardsComponent, {
+      width: 'auto',       
+      maxWidth: '95vw',   
+      maxHeight: '90vh',   
+      data: { userId: usuario.id!, nombre: usuario.nombre }
+    })
+    console.log(usuario)
   }
 }
