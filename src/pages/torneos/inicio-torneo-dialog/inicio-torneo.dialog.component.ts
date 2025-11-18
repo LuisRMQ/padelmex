@@ -13,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RegistrarGanadorDialogComponent } from './score-torneo-dialog/registrar-ganador.dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatchesGrupoDialogComponent } from '../matches-grupo-dialog/matches-grupo-dialog.component';
+import { AlertService } from '../../../app/services/alert.service';
 
 export interface Partido {
   id?: number | null;
@@ -86,7 +87,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     private dialogRef: MatDialogRef<InicioTorneoDialogComponent>,
     private tournamentService: TournamentService,
     private dialog: MatDialog,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private alertService: AlertService,
+
   ) { }
 
   ngOnInit(): void {
@@ -173,49 +176,122 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   abrirModalPartido(partido: Partido, roundIndex: number, matchIndex: number) {
-  // Validar si las parejas están completas
-  const tieneParejasCompletas = this.validarParejasCompletas(partido);
-  
-  if (!tieneParejasCompletas) {
-    return; // No abrir el modal si no hay parejas completas
+    const tieneParejasCompletas = this.validarParejasCompletas(partido);
+
+    if (!tieneParejasCompletas) {
+      return;
+    }
+
+    const puedeAbrir = this.validarPuedeAbrirModal(roundIndex);
+
+    if (!puedeAbrir) {
+      this.mostrarMensajeRondaAnteriorIncompleta(roundIndex);
+      return;
+    }
+
+    const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
+      width: '700px',
+      data: { partido, roundIndex, matchIndex },
+      disableClose: false,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.limpiarContenedores();
+      this.cargarBracket();
+      setTimeout(() => {
+        this.drawBracketSets();
+      }, 200);
+    });
   }
 
-  const dialogRef = this.dialog.open(RegistrarGanadorDialogComponent, {
-    width: '700px',
-    data: { partido, roundIndex, matchIndex },
-    disableClose: false,
-  });
 
-  dialogRef.afterClosed().subscribe(result => {
-    this.limpiarContenedores();
-    this.cargarBracket();
-    setTimeout(() => {
-      this.drawBracketSets();
-    }, 200);
-  });
-}
+  private validarPuedeAbrirModal(roundIndex: number): boolean {
+    if (!this.filteredBracket?.[0]) return false;
 
-private validarParejasCompletas(partido: Partido): boolean {
-  const juegoOriginal = partido._originalGame;
-  
-  if (juegoOriginal?.couple_1?.pending || juegoOriginal?.couple_2?.pending) {
-    return false;
+    const category = this.filteredBracket[0];
+    const allRounds = this.mapToPartidos(category);
+    const eliminationRounds = allRounds.filter(r => Array.isArray(r) && r.length > 0);
+
+    if (roundIndex === 0) {
+      return true;
+    }
+
+    const rondaAnterior = eliminationRounds[roundIndex - 1];
+
+    if (!rondaAnterior) return false;
+
+    const rondaAnteriorCompleta = rondaAnterior.every(partido =>
+      partido.status_game === 'completed'
+    );
+
+    return rondaAnteriorCompleta;
   }
 
-  const jugador1Valido = partido.jugador1 && 
-                         partido.jugador1.length > 0 && 
-                         partido.jugador1[0]?.name !== 'Por asignar' &&
-                         partido.jugador1[0]?.name !== undefined &&
-                         !partido.jugador1[0]?.name?.includes('Ganador de'); 
 
-  const jugador2Valido = partido.jugador2 && 
-                         partido.jugador2.length > 0 && 
-                         partido.jugador2[0]?.name !== 'Por asignar' &&
-                         partido.jugador2[0]?.name !== undefined &&
-                         !partido.jugador2[0]?.name?.includes('Ganador de'); 
+  private async mostrarMensajeRondaAnteriorIncompleta(roundIndex: number) {
+    const nombresRondas: { [key: string]: string } = {
+      '0': 'primera',
+      '1': 'segunda',
+      '2': 'tercera',
+      '3': 'cuarta',
+      '4': 'quinta',
+      '5': 'sexta',
+      '6': 'séptima'
+    };
 
-  return Boolean(jugador1Valido && jugador2Valido);
-}
+    const nombreRondaActual = nombresRondas[roundIndex] || `ronda ${roundIndex + 1}`;
+    const nombreRondaAnterior = nombresRondas[roundIndex - 1] || `ronda ${roundIndex}`;
+
+    const titulo = 'Ronda No Disponible';
+    const mensaje = `No puedes abrir partidos de la ${nombreRondaActual} ronda hasta que todos los partidos de la ${nombreRondaAnterior} ronda estén completos.`;
+
+    console.warn(mensaje);
+
+    await this.alertService.info(titulo, mensaje);
+  }
+
+
+  private validarRondaCompleta(roundIndex: number): boolean {
+    if (!this.filteredBracket?.[0]) return false;
+
+    const category = this.filteredBracket[0];
+    const allRounds = this.mapToPartidos(category);
+    const eliminationRounds = allRounds.filter(r => Array.isArray(r) && r.length > 0);
+
+    if (roundIndex >= eliminationRounds.length) return false;
+
+    const rondaActual = eliminationRounds[roundIndex];
+
+    const todosCompletos = rondaActual.every(partido =>
+      partido.status_game === 'completed'
+    );
+
+    return todosCompletos;
+  }
+
+
+
+  private validarParejasCompletas(partido: Partido): boolean {
+    const juegoOriginal = partido._originalGame;
+
+    if (juegoOriginal?.couple_1?.pending || juegoOriginal?.couple_2?.pending) {
+      return false;
+    }
+
+    const jugador1Valido = partido.jugador1 &&
+      partido.jugador1.length > 0 &&
+      partido.jugador1[0]?.name !== 'Por asignar' &&
+      partido.jugador1[0]?.name !== undefined &&
+      !partido.jugador1[0]?.name?.includes('Ganador de');
+
+    const jugador2Valido = partido.jugador2 &&
+      partido.jugador2.length > 0 &&
+      partido.jugador2[0]?.name !== 'Por asignar' &&
+      partido.jugador2[0]?.name !== undefined &&
+      !partido.jugador2[0]?.name?.includes('Ganador de');
+
+    return Boolean(jugador1Valido && jugador2Valido);
+  }
 
   private actualizarPartidoYRedibujar(resultado: any) {
     const gameId = resultado.gameId || resultado.id;
@@ -348,11 +424,7 @@ private validarParejasCompletas(partido: Partido): boolean {
 
     try {
       const category = this.filteredBracket[0];
-      console.log('🔍 CATEGORÍA COMPLETA:', category);
-
       const allRounds = this.mapToPartidos(category);
-      console.log('🔍 PARTIDOS MAPEADOS:', allRounds);
-
       const eliminationRounds = allRounds.filter(r => Array.isArray(r) && r.length > 0);
 
       if (eliminationRounds.length === 0) {
@@ -404,7 +476,6 @@ private validarParejasCompletas(partido: Partido): boolean {
         const rectWidth = 250;
         const rectHeight = 90;
 
-        // Fondo del recuadro
         gContainer.append('rect')
           .attr('x', xPos - 40)
           .attr('y', yPos - 45)
@@ -416,7 +487,6 @@ private validarParejasCompletas(partido: Partido): boolean {
           .attr('stroke-width', 3)
           .attr('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))');
 
-        // Ícono del trofeo
         gContainer.append('text')
           .text(icono)
           .attr('x', xPos + rectWidth / 2 - 40)
@@ -424,7 +494,6 @@ private validarParejasCompletas(partido: Partido): boolean {
           .attr('font-size', '32px')
           .attr('text-anchor', 'middle');
 
-        // Texto del nombre del ganador
         const textElement = gContainer.append('text')
           .text(ganador)
           .attr('x', xPos + rectWidth / 2 - 40)
@@ -434,12 +503,10 @@ private validarParejasCompletas(partido: Partido): boolean {
           .attr('text-anchor', 'middle')
           .attr('font-size', '16px');
 
-        // Ajuste dinámico de tamaño de texto según ancho disponible
         const maxTextWidth = rectWidth - 20;
         let fontSize = 16;
         const textNode = textElement.node() as SVGTextElement;
 
-        // Reducir tamaño de fuente si el texto es más ancho que el rectángulo
         while (textNode.getComputedTextLength() > maxTextWidth && fontSize > 8) {
           fontSize -= 1;
           textElement.attr('font-size', `${fontSize}px`);
@@ -456,96 +523,95 @@ private validarParejasCompletas(partido: Partido): boolean {
 
 
   private mapToPartidos(category: any): Partido[][] {
-  const rounds: Partido[][] = [];
-  const eliminationPhases = Object.keys(category.elimination || {});
+    const rounds: Partido[][] = [];
+    const eliminationPhases = Object.keys(category.elimination || {});
 
-  if (eliminationPhases.length === 0) {
-    return rounds;
-  }
+    if (eliminationPhases.length === 0) {
+      return rounds;
+    }
 
-  const phaseOrder: { [key: string]: number } = {
-    'sesentaicuatroavos': 1,
-    'sesentaicuatroavoss': 1,
-    'sesentaicuatro': 1,
-    'treintaidosavos': 2,
-    'treintaidos': 2,
-    'treintaidosavoss': 2,
-    'dieciseisavos': 3,
-    'dieciseis': 3,
-    'octavos': 4,
-    'cuartos': 5,
-    'semifinal': 6,
-    'semifinals': 6,
-    'final': 7,
-    'finals': 7
-  };
-
-  const sortedPhases = eliminationPhases.sort((a, b) => {
-    const orderA = phaseOrder[a.toLowerCase()] || 99;
-    const orderB = phaseOrder[b.toLowerCase()] || 99;
-    return orderA - orderB;
-  });
-
-  sortedPhases.forEach((phase, phaseIndex) => {
-    const phaseGames = category.elimination[phase] || [];
-    const isFirstRound = phaseIndex === 0;
-
-    const phaseMatches = phaseGames.map((game: any, index: number) => {
-      const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
-
-      const hasCouple1 = game.couple_1 && Object.keys(game.couple_1).length > 0;
-      const hasCouple2 = game.couple_2 && Object.keys(game.couple_2).length > 0;
-
-      // 👉 CORRECCIÓN ÚNICA: mandar la fase a la función
-       const isPlaceholderCouple = (c: any) => {
-      if (!c) return true;
-      if (Array.isArray(c) && c.length === 0) return true;
-      if (typeof c === 'object' && 'pending' in c) return true;
-      return false;
+    const phaseOrder: { [key: string]: number } = {
+      'sesentaicuatroavos': 1,
+      'sesentaicuatroavoss': 1,
+      'sesentaicuatro': 1,
+      'treintaidosavos': 2,
+      'treintaidos': 2,
+      'treintaidosavoss': 2,
+      'dieciseisavos': 3,
+      'dieciseis': 3,
+      'octavos': 4,
+      'cuartos': 5,
+      'semifinal': 6,
+      'semifinals': 6,
+      'final': 7,
+      'finals': 7
     };
 
-    const jugador1 = isPlaceholderCouple(game.couple_1) && isFirstRound
-      ? [{ name: 'Por asignar' }]
-      : this.getPlayersFromEliminationCouple(game.couple_1, isFirstRound);
-
-    const jugador2 = isPlaceholderCouple(game.couple_2) && isFirstRound
-      ? [{ name: 'Por asignar' }]
-      : this.getPlayersFromEliminationCouple(game.couple_2, isFirstRound);
-
-
-      const partido: Partido = {
-        jugador1,
-        jugador2,
-        winner_id: game.winner_id || null,
-        groupName: phase,
-        id: game.game_id || game.id || null,
-        couple1Id: game.couple_1?.id || null,
-        couple2Id: game.couple_2?.id || null,
-        game_label:
-          isFirstRound && !hasCouple1 && !hasCouple2
-            ? null
-            : game.game_label,
-        nextMatchIndex,
-        scores1: game.scores1 || [0, 0, 0],
-        scores2: game.scores2 || [0, 0, 0],
-        date: game.date,
-        start_time: game.start_time,
-        end_time: game.end_time,
-        court: game.court,
-        status_game: game.status_game || 'Not started',
-        _originalGame: game
-      };
-
-      return partido;
+    const sortedPhases = eliminationPhases.sort((a, b) => {
+      const orderA = phaseOrder[a.toLowerCase()] || 99;
+      const orderB = phaseOrder[b.toLowerCase()] || 99;
+      return orderA - orderB;
     });
 
-    if (phaseMatches.length > 0) {
-      rounds.push(phaseMatches);
-    }
-  });
+    sortedPhases.forEach((phase, phaseIndex) => {
+      const phaseGames = category.elimination[phase] || [];
+      const isFirstRound = phaseIndex === 0;
 
-  return rounds;
-}
+      const phaseMatches = phaseGames.map((game: any, index: number) => {
+        const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
+
+        const hasCouple1 = game.couple_1 && Object.keys(game.couple_1).length > 0;
+        const hasCouple2 = game.couple_2 && Object.keys(game.couple_2).length > 0;
+
+        const isPlaceholderCouple = (c: any) => {
+          if (!c) return true;
+          if (Array.isArray(c) && c.length === 0) return true;
+          if (typeof c === 'object' && 'pending' in c) return true;
+          return false;
+        };
+
+        const jugador1 = isPlaceholderCouple(game.couple_1) && isFirstRound
+          ? [{ name: 'Por asignar' }]
+          : this.getPlayersFromEliminationCouple(game.couple_1, isFirstRound);
+
+        const jugador2 = isPlaceholderCouple(game.couple_2) && isFirstRound
+          ? [{ name: 'Por asignar' }]
+          : this.getPlayersFromEliminationCouple(game.couple_2, isFirstRound);
+
+
+        const partido: Partido = {
+          jugador1,
+          jugador2,
+          winner_id: game.winner_id || null,
+          groupName: phase,
+          id: game.game_id || game.id || null,
+          couple1Id: game.couple_1?.id || null,
+          couple2Id: game.couple_2?.id || null,
+          game_label:
+            isFirstRound && !hasCouple1 && !hasCouple2
+              ? null
+              : game.game_label,
+          nextMatchIndex,
+          scores1: game.scores1 || [0, 0, 0],
+          scores2: game.scores2 || [0, 0, 0],
+          date: game.date,
+          start_time: game.start_time,
+          end_time: game.end_time,
+          court: game.court,
+          status_game: game.status_game || 'Not started',
+          _originalGame: game
+        };
+
+        return partido;
+      });
+
+      if (phaseMatches.length > 0) {
+        rounds.push(phaseMatches);
+      }
+    });
+
+    return rounds;
+  }
 
 
 
@@ -558,46 +624,39 @@ private validarParejasCompletas(partido: Partido): boolean {
     return null;
   }
 
- private getPlayersFromEliminationCouple(couple: any, isFirstRound: boolean = false): any[] {
-  if (!couple) return [{ name: 'Por asignar' }];
+  private getPlayersFromEliminationCouple(couple: any, isFirstRound: boolean = false): any[] {
+    if (!couple) return [{ name: 'Por asignar' }];
 
-  // Caso: estructura con players reales
-  if (couple.players && Array.isArray(couple.players)) {
-    return couple.players.map((p: any) => ({
-      name: p?.name ?? 'Jugador sin nombre',
-      level: p?.level,
-      tournament_victories: p?.tournament_victories
-    }));
-  }
-
-  // Caso: couple es array de jugadores
-  if (Array.isArray(couple) && couple.length > 0) {
-    return couple.map((p: any) => ({
-      name: p?.name ?? 'Jugador sin nombre',
-      level: p?.level,
-      tournament_victories: p?.tournament_victories
-    }));
-  }
-
-  // Caso: estructura con pending
-  if (typeof couple === 'object' && 'pending' in couple) {
-    const text = String(couple.pending || '').trim();
-
-    // detectar "Ganador de JX" (permitir espacio opcional y mayúsc/minúsc)
-    const esGanador = /^Ganador de\s*J\d+$/i.test(text);
-
-    if (isFirstRound) {
-      // en la primera ronda preferimos mostrar "Por asignar"
-      return [{ name: 'Por asignar' }];
+    if (couple.players && Array.isArray(couple.players)) {
+      return couple.players.map((p: any) => ({
+        name: p?.name ?? 'Jugador sin nombre',
+        level: p?.level,
+        tournament_victories: p?.tournament_victories
+      }));
     }
 
-    // si no es primera ronda, mostramos el texto tal cual (p.e. "Ganador de J1")
-    return [{ name: text }];
-  }
+    if (Array.isArray(couple) && couple.length > 0) {
+      return couple.map((p: any) => ({
+        name: p?.name ?? 'Jugador sin nombre',
+        level: p?.level,
+        tournament_victories: p?.tournament_victories
+      }));
+    }
 
-  // Caso final por defecto
-  return [{ name: 'Por asignar' }];
-}
+    if (typeof couple === 'object' && 'pending' in couple) {
+      const text = String(couple.pending || '').trim();
+
+      const esGanador = /^Ganador de\s*J\d+$/i.test(text);
+
+      if (isFirstRound) {
+        return [{ name: 'Por asignar' }];
+      }
+
+      return [{ name: text }];
+    }
+
+    return [{ name: 'Por asignar' }];
+  }
 
 
 
@@ -670,52 +729,50 @@ private validarParejasCompletas(partido: Partido): boolean {
 
 
   private drawModernEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
-  const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
-  const jugador1Safe = this.getSafePlayers(partido.jugador1);
-  const jugador2Safe = this.getSafePlayers(partido.jugador2);
+    const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
+    const jugador1Safe = this.getSafePlayers(partido.jugador1);
+    const jugador2Safe = this.getSafePlayers(partido.jugador2);
 
-  const { isPlayer1Winner, isPlayer2Winner } = this.determineWinnersFromOriginalData(partido);
+    const { isPlayer1Winner, isPlayer2Winner } = this.determineWinnersFromOriginalData(partido);
 
-  g.append('rect')
-    .attr('width', this.matchWidth)
-    .attr('height', this.matchHeight)
-    .attr('fill', '#ffffff')
-    .attr('stroke', '#e2e8f0')
-    .attr('stroke-width', 2)
-    .attr('rx', 12)
-    .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
+    g.append('rect')
+      .attr('width', this.matchWidth)
+      .attr('height', this.matchHeight)
+      .attr('fill', '#ffffff')
+      .attr('stroke', '#e2e8f0')
+      .attr('stroke-width', 2)
+      .attr('rx', 12)
+      .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
 
-  this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
-  this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
+    this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
+    this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
 
-  this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
-  this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
+    this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
+    this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
 
-  if (partido.status_game === 'completed' && partido.winner_id) {
-    this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
+    if (partido.status_game === 'completed' && partido.winner_id) {
+      this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
+    }
+
+    if (partido.game_label) {
+      this.drawGameLabel(g, partido.game_label);
+    }
+
+    const tieneParejasCompletas = this.validarParejasCompletas(partido);
+
+    if (tieneParejasCompletas) {
+      g.style('cursor', 'pointer')
+        .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
+    } else {
+      g.style('cursor', 'not-allowed')
+        .append('title')
+        .text('No se puede abrir el partido: parejas incompletas');
+
+      g.selectAll('rect')
+        .attr('fill', '#f9fafb')
+        .attr('stroke', '#d1d5db');
+    }
   }
-
-  if (partido.game_label) {
-    this.drawGameLabel(g, partido.game_label);
-  }
-
-  // Validar si se puede hacer clic
-  const tieneParejasCompletas = this.validarParejasCompletas(partido);
-  
-  if (tieneParejasCompletas) {
-    g.style('cursor', 'pointer')
-     .on('click', () => this.abrirModalPartido(partido, roundIndex, matchIndex));
-  } else {
-    g.style('cursor', 'not-allowed')
-     .append('title')
-     .text('No se puede abrir el partido: parejas incompletas');
-    
-    // Opcional: agregar un estilo visual para partidos bloqueados
-    g.selectAll('rect')
-     .attr('fill', '#f9fafb')
-     .attr('stroke', '#d1d5db');
-  }
-}
 
 
 
@@ -919,27 +976,27 @@ private validarParejasCompletas(partido: Partido): boolean {
     `;
   }
 
-getPlayerNames(players?: any): string {
-  if (!players) return 'Por asignar';
+  getPlayerNames(players?: any): string {
+    if (!players) return 'Por asignar';
 
-  if (typeof players === 'object' && !Array.isArray(players) && 'pending' in players) {
-    return players.pending;
+    if (typeof players === 'object' && !Array.isArray(players) && 'pending' in players) {
+      return players.pending;
+    }
+
+    if (Array.isArray(players) && players.length > 0) {
+
+      const nombresConLevel = players.map(p => {
+        const level = p.level ?? 'N/A';
+        return `${p.name} (L:${level})`;
+      });
+
+      return nombresConLevel.join(' / ');
+    }
+
+    if (typeof players === 'string') return players;
+
+    return 'Por asignar';
   }
-
-  if (Array.isArray(players) && players.length > 0) {
-
-  const nombresConLevel = players.map(p => {
-    const level = p.level ?? 'N/A';
-    return `${p.name} (L:${level})`;
-  });
-
-  return nombresConLevel.join(' / ');
-}
-
-  if (typeof players === 'string') return players;
-
-  return 'Por asignar';
-}
 
 
   toggleResultsSidebar() {
