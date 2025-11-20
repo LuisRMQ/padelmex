@@ -19,7 +19,7 @@ import { ReservacionesUsuarioDialogComponent } from './reservaciones-usuario-dia
 import { TournamentsCardsComponent } from './historial-usuario-dialog/historial-usuario-dialog.component';
 
 
-import { UsersService, User  } from '../../app/services/users.service';
+import { UsersService, User } from '../../app/services/users.service';
 import { CourtService } from '../../app/services/court.service';
 
 export interface UsuarioTabla {
@@ -76,10 +76,10 @@ export class UsuariosComponent implements OnInit {
 
 
 
-currentPage: number = 1;
-lastPage: number = 1;
-usuarios: any[] = []; 
-loading: boolean = false;
+  currentPage: number = 1;
+  lastPage: number = 1;
+  usuarios: any[] = [];
+  loading: boolean = false;
 
 
 
@@ -107,56 +107,81 @@ loading: boolean = false;
   }
 
   cargarUsuarios(page: number = 1) {
-  this.loading = true;
+    this.loading = true;
 
-  this.usersService.getUserss(page).subscribe({
-    next: (res: { data: User[], current_page: number, last_page: number }) => {
-      this.usuariosTabla = res.data.map((u: User) => ({
-        id: u.id,
-        nombre: u.name,
-        apellidos: u.lastname,
-        correo: u.email,
-        genero: u.gender,
-        rol: u.rol || '-',
-        rol_id: u.rol_id,
-        club: this.clubs.find(c => c.id === u.club_id)?.name || '-',
-        club_id: u.club_id,
-        categoria: u.category || '-',
-        victorias: '-',
-        puntos: 0,
-        fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
-        manoPreferida: '-',
-        identificacion: '-',
-        telefono: u.phone || '-',
-        area_code: u.area_code || '-'
-      }));
+    this.usersService.getUserss(page).subscribe({
+      next: (res: { data: User[], current_page: number, last_page: number }) => {
+        this.usuariosTabla = res.data.map((u: User) => ({
+          id: u.id,
+          nombre: u.name,
+          apellidos: u.lastname,
+          correo: u.email,
+          genero: u.gender,
+          rol: u.rol || '-',
+          rol_id: u.rol_id,
+          club: this.clubs.find(c => c.id === u.club_id)?.name || '-',
+          club_id: u.club_id,
+          categoria: u.category || '-',
+          victorias: '-',
+          puntos: 0,
+          fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
+          manoPreferida: '-',
+          identificacion: '-',
+          telefono: u.phone || '-',
+          area_code: u.area_code || '-'
+        }));
 
-      this.usuariosFiltrados = [...this.usuariosTabla];
-      this.currentPage = res.current_page;
-      this.lastPage = res.last_page;
-      this.loading = false;
-    },
-    error: (err) => {
-      console.error('Error al cargar usuarios:', err);
-      this.loading = false;
-    }
-  });
-}
+        this.usuariosFiltrados = [...this.usuariosTabla];
+        this.currentPage = res.current_page;
+        this.lastPage = res.last_page;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar usuarios:', err);
+        this.loading = false;
+      }
+    });
+  }
 
 
-goToPage(page: number) {
-  if (page < 1 || page > this.lastPage) return;
-  this.cargarUsuarios(page);
-}
-
+  goToPage(page: number) {
+    if (page < 1 || page > this.lastPage) return;
+    this.cargarUsuarios(page);
+  }
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
-    this.usuariosFiltrados = this.usuariosTabla.filter(u =>
-      u.nombre.toLowerCase().includes(filterValue) ||
-      u.apellidos.toLowerCase().includes(filterValue) ||
-      u.correo.toLowerCase().includes(filterValue) ||
-      u.club.toLowerCase().includes(filterValue)
-    );
+
+    if (!filterValue) {
+      this.usuariosFiltrados = [...this.usuariosTabla];
+      return;
+    }
+
+    this.usersService.searchAllUsersv2(filterValue).subscribe({
+      next: (users) => {
+        this.usuariosFiltrados = users.map(u => ({
+          id: u.id,
+          nombre: u.name,
+          apellidos: u.lastname,
+          correo: u.email,
+          genero: u.gender,
+          rol: u.rol || '-',
+          rol_id: u.rol_id,
+          club: this.clubs.find(c => c.id === u.club_id)?.name || '-',
+          club_id: u.club_id,
+          categoria: u.category || '-',
+          victorias: '-',
+          puntos: 0,
+          fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
+          manoPreferida: '-',
+          identificacion: '-',
+          telefono: u.phone || '-',
+          area_code: u.area_code || '-'
+        }));
+      },
+      error: (err) => {
+        console.error("Error al buscar usuarios:", err);
+      }
+    });
   }
 
   eliminarUsuario(usuario: UsuarioTabla) {
@@ -345,20 +370,20 @@ goToPage(page: number) {
 
   VerReservaciones(usuario: UsuarioTabla) {
     this.dialog.open(ReservacionesUsuarioDialogComponent, {
-      width: 'auto',       
-      maxWidth: '95vw',   
-      maxHeight: '90vh',   
+      width: 'auto',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
       data: { userId: usuario.id!, nombre: usuario.nombre }
     })
   }
 
 
-  abrirHistorialTorneo(usuario: UsuarioTabla){
+  abrirHistorialTorneo(usuario: UsuarioTabla) {
 
     this.dialog.open(TournamentsCardsComponent, {
-      width: 'auto',       
-      maxWidth: '95vw',   
-      maxHeight: '90vh',   
+      width: 'auto',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
       data: { userId: usuario.id!, nombre: usuario.nombre }
     })
     console.log(usuario)

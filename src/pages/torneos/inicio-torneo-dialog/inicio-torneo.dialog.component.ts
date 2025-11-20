@@ -935,35 +935,49 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     return fullName.substring(0, 20) + (fullName.length > 20 ? '...' : '');
   }
 
-  private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
-    const currentRound = eliminationRounds[roundIndex];
-    const nextRound = eliminationRounds[roundIndex + 1];
+ private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
+  const currentRound = eliminationRounds[roundIndex];
+  console.log(currentRound)
+  const nextRound = eliminationRounds[roundIndex + 1];
 
-    currentRound.forEach(partido => {
-      if (partido.nextMatchIndex != null && nextRound[partido.nextMatchIndex]) {
-        const currentX = partido.x! + this.matchWidth;
-        const currentY = partido.y! + (partido.height! / 2);
-        const nextPartido = nextRound[partido.nextMatchIndex];
-        const nextX = nextPartido.x!;
-        const nextY = nextPartido.y! + (nextPartido.height! / 2);
+  currentRound.forEach(partido => {
+    const destino = nextRound?.[partido.nextMatchIndex ?? -1];
+    console.log(destino)
+    if (
+      partido.nextMatchIndex != null &&
+      destino &&
+      destino.x != null &&
+      destino.y != null
+    ) {
+      const currentX = partido.x! + this.matchWidth;
+      const currentY = partido.y! + (partido.height! / 2);
 
-        gContainer.append('line')
-          .attr('x1', currentX).attr('y1', currentY)
-          .attr('x2', currentX + (this.spacingX / 3)).attr('y2', currentY)
-          .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
+      const nextX = destino.x!;
+      const nextY = destino.y! + (destino.height! / 2);
 
-        gContainer.append('line')
-          .attr('x1', currentX + (this.spacingX / 3)).attr('y1', currentY)
-          .attr('x2', currentX + (this.spacingX / 3)).attr('y2', nextY)
-          .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
+      const midX = currentX + (this.spacingX / 3);
 
-        gContainer.append('line')
-          .attr('x1', currentX + (this.spacingX / 3)).attr('y1', nextY)
-          .attr('x2', nextX).attr('y2', nextY)
-          .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
-      }
-    });
-  }
+      // Línea horizontal desde el partido actual
+      gContainer.append('line')
+        .attr('x1', currentX).attr('y1', currentY)
+        .attr('x2', midX).attr('y2', currentY)
+        .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
+
+      // Línea vertical hacia el partido destino
+      gContainer.append('line')
+        .attr('x1', midX).attr('y1', currentY)
+        .attr('x2', midX).attr('y2', nextY)
+        .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
+
+      // Línea horizontal final
+      gContainer.append('line')
+        .attr('x1', midX).attr('y1', nextY)
+        .attr('x2', nextX).attr('y2', nextY)
+        .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
+    }
+  });
+}
+
 
   private showErrorState(container: HTMLElement) {
     container.innerHTML = `

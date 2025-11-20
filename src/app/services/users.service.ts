@@ -202,6 +202,45 @@ export class UsersService extends ApiBaseService {
     }
 
 
+    searchAllUsersv2(searchTerm: string = ''): Observable<User[]> {
+    let params = new HttpParams();
+    
+    // Solo agregar el parámetro de búsqueda si hay término
+    if (searchTerm) {
+        params = params.set('search', searchTerm);
+    }
+
+    return new Observable<User[]>(observer => {
+        this.get<UsersResponse>('/users', params).subscribe({
+            next: firstPage => {
+                let allUsers = [...firstPage.data];
+                const totalPages = firstPage.last_page;
+
+                if (totalPages > 1) {
+                    const observables = [];
+                    for (let page = 2; page <= totalPages; page++) {
+                        observables.push(this.get<UsersResponse>(`/users?page=${page}`, params));
+                    }
+
+                    forkJoin(observables).subscribe({
+                        next: results => {
+                            results.forEach(r => allUsers.push(...r.data));
+                            observer.next(allUsers);
+                            observer.complete();
+                        },
+                        error: err => observer.error(err)
+                    });
+                } else {
+                    observer.next(allUsers);
+                    observer.complete();
+                }
+            },
+            error: err => observer.error(err)
+        });
+    });
+}
+
+
     deleteUser(id: number): Observable<any> {
         return this.delete(`/user/delete/${id}`);
     }

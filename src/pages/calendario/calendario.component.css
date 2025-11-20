@@ -340,73 +340,109 @@ mat-spinner {
   margin-right: 12px;
 }
 
-/* Ajustes responsivos */
-@media (max-width: 768px) {
-  .loading-state {
-    flex-direction: column;
-    text-align: center;
-    padding: 30px 20px;
-  }
-  
-  .empty-state {
-    padding: 40px 20px;
-  }
-  
-  .empty-state mat-icon {
-    font-size: 36px;
-    width: 36px;
-    height: 36px;
-  }
+/* En calendario.component.css */
+.court-hours-badge {
+  font-size: 0.7em;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
 
-  .header {
-  display: flex;
+.slot-outside-hours {
+  background-color: #dbdbdb !important;
+  cursor: not-allowed !important;
+}
+
+.slot-outside-hours:hover {
+  background-color: #9e9d9d !important;
+}
+
+.time-slot.slot-selectable {
+  background-color: rgba(25, 118, 210, 0.05);
+  cursor: pointer;
+}
+
+.time-slot.slot-selectable:hover {
+  background-color: rgba(25, 118, 210, 0.1);
+}
+
+.loading-court-hours {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  margin-left: 8px;
 }
 
-.header h6 {
-  margin: 0;
-  min-width: 300px;
-  font-size: 14px;
-  color: #666;
-  background: #f5f5f5;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
+.court-closed {
+  position: relative;
+  opacity: 0.7;
 }
 
-.court-selector {
-  margin-left: 16px;
+.court-closed-badge {
+  font-size: 0.7em;
+  background: #ffebee;
+  color: #c62828;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  font-weight: bold;
 }
 
-.loading-state, .empty-state {
+.court-closed-overlay {
+  position: absolute;
+  top: 40px; /* Ajusta según la altura de tu header */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 235, 238, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  gap: 12px;
+  z-index: 10;
+  pointer-events: none;
 }
 
-.empty-state {
-  flex-direction: column;
-  text-align: center;
+.closed-message {
+  background: #ff5252;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
 }
 
-.empty-state mat-icon {
-  font-size: 48px;
-  color: #ccc;
+.slot-court-closed {
+  background-color: #ffebee !important;
+  cursor: not-allowed !important;
 }
 
-.reservation-count {
-  font-size: 12px;
-  background: #e3f2fd;
-  color: #1976d2;
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-left: 8px;
-  font-weight: 500;
+.slot-court-closed:hover {
+  background-color: #ffebee !important;
 }
+
+/* Asegurar que los slots no sean seleccionables cuando la cancha está cerrada */
+.court-closed .time-slot {
+  cursor: not-allowed !important;
+  background-color: #ffebee !important;
+}
+
+.court-closed .time-slot:hover {
+  background-color: #ffebee !important;
+}
+
+.paginator-container {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+mat-paginator {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
 /* Tooltip styles */
@@ -525,123 +561,492 @@ mat-spinner {
 /* Reservaciones según estatus */
 .reservation.status-confirmed {
   background: linear-gradient(135deg, #e8f5e8, #a5d6a7);
-  color: black; /* texto en blanco */
+  color: black;
   border-color: #81c784;
 }
 
 .reservation.status-pending {
   background: linear-gradient(135deg, #fff3e0, #ffcc80);
-  color: black; /* texto en blanco */
+  color: black;
   border-color: #ffb74d;
 }
 
 .reservation.status-cancelled {
   background: linear-gradient(135deg, #ffebee, #ef9a9a);
-  color: black; /* texto en blanco */
+  color: black;
   border-color: #e57373;
 }
 
-/* En calendario.component.css */
-.court-hours-badge {
-  font-size: 0.7em;
-  background: #e3f2fd;
-  color: #1976d2;
-  padding: 2px 6px;
-  border-radius: 10px;
-  margin-left: 8px;
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablets grandes (1200px y menos) */
+@media (max-width: 1200px) {
+  :host {
+    --gutter-width: 70px;
+    --col-min-width: 200px;
+  }
+  
+  .header {
+    padding: 18px 25px;
+  }
+  
+  .header h2 {
+    font-size: 2.2rem;
+  }
+  
+  .time-grid {
+    height: calc((22 - 8) * 60 * 1.8px);
+  }
 }
 
-.slot-outside-hours {
-  background-color: #dbdbdb !important;
-  cursor: not-allowed !important;
+/* Tablets (1024px y menos) */
+@media (max-width: 1024px) {
+  :host {
+    --gutter-width: 60px;
+    --col-min-width: 180px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    padding: 16px 20px;
+  }
+  
+  .header h2 {
+    font-size: 2rem;
+  }
+  
+  .selectors {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .date-selector,
+  .quick-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .time-grid {
+    height: calc((22 - 8) * 60 * 1.6px);
+    background-size: var(--col-min-width) 50px;
+  }
+  
+  .time-slot {
+    height: 50px;
+  }
+  
+  .time-label {
+    font-size: 12px;
+    left: 15px;
+    margin-top: 20px;
+  }
+  
+  .court-header {
+    font-size: 12px;
+    padding: 8px;
+  }
+  
+  .reservation {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+  
+  .reservation .res-title {
+    font-size: 10px;
+  }
 }
 
-.slot-outside-hours:hover {
-  background-color: #9e9d9d !important;
+/* Tablets pequeñas (768px y menos) */
+@media (max-width: 768px) {
+  :host {
+    --gutter-width: 50px;
+    --header-height: 35px;
+    --col-min-width: 160px;
+  }
+  
+  .header {
+    padding: 14px 16px;
+    margin: 10px;
+  }
+  
+  .header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .btn-header {
+    padding: 10px 18px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .time-grid {
+    height: calc((22 - 8) * 60 * 1.4px);
+    background-size: var(--col-min-width) 45px;
+  }
+  
+  .time-slot {
+    height: 45px;
+  }
+  
+  .time-label {
+    font-size: 11px;
+    left: 10px;
+    margin-top: 15px;
+  }
+  
+  .court-header {
+    font-size: 11px;
+    padding: 6px;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .reservation-count {
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  
+  .reservation {
+    font-size: 10px;
+    padding: 3px 5px;
+    left: 4px;
+    right: 4px;
+  }
+  
+  .reservation .res-title {
+    font-size: 9px;
+    margin-bottom: 2px;
+  }
+  
+  .res-status {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+  
+  .loading-state {
+    padding: 30px 15px;
+    font-size: 14px;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .empty-state {
+    padding: 60px 15px;
+  }
+  
+  .empty-state mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .empty-state p {
+    font-size: 16px;
+  }
+  
+  .reservation-details-tooltip {
+    min-width: 280px;
+    max-width: 350px;
+    padding: 12px;
+  }
+  
+  .tooltip-header {
+    margin-bottom: 12px;
+  }
+  
+  .detail-row {
+    font-size: 13px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 6px;
+  }
 }
 
-.time-slot.slot-selectable {
-  background-color: rgba(25, 118, 210, 0.05);
-  cursor: pointer;
+/* Móviles grandes (600px y menos) */
+@media (max-width: 600px) {
+  :host {
+    --gutter-width: 45px;
+    --col-min-width: 140px;
+  }
+  
+  .header {
+    padding: 12px 14px;
+    margin: 8px;
+  }
+  
+  .header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .board {
+    grid-template-columns: var(--gutter-width) 1fr;
+    border-radius: 8px;
+  }
+  
+  .time-grid {
+    height: calc((22 - 8) * 60 * 1.2px);
+    background-size: var(--col-min-width) 40px;
+  }
+  
+  .time-slot {
+    height: 40px;
+  }
+  
+  .time-label {
+    font-size: 10px;
+    left: 8px;
+    margin-top: 12px;
+  }
+  
+  .court-header {
+    font-size: 10px;
+    padding: 4px;
+  }
+  
+  .court-hours-badge,
+  .court-closed-badge {
+    font-size: 0.6em;
+    margin-left: 4px;
+  }
+  
+  .reservation {
+    font-size: 9px;
+    padding: 2px 4px;
+    border-radius: 6px;
+  }
+  
+  .reservation .res-title {
+    font-size: 8px;
+  }
+  
+  .paginator-container {
+    margin: 10px 0;
+  }
+  
+  .warning,
+  .error {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
 }
 
-.time-slot.slot-selectable:hover {
-  background-color: rgba(25, 118, 210, 0.1);
+/* Móviles (480px y menos) */
+@media (max-width: 480px) {
+  :host {
+    --gutter-width: 40px;
+    --col-min-width: 130px;
+  }
+  
+  .header {
+    padding: 10px 12px;
+    margin: 6px;
+  }
+  
+  .header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .btn-header {
+    padding: 8px 14px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .date-selector,
+  .quick-buttons {
+    gap: 4px;
+  }
+  
+  .time-grid {
+    height: calc((22 - 8) * 60 * 1.1px);
+    background-size: var(--col-min-width) 35px;
+  }
+  
+  .time-slot {
+    height: 35px;
+  }
+  
+  .time-label {
+    font-size: 9px;
+    left: 6px;
+    margin-top: 10px;
+  }
+  
+  .court-header {
+    font-size: 9px;
+    padding: 3px;
+  }
+  
+  .reservation {
+    font-size: 8px;
+    padding: 1px 3px;
+    left: 3px;
+    right: 3px;
+  }
+  
+  .closed-message {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .court-closed-overlay {
+    top: 35px;
+  }
+  
+  .reservation-details-tooltip {
+    min-width: 250px;
+    max-width: 300px;
+    padding: 10px;
+  }
+  
+  .detail-row {
+    font-size: 12px;
+  }
+  
+  .tooltip-header h3 {
+    font-size: 1rem;
+  }
 }
 
-.loading-court-hours {
-  display: inline-flex;
-  align-items: center;
-  margin-left: 8px;
+/* Pantallas muy pequeñas (360px y menos) */
+@media (max-width: 360px) {
+  :host {
+    --gutter-width: 35px;
+    --col-min-width: 120px;
+  }
+  
+  .header {
+    padding: 8px 10px;
+    margin: 4px;
+  }
+  
+  .header h2 {
+    font-size: 1.2rem;
+  }
+  
+  .time-grid {
+    height: calc((22 - 8) * 60 * 1px);
+    background-size: var(--col-min-width) 30px;
+  }
+  
+  .time-slot {
+    height: 30px;
+  }
+  
+  .time-label {
+    font-size: 8px;
+    left: 4px;
+    margin-top: 8px;
+  }
+  
+  .court-header {
+    font-size: 8px;
+    padding: 2px;
+  }
+  
+  .reservation {
+    font-size: 7px;
+    padding: 1px 2px;
+  }
+  
+  .reservation .res-title {
+    font-size: 7px;
+  }
+  
+  .loading-state,
+  .empty-state {
+    padding: 20px 10px;
+  }
+  
+  .empty-state mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .empty-state p {
+    font-size: 14px;
+  }
 }
 
-.court-closed {
-  position: relative;
-  opacity: 0.7;
+/* Orientación landscape en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .time-grid {
+    height: calc((22 - 8) * 60 * 0.8px);
+  }
+  
+  .time-slot {
+    height: 30px;
+  }
+  
+  .time-label {
+    margin-top: 8px;
+  }
+  
+  .reservation {
+    font-size: 8px;
+    padding: 1px 3px;
+  }
 }
 
-.court-closed-badge {
-  font-size: 0.7em;
-  background: #ffebee;
-  color: #c62828;
-  padding: 2px 8px;
-  border-radius: 10px;
-  margin-left: 8px;
-  font-weight: bold;
+/* Mejoras de accesibilidad en móviles */
+@media (max-width: 768px) {
+  .btn-header:hover,
+  .reservation:hover,
+  .slot-selectable:hover {
+    transform: none; /* Eliminar transform en hover para móviles */
+  }
+  
+  /* Asegurar que los elementos sean fácilmente clickeables */
+  .time-slot {
+    min-height: 35px;
+  }
+  
+  .reservation {
+    min-height: 25px;
+  }
+  
+  .btn-header {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
-.court-closed-overlay {
-  position: absolute;
-  top: 40px; /* Ajusta según la altura de tu header */
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 235, 238, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  pointer-events: none;
+/* Scroll suave para el board */
+.board-scroll {
+  -webkit-overflow-scrolling: touch;
 }
 
-.closed-message {
-  background: #ff5252;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: bold;
+/* Ajustes para modo oscuro en responsive */
+@media (prefers-color-scheme: dark) {
+  @media (max-width: 768px) {
+    .header {
+      background: #2d2d2d;
+    }
+    
+    .court-header {
+      background: #2d2d2d;
+      color: white;
+    }
+    
+    .time-gutter,
+    .gutter-header {
+      background: #3d3d3d;
+    }
+  }
 }
 
-.slot-court-closed {
-  background-color: #ffebee !important;
-  cursor: not-allowed !important;
-}
-
-.slot-court-closed:hover {
-  background-color: #ffebee !important;
-}
-
-/* Asegurar que los slots no sean seleccionables cuando la cancha está cerrada */
-.court-closed .time-slot {
-  cursor: not-allowed !important;
-  background-color: #ffebee !important;
-}
-
-.court-closed .time-slot:hover {
-  background-color: #ffebee !important;
-}
-
-.paginator-container {
-  display: flex;
-  justify-content: center;
-  margin: 15px 0;
-}
-
-mat-paginator {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+/* Optimizaciones de rendimiento para móviles */
+@media (max-width: 768px) {
+  .reservation {
+    transition: none; /* Reducir animaciones para mejor rendimiento */
+  }
+  
+  .slot-selectable {
+    transition: none;
+  }
 }

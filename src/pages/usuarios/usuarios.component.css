@@ -189,13 +189,6 @@ tr:hover {
   transform: scale(1.1);
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .header { flex-direction: column; gap: 15px; text-align: center; }
-  .search-field { width: 100%; }
-  .detalle-grid { grid-template-columns: 1fr; }
-}
-
 .usuarios-filtros {
   display: flex;
   gap: 16px;
@@ -395,4 +388,364 @@ tr:hover {
   background: #e0e0e0;
   color: #888;
   cursor: not-allowed;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablets (1024px y menos) */
+@media (max-width: 1024px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    padding: 15px;
+  }
+
+  .header h2 {
+    font-size: 2rem;
+  }
+
+  .usuarios-filtros {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .usuarios-search {
+    width: 100%;
+  }
+
+  .usuarios-select {
+    min-width: 100%;
+  }
+
+  .usuarios-resumen {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .resumen-card {
+    min-width: calc(50% - 12px);
+    flex: none;
+  }
+
+  .detalle-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .foto-card img {
+    width: 200px;
+    height: 200px;
+  }
+
+  .datos-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+  }
+}
+
+/* Tablets pequeñas (768px y menos) */
+@media (max-width: 768px) {
+  .usuarios-container {
+    padding: 10px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+    padding: 12px 15px;
+  }
+
+  .header h2 {
+    font-size: 1.75rem;
+  }
+
+  .btn-agregar {
+    padding: 8px 18px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .usuarios-resumen {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .resumen-card {
+    min-width: 100%;
+    padding: 15px 20px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .resumen-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+    margin-right: 12px;
+  }
+
+  .resumen-value {
+    font-size: 1.3rem;
+  }
+
+  .usuarios-lista {
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  .usuarios-table {
+    font-size: 0.9rem;
+  }
+
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: 8px 6px;
+    font-size: 0.9rem;
+  }
+
+  .usuario-nombre {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .usuario-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .badge-rol,
+  .badge-categoria {
+    font-size: 0.85rem;
+    padding: 3px 10px;
+  }
+
+  .usuarios-paginacion {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .paginador {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .paginador button {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Móviles (480px y menos) */
+@media (max-width: 480px) {
+  .usuarios-container {
+    padding: 8px;
+  }
+
+  .header {
+    padding: 10px 12px;
+    margin-bottom: 15px;
+  }
+
+  .header h2 {
+    font-size: 1.5rem;
+  }
+
+  .search-field {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .tabla-container {
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  .usuarios-filtros {
+    margin-bottom: 15px;
+  }
+
+  .usuarios-search {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .resumen-card {
+    padding: 12px 15px;
+  }
+
+  .resumen-icon {
+    font-size: 1.5rem;
+    padding: 6px;
+  }
+
+  .resumen-label {
+    font-size: 0.9rem;
+  }
+
+  .resumen-value {
+    font-size: 1.2rem;
+  }
+
+  .usuarios-lista {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .usuarios-lista-header {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  /* Ocultar columnas menos importantes en móviles */
+  .usuarios-table th:nth-child(4), /* Categoría */
+  .usuarios-table td:nth-child(4),
+  .usuarios-table th:nth-child(5), /* Victorias */
+  .usuarios-table td:nth-child(5) {
+    display: none;
+  }
+
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: 6px 4px;
+    font-size: 0.85rem;
+  }
+
+  .foto-card img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .datos-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .datos-header mat-card-title {
+    font-size: 1.1rem;
+  }
+
+  .datos-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .card-actions {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+}
+
+/* Pantallas muy pequeñas (360px y menos) */
+@media (max-width: 360px) {
+  .header h2 {
+    font-size: 1.3rem;
+  }
+
+  .btn-agregar {
+    padding: 6px 14px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .resumen-card {
+    padding: 10px 12px;
+  }
+
+  .resumen-value {
+    font-size: 1.1rem;
+  }
+
+  .usuarios-table {
+    font-size: 0.8rem;
+  }
+
+  .usuarios-table th:nth-child(3), /* Correo */
+  .usuarios-table td:nth-child(3) {
+    display: none;
+  }
+
+  .badge-rol,
+  .badge-categoria {
+    font-size: 0.8rem;
+    padding: 2px 8px;
+  }
+
+  .barra-victorias {
+    width: 50px;
+  }
+
+  .foto-card img {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .usuarios-resumen {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .resumen-card {
+    min-width: calc(50% - 10px);
+    padding: 10px 12px;
+  }
+}
+
+/* Mejoras de accesibilidad en móviles */
+@media (max-width: 768px) {
+  .btn-agregar:hover {
+    transform: none; /* Eliminar transform en hover para móviles */
+  }
+
+  .datos-header button:hover {
+    transform: none;
+  }
+
+  /* Asegurar que los botones sean fácilmente clickeables */
+  .paginador button,
+  .item-actions button {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* Scroll horizontal mejorado para tablas */
+@media (max-width: 768px) {
+  .tabla-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .usuarios-table {
+    min-width: 600px; /* Ancho mínimo para mantener legibilidad */
+  }
+}
+
+/* Ajustes para modo oscuro en responsive */
+@media (prefers-color-scheme: dark) {
+  @media (max-width: 768px) {
+    .usuarios-container {
+      background: #1a1a1a;
+    }
+    
+    .header,
+    .tabla-container,
+    .usuarios-lista,
+    .resumen-card {
+      background: #2d2d2d;
+    }
+    
+    .usuarios-search {
+      background: #3d3d3d;
+      border-color: #404040;
+      color: white;
+    }
+  }
 }
