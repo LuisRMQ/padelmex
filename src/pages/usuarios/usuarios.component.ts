@@ -34,12 +34,13 @@ export interface UsuarioTabla {
   club_id?: number;
   categoria: string;
   victorias: string;
-  puntos: number;
+  point: number;
   fotoPerfil: string;
   manoPreferida: string;
   identificacion: string;
   telefono: string;
   area_code: string;
+  level: string;
 }
 
 
@@ -65,7 +66,7 @@ export interface UsuarioTabla {
   ]
 })
 export class UsuariosComponent implements OnInit {
-  displayedColumns: string[] = ['nombre', 'victorias', 'puntos', 'rol', 'club', 'categoria', 'acciones'];
+  displayedColumns: string[] = ['nombre', 'victorias', 'puntos', 'rol', 'club','level','categoria', 'acciones'];
   dataSource = new MatTableDataSource<UsuarioTabla>([]);
   editando: boolean = false;
   formUsuario: any = {};
@@ -123,12 +124,14 @@ export class UsuariosComponent implements OnInit {
           club_id: u.club_id,
           categoria: u.category || '-',
           victorias: '-',
-          puntos: 0,
+           point: u.point || 0,
           fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
           manoPreferida: '-',
           identificacion: '-',
           telefono: u.phone || '-',
-          area_code: u.area_code || '-'
+          area_code: u.area_code || '-',
+          level: u.level || '-'
+
         }));
 
         this.usuariosFiltrados = [...this.usuariosTabla];
@@ -170,12 +173,14 @@ export class UsuariosComponent implements OnInit {
           club_id: u.club_id,
           categoria: u.category || '-',
           victorias: '-',
-          puntos: 0,
+          point: u.point || 0,
           fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
           manoPreferida: '-',
           identificacion: '-',
           telefono: u.phone || '-',
-          area_code: u.area_code || '-'
+          area_code: u.area_code || '-',
+          level: u.level || '-'
+
         }));
       },
       error: (err) => {

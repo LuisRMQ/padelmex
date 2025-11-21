@@ -19,6 +19,8 @@ export interface User {
     rol?: string;
     category?: string;
     rol_id?: number;
+    level?: string;
+    point?:number;
     category_id?: number;
     paid_by_owner?: boolean;
     created_at?: string;

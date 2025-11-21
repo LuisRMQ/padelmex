@@ -65,6 +65,8 @@
             <th>TELEFONO</th>
             <th>ROL</th>
             <th>CLUB</th>
+            <th>NIVEL / PUNTOS</th>
+
             <th>CATEGORÍA</th>
             <th>ACCIONES</th>
           </tr>
@@ -93,6 +95,12 @@
             <td>
               {{ usuario.club }}
             </td>
+
+                <td>
+              {{ usuario.level }} / {{ usuario.point }}
+            </td>
+            
+             
             <td>
               <span class="badge-categoria" [ngClass]="usuario.categoria | lowercase">{{ usuario.categoria }}</span>
             </td>

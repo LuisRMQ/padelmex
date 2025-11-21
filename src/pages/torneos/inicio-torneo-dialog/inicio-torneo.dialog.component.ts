@@ -935,48 +935,76 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     return fullName.substring(0, 20) + (fullName.length > 20 ? '...' : '');
   }
 
- private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
+  
+private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
   const currentRound = eliminationRounds[roundIndex];
-  console.log(currentRound)
   const nextRound = eliminationRounds[roundIndex + 1];
 
+  if (!nextRound) return;
+
   currentRound.forEach(partido => {
-    const destino = nextRound?.[partido.nextMatchIndex ?? -1];
-    console.log(destino)
-    if (
-      partido.nextMatchIndex != null &&
-      destino &&
-      destino.x != null &&
-      destino.y != null
-    ) {
-      const currentX = partido.x! + this.matchWidth;
-      const currentY = partido.y! + (partido.height! / 2);
-
-      const nextX = destino.x!;
-      const nextY = destino.y! + (destino.height! / 2);
-
-      const midX = currentX + (this.spacingX / 3);
-
-      // Línea horizontal desde el partido actual
-      gContainer.append('line')
-        .attr('x1', currentX).attr('y1', currentY)
-        .attr('x2', midX).attr('y2', currentY)
-        .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
-
-      // Línea vertical hacia el partido destino
-      gContainer.append('line')
-        .attr('x1', midX).attr('y1', currentY)
-        .attr('x2', midX).attr('y2', nextY)
-        .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
-
-      // Línea horizontal final
-      gContainer.append('line')
-        .attr('x1', midX).attr('y1', nextY)
-        .attr('x2', nextX).attr('y2', nextY)
-        .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
+    // Asignación directa y simple de nextMatchIndex
+    let nextIndex = partido.nextMatchIndex;
+    
+    // Si no está definido, lo asignamos según la lógica simple
+    if (nextIndex === undefined || nextIndex === null) {
+      nextIndex = this.getSimpleNextIndex(partido.game_label, roundIndex);
     }
+
+    if (nextIndex === null || !nextRound[nextIndex]) return;
+
+    const destino = nextRound[nextIndex];
+    if (!destino.x || !destino.y) return;
+
+    const currentX = partido.x! + this.matchWidth;
+    const currentY = partido.y! + partido.height! / 2;
+    const nextX = destino.x!;
+    const nextY = destino.y! + destino.height! / 2;
+
+    const midX = currentX + this.spacingX / 3;
+
+    // Dibujar las 3 líneas
+    gContainer.append('line')
+      .attr('x1', currentX).attr('y1', currentY)
+      .attr('x2', midX).attr('y2', currentY)
+      .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
+
+    gContainer.append('line')
+      .attr('x1', midX).attr('y1', currentY)
+      .attr('x2', midX).attr('y2', nextY)
+      .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
+
+    gContainer.append('line')
+      .attr('x1', midX).attr('y1', nextY)
+      .attr('x2', nextX).attr('y2', nextY)
+      .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
   });
 }
+
+private getSimpleNextIndex(gameLabel: string | null | undefined, roundIndex: number): number | null {
+  if (!gameLabel) return null;
+
+  // Lógica super simple basada en tu estructura
+  if (roundIndex === 0) { // Octavos → Cuartos
+    return gameLabel === 'J1' ? 0 : 1; // J1→J3, J2→J4
+  }
+  
+  if (roundIndex === 1) { // Cuartos → Semifinal
+    // J3 y J4 van al primer partido (J7), J5 y J6 van al segundo (J8)
+    return gameLabel === 'J3' || gameLabel === 'J4' ? 0 : 1;
+  }
+  
+  if (roundIndex === 2) { // Semifinal → Final
+    return 0; // Ambos van a la final
+  }
+  
+  return null;
+}
+
+
+
+
+
 
 
   private showErrorState(container: HTMLElement) {
