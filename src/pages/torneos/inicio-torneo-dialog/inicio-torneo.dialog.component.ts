@@ -36,6 +36,7 @@ export interface Partido {
   court?: string | null;
   status_game?: string | null;
   _originalGame?: any;
+  _fromGameRefs?: string[]; // Nuevo campo para referencias from_game
 }
 
 export interface RankingItem {
@@ -89,12 +90,10 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     private dialog: MatDialog,
     private cdRef: ChangeDetectorRef,
     private alertService: AlertService,
-
   ) { }
 
   ngOnInit(): void {
     this.cargarBracket();
-
   }
 
   ngAfterViewInit(): void {
@@ -134,6 +133,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     if (this.filteredBracket.length > 0) {
       const category = this.filteredBracket[0];
       this.processGroupsForTable(category.groups);
+
+      this.bracketDataCards = this.mapToPartidos(category);
 
       setTimeout(() => {
         this.drawBracketSets();
@@ -204,7 +205,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     });
   }
 
-
   private validarPuedeAbrirModal(roundIndex: number): boolean {
     if (!this.filteredBracket?.[0]) return false;
 
@@ -226,7 +226,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     return rondaAnteriorCompleta;
   }
-
 
   private async mostrarMensajeRondaAnteriorIncompleta(roundIndex: number) {
     const nombresRondas: { [key: string]: string } = {
@@ -250,7 +249,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     await this.alertService.info(titulo, mensaje);
   }
 
-
   private validarRondaCompleta(roundIndex: number): boolean {
     if (!this.filteredBracket?.[0]) return false;
 
@@ -268,8 +266,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     return todosCompletos;
   }
-
-
 
   private validarParejasCompletas(partido: Partido): boolean {
     const juegoOriginal = partido._originalGame;
@@ -424,8 +420,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     try {
       const category = this.filteredBracket[0];
-      const allRounds = this.mapToPartidos(category);
-      const eliminationRounds = allRounds.filter(r => Array.isArray(r) && r.length > 0);
+      const eliminationRounds = this.bracketDataCards.filter(r => Array.isArray(r) && r.length > 0);
 
       if (eliminationRounds.length === 0) {
         this.showEmptyState(container);
@@ -519,8 +514,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     }
   }
 
-
-
+  // ========== NUEVAS FUNCIONES MEJORADAS CON from_game ==========
 
   private mapToPartidos(category: any): Partido[][] {
     const rounds: Partido[][] = [];
@@ -558,8 +552,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       const isFirstRound = phaseIndex === 0;
 
       const phaseMatches = phaseGames.map((game: any, index: number) => {
-        const nextMatchIndex = this.calculateNextMatchIndex(phase, index);
-
         const hasCouple1 = game.couple_1 && Object.keys(game.couple_1).length > 0;
         const hasCouple2 = game.couple_2 && Object.keys(game.couple_2).length > 0;
 
@@ -578,6 +570,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           ? [{ name: 'Por asignar' }]
           : this.getPlayersFromEliminationCouple(game.couple_2, isFirstRound);
 
+        const fromGameRefs = this.extractFromGameReferences(game);
 
         const partido: Partido = {
           jugador1,
@@ -587,11 +580,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           id: game.game_id || game.id || null,
           couple1Id: game.couple_1?.id || null,
           couple2Id: game.couple_2?.id || null,
-          game_label:
-            isFirstRound && !hasCouple1 && !hasCouple2
-              ? null
-              : game.game_label,
-          nextMatchIndex,
+          game_label: isFirstRound && !hasCouple1 && !hasCouple2 ? null : game.game_label,
+          nextMatchIndex: null, 
           scores1: game.scores1 || [0, 0, 0],
           scores2: game.scores2 || [0, 0, 0],
           date: game.date,
@@ -599,7 +589,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           end_time: game.end_time,
           court: game.court,
           status_game: game.status_game || 'Not started',
-          _originalGame: game
+          _originalGame: game,
+          _fromGameRefs: fromGameRefs 
         };
 
         return partido;
@@ -613,8 +604,78 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     return rounds;
   }
 
+  private extractFromGameReferences(game: any): string[] {
+    const refs: string[] = [];
+    
+    if (game.couple_1?.from_game) {
+      refs.push(game.couple_1.from_game);
+    }
+    
+    if (game.couple_2?.from_game) {
+      refs.push(game.couple_2.from_game);
+    }
+    
+    return refs.filter(ref => ref && ref !== 'null' && ref !== 'Por asignar');
+  }
+
+  private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
+    const currentRound = eliminationRounds[roundIndex];
+    const nextRound = eliminationRounds[roundIndex + 1];
+
+    if (!nextRound) return;
 
 
+    nextRound.forEach(destino => {
+      if (!destino._fromGameRefs || destino._fromGameRefs.length === 0) return;
+
+      destino._fromGameRefs.forEach(fromGameLabel => {
+        const source = this.findMatchByLabel(currentRound, fromGameLabel);
+        if (!source || !source.x || !source.y || !destino.x || !destino.y) {
+          return;
+        }
+
+        this.drawConnectionLine(gContainer, source, destino);
+      });
+    });
+  }
+
+  private findMatchByLabel(round: Partido[], label: string): Partido | null {
+    if (!label) return null;
+
+    return round.find(p => {
+      return (p.game_label || '').trim() === label.trim();
+    }) || null;
+  }
+
+  private drawConnectionLine(gContainer: any, source: Partido, destino: Partido) {
+    const sX = source.x! + this.matchWidth;
+    const sY = source.y! + source.height! / 2;
+    const dX = destino.x!;
+    const dY = destino.y! + destino.height! / 2;
+
+    const midX = sX + this.spacingX / 3;
+
+    gContainer.append('line')
+      .attr('x1', sX).attr('y1', sY)
+      .attr('x2', midX).attr('y2', sY)
+      .attr('stroke', '#cbd5e1')
+      .attr('stroke-width', 3)
+      .attr('stroke-dasharray', '5,5');
+
+    gContainer.append('line')
+      .attr('x1', midX).attr('y1', sY)
+      .attr('x2', midX).attr('y2', dY)
+      .attr('stroke', '#cbd5e1')
+      .attr('stroke-width', 3)
+      .attr('stroke-dasharray', '5,5');
+
+    gContainer.append('line')
+      .attr('x1', midX).attr('y1', dY)
+      .attr('x2', dX).attr('y2', dY)
+      .attr('stroke', '#cbd5e1')
+      .attr('stroke-width', 3)
+      .attr('stroke-dasharray', '5,5');
+  }
 
 
   private extractCoupleId(couple: any): number | null {
@@ -645,7 +706,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     if (typeof couple === 'object' && 'pending' in couple) {
       const text = String(couple.pending || '').trim();
-
       const esGanador = /^Ganador de\s*J\d+$/i.test(text);
 
       if (isFirstRound) {
@@ -657,9 +717,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     return [{ name: 'Por asignar' }];
   }
-
-
-
 
   private calculateNextMatchIndex(phase: string, index: number): number | null {
     if (phase === 'final') return null;
@@ -727,7 +784,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('letter-spacing', '1px');
   }
 
-
   private drawModernEliminationMatch(gContainer: any, partido: Partido, roundIndex: number, matchIndex: number) {
     const g = gContainer.append('g').attr('transform', `translate(${partido.x}, ${partido.y})`);
     const jugador1Safe = this.getSafePlayers(partido.jugador1);
@@ -774,11 +830,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     }
   }
 
-
-
   private drawGameLabel(g: any, gameLabel: string) {
-    console.log(`🏷️ Dibujando label: ${gameLabel}`);
-
     const labelGroup = g.append('g')
       .attr('transform', `translate(${this.matchWidth - 45}, 4)`)
       .attr('class', 'game-label');
@@ -802,9 +854,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('pointer-events', 'none');
   }
 
-
   private determineWinnersFromOriginalData(partido: Partido): { isPlayer1Winner: boolean, isPlayer2Winner: boolean } {
-
     if (!partido.winner_id || partido.status_game !== 'completed') {
       return { isPlayer1Winner: false, isPlayer2Winner: false };
     }
@@ -817,10 +867,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       return { isPlayer1Winner: false, isPlayer2Winner: false };
     }
 
-
     const player1Names = this.getPlayerNamesFromPlayers(partido.jugador1).toLowerCase();
     const player2Names = this.getPlayerNamesFromPlayers(partido.jugador2).toLowerCase();
-
 
     let player1CoupleId: number | null = null;
     let player2CoupleId: number | null = null;
@@ -836,10 +884,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     }
 
     if (player1CoupleId !== null || player2CoupleId !== null) {
-
       const isPlayer1Winner = player1CoupleId === partido.winner_id;
       const isPlayer2Winner = player2CoupleId === partido.winner_id;
-
 
       return { isPlayer1Winner, isPlayer2Winner };
     }
@@ -877,7 +923,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     const normalized1 = normalize(names1);
     const normalized2 = normalize(names2);
 
-
     return normalized1 === normalized2;
   }
 
@@ -899,9 +944,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private drawPlayerNames(g: any, players: any[], isWinner: boolean, baseY: number) {
-    console.log(players)
     const names = players.map(p => p.name || 'Sin nombre').join(' / ');
-    console.log(names)
     const displayName = names.length <= 20 ? names : this.getCompactName(names);
 
     g.append('text')
@@ -935,78 +978,6 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     return fullName.substring(0, 20) + (fullName.length > 20 ? '...' : '');
   }
 
-  
-private drawModernConnections(eliminationRounds: Partido[][], roundIndex: number, gContainer: any) {
-  const currentRound = eliminationRounds[roundIndex];
-  const nextRound = eliminationRounds[roundIndex + 1];
-
-  if (!nextRound) return;
-
-  currentRound.forEach(partido => {
-    // Asignación directa y simple de nextMatchIndex
-    let nextIndex = partido.nextMatchIndex;
-    
-    // Si no está definido, lo asignamos según la lógica simple
-    if (nextIndex === undefined || nextIndex === null) {
-      nextIndex = this.getSimpleNextIndex(partido.game_label, roundIndex);
-    }
-
-    if (nextIndex === null || !nextRound[nextIndex]) return;
-
-    const destino = nextRound[nextIndex];
-    if (!destino.x || !destino.y) return;
-
-    const currentX = partido.x! + this.matchWidth;
-    const currentY = partido.y! + partido.height! / 2;
-    const nextX = destino.x!;
-    const nextY = destino.y! + destino.height! / 2;
-
-    const midX = currentX + this.spacingX / 3;
-
-    // Dibujar las 3 líneas
-    gContainer.append('line')
-      .attr('x1', currentX).attr('y1', currentY)
-      .attr('x2', midX).attr('y2', currentY)
-      .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
-
-    gContainer.append('line')
-      .attr('x1', midX).attr('y1', currentY)
-      .attr('x2', midX).attr('y2', nextY)
-      .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
-
-    gContainer.append('line')
-      .attr('x1', midX).attr('y1', nextY)
-      .attr('x2', nextX).attr('y2', nextY)
-      .attr('stroke', '#cbd5e1').attr('stroke-width', 3).attr('stroke-dasharray', '5,5');
-  });
-}
-
-private getSimpleNextIndex(gameLabel: string | null | undefined, roundIndex: number): number | null {
-  if (!gameLabel) return null;
-
-  // Lógica super simple basada en tu estructura
-  if (roundIndex === 0) { // Octavos → Cuartos
-    return gameLabel === 'J1' ? 0 : 1; // J1→J3, J2→J4
-  }
-  
-  if (roundIndex === 1) { // Cuartos → Semifinal
-    // J3 y J4 van al primer partido (J7), J5 y J6 van al segundo (J8)
-    return gameLabel === 'J3' || gameLabel === 'J4' ? 0 : 1;
-  }
-  
-  if (roundIndex === 2) { // Semifinal → Final
-    return 0; // Ambos van a la final
-  }
-  
-  return null;
-}
-
-
-
-
-
-
-
   private showErrorState(container: HTMLElement) {
     container.innerHTML = `
       <div style="display: flex; justify-content: center; align-items: center; height: 200px; color: #dc2626;">
@@ -1026,7 +997,6 @@ private getSimpleNextIndex(gameLabel: string | null | undefined, roundIndex: num
     }
 
     if (Array.isArray(players) && players.length > 0) {
-
       const nombresConLevel = players.map(p => {
         const level = p.level ?? 'N/A';
         return `${p.name} (L:${level})`;
@@ -1040,7 +1010,6 @@ private getSimpleNextIndex(gameLabel: string | null | undefined, roundIndex: num
     return 'Por asignar';
   }
 
-
   toggleResultsSidebar() {
     this.showResultsSidebar = !this.showResultsSidebar;
   }
@@ -1050,10 +1019,8 @@ private getSimpleNextIndex(gameLabel: string | null | undefined, roundIndex: num
   }
 
   abrirPartidosGrupo(groupStanding: any) {
-
     const category = this.filteredBracket[0];
     const groupComplete = category.groups?.find((g: any) => g.group_name === groupStanding.groupName);
-
 
     if (!groupComplete) {
       console.error('No se encontró el grupo completo');
@@ -1062,20 +1029,16 @@ private getSimpleNextIndex(gameLabel: string | null | undefined, roundIndex: num
 
     const realGames = this.mapRealGamesForGroup(groupComplete);
 
-    console.log('Games mapeados para el modal:', realGames);
 
     const dialogRef = this.dialog.open(MatchesGrupoDialogComponent, {
       width: '900px',
       maxWidth: '95vw',
       disableClose: false,
-
       data: { games: realGames }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       this.cargarBracket();
-
-
     });
   }
 
@@ -1167,8 +1130,6 @@ private getSimpleNextIndex(gameLabel: string | null | undefined, roundIndex: num
     return null;
   }
 
-
-
   calcularProgresoGrupos() {
     if (!this.groupStandings || this.groupStandings.length === 0) return;
 
@@ -1189,5 +1150,4 @@ private getSimpleNextIndex(gameLabel: string | null | undefined, roundIndex: num
     if (!group.totalGames || group.totalGames === 0) return 0;
     return Math.round((group.completedGames / group.totalGames) * 100);
   }
-
 }

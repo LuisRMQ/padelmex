@@ -1,5 +1,8 @@
 <div *ngIf="!selectedUsuario">
-
+      <div *ngIf="loading" class="loading-overlay">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Cargando usuarios...</p>
+  </div>
   <!-- Encabezado -->
   <div class="header">
     <h2>Usuarios</h2>

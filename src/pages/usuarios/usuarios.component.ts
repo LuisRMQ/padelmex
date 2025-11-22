@@ -21,6 +21,7 @@ import { TournamentsCardsComponent } from './historial-usuario-dialog/historial-
 
 import { UsersService, User } from '../../app/services/users.service';
 import { CourtService } from '../../app/services/court.service';
+import { MatProgressSpinner } from "@angular/material/progress-spinner";
 
 export interface UsuarioTabla {
   id?: number;
@@ -62,11 +63,12 @@ export interface UsuarioTabla {
     MatCardModule,
     MatDividerModule,
     FormsModule,
-    MatSelectModule
-  ]
+    MatSelectModule,
+    MatProgressSpinner
+]
 })
 export class UsuariosComponent implements OnInit {
-  displayedColumns: string[] = ['nombre', 'victorias', 'puntos', 'rol', 'club','level','categoria', 'acciones'];
+  displayedColumns: string[] = ['nombre', 'victorias', 'puntos', 'rol', 'club', 'level', 'categoria', 'acciones'];
   dataSource = new MatTableDataSource<UsuarioTabla>([]);
   editando: boolean = false;
   formUsuario: any = {};
@@ -81,7 +83,7 @@ export class UsuariosComponent implements OnInit {
   lastPage: number = 1;
   usuarios: any[] = [];
   loading: boolean = false;
-
+  usuariosAll: UsuarioTabla[] = [];
 
 
   roles: { id: number; name: string }[] = [
@@ -103,47 +105,20 @@ export class UsuariosComponent implements OnInit {
   constructor(private dialog: MatDialog, private usersService: UsersService, private courtService: CourtService) { }
 
   ngOnInit() {
-    this.cargarUsuarios();
+    this.cargarTodasLasPaginasUsuarios();
     this.cargarClubs();
   }
 
   cargarUsuarios(page: number = 1) {
-    this.loading = true;
+    this.currentPage = page;
 
-    this.usersService.getUserss(page).subscribe({
-      next: (res: { data: User[], current_page: number, last_page: number }) => {
-        this.usuariosTabla = res.data.map((u: User) => ({
-          id: u.id,
-          nombre: u.name,
-          apellidos: u.lastname,
-          correo: u.email,
-          genero: u.gender,
-          rol: u.rol || '-',
-          rol_id: u.rol_id,
-          club: this.clubs.find(c => c.id === u.club_id)?.name || '-',
-          club_id: u.club_id,
-          categoria: u.category || '-',
-          victorias: '-',
-           point: u.point || 0,
-          fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
-          manoPreferida: '-',
-          identificacion: '-',
-          telefono: u.phone || '-',
-          area_code: u.area_code || '-',
-          level: u.level || '-'
+    const start = (page - 1) * 20;
+    const end = start + 20;
 
-        }));
+    this.usuariosTabla = this.usuariosAll.slice(start, end);
+    this.usuariosFiltrados = [...this.usuariosTabla];
 
-        this.usuariosFiltrados = [...this.usuariosTabla];
-        this.currentPage = res.current_page;
-        this.lastPage = res.last_page;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar usuarios:', err);
-        this.loading = false;
-      }
-    });
+    this.lastPage = Math.ceil(this.usuariosAll.length / 20);
   }
 
 
@@ -152,42 +127,72 @@ export class UsuariosComponent implements OnInit {
     this.cargarUsuarios(page);
   }
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    const filterValue = (event.target as HTMLInputElement).value.toLowerCase();
 
     if (!filterValue) {
-      this.usuariosFiltrados = [...this.usuariosTabla];
+      this.cargarUsuarios(this.currentPage);
       return;
     }
 
-    this.usersService.searchAllUsersv2(filterValue).subscribe({
-      next: (users) => {
-        this.usuariosFiltrados = users.map(u => ({
-          id: u.id,
-          nombre: u.name,
-          apellidos: u.lastname,
-          correo: u.email,
-          genero: u.gender,
-          rol: u.rol || '-',
-          rol_id: u.rol_id,
-          club: this.clubs.find(c => c.id === u.club_id)?.name || '-',
-          club_id: u.club_id,
-          categoria: u.category || '-',
-          victorias: '-',
-          point: u.point || 0,
-          fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
-          manoPreferida: '-',
-          identificacion: '-',
-          telefono: u.phone || '-',
-          area_code: u.area_code || '-',
-          level: u.level || '-'
+    const filtrados = this.usuariosAll.filter(u =>
+      u.nombre.toLowerCase().includes(filterValue) ||
+      u.apellidos.toLowerCase().includes(filterValue) ||
+      u.correo.toLowerCase().includes(filterValue) ||
+      u.club.toLowerCase().includes(filterValue) ||
+      u.rol.toLowerCase().includes(filterValue) ||
+      u.level.toLowerCase().includes(filterValue) ||
+      u.categoria.toLowerCase().includes(filterValue)
+    );
 
-        }));
-      },
-      error: (err) => {
-        console.error("Error al buscar usuarios:", err);
-      }
-    });
+    this.usuariosFiltrados = filtrados;
   }
+
+
+  cargarTodasLasPaginasUsuarios(page: number = 1) {
+
+  if (page === 1) this.loading = true;
+
+  this.usersService.getUserss(page).subscribe({
+    next: (res: { data: User[], current_page: number, last_page: number }) => {
+
+      const usuariosPage = res.data.map(u => ({
+        id: u.id,
+        nombre: u.name,
+        apellidos: u.lastname,
+        correo: u.email,
+        genero: u.gender,
+        rol: u.rol || '-',
+        rol_id: u.rol_id,
+        club: this.clubs.find(c => c.id === u.club_id)?.name || '-',
+        club_id: u.club_id,
+        categoria: u.category || '-',
+        victorias: '-',
+        point: u.point || 0,
+        fotoPerfil: u.profile_photo || '../../assets/images/placeholder.png',
+        manoPreferida: '-',
+        identificacion: '-',
+        telefono: u.phone || '-',
+        area_code: u.area_code || '-',
+        level: u.level || '-'
+      }));
+
+      this.usuariosAll.push(...usuariosPage);
+
+      if (page < res.last_page) {
+        this.cargarTodasLasPaginasUsuarios(page + 1);
+      } else {
+        this.loading = false;
+        this.cargarUsuarios(1);
+      }
+    },
+    error: () => {
+      this.loading = false;
+    }
+  });
+}
+
+
+
 
   eliminarUsuario(usuario: UsuarioTabla) {
     if ((usuario as any).id) {
