@@ -805,6 +805,7 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
 
     this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
     this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
+    this.drawMatchFooter(g, partido.date ?? '', partido.start_time ?? '');
 
     if (partido.status_game === 'completed' && partido.winner_id) {
       this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
@@ -829,6 +830,41 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
         .attr('stroke', '#d1d5db');
     }
   }
+
+ private drawMatchFooter(g: any, date: string, startTime: string) {
+  if (!date || !startTime) return;
+
+  const footerHeight = 22;
+
+  // RECTÁNGULO DEL FOOTER
+  g.append("rect")
+    .attr("x", 0)
+    .attr("y", this.matchHeight) // ⬅️ Se coloca justo debajo del game
+    .attr("width", this.matchWidth)
+    .attr("height", footerHeight)
+    .attr("fill", "#f3f4f6")       // gris claro tipo Tailwind gray-100
+    .attr("stroke", "#d1d5db")     // borde gris
+    .attr("rx", 0);
+
+  // TEXTO DEL FOOTER (FECHA Y HORA)
+  const fechaLegible = this.formatearFecha(date);
+  const horaLegible = startTime.substring(0, 5);
+
+  g.append("text")
+    .attr("x", this.matchWidth / 2)
+    .attr("y", this.matchHeight + footerHeight / 2 + 4) // centrado vertical
+    .attr("text-anchor", "middle")
+    .attr("font-size", 11)
+    .attr("fill", "#374151") // gris más oscuro
+    .text(`${fechaLegible} • ${horaLegible}`);
+}
+
+
+private formatearFecha(fecha: string): string {
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const f = new Date(fecha);
+  return `${f.getDate()} ${meses[f.getMonth()]}`;
+}
 
   private drawGameLabel(g: any, gameLabel: string) {
     const labelGroup = g.append('g')
