@@ -20,7 +20,7 @@ export interface User {
     category?: string;
     rol_id?: number;
     level?: string;
-    point?:number;
+    point?: number;
     category_id?: number;
     paid_by_owner?: boolean;
     created_at?: string;
@@ -95,6 +95,13 @@ export interface Club {
 
 export interface SelectedPlayer extends User {
     paid_by_owner: boolean;
+}
+
+export interface Category {
+    id: number;
+    category: string;
+    level: string;
+    gender: string;
 }
 
 @Injectable({
@@ -205,42 +212,42 @@ export class UsersService extends ApiBaseService {
 
 
     searchAllUsersv2(searchTerm: string = ''): Observable<User[]> {
-    let params = new HttpParams();
-    
-    // Solo agregar el parámetro de búsqueda si hay término
-    if (searchTerm) {
-        params = params.set('search', searchTerm);
-    }
+        let params = new HttpParams();
 
-    return new Observable<User[]>(observer => {
-        this.get<UsersResponse>('/users', params).subscribe({
-            next: firstPage => {
-                let allUsers = [...firstPage.data];
-                const totalPages = firstPage.last_page;
+        // Solo agregar el parámetro de búsqueda si hay término
+        if (searchTerm) {
+            params = params.set('search', searchTerm);
+        }
 
-                if (totalPages > 1) {
-                    const observables = [];
-                    for (let page = 2; page <= totalPages; page++) {
-                        observables.push(this.get<UsersResponse>(`/users?page=${page}`, params));
+        return new Observable<User[]>(observer => {
+            this.get<UsersResponse>('/users', params).subscribe({
+                next: firstPage => {
+                    let allUsers = [...firstPage.data];
+                    const totalPages = firstPage.last_page;
+
+                    if (totalPages > 1) {
+                        const observables = [];
+                        for (let page = 2; page <= totalPages; page++) {
+                            observables.push(this.get<UsersResponse>(`/users?page=${page}`, params));
+                        }
+
+                        forkJoin(observables).subscribe({
+                            next: results => {
+                                results.forEach(r => allUsers.push(...r.data));
+                                observer.next(allUsers);
+                                observer.complete();
+                            },
+                            error: err => observer.error(err)
+                        });
+                    } else {
+                        observer.next(allUsers);
+                        observer.complete();
                     }
-
-                    forkJoin(observables).subscribe({
-                        next: results => {
-                            results.forEach(r => allUsers.push(...r.data));
-                            observer.next(allUsers);
-                            observer.complete();
-                        },
-                        error: err => observer.error(err)
-                    });
-                } else {
-                    observer.next(allUsers);
-                    observer.complete();
-                }
-            },
-            error: err => observer.error(err)
+                },
+                error: err => observer.error(err)
+            });
         });
-    });
-}
+    }
 
 
     deleteUser(id: number): Observable<any> {
@@ -264,9 +271,29 @@ export class UsersService extends ApiBaseService {
     }
 
     getUserGameHistory(userId: number): Observable<any[]> {
-    return this.get<any>(`/user/gameHistory/${userId}`).pipe(
-        map(res => res.data ?? res) 
-    );
-}
+        return this.get<any>(`/user/gameHistory/${userId}`).pipe(
+            map(res => res.data ?? res)
+        );
+    }
+
+
+    getCategories(): Observable<any[]> {
+        return this.get<any>('/categories').pipe(
+            map(response => response.data)
+        );
+    }
+
+    getUsersFiltered(params: any) {
+        return this.http.get(`${this.apiUrl}/getUsers`, { params });
+    }
+
+
+    getRoles(): Observable<any[]> {
+        return this.get<any>('/roles').pipe(
+            map(response => response.roles)
+        );
+    }
+
+ 
 
 }

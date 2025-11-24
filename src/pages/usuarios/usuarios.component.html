@@ -1,8 +1,11 @@
 <div *ngIf="!selectedUsuario">
-      <div *ngIf="loading" class="loading-overlay">
+
+  <!-- LOADER -->
+  <div *ngIf="loading" class="loading-overlay">
     <mat-spinner diameter="60"></mat-spinner>
     <p>Cargando usuarios...</p>
   </div>
+
   <!-- Encabezado -->
   <div class="header">
     <h2>Usuarios</h2>
@@ -13,23 +16,63 @@
 
   <div class="usuarios-container">
 
-    <!-- Filtros y resumen -->
+    <!-- Filtros -->
     <div class="usuarios-filtros">
       <input class="usuarios-search" type="text" placeholder="Buscar usuarios..." (keyup)="applyFilter($event)">
-      <!-- <mat-form-field appearance="outline" class="usuarios-select">
-        <mat-label>Roles</mat-label>
-        <mat-select [(ngModel)]="selectedRol">
-          <mat-option value="">Todos los roles</mat-option>
-          <mat-option *ngFor="let rol of roles" [value]="rol.id">{{ rol.name }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="usuarios-select">
-        <mat-label>Categorías</mat-label>
-        <mat-select [(ngModel)]="selectedCategoria">
-          <mat-option value="">Todas las categorías</mat-option>
-          <mat-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</mat-option>
+
+      <!-- FILTROS AVANZADOS -->
+      <div class="filtros-advanced">
+
+        <!-- Género -->
+        <mat-form-field appearance="outline">
+          <mat-label>Género</mat-label>
+          <mat-select [(ngModel)]="filtros.gender" (selectionChange)="aplicarFiltros()">
+            <mat-option value="">Todos</mat-option>
+            <mat-option value="male">Hombre</mat-option>
+            <mat-option value="female">Mujer</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Rol -->
+      <!-- <mat-form-field appearance="outline">
+        <mat-label>Rol</mat-label>
+        <mat-select [(ngModel)]="filtros.rol_id" (selectionChange)="aplicarFiltros()">
+          <mat-option value="">Todos</mat-option>
+      
+          <mat-option *ngFor="let rol of roles" [value]="rol.id">
+            {{ rol.rol | titlecase }}
+          </mat-option>
         </mat-select>
       </mat-form-field> -->
+
+        <!-- Club -->
+        <mat-form-field appearance="outline">
+          <mat-label>Club</mat-label>
+          <mat-select [(ngModel)]="filtros.club_id" (selectionChange)="aplicarFiltros()">
+            <mat-option value="">Todos</mat-option>
+            <mat-option *ngFor="let club of clubs" [value]="club.id">
+              {{ club.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+   
+
+        <!-- Nivel -->
+        <mat-form-field appearance="outline">
+          <mat-label>Nivel</mat-label>
+          <mat-select [(ngModel)]="filtros.level" (selectionChange)="aplicarFiltros()">
+            <mat-option value="">Todos</mat-option>
+            <mat-option value="1">Nivel 1</mat-option>
+            <mat-option value="2">Nivel 2</mat-option>
+            <mat-option value="3">Nivel 3</mat-option>
+            <mat-option value="4">Nivel 4</mat-option>
+            <mat-option value="5">Nivel 5</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+
     </div>
 
     <!-- Tarjetas resumen -->
@@ -39,16 +82,19 @@
         <div class="resumen-label">Total Usuarios</div>
         <div class="resumen-value">{{ getTotalUsuarios() }}</div>
       </div>
+
       <div class="resumen-card">
         <div class="resumen-icon activos"><mat-icon>directions_run</mat-icon></div>
         <div class="resumen-label">Jugadores Activos</div>
         <div class="resumen-value">{{ getTotalUsuariosByRol('jugador') }}</div>
       </div>
+
       <div class="resumen-card">
         <div class="resumen-icon entrenadores"><mat-icon>emoji_events</mat-icon></div>
         <div class="resumen-label">Entrenadores</div>
         <div class="resumen-value">{{ getTotalUsuariosByRol('coach') }}</div>
       </div>
+
       <div class="resumen-card">
         <div class="resumen-icon victorias"><mat-icon>military_tech</mat-icon></div>
         <div class="resumen-label">Categoria con mas Usuarios</div>
@@ -56,90 +102,104 @@
       </div>
     </div>
 
-    <!-- Tabla de usuarios -->
+    <!-- Tabla -->
     <div class="usuarios-lista">
       <div class="usuarios-lista-header">
         <span>Lista de Usuarios</span>
       </div>
-      <table class="usuarios-table">
-        <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>TELEFONO</th>
-            <th>ROL</th>
-            <th>CLUB</th>
-            <th>NIVEL / PUNTOS</th>
 
-            <th>CATEGORÍA</th>
-            <th>ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let usuario of usuariosFiltrados">
-            <td>
-              <div class="usuario-nombre">
-                <img class="usuario-avatar" [src]="usuario.fotoPerfil || 'assets/img/user.png'"
-                  (error)="onImgError($event)" alt="avatar">
-                <div>
-                  <div class="nombre">{{ usuario.nombre }} {{ usuario.apellidos }}</div>
-                  <div class="correo">{{ usuario.correo }}</div>
-                </div>
+      <table mat-table [dataSource]="dataSource" class="usuarios-table">
+
+        <!-- NOMBRE -->
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef>NOMBRE</th>
+          <td mat-cell *matCellDef="let usuario">
+            <div class="usuario-nombre">
+              <img class="usuario-avatar" [src]="usuario.fotoPerfil || 'assets/img/user.png'"
+                   (error)="onImgError($event)" alt="avatar">
+              <div>
+                <div class="nombre">{{ usuario.nombre }} {{ usuario.apellidos }}</div>
+                <div class="correo">{{ usuario.correo }}</div>
               </div>
-            </td>
-            <td>
-              <span>
-                {{ usuario.area_code && usuario.telefono ? (usuario.area_code + ' ' + usuario.telefono) : 'Sin Asignar'
-                }}
-              </span>
-            </td>
-            <td>
-              <span class="badge-rol" [ngClass]="usuario.rol | lowercase">{{ usuario.rol }}</span>
-            </td>
-            <td>
-              {{ usuario.club }}
-            </td>
+            </div>
+          </td>
+        </ng-container>
 
-                <td>
-              {{ usuario.level }} / {{ usuario.point }}
-            </td>
-            
-             
-            <td>
-              <span class="badge-categoria" [ngClass]="usuario.categoria | lowercase">{{ usuario.categoria }}</span>
-            </td>
-            <td>
-               <button mat-icon-button color="primary" (click)="VerReservaciones(usuario)">
-                <mat-icon>sports_handball</mat-icon>
-              </button>
-              <button mat-icon-button color="primary" (click)="abrirHistorialTorneo(usuario)">
-                <mat-icon>military_tech</mat-icon>
-              </button>
+        <!-- TELEFONO -->
+        <ng-container matColumnDef="telefono">
+          <th mat-header-cell *matHeaderCellDef>TELEFONO</th>
+          <td mat-cell *matCellDef="let usuario">
+            <span>
+              {{ usuario.area_code && usuario.telefono ? (usuario.area_code + ' ' + usuario.telefono) : 'Sin Asignar' }}
+            </span>
+          </td>
+        </ng-container>
 
-              
-              <button mat-icon-button color="accent" (click)="abrirModalEditarUsuario(usuario)">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="eliminarUsuario(usuario)">
-                <mat-icon>delete</mat-icon>
-              </button>
+        <!-- ROL -->
+        <ng-container matColumnDef="rol">
+          <th mat-header-cell *matHeaderCellDef>ROL</th>
+          <td mat-cell *matCellDef="let usuario">
+            <span class="badge-rol" [ngClass]="usuario.rol | lowercase">{{ usuario.rol }}</span>
+          </td>
+        </ng-container>
 
-              
-            </td>
-          </tr>
-        </tbody>
+        <!-- CLUB -->
+        <ng-container matColumnDef="club">
+          <th mat-header-cell *matHeaderCellDef>CLUB</th>
+          <td mat-cell *matCellDef="let usuario">{{ usuario.club }}</td>
+        </ng-container>
+
+        <!-- NIVEL -->
+        <ng-container matColumnDef="nivel">
+          <th mat-header-cell *matHeaderCellDef>NIVEL / PUNTOS</th>
+          <td mat-cell *matCellDef="let usuario">{{ usuario.level }} / {{ usuario.point }}</td>
+        </ng-container>
+
+        <!-- CATEGORIA -->
+        <ng-container matColumnDef="categoria">
+          <th mat-header-cell *matHeaderCellDef>CATEGORÍA</th>
+          <td mat-cell *matCellDef="let usuario">
+            <span class="badge-categoria" [ngClass]="usuario.categoria | lowercase">
+              {{ usuario.categoria }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- ACCIONES -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef>ACCIONES</th>
+          <td mat-cell *matCellDef="let usuario">
+            <button mat-icon-button color="primary" (click)="VerReservaciones(usuario)">
+              <mat-icon>sports_handball</mat-icon>
+            </button>
+
+            <button mat-icon-button color="primary" (click)="abrirHistorialTorneo(usuario)">
+              <mat-icon>military_tech</mat-icon>
+            </button>
+
+            <button mat-icon-button color="accent" (click)="abrirModalEditarUsuario(usuario)">
+              <mat-icon>edit</mat-icon>
+            </button>
+
+            <button mat-icon-button color="warn" (click)="eliminarUsuario(usuario)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
       </table>
+
+      <!-- PAGINADOR OFICIAL -->
+      <mat-paginator [pageSize]="20"
+                     [pageSizeOptions]="[10,20,50,100]"
+                     showFirstLastButtons>
+      </mat-paginator>
+
     </div>
+
   </div>
 
-
-  <div class="pagination-container" *ngIf="lastPage > 1">
-  <button mat-button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
-    &laquo; Anterior
-  </button>
-
-  <span>Página {{ currentPage }} de {{ lastPage }}</span>
-
-  <button mat-button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === lastPage">
-    Siguiente &raquo;
-  </button>
 </div>

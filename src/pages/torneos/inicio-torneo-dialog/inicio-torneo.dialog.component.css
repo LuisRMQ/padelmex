@@ -471,7 +471,32 @@
 
 
 
+.ranking-cell {
+  font-weight: 900;
+  font-size: 800px;
+  text-align: center;
+  padding: 18px 25px;
+  border-radius: 10px;
+  background: #059669;
+  position: relative;
+  min-width: 70px;
+}
 
+/* .ranking-cell[data-rank="1"] { border-color: #FFD700; color: #FFD700; }
+.ranking-cell[data-rank="2"] { border-color: #C0C0C0; color: #C0C0C0; }
+.ranking-cell[data-rank="3"] { border-color: #CD7F32; color: #CD7F32; }
+.ranking-cell[data-rank="4"] { border-color: #e00a0a; color: #e00a0a; } */
+
+/* .ranking-cell::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+} */
 
 .progress-container {
   margin: 8px 0 16px;

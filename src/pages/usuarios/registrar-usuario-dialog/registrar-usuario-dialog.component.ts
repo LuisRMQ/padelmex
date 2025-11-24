@@ -37,6 +37,7 @@ export class RegistrarUsuarioDialogComponent {
   logoPreview: string = '../../assets/images/placeholder.png';
   clubs: Club[] = [];
   hidePassword = true;
+  categories: any[] = [];
 
   constructor(private fb: FormBuilder, private usersService: UsersService, private snackBar: MatSnackBar, private dialogRef: MatDialogRef<RegistrarUsuarioDialogComponent>
   ) {
@@ -58,7 +59,23 @@ export class RegistrarUsuarioDialogComponent {
 
   ngOnInit() {
     this.loadClubs();
+    this.loadCategories();
+
   }
+
+
+
+loadCategories() {
+  this.usersService.getCategories().subscribe({
+    next: (res) => {
+      this.categories = res;
+    },
+    error: (err) => {
+      console.error("Error loading categories:", err);
+    }
+  });
+}
+
 
 
   onCancel(): void {

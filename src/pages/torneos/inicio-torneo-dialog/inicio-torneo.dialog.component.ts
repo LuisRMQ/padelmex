@@ -36,12 +36,13 @@ export interface Partido {
   court?: string | null;
   status_game?: string | null;
   _originalGame?: any;
-  _fromGameRefs?: string[]; // Nuevo campo para referencias from_game
+  _fromGameRefs?: string[]; 
 }
 
 export interface RankingItem {
   position: number;
   couple_id: number;
+  global_rank: number;
   players: any[];
   stats: any;
 }
@@ -168,7 +169,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           points: stats.points,
           setDiff: stats.set_diff,
           gameDiff: stats.game_diff,
-          coupleId: team.couple_id
+          coupleId: team.couple_id,
+          global_rank: team.global_rank || 0,
+
         };
       })
     })) || [];

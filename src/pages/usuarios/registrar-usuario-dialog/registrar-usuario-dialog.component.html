@@ -120,25 +120,13 @@
           <mat-form-field appearance="fill" class="modern-field">
             <mat-label>Categoría</mat-label>
             <mat-select formControlName="category_id">
-              <mat-option value="1">Primera Varonil</mat-option>
-              <mat-option value="2">Segunda Varonil</mat-option>
-              <mat-option value="3">Tercera Varonil</mat-option>
-              <mat-option value="4">Cuarta Varonil</mat-option>
-              <mat-option value="5">Quinta Varonil</mat-option>
-              <mat-option value="6">Sexta Varonil</mat-option>
-              <mat-option value="7">Septima Varonil</mat-option>
-              <mat-option value="8">Primera Femenil</mat-option>
-              <mat-option value="9">Segunda Femenil</mat-option>
-              <mat-option value="10">Tercera Femenil</mat-option>
-              <mat-option value="11">Cuarta Femenil</mat-option>
-              <mat-option value="12">Quinta Femenil</mat-option>
-              <mat-option value="13">Sexta Femenil</mat-option>
-              <mat-option value="14">Septima Femenil</mat-option>
+              <mat-option *ngFor="let c of categories" [value]="c.id">
+                {{ c.category | titlecase }}
+              </mat-option>
             </mat-select>
             <mat-icon matPrefix>emoji_events</mat-icon>
           </mat-form-field>
 
-          <!-- Rol -->
           <mat-form-field appearance="fill" class="modern-field">
             <mat-label>Rol</mat-label>
             <mat-select formControlName="rol_id">
