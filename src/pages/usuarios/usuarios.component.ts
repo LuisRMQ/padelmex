@@ -36,6 +36,7 @@ export interface UsuarioTabla {
   telefono: string;
   area_code: string;
   level: string;
+  city: string;
 }
 
 
@@ -73,14 +74,19 @@ export class UsuariosComponent implements OnInit {
   usuariosFiltrados: UsuarioTabla[] = [];
   clubs: any[] = [];
   roles: any[] = [];
-
-  // filtros
+  estados: string[] = [];
+  ciudades: any = {};
+  estadoSeleccionado: string = "";
+  ciudadesFiltradas: string[] = [];
   filtros = {
     gender: "",
     rol_id: "",
     category: "",
     club_id: "",
     level: "",
+    order: "",
+    city: "",
+    estado: ""
   };
 
   searchText: string = "";
@@ -98,6 +104,7 @@ export class UsuariosComponent implements OnInit {
 
   ngOnInit() {
     this.loadRoles();
+    this.cargarCiudades();
 
     this.cargarClubs();
     this.cargarTodasLasPaginasUsuarios();
@@ -117,6 +124,29 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
+  cargarCiudades() {
+    this.usersService.getCities().subscribe({
+      next: (data) => {
+        this.estados = Object.keys(data);
+        this.ciudades = data;
+
+      }
+    });
+  }
+
+
+  onEstadoChange() {
+    if (!this.estadoSeleccionado) {
+      this.ciudadesFiltradas = [];
+      this.filtros.city = "";
+      this.aplicarFiltros();
+      return;
+    }
+
+    this.ciudadesFiltradas = this.ciudades[this.estadoSeleccionado] || [];
+    this.filtros.city = "";
+    this.aplicarFiltros();
+  }
   cargarTodasLasPaginasUsuarios(page: number = 1) {
 
     if (page === 1) this.loading = true;
@@ -139,7 +169,9 @@ export class UsuariosComponent implements OnInit {
           fotoPerfil: u.profile_photo || "../../../assets/images/iconuser.png",
           telefono: u.phone || "-",
           area_code: u.area_code || "-",
-          level: u.level || "-"
+          level: u.level || "-",
+          city: u.city || ""
+
         }));
 
         this.usuariosAll.push(...usuariosPage);
@@ -155,62 +187,71 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-aplicarFiltros() {
-  let filtrados = [...this.usuariosAll];
+  aplicarFiltros() {
+    let filtrados = [...this.usuariosAll];
 
-  if (this.searchText.trim() !== "") {
-    const search = this.searchText.toLowerCase();
+    if (this.searchText.trim() !== "") {
+      const search = this.searchText.toLowerCase();
 
-    filtrados = filtrados.filter(u =>
-      (u.nombre + " " + u.apellidos).toLowerCase().includes(search) ||
-      u.correo.toLowerCase().includes(search) ||
-      u.club.toLowerCase().includes(search) ||
-      u.rol.toLowerCase().includes(search) ||
-      u.categoria.toLowerCase().includes(search) ||
-      u.level.toLowerCase().includes(search)
-    );
+      filtrados = filtrados.filter(u =>
+        (u.nombre + " " + u.apellidos).toLowerCase().includes(search) ||
+        u.correo.toLowerCase().includes(search) ||
+        u.club.toLowerCase().includes(search) ||
+        u.rol.toLowerCase().includes(search) ||
+        u.categoria.toLowerCase().includes(search) ||
+        u.level.toLowerCase().includes(search)
+      );
+    }
+
+    if (this.filtros.gender) {
+      filtrados = filtrados.filter(u => u.genero === this.filtros.gender);
+    }
+
+    if (this.filtros.order) {
+      filtrados = filtrados.sort((a, b) => {
+        return this.filtros.order === "asc"
+          ? a.point - b.point
+          : b.point - a.point;
+      });
+    }
+
+    if (this.filtros.club_id) {
+      filtrados = filtrados.filter(u => u.club_id == Number(this.filtros.club_id));
+    }
+
+    if (this.filtros.level) {
+      filtrados = filtrados.filter(u => u.level == String(this.filtros.level));
+    }
+
+    if (this.filtros.city) {
+      filtrados = filtrados.filter(u => u.city == this.filtros.city);
+    }
+
+
+
+    this.usuariosFiltrados = filtrados;
+    this.dataSource.data = filtrados;
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
   }
-
-  if (this.filtros.gender) {
-    filtrados = filtrados.filter(u => u.genero === this.filtros.gender);
-  }
-
-  // if (this.filtros.rol_id) {
-  //   console.log(this.filtros.rol_id);
-  //   filtrados = filtrados.filter(u => u.rol_id == Number(this.filtros.rol_id));
-  // }
-
-  if (this.filtros.club_id) {
-    filtrados = filtrados.filter(u => u.club_id == Number(this.filtros.club_id));
-  }
-
-  if (this.filtros.level) {
-    filtrados = filtrados.filter(u => u.level == String(this.filtros.level));
-  }
-
-  this.usuariosFiltrados = filtrados;
-  this.dataSource.data = filtrados;
-  if (this.paginator) {
-    this.paginator.firstPage();
-  }
-}
 
 
   resetearUsuariosYRecargar() {
-  this.usuariosAll = [];
-  this.usuariosFiltrados = [];
-  this.dataSource.data = [];
-  this.loading = true;
+    this.usuariosAll = [];
+    this.usuariosFiltrados = [];
+    this.dataSource.data = [];
+    this.loading = true;
 
-  this.cargarTodasLasPaginasUsuarios(1);
-}
+    this.cargarTodasLasPaginasUsuarios(1);
+  }
 
   applyFilter(event: Event) {
     this.searchText = (event.target as HTMLInputElement).value;
     this.aplicarFiltros();
   }
 
-    abrirModalRegistrarUsuario() {
+  abrirModalRegistrarUsuario() {
     const dialogRef = this.dialog.open(RegistrarUsuarioDialogComponent, {
       width: '60vw',
       maxWidth: '80vw',
@@ -247,7 +288,7 @@ aplicarFiltros() {
     })
   }
 
-    abrirHistorialTorneo(usuario: UsuarioTabla) {
+  abrirHistorialTorneo(usuario: UsuarioTabla) {
 
     this.dialog.open(TournamentsCardsComponent, {
       width: 'auto',

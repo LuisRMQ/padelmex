@@ -20,6 +20,7 @@ export interface User {
     category?: string;
     rol_id?: number;
     level?: string;
+    city?: string;
     point?: number;
     category_id?: number;
     paid_by_owner?: boolean;
@@ -294,6 +295,9 @@ export class UsersService extends ApiBaseService {
         );
     }
 
- 
+    getCities(): Observable<any> {
+        return this.get<any>('/cities');
+    }
+
 
 }

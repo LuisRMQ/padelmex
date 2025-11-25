@@ -13,7 +13,6 @@
       <mat-icon>add</mat-icon> AGREGAR USUARIO
     </button>
   </div>
-
   <div class="usuarios-container">
 
     <!-- Filtros -->
@@ -33,17 +32,7 @@
           </mat-select>
         </mat-form-field>
 
-        <!-- Rol -->
-      <!-- <mat-form-field appearance="outline">
-        <mat-label>Rol</mat-label>
-        <mat-select [(ngModel)]="filtros.rol_id" (selectionChange)="aplicarFiltros()">
-          <mat-option value="">Todos</mat-option>
-      
-          <mat-option *ngFor="let rol of roles" [value]="rol.id">
-            {{ rol.rol | titlecase }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field> -->
+
 
         <!-- Club -->
         <mat-form-field appearance="outline">
@@ -56,7 +45,28 @@
           </mat-select>
         </mat-form-field>
 
-   
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <mat-select [(ngModel)]="estadoSeleccionado" (selectionChange)="onEstadoChange()">
+            <mat-option value="">Todos</mat-option>
+            <mat-option *ngFor="let estado of estados" [value]="estado">
+              {{ estado }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- CIUDAD -->
+        <mat-form-field appearance="outline">
+          <mat-label>Ciudad</mat-label>
+          <mat-select [(ngModel)]="filtros.city" (selectionChange)="aplicarFiltros()">
+            <mat-option value="">Todas</mat-option>
+            <mat-option *ngFor="let ciudad of ciudadesFiltradas" [value]="ciudad">
+              {{ ciudad }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+
 
         <!-- Nivel -->
         <mat-form-field appearance="outline">
@@ -68,6 +78,19 @@
             <mat-option value="3">Nivel 3</mat-option>
             <mat-option value="4">Nivel 4</mat-option>
             <mat-option value="5">Nivel 5</mat-option>
+            <mat-option value="6">Nivel 6</mat-option>
+            <mat-option value="7">Nivel 7</mat-option>
+
+          </mat-select>
+        </mat-form-field>
+
+
+        <mat-form-field appearance="fill">
+          <mat-label>Ordenar por puntos</mat-label>
+          <mat-select [(ngModel)]="filtros.order" (selectionChange)="aplicarFiltros()">
+            <mat-option value="">Sin orden</mat-option>
+            <mat-option value="asc">Menor a mayor</mat-option>
+            <mat-option value="desc">Mayor a menor</mat-option>
           </mat-select>
         </mat-form-field>
 
@@ -116,7 +139,7 @@
           <td mat-cell *matCellDef="let usuario">
             <div class="usuario-nombre">
               <img class="usuario-avatar" [src]="usuario.fotoPerfil || 'assets/img/user.png'"
-                   (error)="onImgError($event)" alt="avatar">
+                (error)="onImgError($event)" alt="avatar">
               <div>
                 <div class="nombre">{{ usuario.nombre }} {{ usuario.apellidos }}</div>
                 <div class="correo">{{ usuario.correo }}</div>
@@ -193,9 +216,7 @@
       </table>
 
       <!-- PAGINADOR OFICIAL -->
-      <mat-paginator [pageSize]="20"
-                     [pageSizeOptions]="[10,20,50,100]"
-                     showFirstLastButtons>
+      <mat-paginator [pageSize]="20" [pageSizeOptions]="[10,20,50,100]" showFirstLastButtons>
       </mat-paginator>
 
     </div>

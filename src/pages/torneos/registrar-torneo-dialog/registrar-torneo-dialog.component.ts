@@ -76,6 +76,7 @@ export class RegistrarTorneoDialogComponent implements OnInit {
       registration_fee: [0],
       prizes: [],
       rules: [''],
+      type: ['femepa', Validators.required],
       ranking: [500],
       subtract_ranking: [20],
       photo: [null],
@@ -193,6 +194,7 @@ export class RegistrarTorneoDialogComponent implements OnInit {
     formData.append('end_date', formatDate(rawData.end_date));
     formData.append('registration_deadline', formatDate(rawData.registration_deadline));
     formData.append('registration_fee', rawData.registration_fee?.toString() ?? '0');
+    formData.append('type', rawData.type);
     formData.append('ranking', rawData.ranking?.toString() ?? '500');
     formData.append('subtract_ranking', rawData.subtract_ranking?.toString() ?? '50');
     formData.append('rules', rawData.rules || '');

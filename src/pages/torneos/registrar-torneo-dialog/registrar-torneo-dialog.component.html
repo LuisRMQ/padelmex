@@ -112,7 +112,7 @@
               <input matInput type="number" min="5" step="1" formControlName="max_participants"
                 placeholder="Máx. participantes (mín. 5)">
               <mat-icon matPrefix>groups</mat-icon>
-        
+
               <mat-error *ngIf="getCategoryFormGroup(catCtrl).get('max_participants')?.hasError('required')">
                 Debes indicar el número máximo de participantes.
               </mat-error>
@@ -154,6 +154,17 @@
           <mat-icon matPrefix>groups</mat-icon>
         </mat-form-field>
 
+
+        <mat-form-field appearance="fill" class="modern-field full-width">
+          <mat-label>Tipo de torneo</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="local">Local</mat-option>
+            <mat-option value="femepa">Femepa</mat-option>
+          </mat-select>
+          <mat-icon matPrefix>emoji_events</mat-icon>
+        </mat-form-field>
+
+
         <mat-form-field appearance="fill" class="modern-field full-width">
           <mat-label>Puntos</mat-label>
           <mat-select formControlName="ranking">
@@ -165,7 +176,7 @@
           <mat-icon matPrefix>star_border</mat-icon>
         </mat-form-field>
 
-          <mat-form-field appearance="fill" class="modern-field full-width">
+        <mat-form-field appearance="fill" class="modern-field full-width">
           <mat-label>Descuento Clasificacion</mat-label>
           <input matInput type="number" min="1" formControlName="subtract_ranking" placeholder="Descuento Puntos">
           <mat-icon matPrefix>star_border</mat-icon>

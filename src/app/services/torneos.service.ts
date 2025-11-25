@@ -16,6 +16,7 @@ export interface Tournament {
   max_participants: number;
   current_participants: number;
   status: 'draft' | 'open' | 'closed' | 'in_progress' | 'completed' | 'cancelled';
+  type?: string;
   prizes?: any;
   rules?: string;
   photo?: string;
