@@ -152,6 +152,12 @@ export class ClubsService extends ApiBaseService {
     deleteClubClosedDay(id: number): Observable<any> {
         return this.delete(`/clubClosedDays/delete/${id}`);
     }
+
+
+      getCities(): Observable<any> {
+        return this.get<any>('/cities');
+    }
+
 }
 
 

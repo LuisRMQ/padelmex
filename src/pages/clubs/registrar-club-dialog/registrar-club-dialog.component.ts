@@ -36,14 +36,9 @@ export class RegistrarClubDialogComponent {
   logoFile: File | null = null;
   logoPreview: string = '../../assets/images/placeholder.png';
 
-  estados = [
-    { nombre: 'Jalisco', ciudades: ['Guadalajara', 'Zapopan', 'Puerto Vallarta'] },
-    { nombre: 'Nuevo León', ciudades: ['Monterrey', 'San Nicolás', 'Apodaca'] },
-    { nombre: 'Ciudad de México', ciudades: ['Iztapalapa', 'Coyoacán', 'Álvaro Obregón'] },
-    { nombre: 'Yucatán', ciudades: ['Mérida', 'Valladolid', 'Tizimín'] },
-    { nombre: 'Veracruz', ciudades: ['Veracruz', 'Xalapa', 'Coatzacoalcos'] }
-  ];
-  ciudades: string[] = [];
+ estados: string[] = [];
+ciudades: string[] = [];
+ciudadesPorEstado: any = {};
 
   fieldLabels: { [key: string]: string } = {
     name: 'Nombre del club',
@@ -81,20 +76,22 @@ export class RegistrarClubDialogComponent {
     });
   }
 
-  ngOnInit() {
-    if (this.data.club) {
-      this.clubForm.patchValue(this.data.club);
-      this.logoPreview = this.data.club.logo || this.logoPreview;
-      this.onStateChange(this.data.club.state);
-      this.clubForm.get('city')?.setValue(this.data.club.city);
-    }
-  }
+ ngOnInit() {
+  this.cargarCiudades();
 
-  onStateChange(stateNombre: string) {
-    const estado = this.estados.find(e => e.nombre === stateNombre);
-    this.ciudades = estado ? estado.ciudades : [];
-    this.clubForm.get('city')?.reset();
+  if (this.data.club) {
+    this.clubForm.patchValue(this.data.club);
+    this.logoPreview = this.data.club.logo || this.logoPreview;
+
+    this.onStateChange(this.data.club.state);
+    this.clubForm.get('city')?.setValue(this.data.club.city);
   }
+}
+
+ onStateChange(state: string) {
+  this.ciudades = this.ciudadesPorEstado[state] || [];   
+  this.clubForm.get('city')?.reset();
+}
 
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -113,6 +110,16 @@ export class RegistrarClubDialogComponent {
     };
     reader.readAsDataURL(file);
   }
+
+  cargarCiudades() {
+  this.clubsService.getCities().subscribe({
+    next: (data) => {
+      this.ciudadesPorEstado = data;                    
+      this.estados = Object.keys(data);                  
+    },
+    error: (err) => console.error(err)
+  });
+}
 
   guardarClub() {
     if (this.clubForm.invalid) {

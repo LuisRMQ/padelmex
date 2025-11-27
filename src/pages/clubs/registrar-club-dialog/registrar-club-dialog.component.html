@@ -84,9 +84,9 @@
           <mat-form-field appearance="fill" class="modern-field">
             <mat-label>Estado</mat-label>
             <mat-select formControlName="state" (selectionChange)="onStateChange($event.value)">
-              <mat-option *ngFor="let estado of estados" [value]="estado.nombre">
-                {{ estado.nombre }}
-              </mat-option>
+              <mat-option *ngFor="let estado of estados" [value]="estado">
+  {{ estado }}
+</mat-option>
             </mat-select>
             <mat-icon matPrefix>map</mat-icon>
           </mat-form-field>
@@ -95,9 +95,9 @@
           <mat-form-field appearance="fill" class="modern-field">
             <mat-label>Ciudad</mat-label>
             <mat-select formControlName="city">
-              <mat-option *ngFor="let ciudad of ciudades" [value]="ciudad">
-                {{ ciudad }}
-              </mat-option>
+             <mat-option *ngFor="let ciudad of ciudades" [value]="ciudad">
+  {{ ciudad }}
+</mat-option>
             </mat-select>
             <mat-icon matPrefix>location_city</mat-icon>
           </mat-form-field>

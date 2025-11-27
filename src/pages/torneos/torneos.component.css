@@ -809,3 +809,63 @@ mat-card-actions button:hover {
     transform: none; /* Reducir animaciones para mejor rendimiento */
   }
 }
+
+
+/* Íconos más pequeños en pantallas de celular */
+@media (max-width: 600px) {
+
+  /* Íconos generales dentro de las tarjetas */
+  mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  /* Ícono del avatar (el círculo azul) */
+  .torneo-avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .torneo-avatar mat-icon {
+    font-size: 20px !important;
+  }
+
+  /* Íconos dentro de info-item (fecha, ubicación, etc.) */
+  .info-item mat-icon {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Íconos de botones */
+  mat-card-actions button mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+/* Íconos aún más pequeños en móviles pequeños (≤480px) */
+@media (max-width: 480px) {
+  mat-icon {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .info-item mat-icon {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .torneo-avatar {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .torneo-avatar mat-icon {
+    font-size: 18px !important;
+  }
+}
