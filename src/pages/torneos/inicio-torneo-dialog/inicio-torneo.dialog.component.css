@@ -372,6 +372,26 @@
   background: #94a3b8;
 }
 
+
+
+.toggle-eye-btn {
+  background: #1e293b;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-eye-btn:hover {
+  background: #334155;
+}
+
+
 /* =========================
    Responsive
    ========================= */

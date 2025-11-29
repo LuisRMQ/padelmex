@@ -74,6 +74,8 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   groupStandings: any[] = [];
 
   loading = false;
+  showCourts: boolean = true;
+
   error: string | null = null;
 
   private matchWidth = 220;
@@ -801,14 +803,14 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
       .attr('stroke', '#e2e8f0')
       .attr('stroke-width', 2)
       .attr('rx', 12)
-      .attr('filter', 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))');
+      .attr('filter', 'drop-shadow(0 4px 6px rgba(244, 241, 241, 0.17))');
 
     this.drawPlayerSection(g, 0, this.matchHeight / 2 - 1, isPlayer1Winner);
     this.drawPlayerSection(g, this.matchHeight / 2 + 1, this.matchHeight / 2 - 1, isPlayer2Winner);
 
     this.drawPlayerNames(g, jugador1Safe, isPlayer1Winner, this.matchHeight / 4);
     this.drawPlayerNames(g, jugador2Safe, isPlayer2Winner, 3 * this.matchHeight / 4);
-    this.drawMatchFooter(g, partido.date ?? '', partido.start_time ?? '');
+    this.drawMatchFooter(g, partido.date ?? '', partido.start_time ?? '',partido.court ?? '');
 
     if (partido.status_game === 'completed' && partido.winner_id) {
       this.drawWinnerIndicator(g, isPlayer1Winner || isPlayer2Winner);
@@ -834,34 +836,39 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
     }
   }
 
- private drawMatchFooter(g: any, date: string, startTime: string) {
+ private drawMatchFooter(g: any, date: string, startTime: string, court:string ) {
   if (!date || !startTime) return;
 
   const footerHeight = 22;
 
-  // RECTÁNGULO DEL FOOTER
   g.append("rect")
     .attr("x", 0)
-    .attr("y", this.matchHeight) // ⬅️ Se coloca justo debajo del game
+    .attr("y", this.matchHeight) 
     .attr("width", this.matchWidth)
     .attr("height", footerHeight)
-    .attr("fill", "#f3f4f6")       // gris claro tipo Tailwind gray-100
-    .attr("stroke", "#d1d5db")     // borde gris
+    .attr("fill", "#ffffff")     
+    .attr("stroke", "#d1d5db")    
     .attr("rx", 0);
 
-  // TEXTO DEL FOOTER (FECHA Y HORA)
   const fechaLegible = this.formatearFecha(date);
   const horaLegible = startTime.substring(0, 5);
+  const courtText = this.showCourts ? court : "";   
 
   g.append("text")
     .attr("x", this.matchWidth / 2)
-    .attr("y", this.matchHeight + footerHeight / 2 + 4) // centrado vertical
+    .attr("y", this.matchHeight + footerHeight / 2 + 4) 
     .attr("text-anchor", "middle")
     .attr("font-size", 11)
-    .attr("fill", "#374151") // gris más oscuro
-    .text(`${fechaLegible} • ${horaLegible}`);
+    .attr("fill", "#000000cc") 
+    .text(`${fechaLegible} • ${horaLegible} ${courtText ? '• ' + courtText : ''}`);
 }
 
+toggleCourts() {
+  this.showCourts = !this.showCourts;
+
+  this.limpiarContenedores();
+  this.drawBracketSets();
+}
 
 private formatearFecha(fecha: string): string {
   const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];

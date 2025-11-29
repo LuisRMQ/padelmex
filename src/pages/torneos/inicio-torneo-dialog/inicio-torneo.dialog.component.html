@@ -118,6 +118,9 @@
           <div class="bracket-header">
             <h3>Bracket de Eliminatorias - {{ selectedCategory }}</h3>
           </div>
+             <button class="toggle-eye-btn" (click)="toggleCourts()">
+        {{ showCourts ? '❌ Ocultar canchas' : '👁️ Mostrar canchas' }}
+        </button>
           <div #bracketContainerSets class="bracket-container-sets"
             style="width: 100%; height: 600px; overflow: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;"
             aria-label="Bracket eliminatorias">
