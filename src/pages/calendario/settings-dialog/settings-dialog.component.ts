@@ -93,7 +93,7 @@ export class SettingsDialogComponent {
     const configData = {
       club_id: this.club_id,
       rol_id: this.rol_id,
-      advance_reservation_limit: this.advance_reservation_limit,
+      advance_reservation_limit: 0,
       cancellation_policy: this.cancellation_policy,
       activate_reservation: this.activate_reservation
     };

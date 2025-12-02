@@ -12,6 +12,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { User, UsersService } from '../../../app/services/users.service';
+import { AlertService } from '../../../app/services/alert.service';
+
 import { catchError, debounceTime, distinctUntilChanged, map, Observable, of, switchMap } from 'rxjs';
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatIconButton } from '@angular/material/button';
@@ -85,7 +87,9 @@ export class ScheduleDetailsDialogComponent {
     private reservationService: ReservationService,
     private dialogRef: MatDialogRef<ScheduleDetailsDialogComponent>,
     private snackBar: MatSnackBar,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private alertService: AlertService
+
   ) {
     this.editedData = { ...data.details };
     this.filteredPlayers = this.playerSearchControl.valueChanges.pipe(
@@ -155,37 +159,56 @@ export class ScheduleDetailsDialogComponent {
   }
 
   saveChanges() {
-    this.reservationService.updateReservation(this.data.id, {
-      user_id: this.data.details.user_id,
-      court_id: this.data.details.court_id,
-      date: this.editedData.date,
-      start_time: this.formatTime(this.editedData.start_time),
-      end_time: this.formatTime(this.editedData.end_time),
-      observations: this.editedData.observations,
-    }).subscribe({
-      next: (res) => {
-        this.closeDialog(true);
-        this.data.details = { ...this.editedData };
-        this.isEditing = false;
-      },
-      error: (err) => {
-        console.error('Error al actualizar:', err);
-      }
-    });
 
-    if (this.initialStatus !== this.editedData.status) {
-      this.reservationService.changeReservationStatus(this.data.id, this.editedData.status).subscribe({
+  this.reservationService.updateReservation(this.data.id, {
+    user_id: this.data.details.user_id,
+    court_id: this.data.details.court_id,
+    date: this.editedData.date,
+    start_time: this.formatTime(this.editedData.start_time),
+    end_time: this.formatTime(this.editedData.end_time),
+    observations: this.editedData.observations,
+  }).subscribe({
+    next: (res) => {
+      this.alertService.success('Reservación actualizada', 'Los cambios se guardaron correctamente.');
+      this.data.details = { ...this.editedData };
+      this.isEditing = false;
+    },
+    error: (err) => {
+      console.error('Error al actualizar:', err);
+
+      if (err.status === 422 && err.error?.errors) {
+        const mensajes = Object.values(err.error.errors).join('\n');
+        this.alertService.error('Error de validación', mensajes);
+        return;
+      }
+
+      this.alertService.error('Error al actualizar', err.error?.msg || 'Ocurrió un error inesperado.');
+    }
+  });
+
+  if (this.initialStatus !== this.editedData.status) {
+    this.reservationService.changeReservationStatus(this.data.id, this.editedData.status)
+      .subscribe({
         next: (res) => {
-          this.closeDialog(true);
+          this.alertService.success('Estatus actualizado', 'El estatus ha sido cambiado.');
           this.data.details.status = this.editedData.status;
           this.initialStatus = this.editedData.status;
         },
         error: (err) => {
           console.error('Error al actualizar status:', err);
+
+          if (err.status === 422 && err.error?.errors) {
+            const mensajes = Object.values(err.error.errors).join('\n');
+            this.alertService.error('Error de validación', mensajes);
+            return;
+          }
+
+          this.alertService.error('Error al actualizar estatus', err.error?.msg || 'No se pudo cambiar el estatus.');
         }
       });
-    }
   }
+}
+
 
   closeDialog(updated: boolean = false) {
     this.dialogRef.close(updated);

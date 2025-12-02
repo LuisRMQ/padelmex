@@ -77,7 +77,7 @@ export class ReservationService extends ApiBaseService {
             }
         });
 
-        return this.get<ReservationsResponse>('/reservations', params);
+        return this.get<ReservationsResponse>('/reservations?limit=99999', params);
     }
 
     getReservationDetails(id: number): Observable<ReservationDetails> {

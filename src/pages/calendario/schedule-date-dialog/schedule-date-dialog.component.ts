@@ -347,7 +347,7 @@ export class ScheduleDateDialogComponent implements OnInit {
     payload.players.unshift({
       user_id: ownerId,
       player_number: 1,
-      paid_by_owner: true
+      paid_by_owner:  this.reservationForm.value.pay_method !== 'single_payment'
     });
   }
 

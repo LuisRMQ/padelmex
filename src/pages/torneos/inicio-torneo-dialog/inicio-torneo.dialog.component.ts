@@ -567,13 +567,9 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
           return false;
         };
 
-        const jugador1 = isPlaceholderCouple(game.couple_1) && isFirstRound
-          ? [{ name: 'Por asignar' }]
-          : this.getPlayersFromEliminationCouple(game.couple_1, isFirstRound);
+        const jugador1 = this.getPlayersFromEliminationCouple(game.couple_1);
+        const jugador2 = this.getPlayersFromEliminationCouple(game.couple_2);
 
-        const jugador2 = isPlaceholderCouple(game.couple_2) && isFirstRound
-          ? [{ name: 'Por asignar' }]
-          : this.getPlayersFromEliminationCouple(game.couple_2, isFirstRound);
 
         const fromGameRefs = this.extractFromGameReferences(game);
 
@@ -691,37 +687,23 @@ export class InicioTorneoDialogComponent implements OnInit, AfterViewInit {
   }
 
   private getPlayersFromEliminationCouple(couple: any, isFirstRound: boolean = false): any[] {
-    if (!couple) return [{ name: 'Por asignar' }];
+      if (!couple) return [{ name: 'Por asignar' }];
 
-    if (couple.players && Array.isArray(couple.players)) {
-      return couple.players.map((p: any) => ({
-        name: p?.name ?? 'Jugador sin nombre',
-        level: p?.level,
-        tournament_victories: p?.tournament_victories
-      }));
-    }
-
-    if (Array.isArray(couple) && couple.length > 0) {
-      return couple.map((p: any) => ({
-        name: p?.name ?? 'Jugador sin nombre',
-        level: p?.level,
-        tournament_victories: p?.tournament_victories
-      }));
-    }
-
-    if (typeof couple === 'object' && 'pending' in couple) {
-      const text = String(couple.pending || '').trim();
-      const esGanador = /^Ganador de\s*J\d+$/i.test(text);
-
-      if (isFirstRound) {
-        return [{ name: 'Por asignar' }];
+      // Si el backend ya trae texto, se respeta tal como viene
+      if (couple.pending) {
+        return [{ name: couple.pending }]; 
+      }
+      
+      // Si la pareja real trae players, se listan normal
+      if (couple.players && Array.isArray(couple.players)) {
+        return couple.players.map((p: any) => ({
+          name: p?.name ?? 'Jugador sin nombre'
+        }));
       }
 
-      return [{ name: text }];
+      // Si viene objeto vacío todavía es slot libre
+      return [{ name: 'Por asignar' }];
     }
-
-    return [{ name: 'Por asignar' }];
-  }
 
   private calculateNextMatchIndex(phase: string, index: number): number | null {
     if (phase === 'final') return null;

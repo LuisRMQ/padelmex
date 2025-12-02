@@ -598,6 +598,8 @@ onPageChange(event: PageEvent) {
     this.reservationService.getReservations({}).subscribe({
       next: (response) => {
         if (response && Array.isArray(response.data)) {
+             console.log("📥 RESERVAS RECIBIDAS DESDE API:", this.allReservations);
+      console.log("📊 TOTAL API:", this.allReservations.length);
           this.allReservations = response.data;
           this.applyFilters();
         } else {
@@ -649,8 +651,9 @@ onPageChange(event: PageEvent) {
     filteredReservations = filteredReservations.filter(res =>
       res.date === selectedDateStr
     );
-
+    console.log(filteredReservations)
     this.reservations = this.mapApiReservationsToCalendar(filteredReservations);
+    console.log(this.reservations)
 
     // Cargar horarios específicos para cada cancha solo si hay club seleccionado
     if (this.selectedClubId && this.courts.length > 0) {
@@ -696,16 +699,26 @@ onPageChange(event: PageEvent) {
     });
   }
 
-  isCourtClosed(courtId: number): boolean { // Asegurarse de que la hora sea medianoche
-    const closedDays = this.courtClosedDays.get(courtId);
-    if (!closedDays || closedDays.length === 0) {
-      return false;
-    }
+isCourtClosed(courtId: number): boolean {
+  const closedDays = this.courtClosedDays.get(courtId);
 
-    const selectedDateStr = this.formatDateForApi(this.selectedDate);
-    return closedDays.some(closedDay => closedDay.day === selectedDateStr);
+  // Si la cancha no tiene días cerrados registrados, no está cerrada
+  if (!closedDays || closedDays.length === 0) {
+    return false;
   }
 
+  const selectedDateStr = this.formatDateForApi(this.selectedDate);
+  return closedDays.some(cd => cd.day === selectedDateStr);
+}
+
+
+  private normalizeDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const yyyy = d.getFullYear();
+  const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+  const dd = d.getDate().toString().padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
   // En calendario.component.ts
   getCourtHoursDisplay(courtId: number): string {
     const hours = this.courtOperatingHours.get(courtId);
