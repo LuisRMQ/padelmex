@@ -12,6 +12,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from "@angular/material/icon";
 import { MatDatepickerModule } from "@angular/material/datepicker";
+import { AlertService } from '../../../app/services/alert.service';
 
 @Component({
     selector: 'app-club-close-dialog',
@@ -19,17 +20,17 @@ import { MatDatepickerModule } from "@angular/material/datepicker";
     styleUrls: ['./close-club-dialog.component.css'],
     standalone: true,
     imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatDividerModule,
-    MatSnackBarModule,
-    MatIconModule,
-    MatDatepickerModule
-]
+        CommonModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatButtonModule,
+        MatDividerModule,
+        MatSnackBarModule,
+        MatIconModule,
+        MatDatepickerModule
+    ]
 })
 export class ClubCloseDialogComponent implements OnInit {
     form: FormGroup;
@@ -40,6 +41,7 @@ export class ClubCloseDialogComponent implements OnInit {
         private clubsService: ClubsService,
         private dialogRef: MatDialogRef<ClubCloseDialogComponent>,
         private snackBar: MatSnackBar,
+        private alert: AlertService,
         @Inject(MAT_DIALOG_DATA) public data: { selectedClub: Club }
     ) {
         console.log('Received data in dialog:', data);
@@ -55,9 +57,9 @@ export class ClubCloseDialogComponent implements OnInit {
         });
     }
 
-    guardar() {
+    async guardar() {
         if (this.form.invalid) {
-            this.snackBar.open('Por favor completa todos los campos', 'Cerrar', { duration: 3000 });
+            await this.alert.error('Formulario incompleto', 'Por favor completa todos los campos.');
             return;
         }
 
@@ -67,12 +69,13 @@ export class ClubCloseDialogComponent implements OnInit {
         console.log('Payload to send:', payload);
 
         this.clubsService.createClubClosedDay(payload).subscribe({
-            next: (res: ClubClosedDay) => {
+            next: async (res: ClubClosedDay) => {
+                await this.alert.success('Registrado', 'Día cerrado registrado correctamente.');
                 this.dialogRef.close(res);
+
             },
-            error: err => {
-                console.error('Error al registrar día cerrado', err);
-                this.snackBar.open('Error al registrar día cerrado', 'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] });
+            error: async () => {
+                await this.alert.error('Error', 'Error al registrar día cerrado.');
             }
         });
     }

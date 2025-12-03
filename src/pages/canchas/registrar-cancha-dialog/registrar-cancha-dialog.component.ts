@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { CourtService, Club } from '../../../app/services/court.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
+import { AlertService } from '../../../app/services/alert.service';
 
 @Component({
   selector: 'app-RegistrarCancha',
@@ -52,21 +53,23 @@ export class RegistrarCanchaDialogComponent implements OnInit {
     private fb: FormBuilder,
     private courtService: CourtService,
     private snackBar: MatSnackBar,
+    private alertService: AlertService,
+
     private dialogRef: MatDialogRef<RegistrarCanchaDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) private data: any
+    @Inject(MAT_DIALOG_DATA) private data: any = {}
   ) {
     this.courtForm = this.fb.group({
       name: ['', Validators.required],
       sponsor: ['', Validators.required],
-      club_id: [this.data.selectedClubId, Validators.required],
+      club_id: [this.data?.selectedClubId ?? null, Validators.required],
       type: ['', Validators.required],
       availability: ['1', Validators.required],
-      price_hour: [0, [Validators.required, Validators.min(1)]],
-      commission: [0, [Validators.required, Validators.min(1)]],
-
+      price_hour: [0, [Validators.required, Validators.min(0)]],
+      commission: [0, [Validators.required, Validators.min(0)]],
       photo: ['']
     });
   }
+
 
   ngOnInit() {
     this.loadClubs();
@@ -88,7 +91,7 @@ export class RegistrarCanchaDialogComponent implements OnInit {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('El archivo supera los 5MB');
+      this.alertService.error('Archivo demasiado grande', 'El archivo supera los 5MB.');
       return;
     }
 
@@ -104,16 +107,7 @@ export class RegistrarCanchaDialogComponent implements OnInit {
   onSubmit() {
     if (this.courtForm.invalid) {
       const firstError = this.getFirstFormError();
-      this.snackBar.open(firstError || 'Por favor, completa todos los campos requeridos', 'Cerrar', {
-        panelClass: ['snackbar-error'],
-        horizontalPosition: 'right',
-        verticalPosition: 'top',
-        duration: 3000
-      });
-      return;
-    }
-
-    if (!this.validateCourtName(this.courtForm.value)) {
+      this.alertService.error('Formulario inválido', firstError || 'Completa todos los campos obligatorios.');
       return;
     }
 
@@ -133,26 +127,20 @@ export class RegistrarCanchaDialogComponent implements OnInit {
     this.courtService.createCourt(formData).subscribe({
       next: (response) => {
         this.loading = false;
+        this.alertService.success('Éxito', 'La cancha fue creada correctamente.');
+
         this.dialogRef.close(response);
-        this.snackBar.open('Cancha creada exitosamente', 'Cerrar', {
-          panelClass: ['snackbar-success'],
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 3000
-        });
+
       },
       error: (error) => {
         this.loading = false;
         console.error('Error creating court:', error);
-        this.snackBar.open('Error al crear la cancha', 'Cerrar', {
-          panelClass: ['snackbar-error'],
-          duration: 3000,
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-        });
+        this.alertService.error('Error', 'No se pudo crear la cancha.');
+
       }
     });
   }
+
 
 
   onCancel() {
@@ -177,12 +165,8 @@ export class RegistrarCanchaDialogComponent implements OnInit {
   validateCourtName(formData: any) {
     for (const court of this.data.courts) {
       if (court.name === formData.name) {
-        this.snackBar.open('Ya existe una cancha con este nombre', 'Cerrar', {
-          panelClass: ['snackbar-error'],
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 3000
-        });
+        this.alertService.error('Nombre duplicado', 'Ya existe una cancha con este nombre.');
+
         return false;
       }
     }

@@ -106,7 +106,7 @@ export class CanchasComponent implements OnInit {
     this.courts = [];
     this.error = '';
 
-    this.courtService.getCourtsByClub(this.selectedClubId, 5, page).subscribe({
+    this.courtService.getCourtsByClub(this.selectedClubId, 20, page).subscribe({
       next: (response: CourtsResponse) => {
         this.courts = response.data;
         this.currentPage = response.current_page;
@@ -140,7 +140,7 @@ export class CanchasComponent implements OnInit {
       console.log('Dialog result:', result);
       if (result) {
         await this.loadCourts();
-        this.abrirModalRegistrarHorario(result.club);
+        //this.abrirModalRegistrarHorario(result.club);
       }
     });
   }

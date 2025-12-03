@@ -3,7 +3,7 @@
     <div class="login-form">
       <img src="assets/mat-img-1.png" alt="Logo" class="logo">
       <h2 style="font-family: 'Inter'">
-        {{ isRecoverPassword ? 'Recuperar Contraseña' : (isClub ? 'Iniciar Sesión (Club)' : 'Iniciar Sesión (Usuario)') }}
+        {{ isRecoverPassword ? 'Recuperar Contraseña' : (isClub ? 'Iniciar Sesión (Club)' : 'Iniciar Sesión ') }}
       </h2>
 
      
@@ -27,7 +27,6 @@
       </app-recover-password-form>
 
       <div class="register-link">
-        <a href="#" (click)="setClubMode(true); $event.preventDefault()" *ngIf="!isClub && !isRecoverPassword">¿Eres un club?</a>
         <a href="#" (click)="setClubMode(false); $event.preventDefault()" *ngIf="isClub && !isRecoverPassword">¿Eres usuario?</a>
         <a href="#" (click)="setRecoverPasswordMode(true); $event.preventDefault()" *ngIf="!isRecoverPassword">¿Olvidaste tu contraseña?</a>
         <a href="#" (click)="setRecoverPasswordMode(false); $event.preventDefault()" *ngIf="isRecoverPassword">Volver al login</a>

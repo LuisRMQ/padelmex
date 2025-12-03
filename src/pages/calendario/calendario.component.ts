@@ -87,6 +87,7 @@ export class CalendarioComponent implements OnInit {
   advance_reservation_limit = 0;
   cancellation_policy = 0;
   activate_reservation = 0;
+  headerHeight = 0;
 
 
   pageSize = 5;
@@ -128,17 +129,21 @@ export class CalendarioComponent implements OnInit {
 
   ngOnInit(): void {
     this.times = this.buildTimeScale(this.dayStartMin, this.dayEndMin, this.snapMinutes);
+
     this.loadClubs();
     this.loadAllReservations();
   }
 
   onDateChange(date: Date) {
     this.selectedDate = date;
-    this.applyFilters(); // Aplicar filtros cuando cambia la fecha
+    this.applyFilters(); 
     if (this.selectedClubId && this.courts.length > 0) {
       this.loadCourtOperatingHours();
     }
   }
+
+
+
 
   setToYesterday() {
     const d = new Date();

@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { AlertService } from '../../../app/services/alert.service';
 
 @Component({
   selector: 'app-login',
@@ -31,52 +32,41 @@ export class LoginComponent {
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router, private snackBar: MatSnackBar) { }
+  constructor(private authService: AuthService, private router: Router, private snackBar: MatSnackBar, private alertService: AlertService) { }
 
   onUserLoginSubmit(loginData: UserLoginData): void {
     this.isLoading = true;
     this.errorMessage = '';
 
     this.authService.login(loginData).subscribe({
-      next: (response) => {
+      next: async (response) => {
         this.isLoading = false;
-        this.snackBar.open(
-          `✅ Bienvenido ${response.user.name}`,
-          'Cerrar', 
-          {
-            duration: 3000, 
-            horizontalPosition: 'center',
-            verticalPosition: 'top',
-            panelClass: ['snackbar-success']
-          }
+
+        await this.alertService.success(
+          'Bienvenido 🎉',
+          `Hola ${response.user.name}, acceso concedido.`
         );
 
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 3000);
+        this.router.navigate(['/dashboard']);
       },
-      error: (error) => {
+
+      error: async (error) => {
         this.isLoading = false;
         console.error('Error en login:', error);
 
         let mensaje = '';
 
         if (error.message === 'Credenciales incorrectas') {
-          mensaje = '❌ Credenciales incorrectas. Por favor, verifica tus datos.';
-        } else if (error.message.includes('Attempt to read property')) {
-          mensaje = '❌ Credenciales incorrectas. Por favor, verifica tus datos.';
+          mensaje = '❌ Credenciales incorrectas. Verifica tus datos.';
+        } else if (error.message?.includes('Attempt to read property')) {
+          mensaje = '❌ Credenciales incorrectas. Verifica tus datos.';
         } else if (error.status === 0) {
-          mensaje = '⚠️ Error de conexión. Verifica tu conexión a internet.';
+          mensaje = '⚠️ Error de conexión. Revisa tu internet.';
         } else {
-          mensaje = error.message || '⚠️ Error desconocido. Por favor, intenta más tarde.';
+          mensaje = error.message || '⚠️ Error desconocido, intenta más tarde.';
         }
 
-        this.snackBar.open(mensaje, 'Cerrar', {
-          duration: 4000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-          panelClass: mensaje.startsWith('❌') ? ['snackbar-error'] : ['snackbar-warning']
-        });
+        await this.alertService.error('Error al iniciar sesión', mensaje);
       }
     });
   }

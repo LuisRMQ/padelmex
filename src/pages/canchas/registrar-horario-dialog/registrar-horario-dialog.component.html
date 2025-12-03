@@ -91,13 +91,13 @@
                 <mat-form-field appearance="outline" class="time-field small">
                   <mat-label>Inicio</mat-label>
                   <mat-select [(ngModel)]="day.morning_start">
-                    <mat-option *ngFor="let h of morningHours" [value]="h">{{ h }}</mat-option>
+                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="time-field small">
                   <mat-label>Fin</mat-label>
                   <mat-select [(ngModel)]="day.morning_end">
-                    <mat-option *ngFor="let h of morningHours" [value]="h">{{ h }}</mat-option>
+                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="price-field">
@@ -132,13 +132,13 @@
                 <mat-form-field appearance="outline" class="time-field small">
                   <mat-label>Inicio</mat-label>
                   <mat-select [(ngModel)]="day.afternoon_start">
-                    <mat-option *ngFor="let h of afternoonHours" [value]="h">{{ h }}</mat-option>
+                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="time-field small">
                   <mat-label>Fin</mat-label>
                   <mat-select [(ngModel)]="day.afternoon_end">
-                    <mat-option *ngFor="let h of afternoonHours" [value]="h">{{ h }}</mat-option>
+                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="price-field">
@@ -173,13 +173,13 @@
                 <mat-form-field appearance="outline" class="time-field small">
                   <mat-label>Inicio</mat-label>
                   <mat-select [(ngModel)]="day.evening_start">
-                    <mat-option *ngFor="let h of eveningHours" [value]="h">{{ h }}</mat-option>
+                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="time-field small">
                   <mat-label>Fin</mat-label>
                   <mat-select [(ngModel)]="day.evening_end">
-                    <mat-option *ngFor="let h of eveningHours" [value]="h">{{ h }}</mat-option>
+                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="price-field">

@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from "@angular/material/card";
+import { AlertService } from '../../../app/services/alert.service';
 
 @Component({
   selector: 'app-RegistrarClub',
@@ -36,9 +37,9 @@ export class RegistrarClubDialogComponent {
   logoFile: File | null = null;
   logoPreview: string = '../../assets/images/placeholder.png';
 
- estados: string[] = [];
-ciudades: string[] = [];
-ciudadesPorEstado: any = {};
+  estados: string[] = [];
+  ciudades: string[] = [];
+  ciudadesPorEstado: any = {};
 
   fieldLabels: { [key: string]: string } = {
     name: 'Nombre del club',
@@ -59,6 +60,8 @@ ciudadesPorEstado: any = {};
     private fb: FormBuilder,
     private clubsService: ClubsService,
     private snackBar: MatSnackBar,
+    private alert: AlertService,
+
     private dialogRef: MatDialogRef<RegistrarClubDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -76,29 +79,29 @@ ciudadesPorEstado: any = {};
     });
   }
 
- ngOnInit() {
-  this.cargarCiudades();
+  ngOnInit() {
+    this.cargarCiudades();
 
-  if (this.data.club) {
-    this.clubForm.patchValue(this.data.club);
-    this.logoPreview = this.data.club.logo || this.logoPreview;
+    if (this.data.club) {
+      this.clubForm.patchValue(this.data.club);
+      this.logoPreview = this.data.club.logo || this.logoPreview;
 
-    this.onStateChange(this.data.club.state);
-    this.clubForm.get('city')?.setValue(this.data.club.city);
+      this.onStateChange(this.data.club.state);
+      this.clubForm.get('city')?.setValue(this.data.club.city);
+    }
   }
-}
 
- onStateChange(state: string) {
-  this.ciudades = this.ciudadesPorEstado[state] || [];   
-  this.clubForm.get('city')?.reset();
-}
+  onStateChange(state: string) {
+    this.ciudades = this.ciudadesPorEstado[state] || [];
+    this.clubForm.get('city')?.reset();
+  }
 
   onFileSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('El archivo supera los 5MB');
+      this.alert.error('Archivo demasiado grande', 'El archivo supera los 5MB.');
       return;
     }
 
@@ -112,24 +115,19 @@ ciudadesPorEstado: any = {};
   }
 
   cargarCiudades() {
-  this.clubsService.getCities().subscribe({
-    next: (data) => {
-      this.ciudadesPorEstado = data;                    
-      this.estados = Object.keys(data);                  
-    },
-    error: (err) => console.error(err)
-  });
-}
+    this.clubsService.getCities().subscribe({
+      next: (data) => {
+        this.ciudadesPorEstado = data;
+        this.estados = Object.keys(data);
+      },
+      error: (err) => console.error(err)
+    });
+  }
 
-  guardarClub() {
+  async guardarClub() {
     if (this.clubForm.invalid) {
       const firstError = this.getFirstFormError();
-      this.snackBar.open(firstError || 'Por favor, completa todos los campos requeridos', 'Cerrar', {
-        panelClass: ['snackbar-error'],
-        horizontalPosition: 'right',
-        verticalPosition: 'top',
-        duration: 3000
-      });
+      await this.alert.error('Formulario incompleto', firstError || 'Por favor completa los campos requeridos.');
       return;
     }
 
@@ -147,23 +145,13 @@ ciudadesPorEstado: any = {};
 
     if (this.data.club) {
       this.clubsService.updateClub(this.data.club.id, formData).subscribe({
-        next: (res) => {
+        next: async (res) => {
+          await this.alert.success('Club actualizado', 'El club se actualizó correctamente.');
           this.dialogRef.close(true);
-          this.snackBar.open('Club actualizado con éxito', 'Cerrar', {
-            panelClass: ['snackbar-success'],
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 3000
-          });
         },
-        error: (err) => {
-          console.error(err);
-          this.snackBar.open('Error al actualizar el club. Intenta nuevamente.', 'Cerrar', {
-            panelClass: ['snackbar-error'],
-            horizontalPosition: 'right',
-            verticalPosition: 'top',
-            duration: 3000
-          });
+        error: async (err) => {
+          await this.alert.error('Error', 'Error al actualizar el club. Intenta nuevamente.');
+
         }
       });
       return;
@@ -174,18 +162,15 @@ ciudadesPorEstado: any = {};
     }
 
     this.clubsService.createClub(formData).subscribe({
-      next: (res) => {
+      next: async (res) => {
+        await this.alert.success('Club creado', 'El club ha sido creado con éxito.');
+
         this.dialogRef.close(true);
 
       },
-      error: (err) => {
-        console.error(err);
-        this.snackBar.open('Error al crear el club. Intenta nuevamente.', 'Cerrar', {
-          panelClass: ['snackbar-error'],
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 3000
-        });
+      error: async (err) => {
+        await this.alert.error('Error', 'Error al crear el club. Intenta nuevamente.');
+
       }
     });
   }
@@ -201,30 +186,18 @@ ciudadesPorEstado: any = {};
   validateClub(formData: any) {
     for (const club of this.data.clubs) {
       if (club.email === formData.email) {
-        this.snackBar.open('Ya existe un club con este correo electrónico', 'Cerrar', {
-          panelClass: ['snackbar-error'],
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 3000
-        });
+        this.alert.error('Correo duplicado', 'Ya existe un club con este correo electrónico.');
+
         return false;
       }
       if (club.rfc === formData.rfc) {
-        this.snackBar.open('Ya existe un club con este RFC', 'Cerrar', {
-          panelClass: ['snackbar-error'],
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 3000
-        });
+        this.alert.error('RFC duplicado', 'Ya existe un club con este RFC.');
+
         return false;
       }
       if (club.name === formData.name) {
-        this.snackBar.open('Ya existe un club con este nombre', 'Cerrar', {
-          panelClass: ['snackbar-error'],
-          horizontalPosition: 'right',
-          verticalPosition: 'top',
-          duration: 3000
-        });
+        this.alert.error('Nombre duplicado', 'Ya existe un club con este nombre.');
+
         return false;
       }
     }

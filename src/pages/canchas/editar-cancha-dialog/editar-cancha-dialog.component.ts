@@ -58,6 +58,7 @@ export class EditarCanchaDialogComponent {
             availability: [data.court.availability, Validators.required],
             price_hour: [data.court.price_hour || 0, [Validators.required, Validators.min(0)]],
             club_id: [data.court.club_id, Validators.required],
+            commission: [data.court.commission, Validators.required],
             photo: ['']
         });
     }
@@ -71,7 +72,7 @@ export class EditarCanchaDialogComponent {
     loadClubs() {
         this.ClubsService.getClubsa().subscribe({
             next: (response) => {
-                this.clubs = response.data;  // <--- solo el array
+                this.clubs = response.data; 
             },
             error: (err) => console.error(err)
         });
@@ -108,7 +109,6 @@ export class EditarCanchaDialogComponent {
             formData.append('photo', this.selectedFile);
         }
 
-        // Incluye el id de la cancha
         formData.append('id', this.data.court.id.toString());
 
         console.log('FormData enviado al backend:');
