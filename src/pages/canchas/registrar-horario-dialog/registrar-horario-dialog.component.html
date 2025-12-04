@@ -7,7 +7,7 @@
       </div>
       <div class="header-text">
         <h2>Horarios de {{ data.courtName }}</h2>
-        <p>Configura los horarios y precios por turno</p>
+        <p>Configura los horarios globales para los días seleccionados</p>
       </div>
     </div>
     <button mat-icon-button mat-dialog-close class="close-button">
@@ -33,27 +33,106 @@
     </button>
     <button mat-stroked-button color="warn" (click)="clearAll()">
       <mat-icon>clear_all</mat-icon>
-      Limpiar Todo
+      Limpiar Selección
     </button>
   </div>
 
   <!-- Weekly Schedule Table -->
   <div class="schedule-table-container">
-    <div class="table-header">
-      <div class="day-column">Día</div>
+    <div class="table-header sticky-header">
+      <!-- Shift Columns with Global Controls -->
       <div class="shift-columns">
+        
+        <!-- Morning Header -->
         <div class="shift-header morning-shift">
-          <mat-icon>wb_sunny</mat-icon>
-          <span>Mañana</span>
+          <div class="shift-title">
+            <mat-icon>wb_sunny</mat-icon>
+            <span>Mañana</span>
+          </div>
+          <div class="global-controls">
+            <div class="time-controls">
+              <mat-form-field appearance="outline" class="time-field compact">
+                <mat-label>Inicio</mat-label>
+                <mat-select [(ngModel)]="globalConfig.morning.start">
+                  <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <span class="separator">-</span>
+              <mat-form-field appearance="outline" class="time-field compact">
+                <mat-label>Fin</mat-label>
+                <mat-select [(ngModel)]="globalConfig.morning.end">
+                  <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="price-field compact">
+              <mat-label>Precio</mat-label>
+              <input matInput type="number" [(ngModel)]="globalConfig.morning.price" placeholder="0">
+              <span matPrefix>$&nbsp;</span>
+            </mat-form-field>
+          </div>
         </div>
+
+        <!-- Afternoon Header -->
         <div class="shift-header afternoon-shift">
-          <mat-icon>brightness_5</mat-icon>
-          <span>Tarde</span>
+          <div class="shift-title">
+            <mat-icon>brightness_5</mat-icon>
+            <span>Tarde</span>
+          </div>
+          <div class="global-controls">
+            <div class="time-controls">
+              <mat-form-field appearance="outline" class="time-field compact">
+                <mat-label>Inicio</mat-label>
+                <mat-select [(ngModel)]="globalConfig.afternoon.start">
+                  <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <span class="separator">-</span>
+              <mat-form-field appearance="outline" class="time-field compact">
+                <mat-label>Fin</mat-label>
+                <mat-select [(ngModel)]="globalConfig.afternoon.end">
+                  <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="price-field compact">
+              <mat-label>Precio</mat-label>
+              <input matInput type="number" [(ngModel)]="globalConfig.afternoon.price" placeholder="0">
+              <span matPrefix>$&nbsp;</span>
+            </mat-form-field>
+          </div>
         </div>
+
+        <!-- Evening Header -->
         <div class="shift-header evening-shift">
-          <mat-icon>nights_stay</mat-icon>
-          <span>Noche</span>
+          <div class="shift-title">
+            <mat-icon>nights_stay</mat-icon>
+            <span>Noche</span>
+          </div>
+          <div class="global-controls">
+            <div class="time-controls">
+              <mat-form-field appearance="outline" class="time-field compact">
+                <mat-label>Inicio</mat-label>
+                <mat-select [(ngModel)]="globalConfig.evening.start">
+                  <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <span class="separator">-</span>
+              <mat-form-field appearance="outline" class="time-field compact">
+                <mat-label>Fin</mat-label>
+                <mat-select [(ngModel)]="globalConfig.evening.end">
+                  <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="price-field compact">
+              <mat-label>Precio</mat-label>
+              <input matInput type="number" [(ngModel)]="globalConfig.evening.price" placeholder="0">
+              <span matPrefix>$&nbsp;</span>
+            </mat-form-field>
+          </div>
         </div>
+
       </div>
     </div>
 
@@ -66,130 +145,78 @@
           </mat-checkbox>
         </div>
 
-        <!-- Shift Columns -->
+        <!-- Shift Columns (Preview Only) -->
         <div class="shift-cells">
-          <!-- Morning Shift -->
+          
+          <!-- Morning Status -->
           <div class="shift-cell morning-cell">
-            <div *ngIf="!day.enabled; else editMorning">
-              <div class="schedule-display" *ngIf="getShiftSchedule(day, 'morning'); else noScheduleMorning">
-                <div class="time-range">
-                  {{ getShiftSchedule(day, 'morning')?.start }} - {{ getShiftSchedule(day, 'morning')?.end }}
-                </div>
-                <div class="price-tag">
-                  ${{ getShiftSchedule(day, 'morning')?.price_hour }}
-                </div>
-              </div>
-              <ng-template #noScheduleMorning>
-                <div class="no-schedule-badge">
-                  <mat-icon>schedule</mat-icon>
-                  Sin horario
-                </div>
-              </ng-template>
+             <div class="status-preview" *ngIf="day.enabled && globalConfig.morning.start && globalConfig.morning.end; else currentInfoMorning">
+               <mat-icon class="check-icon">check_circle</mat-icon>
+               <span>Aplicará horario global</span>
             </div>
-            <ng-template #editMorning>
-              <div class="shift-editor">
-                <mat-form-field appearance="outline" class="time-field small">
-                  <mat-label>Inicio</mat-label>
-                  <mat-select [(ngModel)]="day.morning_start">
-                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="time-field small">
-                  <mat-label>Fin</mat-label>
-                  <mat-select [(ngModel)]="day.morning_end">
-                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="price-field">
-                  <mat-label>Precio</mat-label>
-                  <input matInput type="number" [(ngModel)]="day.morning_price" placeholder="200" min="1">
-                  <span matPrefix>$&nbsp;</span>
-                </mat-form-field>
-              </div>
+            <ng-template #currentInfoMorning>
+               <div class="schedule-display" *ngIf="getShiftSchedule(day, 'morning') as schedule; else noScheduleMorning">
+                  <div class="time-range">
+                    {{ schedule.start }} - {{ schedule.end }}
+                  </div>
+                  <div class="price-tag">
+                    ${{ schedule.price_hour }}
+                  </div>
+                </div>
+                <ng-template #noScheduleMorning>
+                  <div class="status-preview disabled">
+                    <span>Sin horario</span>
+                  </div>
+                </ng-template>
             </ng-template>
           </div>
 
-          <!-- Afternoon Shift -->
+          <!-- Afternoon Status -->
           <div class="shift-cell afternoon-cell">
-            <div *ngIf="!day.enabled; else editAfternoon">
-              <div class="schedule-display" *ngIf="getShiftSchedule(day, 'afternoon'); else noScheduleAfternoon">
-                <div class="time-range">
-                  {{ getShiftSchedule(day, 'afternoon')?.start }} - {{ getShiftSchedule(day, 'afternoon')?.end }}
-                </div>
-                <div class="price-tag">
-                  ${{ getShiftSchedule(day, 'afternoon')?.price_hour }}
-                </div>
-              </div>
-              <ng-template #noScheduleAfternoon>
-                <div class="no-schedule-badge">
-                  <mat-icon>schedule</mat-icon>
-                  Sin horario
-                </div>
-              </ng-template>
+             <div class="status-preview" *ngIf="day.enabled && globalConfig.afternoon.start && globalConfig.afternoon.end; else currentInfoAfternoon">
+               <mat-icon class="check-icon">check_circle</mat-icon>
+               <span>Aplicará horario global</span>
             </div>
-            <ng-template #editAfternoon>
-              <div class="shift-editor">
-                <mat-form-field appearance="outline" class="time-field small">
-                  <mat-label>Inicio</mat-label>
-                  <mat-select [(ngModel)]="day.afternoon_start">
-                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="time-field small">
-                  <mat-label>Fin</mat-label>
-                  <mat-select [(ngModel)]="day.afternoon_end">
-                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="price-field">
-                  <mat-label>Precio</mat-label>
-                  <input matInput type="number" [(ngModel)]="day.afternoon_price" placeholder="200" min="1">
-                  <span matPrefix>$&nbsp;</span>
-                </mat-form-field>
-              </div>
+            <ng-template #currentInfoAfternoon>
+                <div class="schedule-display" *ngIf="getShiftSchedule(day, 'afternoon') as schedule; else noScheduleAfternoon">
+                  <div class="time-range">
+                    {{ schedule.start }} - {{ schedule.end }}
+                  </div>
+                  <div class="price-tag">
+                    ${{ schedule.price_hour }}
+                  </div>
+                </div>
+                <ng-template #noScheduleAfternoon>
+                  <div class="status-preview disabled">
+                    <span>Sin horario</span>
+                  </div>
+                </ng-template>
             </ng-template>
           </div>
 
-          <!-- Evening Shift -->
+          <!-- Evening Status -->
           <div class="shift-cell evening-cell">
-            <div *ngIf="!day.enabled; else editEvening">
-              <div class="schedule-display" *ngIf="getShiftSchedule(day, 'evening'); else noScheduleEvening">
-                <div class="time-range">
-                  {{ getShiftSchedule(day, 'evening')?.start }} - {{ getShiftSchedule(day, 'evening')?.end }}
-                </div>
-                <div class="price-tag">
-                  ${{ getShiftSchedule(day, 'evening')?.price_hour }}
-                </div>
-              </div>
-              <ng-template #noScheduleEvening>
-                <div class="no-schedule-badge">
-                  <mat-icon>schedule</mat-icon>
-                  Sin horario
-                </div>
-              </ng-template>
+             <div class="status-preview" *ngIf="day.enabled && globalConfig.evening.start && globalConfig.evening.end; else currentInfoEvening">
+               <mat-icon class="check-icon">check_circle</mat-icon>
+               <span>Aplicará horario global</span>
             </div>
-            <ng-template #editEvening>
-              <div class="shift-editor">
-                <mat-form-field appearance="outline" class="time-field small">
-                  <mat-label>Inicio</mat-label>
-                  <mat-select [(ngModel)]="day.evening_start">
-                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="time-field small">
-                  <mat-label>Fin</mat-label>
-                  <mat-select [(ngModel)]="day.evening_end">
-                    <mat-option *ngFor="let h of allHours" [value]="h">{{ h }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="price-field">
-                  <mat-label>Precio</mat-label>
-                  <input matInput type="number" [(ngModel)]="day.evening_price" placeholder="200" min="1">
-                  <span matPrefix>$&nbsp;</span>
-                </mat-form-field>
-              </div>
+            <ng-template #currentInfoEvening>
+                <div class="schedule-display" *ngIf="getShiftSchedule(day, 'evening') as schedule; else noScheduleEvening">
+                  <div class="time-range">
+                    {{ schedule.start }} - {{ schedule.end }}
+                  </div>
+                  <div class="price-tag">
+                    ${{ schedule.price_hour }}
+                  </div>
+                </div>
+                <ng-template #noScheduleEvening>
+                  <div class="status-preview disabled">
+                    <span>Sin horario</span>
+                  </div>
+                </ng-template>
             </ng-template>
           </div>
+
         </div>
       </div>
     </div>
@@ -201,9 +228,11 @@
       <mat-icon>cancel</mat-icon>
       Cancelar
     </button>
-    <button mat-raised-button color="primary" (click)="guardarHorario()" class="save-button">
-      <mat-icon>save</mat-icon>
-      Guardar Horarios
+    <button mat-raised-button color="primary" (click)="guardarHorario()" class="save-button" [disabled]="loading">
+      <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+      <mat-icon *ngIf="!loading">save</mat-icon>
+      <span *ngIf="!loading">Guardar Configuración Global</span>
+      <span *ngIf="loading">Guardando...</span>
     </button>
   </div>
 </div>

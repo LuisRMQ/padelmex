@@ -1,6 +1,6 @@
 .modal-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px; /* Aumentado el ancho máximo */
   background: rgb(233, 231, 231);
   border-radius: 12px;
   overflow: hidden;
@@ -15,7 +15,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 24px;
+  padding: 16px 24px; /* Reducido padding vertical */
   background: linear-gradient(135deg, #336699 0%, #1e3a8a 100%);
   color: white;
 }
@@ -27,8 +27,8 @@
 }
 
 .icon-circle {
-  width: 48px;
-  height: 48px;
+  width: 40px; /* Reducido */
+  height: 40px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   display: flex;
@@ -39,21 +39,21 @@
 
 .icon-circle mat-icon {
   color: white;
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .header-text h2 {
-  margin: 0 0 4px 0;
-  font-size: 1.5rem;
+  margin: 0 0 2px 0;
+  font-size: 1.2rem; /* Reducido */
   font-weight: 600;
 }
 
 .header-text p {
   margin: 0;
   opacity: 0.9;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .close-button {
@@ -72,7 +72,7 @@
 
 /* Quick Selection */
 .quick-selection {
-  padding: 20px 24px;
+  padding: 12px 24px; /* Reducido padding */
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
@@ -86,6 +86,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 0.85rem; /* Letra más pequeña */
+  line-height: 32px;
 }
 
 .quick-selection .green {
@@ -116,27 +118,67 @@
   color: #fff;
 }
 
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
 .day-column {
-  width: 200px;
-  padding: 16px 20px;
+  width: 60px; /* Reducido ancho */
+  min-width: 60px;
+  padding: 8px 4px;
   border-right: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
+  justify-content: center;
+  background: white;
+  z-index: 11;
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
 .shift-columns {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  width: 100%;
+  min-width: 0; /* Permitir compresión total */
+}
+
+.shift-cells {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width:75%;
+  min-width: 0; /* Permitir compresión total */
 }
 
 .shift-header {
-  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Menor gap */
+  padding: 8px 12px; /* Menor padding */
+  height: auto;
+  width: 100%;
+}
+
+.shift-title {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.shift-title mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
 }
 
 .shift-header.morning-shift {
@@ -154,9 +196,83 @@
   color: white;
 }
 
+/* Global Controls in Header */
+.global-controls {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 8px;
+  border-radius: 6px;
+  width: 100%;
+  display: flex;
+  flex-direction: column; /* Mantener columna para mejor organización */
+  gap: 6px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Horizontal Time Controls */
+.time-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: space-between;
+}
+
+.separator {
+  color: inherit;
+  font-weight: bold;
+  opacity: 0.7;
+  font-size: 10px;
+}
+
+/* Compact fields styles */
+.compact {
+  width: 100%;
+}
+
+.compact ::ng-deep .mat-form-field-wrapper {
+  padding-bottom: 0;
+  margin: 0;
+}
+
+.compact ::ng-deep .mat-form-field-infix {
+  padding: 4px 0 6px 0;
+  border-top: 0;
+  width: auto;
+}
+
+.compact ::ng-deep .mat-form-field-flex {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 4px;
+  padding: 0 6px;
+  height: 30px; /* Altura reducida */
+  align-items: center;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.compact ::ng-deep .mat-select-value-text,
+.compact input {
+  font-size: 11px;
+  color: #333;
+  font-weight: 500;
+}
+
+.compact ::ng-deep .mat-form-field-label-wrapper {
+  top: -1.3em;
+}
+
+.compact ::ng-deep .mat-form-field-label {
+  font-size: 10px; 
+  color: #555;
+  transform: scale(0.9); /* Escalar label */
+}
+
+.compact ::ng-deep .mat-form-field-underline {
+  display: none;
+}
+
 /* Table Body */
 .table-body {
-  max-height: 60vh;
+  flex: 1;
   overflow-y: auto;
   min-height: 0;
 }
@@ -176,11 +292,13 @@
 }
 
 .day-cell {
-  width: 200px;
-  padding: 16px 20px;
+  width:25%; /* Ancho reducido */
+  min-width: 60px;
+  padding: 8px 4px;
   border-right: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .day-checkbox {
@@ -190,117 +308,60 @@
 .day-checkbox ::ng-deep .mat-checkbox-label {
   font-weight: 500;
   color: #1e293b;
+  font-size: 0.9rem;
 }
 
 .shift-cells {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  min-width: 0;
 }
 
 .shift-cell {
-  padding: 16px 20px;
+  padding: 8px;
   border-right: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 50px; /* Altura fila */
 }
 
 .shift-cell:last-child {
   border-right: none;
 }
 
-/* Schedule Display Mode */
-.schedule-display {
-  text-align: center;
-  width: 100%;
-}
-
-.time-range {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 8px;
-  padding: 8px 12px;
-  background: white;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-.price-tag {
-  font-size: 0.8rem;
-  color: #059669;
-  background: #d1fae5;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-weight: 600;
-}
-
-.no-schedule-badge {
+/* Status Preview */
+.status-preview {
   display: flex;
-  align-items: center;
+  align-items: center; /* Horizontal alignment */
   justify-content: center;
   gap: 6px;
-  color: #94a3b8;
-  font-size: 0.8rem;
-  padding: 12px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 6px;
-  width: 100%;
+  color: #059669;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  width: auto; /* Auto width */
 }
 
-.no-schedule-badge mat-icon {
+.status-preview.disabled {
+  color: #94a3b8;
+  background: transparent;
+  font-weight: 400;
+}
+
+.check-icon {
   font-size: 16px;
   width: 16px;
   height: 16px;
 }
 
-/* Shift Editor */
-.shift-editor {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.time-field.small {
-  width: 100%;
-}
-
-.time-field.small ::ng-deep .mat-form-field-wrapper {
-  padding-bottom: 0;
-}
-
-.time-field.small ::ng-deep .mat-form-field-infix {
-  padding: 8px 0;
-  border-top: 0;
-}
-
-.time-field.small ::ng-deep .mat-select-value {
-  font-size: 0.8rem;
-}
-
-.price-field {
-  width: 100%;
-}
-
-.price-field ::ng-deep .mat-form-field-wrapper {
-  padding-bottom: 0;
-}
-
-.price-field ::ng-deep .mat-form-field-infix {
-  padding: 8px 0;
-  border-top: 0;
-}
-
-.price-field input {
-  font-size: 0.9rem;
-}
-
 /* Modal Actions */
 .modal-actions {
-  padding: 20px 24px;
+  padding: 16px 24px;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -315,162 +376,46 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 140px;
+  min-width: 120px;
   color: #fff;
+  font-size: 0.9rem;
 }
 
 .save-button {
-  padding: 0 24px;
+  padding: 0 20px;
   background: #1e293b;
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .shift-columns, .shift-cells {
+     min-width: 600px; /* Permitir compresión en tablets */
+  }
+}
+
 @media (max-width: 768px) {
   .modal-container {
-    margin: 16px;
-    max-width: calc(100vw - 32px);
-    height: 90vh;
-    max-height: 90vh;
+    margin: 0;
+    max-width: 100vw;
+    height: 100vh;
+    border-radius: 0;
   }
 
   .modal-header {
-    padding: 16px;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .header-content {
-    width: 100%;
-  }
-
-  .quick-selection {
-    padding: 16px;
-    gap: 8px;
-  }
-
-  .quick-selection button {
-    flex: 1;
-    min-width: 140px;
-    justify-content: center;
-  }
-
-  .table-header {
-    flex-direction: column;
-  }
-
-  .day-column {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .shift-columns {
-    grid-template-columns: 1fr;
-  }
-
-  .shift-header {
     padding: 12px 16px;
   }
 
-  .day-row {
-    flex-direction: column;
-  }
-
-  .day-cell {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .shift-cells {
-    grid-template-columns: 1fr;
-  }
-
-  .shift-cell {
-    border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-    min-height: 100px;
-  }
-
-  .shift-cell:last-child {
-    border-bottom: none;
-  }
-
-  .modal-actions {
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-
-  .cancel-button,
-  .save-button {
-    min-width: 100%;
-  }
-}
-
-/* Dark Theme Support */
-@media (prefers-color-scheme: dark) {
-  .modal-container {
-    background: #fff;
-    color: #f1f5f9;
-  }
-
-  .quick-selection {
-    background: #fff;
-    border-bottom-color: #d8d9da;
-  }
-
   .table-header {
-    background: #fff;
-    border-bottom-color: #88888a;
-    color: #cbd5e1;
+    /* En móvil, podríamos necesitar scroll horizontal */
+    overflow-x: auto;
   }
-
-  .day-column {
-    border-right-color: #a4a4a5;
+  
+  .shift-columns, .shift-cells {
+    /* Forzar ancho para scroll horizontal */
+    min-width: 900px; 
   }
-
-  .day-row {
-    border-bottom-color: #e1e1e2;
-  }
-
-  .day-row.row-enabled {
-    background: #e3e3e4;
-  }
-
-  .day-row:hover {
-    background: #d2dfeb;
-  }
-
-  .day-cell {
-    border-right-color: #c2c3c4;
-  }
-
-  .shift-cell {
-    border-right-color: #d7d8da;
-  }
-
-  .time-range {
-    background: #336699;
-    border-color: #475569;
-    color: #f1f5f9;
-  }
-
-  .no-schedule-badge {
-    background: #33669933;
-    color: #336699;
-    font-weight: 600;
-  }
-
-  .modal-actions {
-    background: #336699;
-    border-top-color: #475569;
-    position: sticky;
-    bottom: 0;
-    padding: 20px 24px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    z-index: 2;
+  
+  .schedule-table-container {
+    overflow-x: auto;
   }
 }
-

@@ -79,7 +79,9 @@
   grid-template-columns: var(--gutter-width) 1fr;
   border: 1px solid #ddd;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: auto;
+  max-height: calc(100vh - 180px);
+  position: relative;
 }
 
 .time-gutter,
@@ -89,13 +91,21 @@
 
 .time-gutter {
   border-right: 1px solid #ddd;
-  position: relative;
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  height: fit-content;
 }
 
 .gutter-header {
   height: var(--header-height);
   border-bottom: 0;
   box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #fafafa;
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .time-label {
@@ -132,7 +142,7 @@
   position: sticky;
   top: 0;
   background: #fff;
-  z-index: 3;
+  z-index: 30;
   height: var(--header-height);
   display: flex;
   align-items: center;
@@ -248,8 +258,7 @@
 }
 
 .board-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: visible;
   position: relative;
 }
 

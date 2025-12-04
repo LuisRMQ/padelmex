@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from "@angular/material/icon";
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
@@ -45,6 +46,8 @@ interface DaySchedule {
   evening_price?: number;
 }
 
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 @Component({
   selector: 'app-registrar-horario-dialog',
   templateUrl: './registrar-horario-dialog.component.html',
@@ -58,34 +61,49 @@ interface DaySchedule {
     MatButtonModule,
     MatDialogModule,
     MatIconModule,
+    MatTooltipModule,
     FormsModule,
     MatCheckboxModule,
     CommonModule,
-    MatDividerModule
+    MatDividerModule,
+    MatProgressSpinnerModule
   ]
 })
 export class RegistrarHorarioDialogComponent {
   scheduleForm: FormGroup;
+  loading = false;
 
   days: DaySchedule[] = [
     { name: 'Lunes', enabled: false, hasSchedule: false, schedules: [] },
     { name: 'Martes', enabled: false, hasSchedule: false, schedules: [] },
-    { name: 'Miercoles', enabled: false, hasSchedule: false, schedules: [] },
+    { name: 'Miércoles', enabled: false, hasSchedule: false, schedules: [] },
     { name: 'Jueves', enabled: false, hasSchedule: false, schedules: [] },
     { name: 'Viernes', enabled: false, hasSchedule: false, schedules: [] },
-    { name: 'Sabado', enabled: false, hasSchedule: false, schedules: [] },
+    { name: 'Sábado', enabled: false, hasSchedule: false, schedules: [] },
     { name: 'Domingo', enabled: false, hasSchedule: false, schedules: [] },
   ];
+
+  globalConfig: {
+    morning: { start: string; end: string; price: number | null };
+    afternoon: { start: string; end: string; price: number | null };
+    evening: { start: string; end: string; price: number | null };
+  } = {
+    morning: { start: '', end: '', price: null },
+    afternoon: { start: '', end: '', price: null },
+    evening: { start: '', end: '', price: null }
+  };
 
  
 
   allHours: string[] = [
-  '6:00 AM','6:30 AM','7:00 AM','7:30 AM','8:00 AM','8:30 AM','9:00 AM',
-  '9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','12:00 PM',
-  '12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM',
-  '4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM',
-  '7:30 PM','8:00 PM','8:30 PM','9:00 PM','9:30 PM','10:00 PM'
-];
+    '00:00','00:30','01:00','01:30','02:00',
+    '02:30','03:00','03:30','04:00','04:30','05:00','05:30',
+    '06:00', '06:30', '07:00', '07:30', '08:00', '08:30', '09:00', '09:30',
+    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+    '18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30',
+    '22:00', '22:30', '23:00', '23:30',
+  ];
 
 
   constructor(
@@ -158,93 +176,101 @@ export class RegistrarHorarioDialogComponent {
   }
 
   async guardarHorario() {
+    if (this.loading) return;
+    
     const selectedDays = this.days.filter((d) => d.enabled);
 
     if (selectedDays.length === 0) {
       await this.alert.info('Selecciona al menos un día.');
-
       return;
     }
 
-    // Validar que todos los turnos activos tengan datos completos
-    const validationError = this.validateShiftData(selectedDays);
+    // Validación Global
+    const validationError = this.validateGlobalData();
     if (validationError) {
-        await this.alert.error('Validación', validationError);
-
+      await this.alert.error('Validación', validationError);
       return;
     }
 
     const requests = this.createScheduleRequests(selectedDays);
     
+    if (requests.length === 0) {
+       await this.alert.info('No se han configurado horarios para guardar.');
+       return;
+    }
+
+    this.loading = true;
+
     forkJoin(requests).subscribe(async (responses) => {
+      this.loading = false;
       const allOk = responses.every((r) => r !== null);
       if (allOk) {
           await this.alert.success('Éxito', 'Horarios guardados correctamente');
-
         this.dialogRef.close(true);
       }
+    }, (err) => {
+      this.loading = false;
+      console.error(err);
     });
   }
 
-  private validateShiftData(selectedDays: DaySchedule[]): string | null {
-  for (const day of selectedDays) {
-
+  private validateGlobalData(): string | null {
+    const g = this.globalConfig;
     const shifts = [
-      { start: day.morning_start, end: day.morning_end, price: day.morning_price, name: "mañana" },
-      { start: day.afternoon_start, end: day.afternoon_end, price: day.afternoon_price, name: "tarde" },
-      { start: day.evening_start, end: day.evening_end, price: day.evening_price, name: "noche" }
+      { ...g.morning, name: "mañana" },
+      { ...g.afternoon, name: "tarde" },
+      { ...g.evening, name: "noche" }
     ];
 
+    // Verificar consistencia: Si hay inicio, debe haber fin y precio
     for (const s of shifts) {
       if (s.start || s.end || s.price) {
         if (!s.start || !s.end || !s.price) {
-          return `Completa todos los campos del turno ${s.name} para ${day.name}`;
+          return `Completa todos los campos del turno ${s.name} (Inicio, Fin y Precio)`;
         }
       }
     }
 
     const activeShifts = shifts.filter(s => s.start && s.end && s.price);
     if (activeShifts.length === 0) {
-      return `Debes configurar al menos un horario para ${day.name}`;
+      return `Debes configurar al menos un turno (Mañana, Tarde o Noche)`;
     }
 
+    // Validar solapamientos
     for (let i = 0; i < activeShifts.length; i++) {
       for (let j = i + 1; j < activeShifts.length; j++) {
-
         const s1_start = this.formatTime(activeShifts[i].start!);
         const s1_end   = this.formatTime(activeShifts[i].end!);
         const s2_start = this.formatTime(activeShifts[j].start!);
         const s2_end   = this.formatTime(activeShifts[j].end!);
 
-        const overlap = s1_start < s2_end && s2_start < s1_end;
-
-        if (overlap) {
-          return `El horario de ${activeShifts[i].name} se cruza con el horario de ${activeShifts[j].name} en ${day.name}`;
+        if (s1_start < s2_end && s2_start < s1_end) {
+          return `El horario de ${activeShifts[i].name} se cruza con el horario de ${activeShifts[j].name}`;
         }
       }
     }
-  }
 
-  return null;
-}
+    return null;
+  }
 
   private createScheduleRequests(selectedDays: DaySchedule[]) {
     const requests: any[] = [];
+    const g = this.globalConfig;
 
     selectedDays.forEach(day => {
-      // Procesar cada turno que tenga datos
-      if (day.morning_start && day.morning_end && day.morning_price) {
-        const request = this.createShiftRequest(day, 'morning', day.morning_start, day.morning_end, day.morning_price);
+      // Usar configuración global
+      if (g.morning.start && g.morning.end && g.morning.price) {
+        const request = this.createShiftRequest(day, 'morning', g.morning.start, g.morning.end, g.morning.price);
         if (request) requests.push(request);
       }
 
-      if (day.afternoon_start && day.afternoon_end && day.afternoon_price) {
-        const request = this.createShiftRequest(day, 'afternoon', day.afternoon_start, day.afternoon_end, day.afternoon_price);
+      if (g.afternoon.start && g.afternoon.end && g.afternoon.price) {
+        const request = this.createShiftRequest(day, 'afternoon', g.afternoon.start, g.afternoon.end, g.afternoon.price);
         if (request) requests.push(request);
       }
 
-      if (day.evening_start && day.evening_end && day.evening_price) {
-        const request = this.createShiftRequest(day, 'evening', day.evening_start, day.evening_end, day.evening_price);
+      if (g.evening.start && g.evening.end && g.evening.price) {
+        const request = this.createShiftRequest(day, 'evening', g.evening.start, g.evening.end, g.evening.price);
         if (request) requests.push(request);
       }
     });
@@ -312,8 +338,17 @@ export class RegistrarHorarioDialogComponent {
 
   private formatTime(time: string): string {
     if (!time) return '';
+    // Si ya tiene formato HH:MM:SS o HH:MM lo respetamos
+    if (time.includes(':') && !time.includes('AM') && !time.includes('PM')) {
+        const parts = time.split(':');
+        if (parts.length === 2) return `${time}:00`;
+        return time;
+    }
     
+    // Fallback para formato antiguo AM/PM si existiera
     const [hourMinute, modifier] = time.split(' ');
+    if (!modifier) return `${time}:00`; // Asume formato 24h si no hay modificador
+
     let [hours, minutes] = hourMinute.split(':').map(Number);
     
     if (modifier === 'PM' && hours < 12) hours += 12;
@@ -323,33 +358,17 @@ export class RegistrarHorarioDialogComponent {
   }
 
   convertToAMPM(time: string): string {
+    // Retornamos formato 24h simplificado HH:MM
     if (!time) return '';
-    
-    // Si ya está en formato AM/PM, retornar tal cual
-    if (time.includes('AM') || time.includes('PM')) {
-      return time;
-    }
-    
-    // Si está en formato 24h, convertir
-    const [hourStr, minuteStr, secondStr] = time.split(':');
-    let hour = parseInt(hourStr, 10);
-    const minute = parseInt(minuteStr, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    
-    hour = hour % 12 || 12;
-    
-    return `${hour}:${minute.toString().padStart(2, '0')} ${ampm}`;
+    const [hour, minute] = time.split(':');
+    return `${hour}:${minute}`;
   }
 
   private toMinutes(time: string): number {
-  const [hourMinute, modifier] = time.split(' ');
-  let [hours, minutes] = hourMinute.split(':').map(Number);
-
-  if (modifier === 'PM' && hours < 12) hours += 12;
-  if (modifier === 'AM' && hours === 12) hours = 0;
-
-  return hours * 60 + minutes;
-}
+    // Adaptado para formato 24h directo
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + (minutes || 0);
+  }
 
 
 getFilteredAfternoonHours(day: DaySchedule) {

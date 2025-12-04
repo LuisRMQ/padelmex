@@ -67,7 +67,7 @@ export class CourtService extends ApiBaseService {
     return this.post('/court/create', formData);
   }
 
-  getCourtsByClub(clubId: number, limit: number = 5, page: number = 1): Observable<CourtsResponse> {
+  getCourtsByClub(clubId: number, limit: number = 20, page: number = 1): Observable<CourtsResponse> {
     let params = new HttpParams()
       .append('club_id', clubId.toString())
       .append('limit', limit.toString())

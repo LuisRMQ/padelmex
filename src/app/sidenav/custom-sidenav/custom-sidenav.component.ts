@@ -40,14 +40,24 @@ export class CustomSidenavComponent implements OnInit {
     { label: 'Mi Club', icon: 'analytics', route: '/estadisticas' },
     { label: 'Integrantes', icon: 'sports_handball', route: '/integrantes' },
     { label: 'Reservaciones Club', icon: 'event', route: '/reservaciones' },
+
     { label: 'Configuracion', icon: 'settings', route: '/configuracion' },
-    { label: 'Socket Test', icon: 'wifi', route: '/pruebasocket' }
+    // { label: 'Socket Test', icon: 'wifi', route: '/pruebasocket' }
+
+  ];
+
+
+  private GERENTE_MENU: MenuItem[] = [
+    { label: 'Mi Club', icon: 'analytics', route: '/estadisticas' },
+    { label: 'Integrantes', icon: 'sports_handball', route: '/integrantes' },
+    { label: 'Reservaciones Club', icon: 'event', route: '/reservaciones' },
+    { label: 'Calendario', icon: 'calendar_today', route: '/calendario' },
+    { label: 'Configuracion', icon: 'settings', route: '/configuracion' },
 
   ];
 
     menuItems = signal<MenuItem[]>([]);
 
-  // Signals para usuario
   currentUser = signal<User | null>(null);
 
   userName = computed(() =>
@@ -85,10 +95,14 @@ export class CustomSidenavComponent implements OnInit {
 private updateMenuItems(rolId: number) {
     if (rolId === 1) {
       this.menuItems.set(this.ADMIN_MENU);
-    } else if ([3, 4, 5, 6, 7].includes(rolId)) {
+    }
+    else if ([3, 5, 6, 7].includes(rolId)) {
       this.menuItems.set(this.USER_MENU);
-    } else {
+    } else if(rolId === 4) {
+      this.menuItems.set(this.GERENTE_MENU);
+    }else{
       this.menuItems.set([]);
+
     }
   }
 

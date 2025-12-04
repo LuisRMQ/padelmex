@@ -21,10 +21,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScheduleDetailsDialogComponent } from './schedule-details-dialog/schedule-details-dialog.component';
 import { SettingsDialogComponent } from './settings-dialog/settings-dialog.component';
 import { ConfigService } from '../../app/services/config.service';
+import { AuthService } from '../../app/services/auth.service';
+
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin } from 'rxjs';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { PageEvent } from '@angular/material/paginator';
+
 interface Court { id: number; name: string; }
 interface CalendarReservation {
   id: number;
@@ -82,6 +85,7 @@ export class CalendarioComponent implements OnInit {
   courtOperatingHours: Map<number, CourtOperatingHours> = new Map();
   loadingCourtHours: Set<number> = new Set();
   courtClosedDays: Map<number, CourtClosedDay[]> = new Map();
+  visualOffset = 30;
 
   // Configuración de reservas
   advance_reservation_limit = 0;
@@ -100,7 +104,9 @@ export class CalendarioComponent implements OnInit {
     private courtService: CourtService,
     private reservationService: ReservationService,
     private configService: ConfigService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService 
+
   ) {
     registerLocaleData(localeEs);
   }
@@ -109,8 +115,8 @@ export class CalendarioComponent implements OnInit {
   @Input() initialReservations: CalendarReservation[] = [];
 
   // Config
-  readonly dayStartMin = 6 * 60;
-  readonly dayEndMin = 23 * 60;
+  readonly dayStartMin = 0;          
+  readonly dayEndMin = 24 * 60;
   readonly snapMinutes = 30;
   readonly pxPerMin = 2;
 
@@ -540,7 +546,15 @@ export class CalendarioComponent implements OnInit {
     this.loading = true;
     this.courtService.getClubs().subscribe({
       next: (clubs) => {
-        this.clubs = clubs;
+        const user = this.authService.getUserData();
+
+        // this.clubs = clubs;
+        if (user && user.rol_id === 4) {
+          this.clubs = clubs.filter(c => c.id === user.club_id);
+        } else {
+          this.clubs = clubs;
+        }
+
         this.loading = false;
         if (clubs.length > 0 && !this.selectedClubId) {
           this.selectedClubId = clubs[0].id;
