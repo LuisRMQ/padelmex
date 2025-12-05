@@ -7,6 +7,7 @@
 </div>
 
 <mat-divider style="margin-bottom: 24px; opacity: 0.12;"></mat-divider>
+<div class="top-actions">
 
 <!-- Selector de Club -->
 <div class="club-selector">
@@ -19,6 +20,17 @@
     </mat-select>
   </mat-form-field>
 </div>
+
+  <div class="asignar-wrapper">
+
+    <button mat-raised-button color="accent" (click)="abrirModalRegistrarHorarioGlobal()" >
+      <mat-icon>more_time</mat-icon>
+      Asignar Horario
+    </button>
+  </div>
+ 
+</div>
+
 
 <!-- Tarjetas resumen -->
 <div class="canchas-resumen">
@@ -89,9 +101,9 @@
           <button mat-icon-button (click)="abrirEditarCanchaDialog(court)">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="primary" (click)="abrirModalRegistrarHorario(court)">
+          <!-- <button mat-icon-button color="primary" (click)="abrirModalRegistrarHorario(court)">
             <mat-icon>more_time</mat-icon>
-          </button>
+          </button> -->
           <button mat-icon-button (click)="abrirModalHorarios(court)">
             <mat-icon>info</mat-icon>
           </button>

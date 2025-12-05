@@ -13,6 +13,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CourtService } from '../../../app/services/court.service';
+import { AlertService } from '../../../app/services/alert.service';
 
 @Component({
   selector: 'app-RegistrarCanchaCerrada',
@@ -48,6 +49,7 @@ export class RegistrarCanchaCerradaDialogComponent implements OnInit {
     private courtService: CourtService,
     private snackBar: MatSnackBar,
     private dialogRef: MatDialogRef<RegistrarCanchaCerradaDialogComponent>,
+    private alertService: AlertService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.closedDayForm = this.fb.group({
@@ -70,11 +72,8 @@ export class RegistrarCanchaCerradaDialogComponent implements OnInit {
     },
     error: (err) => {
       console.error(err);
-      this.snackBar.open('❌ Error al cargar los días cerrados', 'Cerrar', {
-        duration: 3000,
-        horizontalPosition: 'center',
-        verticalPosition: 'top'
-      });
+      this.alertService.error('❌ Error al cargar los días cerrados');
+     
     }
   });
 }
@@ -84,7 +83,8 @@ export class RegistrarCanchaCerradaDialogComponent implements OnInit {
       Object.keys(this.closedDayForm.controls).forEach(key => {
         this.closedDayForm.get(key)?.markAsTouched();
       });
-      this.snackBar.open('⚠️ Completa todos los campos requeridos', 'Cerrar', { duration: 3000 });
+       this.alertService.info('⚠️ Completa todos los campos requeridos');
+
       return;
     }
 
@@ -110,7 +110,7 @@ export class RegistrarCanchaCerradaDialogComponent implements OnInit {
       error: (error) => {
         this.loading = false;
         console.error('Error:', error);
-        this.snackBar.open('❌ Error al guardar el día cerrado', 'Cerrar', { duration: 3000 });
+        this.alertService.error('❌ Error al guardar el día cerrado');
       }
     });
   }
@@ -129,12 +129,13 @@ export class RegistrarCanchaCerradaDialogComponent implements OnInit {
 
     this.courtService.deleteCourtClosedDay(id).subscribe({
       next: () => {
-        this.snackBar.open('🗑️ Día cerrado eliminado', 'Cerrar', { duration: 3000 });
+        this.alertService.info('🗑️ Día cerrado eliminado');
+
         this.loadClosedDays();
       },
       error: (err) => {
         console.error(err);
-        this.snackBar.open('❌ Error al eliminar', 'Cerrar', { duration: 3000 });
+        this.alertService.info('❌ Error al elimina');
       }
     });
   }

@@ -318,3 +318,61 @@ body {
   }
 }
 
+.top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* permite que baje el botón */
+}
+
+/* Wrapper del botón */
+.asignar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Botón responsivo con tamaño fijo */
+.asignar-wrapper button {
+  width: clamp(150px, 20vw, 190px); /* tamaño fijo adaptable */
+  height: 48px;
+  border-radius: 12px !important;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 600;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px !important;
+  gap: 6px;
+}
+
+/* 📱 Móviles: botón abajo del select */
+@media (max-width: 600px) {
+  .top-actions {
+    flex-direction: column;   /* stack vertical */
+    align-items: stretch;     /* ocupe todo el ancho */
+  }
+
+  .asignar-wrapper {
+    width: 100%;
+    justify-content: center; /* centrar el botón */
+  }
+
+  .asignar-wrapper button {
+    width: 80%;      /* ancho cómodo en móviles */
+    height: 46px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra pequeño (menos de 400px) */
+@media (max-width: 400px) {
+  .asignar-wrapper button {
+    width: 100%;
+    height: 44px;
+    font-size: 0.85rem;
+  }
+}

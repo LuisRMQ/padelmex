@@ -94,9 +94,9 @@ displayedColumns: string[] = ['day', 'start_time', 'end_time', 'price_hour', 'sh
 
   getShiftLabel(shift: string): string {
     const map: { [key: string]: string } = {
-      morning: 'Mañana',
-      afternoon: 'Tarde',
-      evening: 'Noche',
+      morning: 'Mañana 🌞',
+      afternoon: 'Tarde 🌄',
+      evening: 'Noche 🌑',
     };
     return map[shift] || shift;
   }

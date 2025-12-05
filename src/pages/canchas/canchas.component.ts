@@ -245,10 +245,8 @@ export class CanchasComponent implements OnInit {
       if (result === true) {
         this.courtService.deleteCourt(court.id, court.club_id).subscribe({
           next: () => {
-            this.snackBar.open('Cancha eliminada correctamente', 'Cerrar', {
-              duration: 3000,
-              panelClass: ['snackbar-success']
-            });
+             this.alert.success('Cancha Eliminada Correctamente');
+
             this.courts = this.courts.filter(c => c.id !== court.id);
           },
           error: () => {
@@ -284,6 +282,49 @@ export class CanchasComponent implements OnInit {
       }
     });
   }
+
+
+  abrirModalRegistrarHorarioGlobal() {
+  if (!this.selectedClubId) {
+    this.snackBar.open('Selecciona un club primero.', 'Cerrar', { duration: 3000 });
+    return;
+  }
+
+  const clubId = this.selectedClubId;
+
+  this.courtService.getCourtsByClub(clubId, 100, 1).subscribe({
+    next: (response) => {
+      const canchas = response.data;
+
+      if (!canchas || canchas.length === 0) {
+        this.snackBar.open('No hay canchas en este club.', 'Cerrar', { duration: 3000 });
+        return;
+      }
+
+      const dialogRef = this.dialog.open(RegistrarHorarioDialogComponent, {
+        maxWidth: '80vw',
+        maxHeight: '90vh',
+        height: '90vh',
+        data: {
+          clubId,
+          canchas,
+
+          isGlobal: true
+        },
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.alert.success('Horarios asignados correctamente a todas las canchas');
+        }
+      });
+    },
+    error: (err) => {
+      console.error('❌ Error al cargar canchas', err);
+      this.snackBar.open('Error al cargar las canchas', 'Cerrar', { duration: 3000 });
+    }
+  });
+}
 
 
   abrirModalHorarios(court: Court) {

@@ -110,14 +110,13 @@ export class RegistrarHorarioDialogComponent {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<RegistrarHorarioDialogComponent>,
     @Inject(MAT_DIALOG_DATA)
-    public data: { courtId: number; horarios: any; clubId: number; courtName: string },
+    public data: { clubId: number; canchas: any[]; isGlobal: boolean },
     private horarioCancha: HorariosServiceCancha,
     private snackBar: MatSnackBar,
     private alert: AlertService
 
   ) {
     this.scheduleForm = this.fb.group({
-      court_id: [data.courtId],
       day: ['', Validators.required],
       start_time: ['', Validators.required],
       end_time: ['', Validators.required],
@@ -128,32 +127,85 @@ export class RegistrarHorarioDialogComponent {
   }
 
   ngOnInit() {
-    if (this.data?.horarios) {
-      this.initializeSchedules();
+  if (this.data.canchas?.length > 0) {
+    const firstCourt = this.data.canchas[0]; 
+
+    this.horarioCancha.getHorariosByCourt(firstCourt.club_id, firstCourt.id)
+      .subscribe({
+        next: (horarios) => {
+          this.initializeSchedules(horarios);
+        },
+        error: (err) => {
+          console.error('Error al cargar horarios de la cancha base', err);
+        }
+      });
+  }
+}
+
+
+
+private setGlobalDefaults() {
+  const shifts = ['morning', 'afternoon', 'evening'] as const;
+
+  shifts.forEach(shift => {
+    const startKey = `${shift}_start` as const;
+    const endKey   = `${shift}_end`   as const;
+    const priceKey = `${shift}_price` as const;
+
+    const usedStarts = new Set(
+      this.days
+        .filter(d => d[startKey])
+        .map(d => d[startKey])
+    );
+
+    const usedEnds = new Set(
+      this.days
+        .filter(d => d[endKey])
+        .map(d => d[endKey])
+    );
+
+    const usedPrices = new Set(
+      this.days
+        .filter(d => d[priceKey])
+        .map(d => d[priceKey])
+    );
+
+    if (usedStarts.size === 1 && usedEnds.size === 1 && usedPrices.size === 1) {
+      this.globalConfig[shift].start = [...usedStarts][0]!;
+      this.globalConfig[shift].end   = [...usedEnds][0]!;
+      this.globalConfig[shift].price = [...usedPrices][0] as number;
     }
-  }
+  });
+}
 
-  private initializeSchedules() {
-    this.data.horarios.forEach((h: any) => {
-      const dia = this.days.find((d) => d.name.toLowerCase() === h.day.toLowerCase());
-      if (dia) {
-        dia.hasSchedule = true;
-        
-        const schedule: Schedule = {
-          id: h.courts_schedules_id,
-          start: this.convertToAMPM(h.start_time),
-          end: this.convertToAMPM(h.end_time),
-          shift_name: h.shift_name,
-          price_hour: h.price_hour
-        };
-        
-        dia.schedules.push(schedule);
 
-        // Inicializar los campos específicos por turno
-        this.initializeShiftFields(dia, schedule);
-      }
-    });
-  }
+
+
+private initializeSchedules(horarios: any[]) {
+  horarios.forEach((h: any) => {
+    const dia = this.days.find((d) => 
+      d.name.toLowerCase() === h.day.toLowerCase()
+    );
+
+    if (dia) {
+      dia.hasSchedule = true;
+
+      const schedule: Schedule = {
+        id: h.courts_schedules_id,
+        start: this.convertToAMPM(h.start_time),
+        end: this.convertToAMPM(h.end_time),
+        shift_name: h.shift_name,
+        price_hour: h.price_hour
+      };
+
+      dia.schedules.push(schedule);
+
+      this.initializeShiftFields(dia, schedule);
+    }
+      this.setGlobalDefaults();
+
+  });
+}
 
   private initializeShiftFields(day: DaySchedule, schedule: Schedule) {
     switch (schedule.shift_name) {
@@ -185,7 +237,6 @@ export class RegistrarHorarioDialogComponent {
       return;
     }
 
-    // Validación Global
     const validationError = this.validateGlobalData();
     if (validationError) {
       await this.alert.error('Validación', validationError);
@@ -222,7 +273,6 @@ export class RegistrarHorarioDialogComponent {
       { ...g.evening, name: "noche" }
     ];
 
-    // Verificar consistencia: Si hay inicio, debe haber fin y precio
     for (const s of shifts) {
       if (s.start || s.end || s.price) {
         if (!s.start || !s.end || !s.price) {
@@ -254,55 +304,90 @@ export class RegistrarHorarioDialogComponent {
   }
 
   private createScheduleRequests(selectedDays: DaySchedule[]) {
-    const requests: any[] = [];
-    const g = this.globalConfig;
+  const requests: any[] = [];
+  const g = this.globalConfig;
 
+  this.data.canchas.forEach(court => {
     selectedDays.forEach(day => {
-      // Usar configuración global
+
       if (g.morning.start && g.morning.end && g.morning.price) {
-        const request = this.createShiftRequest(day, 'morning', g.morning.start, g.morning.end, g.morning.price);
-        if (request) requests.push(request);
+        requests.push(
+          this.createShiftRequest(
+            court.id,
+            court.club_id,
+            day,
+            'morning',
+            g.morning.start,
+            g.morning.end,
+            g.morning.price
+          )
+        );
       }
 
       if (g.afternoon.start && g.afternoon.end && g.afternoon.price) {
-        const request = this.createShiftRequest(day, 'afternoon', g.afternoon.start, g.afternoon.end, g.afternoon.price);
-        if (request) requests.push(request);
+        requests.push(
+          this.createShiftRequest(
+            court.id,
+            court.club_id,
+            day,
+            'afternoon',
+            g.afternoon.start,
+            g.afternoon.end,
+            g.afternoon.price
+          )
+        );
       }
 
       if (g.evening.start && g.evening.end && g.evening.price) {
-        const request = this.createShiftRequest(day, 'evening', g.evening.start, g.evening.end, g.evening.price);
-        if (request) requests.push(request);
+        requests.push(
+          this.createShiftRequest(
+            court.id,
+            court.club_id,
+            day,
+            'evening',
+            g.evening.start,
+            g.evening.end,
+            g.evening.price
+          )
+        );
       }
+
     });
+  });
 
-    return requests;
-  }
+  return requests;
+}
 
-  private createShiftRequest(day: DaySchedule, shift: string, start: string, end: string, price: number) {
-    const existingSchedule = day.schedules.find(s => s.shift_name === shift);
-    
-    const horario = {
-      club_id: this.data.clubId,
-      court_id: this.data.courtId,
-      day: day.name,
-      start_time: this.formatTime(start),
-      end_time: this.formatTime(end),
-      shift_name: shift,
-      price_hour: price,
-    };
 
-    const request = existingSchedule
-      ? this.horarioCancha.updateHorario(existingSchedule.id, horario)
-      : this.horarioCancha.createHorario(horario);
+  private createShiftRequest(
+  courtId: number,
+  clubId: number,
+  day: DaySchedule,
+  shift: string,
+  start: string,
+  end: string,
+  price: number
+) {
 
-    return request.pipe(
-      catchError((err) => {
-        const message = err?.error?.errors?.start_time?.[0] || `Error al guardar el horario del turno ${shift}.`;
-        this.snackBar.open(message, 'Cerrar', { duration: 4000, panelClass: ['snackbar-error'] });
-        return of(null);
-      })
-    );
-  }
+  const horario = {
+    club_id: clubId,
+    court_id: courtId,
+    day: day.name,
+    start_time: this.formatTime(start),
+    end_time: this.formatTime(end),
+    shift_name: shift,
+    price_hour: price,
+  };
+
+  return this.horarioCancha.createHorario(horario).pipe(
+    catchError(err => {
+      const msg = err?.error?.errors?.start_time?.[0] || 
+                  `Error al guardar horario en cancha ${courtId}`;
+      this.snackBar.open(msg, 'Cerrar', { duration: 4000 });
+      return of(null);
+    })
+  );
+}
 
   selectWeekdays() {
     this.days.forEach((d) => (d.enabled = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'].includes(d.name)));
@@ -338,16 +423,14 @@ export class RegistrarHorarioDialogComponent {
 
   private formatTime(time: string): string {
     if (!time) return '';
-    // Si ya tiene formato HH:MM:SS o HH:MM lo respetamos
     if (time.includes(':') && !time.includes('AM') && !time.includes('PM')) {
         const parts = time.split(':');
         if (parts.length === 2) return `${time}:00`;
         return time;
     }
     
-    // Fallback para formato antiguo AM/PM si existiera
     const [hourMinute, modifier] = time.split(' ');
-    if (!modifier) return `${time}:00`; // Asume formato 24h si no hay modificador
+    if (!modifier) return `${time}:00`; 
 
     let [hours, minutes] = hourMinute.split(':').map(Number);
     
@@ -391,4 +474,7 @@ getFilteredEveningHours(day: DaySchedule) {
 
   return this.allHours.filter(h => this.toMinutes(h) > maxLimit);
 }
+
+
+
 }
