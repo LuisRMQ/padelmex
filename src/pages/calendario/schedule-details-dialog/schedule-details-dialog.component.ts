@@ -107,11 +107,6 @@ export class ScheduleDetailsDialogComponent {
     this.initialStatus = this.data.details.status;
     this.loadPlayers();
   }
-  // guardarSet(numSet: number) {
-  //   this.snackBar.open(`Set ${numSet} guardado ✅`, 'Cerrar', {
-  //     duration: 3000,
-  //   });
-  // }
 
 
 

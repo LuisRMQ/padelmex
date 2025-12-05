@@ -318,27 +318,3 @@ body {
   }
 }
 
-/* Soporte para modo oscuro */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-light: #1a1a1a;
-    --text-dark: #ffffff;
-    --text-light: #b0b0b0;
-  }
-  
-  .header,
-  .clubs-lista,
-  .resumen-card {
-    background: #2d2d2d;
-    color: white;
-  }
-  
-  .clubs-table th {
-    background: #3d3d3d;
-    color: #ffffff;
-  }
-  
-  .clubs-table td {
-    border-bottom-color: #444;
-  }
-}

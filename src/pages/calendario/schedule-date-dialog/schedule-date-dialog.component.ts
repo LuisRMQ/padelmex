@@ -21,6 +21,7 @@ import { ConfigService, Category } from '../../../app/services/config.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HorariosServiceCancha, HorarioCancha } from '../../../app/services/horarios-canchas.service';
 import { CourtService } from '../../../app/services/court.service';
+import { AlertService } from '../../../app/services/alert.service';
 
 export interface DialogData {
   user: string;
@@ -92,7 +93,8 @@ export class ScheduleDateDialogComponent implements OnInit {
     private snackBar: MatSnackBar,
     private configService: ConfigService,
     private horariosService: HorariosServiceCancha,
-    private courtService: CourtService
+    private courtService: CourtService,
+    private alert: AlertService
   ) {
     this.selectedDate = this.convertToDate(data.date);
     const defaultEndTime = this.getDefaultEndTime(data.startTime, this.minReservationTime);
@@ -166,10 +168,8 @@ export class ScheduleDateDialogComponent implements OnInit {
       if (startTime && endTime) {
         const duration = this.getMinutesDiff(startTime, endTime);
         if (duration < this.minReservationTime) {
-          this.snackBar.open(
-            `La duración mínima de la reservación es de ${this.minReservationTime / 60} hora(s).`,
-            'Cerrar', { duration: 3000, panelClass: ['snackbar-error'] }
-          );
+          this.alert.info(`La duración mínima de la reservación es de ${this.minReservationTime / 60} hora(s).`);
+
           this.reservationForm.get('end_time')?.setValue('');
         }
       }
@@ -282,7 +282,8 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   addPlayer(user: User): void {
     if (this.selectedPlayers.length >= 3) {
-      this.snackBar.open('No puedes agregar más de 3 jugadores adicionales.', 'Cerrar', { duration: 2500, panelClass: ['snackbar-error'] });
+      this.alert.info('No puedes agregar más de 3 jugadores adicionales.');
+
       this.playersControl.setValue('');
       return;
     }
@@ -301,10 +302,7 @@ export class ScheduleDateDialogComponent implements OnInit {
 
   const mainPlayer = this.userControl.value;
   if (!mainPlayer || typeof mainPlayer !== 'object' || !mainPlayer.id) {
-    this.snackBar.open('Selecciona el jugador principal antes de continuar.', 'Cerrar', {
-      duration: 3000,
-      panelClass: ['snackbar-error']
-    });
+    this.alert.info('Selecciona el jugador principal antes de continuar.');
     return;
   }
 

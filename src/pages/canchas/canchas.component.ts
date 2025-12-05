@@ -21,6 +21,7 @@ import { InfoCanchaDialogComponent } from './info-cancha-dialog/info-cancha-dial
 import { EditarCanchaDialogComponent } from './editar-cancha-dialog/editar-cancha-dialog.component';
 
 import { RegistrarCanchaCerradaDialogComponent } from './registrar-diacerrado-dialog/registrar-diacerrado-dialog.component';
+import { AlertService } from '../../app/services/alert.service';
 
 
 @Component({
@@ -61,6 +62,7 @@ export class CanchasComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private horariosCanchasService: HorariosServiceCancha,
+    private alert : AlertService
   ) { }
 
   ngOnInit() {
@@ -159,18 +161,13 @@ export class CanchasComponent implements OnInit {
       if (formData) {
         this.courtService.updateCourt(court.id, formData).subscribe({
           next: () => {
-            this.snackBar.open('✅ Cancha actualizada correctamente', 'Cerrar', {
-              duration: 3000,
-              panelClass: ['snackbar-success']
-            });
+            this.alert.success('✅ Cancha actualizada correctamente');
             this.loadCourts();
           },
           error: (err) => {
             console.error('Error al actualizar cancha:', err);
-            this.snackBar.open('❌ Error al actualizar la cancha', 'Cerrar', {
-              duration: 3000,
-              panelClass: ['snackbar-error']
-            });
+            this.alert.error('❌ Error al actualizar la cancha');
+
           }
         });
       }
@@ -277,12 +274,7 @@ export class CanchasComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe(result => {
           if (result) {
-            this.snackBar.open('Horario registrado exitosamente', 'Cerrar', {
-              duration: 3000,
-              panelClass: ['snackbar-success'],
-              horizontalPosition: 'center',
-              verticalPosition: 'bottom'
-            });
+            this.alert.success('Horario registrado exitosamente');
           }
         });
       },
